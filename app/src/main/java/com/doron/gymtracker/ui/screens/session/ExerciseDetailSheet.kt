@@ -131,7 +131,7 @@ private fun RepSetInput(targetReps: Int, lastWeight: Float?, onLog: (Int, Float)
             val weight = weightText.toFloatOrNull() ?: return@Button
             onLog(reps, weight)
             repsText = targetReps.toString()
-            weightText = ""
+            // weight carries forward to the next set intentionally
         },
         modifier = Modifier.fillMaxWidth(),
         enabled = repsText.isNotBlank() && weightText.isNotBlank()
