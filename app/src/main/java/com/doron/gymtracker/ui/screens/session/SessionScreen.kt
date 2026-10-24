@@ -20,6 +20,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,6 +43,7 @@ import com.doron.gymtracker.domain.usecase.ProgressionHintUseCase
 import com.doron.gymtracker.ui.components.ExerciseCard
 import com.doron.gymtracker.ui.components.SessionClockDisplay
 import com.doron.gymtracker.ui.theme.RestTimerColor
+import com.doron.gymtracker.ui.theme.WarningAmber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,6 +78,9 @@ fun SessionScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                ),
                 title = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -113,10 +118,10 @@ fun SessionScreen(
                 Text(
                     stringResource(R.string.deload_week_banner),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    color = androidx.compose.ui.graphics.Color(0xFF1A1035),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.85f))
+                        .background(WarningAmber)
                         .padding(horizontal = 16.dp, vertical = 6.dp)
                 )
             }

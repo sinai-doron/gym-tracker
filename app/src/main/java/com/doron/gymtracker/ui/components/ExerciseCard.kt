@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.doron.gymtracker.R
 import com.doron.gymtracker.domain.model.DistanceSetRecord
 import com.doron.gymtracker.domain.model.ExerciseDefinition
+import com.doron.gymtracker.ui.theme.SuccessGreen
 import com.doron.gymtracker.domain.model.RepSetRecord
 import com.doron.gymtracker.domain.model.SetRecord
 import com.doron.gymtracker.domain.model.TimedSetRecord
@@ -35,7 +36,8 @@ fun ExerciseCard(
             .fillMaxWidth()
             .alpha(if (exercise.isOptional) 0.7f else 1f)
             .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row {
@@ -52,7 +54,7 @@ fun ExerciseCard(
                     stringResource(R.string.sets_progress, completedSets.size, exercise.targetSets),
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (completedSets.size >= exercise.targetSets)
-                        MaterialTheme.colorScheme.primary
+                        SuccessGreen
                     else
                         MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.weight(1f)
