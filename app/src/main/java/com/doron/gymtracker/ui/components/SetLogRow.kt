@@ -24,7 +24,11 @@ fun SetLogRow(setNumber: Int, record: SetRecord) {
     ) {
         Text("סט $setNumber", style = MaterialTheme.typography.bodyLarge)
         val label = when (record) {
-            is RepSetRecord -> "${record.reps} חזרות × ${record.weightKg} ק״ג"
+            is RepSetRecord -> {
+                val w = if (record.weightKg == record.weightKg.toLong().toFloat())
+                    record.weightKg.toLong().toString() else record.weightKg.toString()
+                "${record.reps} חזרות × $w ק״ג"
+            }
             is TimedSetRecord -> "${record.durationSecs} שניות"
             is DistanceSetRecord -> "${record.distanceM} מטרים"
         }

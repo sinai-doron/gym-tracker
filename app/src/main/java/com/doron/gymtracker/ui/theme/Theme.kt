@@ -3,10 +3,7 @@ package com.doron.gymtracker.ui.theme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.LayoutDirection
 
 private val LightColorScheme = lightColorScheme(
     primary = Purple,
@@ -24,15 +21,14 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun GymTrackerTheme(content: @Composable () -> Unit) {
+    // Layout direction is handled by the system locale.
+    // Hebrew locale ("iw") → Android sets RTL automatically.
+    // English locale ("en") → LTR.
+    // Do NOT force LayoutDirection here — it would override the locale switch.
     MaterialTheme(
         colorScheme = LightColorScheme,
         typography = Typography,
-        shapes = Shapes
-    ) {
-        CompositionLocalProvider(
-            LocalLayoutDirection provides LayoutDirection.Rtl
-        ) {
-            content()
-        }
-    }
+        shapes = Shapes,
+        content = content
+    )
 }
