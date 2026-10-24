@@ -14,6 +14,7 @@ import com.doron.gymtracker.domain.usecase.ProgressionHintUseCase
 import com.doron.gymtracker.ui.screens.home.HomeScreen
 import com.doron.gymtracker.ui.screens.session.SessionScreen
 import com.doron.gymtracker.ui.screens.session.SessionViewModel
+import com.doron.gymtracker.ui.screens.settings.SettingsScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -26,8 +27,12 @@ fun NavGraph() {
                 onSessionStart = { sessionId, workoutId ->
                     navController.navigate("session/$sessionId/$workoutId")
                 },
-                onHistoryClick = { navController.navigate("history") }
+                onHistoryClick = { navController.navigate("history") },
+                onSettingsClick = { navController.navigate("settings") }
             )
+        }
+        composable("settings") {
+            SettingsScreen(onBack = { navController.popBackStack() })
         }
         composable("session/{sessionId}/{workoutId}") { backStackEntry ->
             val sessionId = backStackEntry.arguments?.getString("sessionId")?.toLongOrNull() ?: return@composable

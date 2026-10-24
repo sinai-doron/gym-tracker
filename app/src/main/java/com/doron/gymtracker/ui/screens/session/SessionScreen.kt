@@ -25,7 +25,6 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -68,10 +67,8 @@ fun SessionScreen(
         }.uiState.collectAsState().value)
     } ?: emptyMap()
 
-    // Active rest countdown: find any exercise currently in a rest period
-    val activeRestSecs by remember {
-        derivedStateOf { detailStates.values.mapNotNull { it.restCountdownSecs }.firstOrNull() }
-    }
+    // Active rest countdown: recomputed each recomposition — detailStates is reactive via collectAsState
+    val activeRestSecs = detailStates.values.mapNotNull { it.restCountdownSecs }.firstOrNull()
 
     LaunchedEffect(state.isFinished) { if (state.isFinished) onFinished() }
 
