@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.doron.gymtracker.R
 import com.doron.gymtracker.domain.model.DistanceExerciseDefinition
+import com.doron.gymtracker.domain.model.ProgressionHint
 import com.doron.gymtracker.domain.model.RepExerciseDefinition
 import com.doron.gymtracker.domain.model.TimedExerciseDefinition
 import com.doron.gymtracker.ui.components.RestTimerOverlay
@@ -49,6 +50,19 @@ fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -
         Spacer(Modifier.height(8.dp))
 
         state.completedSets.forEachIndexed { i, set -> SetLogRow(setNumber = i + 1, record = set) }
+
+        // Progression hint — only shown for rep exercises
+        val hintText = when (val h = state.progressionHint) {
+            is ProgressionHint.Increase -> "כל הסטים הגיעו לטווח העליון 3× ברצף — הוסף ${h.addKg} ק״ג"
+            is ProgressionHint.Stalled -> "3 אימונים ללא שיפור — הפחת 10% ובנה מחדש"
+            is ProgressionHint.OnTrack -> null
+        }
+        if (hintText != null) {
+            Text(hintText,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(vertical = 4.dp))
+        }
 
         Spacer(Modifier.height(16.dp))
 
