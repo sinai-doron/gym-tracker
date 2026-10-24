@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.doron.gymtracker.domain.usecase.LogSetUseCase
 import com.doron.gymtracker.ui.screens.home.HomeScreen
 import com.doron.gymtracker.ui.screens.session.SessionScreen
 import com.doron.gymtracker.ui.screens.session.SessionViewModel
@@ -39,6 +40,7 @@ fun NavGraph() {
             )
             SessionScreen(
                 viewModel = viewModel,
+                logSetUseCase = factoryHolder.logSetUseCase,
                 onFinished = { navController.popBackStack() }
             )
         }
@@ -50,5 +52,6 @@ fun NavGraph() {
 
 @HiltViewModel
 class SessionViewModelFactoryHolder @Inject constructor(
-    val factory: SessionViewModel.Factory
+    val factory: SessionViewModel.Factory,
+    val logSetUseCase: LogSetUseCase
 ) : ViewModel()

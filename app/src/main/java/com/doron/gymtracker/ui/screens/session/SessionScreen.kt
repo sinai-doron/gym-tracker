@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,18 +31,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.doron.gymtracker.domain.model.ExerciseDefinition
+import com.doron.gymtracker.domain.usecase.LogSetUseCase
 import com.doron.gymtracker.ui.components.ExerciseCard
 import com.doron.gymtracker.ui.components.SessionClockDisplay
+import javax.inject.Inject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SessionScreen(
     viewModel: SessionViewModel,
+    logSetUseCase: LogSetUseCase,
     onFinished: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
     var selectedExercise by remember { mutableStateOf<ExerciseDefinition?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    // One ExerciseDetailViewModel per exercise, keyed by exercise id
+    val detailViewModels = remember { mutableStateMapOf<String, ExerciseDetailViewModel>() }
 
     LaunchedEffect(state.isFinished) {
         if (state.isFinished) onFinished()
@@ -73,15 +80,17 @@ fun SessionScreen(
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(state.workout?.exercises ?: emptyList()) { exercise ->
+                    val detailVm = detailViewModels.getOrPut(exercise.id) {
+                        ExerciseDetailViewModel(viewModel.sessionId, exercise, logSetUseCase)
+                    }
+                    val detailState by detailVm.uiState.collectAsState()
                     ExerciseCard(
                         exercise = exercise,
-                        entry = state.entries[exercise.id],
+                        entry = state.entries[exercise.id]?.copy(sets = detailState.completedSets),
                         onClick = { selectedExercise = exercise }
                     )
                 }
-                item {
-                    Spacer(Modifier.height(80.dp))
-                }
+                item { Spacer(Modifier.height(80.dp)) }
             }
 
             Button(
@@ -95,21 +104,16 @@ fun SessionScreen(
             }
         }
 
-        if (selectedExercise != null) {
+        val exercise = selectedExercise
+        if (exercise != null) {
+            val detailVm = detailViewModels.getOrPut(exercise.id) {
+                ExerciseDetailViewModel(viewModel.sessionId, exercise, logSetUseCase)
+            }
             ModalBottomSheet(
                 onDismissRequest = { selectedExercise = null },
                 sheetState = sheetState
             ) {
-                Text(
-                    "Exercise: ${selectedExercise?.name}",
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Text(
-                    "Set logging coming in Task 8",
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-                Spacer(Modifier.height(32.dp))
+                ExerciseDetailSheet(viewModel = detailVm)
             }
         }
     }
