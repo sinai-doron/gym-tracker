@@ -6,20 +6,25 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.doron.gymtracker.R
 import com.doron.gymtracker.domain.model.RepExerciseDefinition
@@ -31,7 +36,13 @@ import com.doron.gymtracker.ui.components.SetLogRow
 fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -> Unit = {}) {
     val state by viewModel.uiState.collectAsState()
 
-    Column(modifier = Modifier.padding(horizontal = 16.dp).imePadding()) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp)
+            .imePadding()
+    ) {
         Text(state.exercise.name, style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(8.dp))
 
@@ -68,21 +79,26 @@ private fun RepSetInput(targetReps: Int, onLog: (Int, Float) -> Unit) {
     var repsText by remember { mutableStateOf(targetReps.toString()) }
     var weightText by remember { mutableStateOf("") }
 
-    OutlinedTextField(
-        value = repsText,
-        onValueChange = { repsText = it },
-        label = { Text(stringResource(R.string.reps)) },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        modifier = Modifier.fillMaxWidth()
-    )
-    Spacer(Modifier.height(8.dp))
-    OutlinedTextField(
-        value = weightText,
-        onValueChange = { weightText = it },
-        label = { Text(stringResource(R.string.weight_kg)) },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-        modifier = Modifier.fillMaxWidth()
-    )
+    // Number fields must be LTR even in the RTL app — Hebrew digits read left-to-right
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+        OutlinedTextField(
+            value = repsText,
+            onValueChange = { repsText = it },
+            label = { Text(stringResource(R.string.reps)) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.height(8.dp))
+        OutlinedTextField(
+            value = weightText,
+            onValueChange = { weightText = it },
+            label = { Text(stringResource(R.string.weight_kg)) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
     Spacer(Modifier.height(16.dp))
     Button(
         onClick = {

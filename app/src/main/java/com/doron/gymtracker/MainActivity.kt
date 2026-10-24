@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.ui.navigation.NavGraph
@@ -19,8 +20,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        lifecycleScope.launch { workoutRepository.ensureSeeded() }
+        // Let Compose handle all insets including IME — do not fit system windows
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         enableEdgeToEdge()
+        lifecycleScope.launch { workoutRepository.ensureSeeded() }
         setContent {
             GymTrackerTheme {
                 NavGraph()
