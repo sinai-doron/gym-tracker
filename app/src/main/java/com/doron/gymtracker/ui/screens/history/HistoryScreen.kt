@@ -1,127 +1,160 @@
 package com.doron.gymtracker.ui.screens.history
 
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.doron.gymtracker.R
 import com.doron.gymtracker.ui.components.SetLogRow
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.format.TextStyle
+import java.util.Locale
 
-@Composable
-fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
-    val lastSession by viewModel.lastSession.collectAsState()
-    val trends by viewModel.trends.collectAsState()
-    var selectedTab by remember { mutableIntStateOf(0) }
+private val heLocale = Locale("he")
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        TabRow(selectedTabIndex = selectedTab) {
-            Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }) {
-                Text(stringResource(R.string.last_session), modifier = Modifier.padding(vertical = 12.dp))
-            }
-            Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }) {
-                Text(stringResource(R.string.trends), modifier = Modifier.padding(vertical = 12.dp))
-            }
-        }
-        when (selectedTab) {
-            0 -> LastSessionTab(lastSession)
-            1 -> TrendsTab(trends, onExerciseSelected = viewModel::selectExerciseForTrend)
-        }
-    }
-}
-
-@Composable
-private fun LastSessionTab(state: LastSessionUiState) {
-    if (state.workoutLabel == null) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(stringResource(R.string.no_sessions_yet),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        return
-    }
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text(
-            "אימון ${state.workoutLabel?.name} — ${state.dateLabel ?: ""}",
-            style = MaterialTheme.typography.titleLarge
-        )
-        Spacer(Modifier.height(16.dp))
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            itemsIndexed(state.summaries) { _, summary ->
-                Column {
-                    Text(summary.exerciseName, style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.primary)
-                    summary.sets.forEachIndexed { i, set -> SetLogRow(setNumber = i + 1, record = set) }
-                }
-            }
-        }
-    }
-}
+// Sunday-first week order for Israeli calendar
+private val weekDayOrder = listOf(
+    DayOfWeek.SUNDAY, DayOfWeek.MONDAY, DayOfWeek.TUESDAY,
+    DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY
+)
+private val dayHeaders = listOf("א", "ב", "ג", "ד", "ה", "ו", "ש")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TrendsTab(state: TrendsUiState, onExerciseSelected: (String) -> Unit) {
-    Column(modifier = Modifier.padding(16.dp)) {
-        var expanded by remember { mutableStateOf(false) }
-        ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
-            OutlinedTextField(
-                value = state.selectedExercise ?: stringResource(R.string.select_exercise),
-                onValueChange = {},
-                readOnly = true,
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-                modifier = Modifier.fillMaxWidth().menuAnchor()
-            )
-            ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                state.exerciseNames.forEach { name ->
-                    DropdownMenuItem(
-                        text = { Text(name) },
-                        onClick = { onExerciseSelected(name); expanded = false }
-                    )
-                }
-            }
+fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
+    val month by viewModel.currentMonth.collectAsState()
+    val sessionDates by viewModel.sessionDates.collectAsState()
+    val selectedDay by viewModel.selectedDaySession.collectAsState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        MonthHeader(month, onPrev = viewModel::prevMonth, onNext = viewModel::nextMonth)
+        Spacer(Modifier.height(12.dp))
+        DayHeaders()
+        Spacer(Modifier.height(4.dp))
+        CalendarGrid(month = month, sessionDates = sessionDates, onDayClick = { viewModel.loadDaySession(it) })
+    }
+
+    if (selectedDay != null) {
+        ModalBottomSheet(
+            onDismissRequest = { viewModel.clearSelectedDay() },
+            sheetState = sheetState
+        ) {
+            DaySessionSheet(state = selectedDay!!)
         }
-        Spacer(Modifier.height(16.dp))
-        if (state.dataPoints.isEmpty()) {
-            Box(Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
-                Text(stringResource(R.string.no_data_yet), color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        } else {
-            LineChart(points = state.dataPoints, modifier = Modifier.fillMaxWidth().height(200.dp))
-            Spacer(Modifier.height(8.dp))
-            state.dataPoints.forEach { point ->
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(point.dateLabel, style = MaterialTheme.typography.bodyMedium)
-                    Text("${point.value}", style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary)
+    }
+}
+
+@Composable
+private fun MonthHeader(month: YearMonth, onPrev: () -> Unit, onNext: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        // In RTL: ArrowForward (→) is visually on the right = "start" = next month
+        // ArrowBack (←) is visually on the left = "end" = previous month
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        // In RTL layout, this button appears on the LEFT = goes to next month
+        IconButton(onClick = onNext) {
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "חודש הבא")
+        }
+        val monthName = month.month.getDisplayName(TextStyle.FULL_STANDALONE, heLocale)
+        Text(
+            "$monthName ${month.year}",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
+        // In RTL layout, this button appears on the RIGHT = goes to previous month
+        IconButton(onClick = onPrev) {
+            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "חודש קודם")
+        }
+    }
+}
+
+@Composable
+private fun DayHeaders() {
+    Row(modifier = Modifier.fillMaxWidth()) {
+        dayHeaders.forEach { label ->
+            Text(
+                label,
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun CalendarGrid(
+    month: YearMonth,
+    sessionDates: Set<LocalDate>,
+    onDayClick: (LocalDate) -> Unit
+) {
+    val today = LocalDate.now()
+    val firstDay = month.atDay(1)
+    // How many blank cells before day 1 (Sunday = 0)
+    val firstDayOfWeekIndex = weekDayOrder.indexOf(firstDay.dayOfWeek)
+    val totalDays = month.lengthOfMonth()
+    val cells = firstDayOfWeekIndex + totalDays
+    val rows = (cells + 6) / 7
+
+    Column {
+        repeat(rows) { row ->
+            Row(modifier = Modifier.fillMaxWidth()) {
+                repeat(7) { col ->
+                    val cellIndex = row * 7 + col
+                    val dayNum = cellIndex - firstDayOfWeekIndex + 1
+                    if (dayNum < 1 || dayNum > totalDays) {
+                        Box(modifier = Modifier.weight(1f).aspectRatio(1f))
+                    } else {
+                        val date = month.atDay(dayNum)
+                        val hasSession = date in sessionDates
+                        val isToday = date == today
+                        DayCell(
+                            day = dayNum,
+                            hasSession = hasSession,
+                            isToday = isToday,
+                            modifier = Modifier.weight(1f),
+                            onClick = if (hasSession) ({ onDayClick(date) }) else null
+                        )
+                    }
                 }
             }
         }
@@ -129,20 +162,73 @@ private fun TrendsTab(state: TrendsUiState, onExerciseSelected: (String) -> Unit
 }
 
 @Composable
-private fun LineChart(points: List<TrendPoint>, modifier: Modifier = Modifier) {
-    val primary = MaterialTheme.colorScheme.primary
-    Canvas(modifier = modifier) {
-        if (points.size < 2) return@Canvas
-        val minV = points.minOf { it.value }
-        val maxV = points.maxOf { it.value }.coerceAtLeast(minV + 1f)
-        val w = size.width; val h = size.height
-        val pts = points.mapIndexed { i, p ->
-            Offset(
-                x = (i.toFloat() / (points.size - 1)) * w,
-                y = h - ((p.value - minV) / (maxV - minV)) * h
+private fun DayCell(
+    day: Int,
+    hasSession: Boolean,
+    isToday: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)?
+) {
+    val bgColor = when {
+        hasSession -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.surface
+    }
+    val textColor = when {
+        hasSession -> MaterialTheme.colorScheme.onPrimary
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+    val borderMod = if (isToday && !hasSession)
+        Modifier.border(1.dp, MaterialTheme.colorScheme.primary, CircleShape)
+    else Modifier
+
+    Box(
+        modifier = modifier
+            .aspectRatio(1f)
+            .padding(2.dp)
+            .clip(CircleShape)
+            .background(bgColor)
+            .then(borderMod)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            "$day",
+            style = MaterialTheme.typography.bodyMedium,
+            color = textColor,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+private fun DaySessionSheet(state: LastSessionUiState) {
+    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+        Text(
+            "אימון ${state.workoutLabel?.name ?: ""} — ${state.dateLabel ?: ""}",
+            style = MaterialTheme.typography.titleLarge
+        )
+        Spacer(Modifier.height(16.dp))
+        if (state.summaries.isEmpty()) {
+            Text(
+                stringResource(R.string.no_sessions_yet),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        } else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                itemsIndexed(state.summaries) { _, summary ->
+                    Column {
+                        Text(
+                            summary.exerciseName,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        summary.sets.forEachIndexed { i, set ->
+                            SetLogRow(setNumber = i + 1, record = set)
+                        }
+                    }
+                }
+            }
         }
-        for (i in 0 until pts.size - 1) drawLine(primary, pts[i], pts[i + 1], strokeWidth = 4f)
-        pts.forEach { drawCircle(primary, radius = 8f, center = it) }
+        Spacer(Modifier.height(32.dp))
     }
 }

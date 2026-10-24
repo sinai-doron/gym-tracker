@@ -16,10 +16,12 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.time.YearMonth
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HistoryViewModelTest {
@@ -40,56 +42,62 @@ class HistoryViewModelTest {
         Dispatchers.resetMain()
     }
 
-    @Test
-    fun `lastSession is empty when no sessions exist`() = runTest(testDispatcher) {
-        coEvery { sessionRepo.getLastCompleted() } returns null
+    private fun makeVm(): HistoryViewModel {
         coEvery { sessionRepo.observeAll() } returns flowOf(emptyList())
-        val vm = HistoryViewModel(sessionRepo, workoutRepo)
-        testDispatcher.scheduler.advanceUntilIdle()
-        assertNull(vm.lastSession.value.workoutLabel)
-        assertTrue(vm.lastSession.value.summaries.isEmpty())
+        coEvery { sessionRepo.getLastCompleted() } returns null
+        return HistoryViewModel(sessionRepo, workoutRepo)
     }
 
     @Test
-    fun `trends is empty when no sessions exist`() = runTest(testDispatcher) {
-        coEvery { sessionRepo.observeAll() } returns flowOf(emptyList())
-        coEvery { sessionRepo.getLastCompleted() } returns null
-        val vm = HistoryViewModel(sessionRepo, workoutRepo)
-        testDispatcher.scheduler.advanceUntilIdle()
-        assertTrue(vm.trends.value.dataPoints.isEmpty())
+    fun `currentMonth defaults to this month`() = runTest(testDispatcher) {
+        val vm = makeVm()
+        assertEquals(YearMonth.now(), vm.currentMonth.value)
     }
 
     @Test
-    fun `selectExerciseForTrend updates selectedExercise`() = runTest(testDispatcher) {
-        coEvery { sessionRepo.observeAll() } returns flowOf(emptyList())
-        coEvery { sessionRepo.getLastCompleted() } returns null
-        val vm = HistoryViewModel(sessionRepo, workoutRepo)
-        testDispatcher.scheduler.advanceUntilIdle()
-        vm.selectExerciseForTrend("Squat")
-        testDispatcher.scheduler.advanceUntilIdle()
-        assertTrue(vm.trends.value.selectedExercise == "Squat")
+    fun `prevMonth decrements month`() = runTest(testDispatcher) {
+        val vm = makeVm()
+        val before = vm.currentMonth.value
+        vm.prevMonth()
+        assertEquals(before.minusMonths(1), vm.currentMonth.value)
     }
 
     @Test
-    fun `trends dataPoints ordered ascending by date when sessions exist`() = runTest(testDispatcher) {
-        val session1 = Session(1L, "workout_a", startedAt = 1_000_000L, finishedAt = 1_001_000L)
-        val session2 = Session(2L, "workout_a", startedAt = 2_000_000L, finishedAt = 2_001_000L)
-        val entry1 = ExerciseEntry(1L, 1L, "d1_e1", listOf(
-            RepSetRecord(1L, 1L, 1_000_500L, reps = 8, weightKg = 60f)
-        ))
-        val entry2 = ExerciseEntry(2L, 2L, "d1_e1", listOf(
-            RepSetRecord(2L, 2L, 2_000_500L, reps = 8, weightKg = 65f)
-        ))
-        coEvery { sessionRepo.observeAll() } returns flowOf(listOf(session2, session1))
-        coEvery { sessionRepo.getLastCompleted() } returns session2
-        coEvery { sessionRepo.getEntriesForSession(1L) } returns listOf(entry1)
-        coEvery { sessionRepo.getEntriesForSession(2L) } returns listOf(entry2)
-        coEvery { workoutRepo.getById("workout_a") } returns TrainingPlanData.workoutA
-        val vm = HistoryViewModel(sessionRepo, workoutRepo)
-        vm.selectExerciseForTrend("לחיצת חזה עם מוט (שטוח)")
+    fun `nextMonth increments month`() = runTest(testDispatcher) {
+        val vm = makeVm()
+        val before = vm.currentMonth.value
+        vm.nextMonth()
+        assertEquals(before.plusMonths(1), vm.currentMonth.value)
+    }
+
+    @Test
+    fun `sessionDates is empty when no completed sessions`() = runTest(testDispatcher) {
+        val vm = makeVm()
         testDispatcher.scheduler.advanceUntilIdle()
-        val points = vm.trends.value.dataPoints
-        assertTrue(points.size == 2)
-        assertTrue(points[0].dateLabel <= points[1].dateLabel)
+        assertTrue(vm.sessionDates.value.isEmpty())
+    }
+
+    @Test
+    fun `sessionDates contains date for each completed session`() = runTest(testDispatcher) {
+        // epoch 0 = 1970-01-01
+        val session = Session(1L, "workout_a", startedAt = 0L, finishedAt = 1000L)
+        coEvery { sessionRepo.observeAll() } returns flowOf(listOf(session))
+        coEvery { sessionRepo.getLastCompleted() } returns session
+        val vm = HistoryViewModel(sessionRepo, workoutRepo)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertTrue(vm.sessionDates.value.isNotEmpty())
+    }
+
+    @Test
+    fun `selectedDaySession is null initially`() = runTest(testDispatcher) {
+        val vm = makeVm()
+        assertNull(vm.selectedDaySession.value)
+    }
+
+    @Test
+    fun `clearSelectedDay sets selectedDaySession to null`() = runTest(testDispatcher) {
+        val vm = makeVm()
+        vm.clearSelectedDay()
+        assertNull(vm.selectedDaySession.value)
     }
 }

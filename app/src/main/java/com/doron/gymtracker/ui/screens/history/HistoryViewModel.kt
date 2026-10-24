@@ -13,10 +13,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.ZoneId
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
@@ -31,53 +34,59 @@ data class LastSessionUiState(
     val summaries: List<ExerciseSummary> = emptyList()
 )
 
-data class TrendsUiState(
-    val exerciseNames: List<String> = emptyList(),
-    val selectedExercise: String? = null,
-    val dataPoints: List<TrendPoint> = emptyList()
-)
-
 @HiltViewModel
 class HistoryViewModel @Inject constructor(
     private val sessionRepo: SessionRepository,
     private val workoutRepo: WorkoutRepository
 ) : ViewModel() {
 
-    private val _lastSession = MutableStateFlow(LastSessionUiState())
-    val lastSession: StateFlow<LastSessionUiState> = _lastSession.asStateFlow()
+    private val _currentMonth = MutableStateFlow(YearMonth.now())
+    val currentMonth: StateFlow<YearMonth> = _currentMonth.asStateFlow()
 
-    private val _trends = MutableStateFlow(TrendsUiState())
-    val trends: StateFlow<TrendsUiState> = _trends.asStateFlow()
+    private val _sessionDates = MutableStateFlow<Set<LocalDate>>(emptySet())
+    val sessionDates: StateFlow<Set<LocalDate>> = _sessionDates.asStateFlow()
+
+    private val _selectedDaySession = MutableStateFlow<LastSessionUiState?>(null)
+    val selectedDaySession: StateFlow<LastSessionUiState?> = _selectedDaySession.asStateFlow()
 
     private val dateFormat = SimpleDateFormat("dd MMM", Locale.getDefault())
+    private val zone = ZoneId.systemDefault()
 
     init {
-        viewModelScope.launch { loadLastSession() }
         viewModelScope.launch {
             sessionRepo.observeAll().collectLatest { sessions ->
-                val allWorkouts = sessions.mapNotNull { workoutRepo.getById(it.workoutId) }
-                val exerciseNames = sessions
-                    .flatMap { sessionRepo.getEntriesForSession(it.id) }
-                    .map { it.exerciseId }
-                    .distinct()
-                    .mapNotNull { id -> allWorkouts.firstNotNullOfOrNull { w -> w.exercises.find { it.id == id }?.name } }
-                _trends.update { it.copy(exerciseNames = exerciseNames) }
-                recomputeTrends(sessions)
+                _sessionDates.value = sessions
+                    .filter { it.finishedAt != null }
+                    .map { Instant.ofEpochMilli(it.startedAt).atZone(zone).toLocalDate() }
+                    .toSet()
             }
         }
     }
 
-    private suspend fun loadLastSession() {
-        val session = sessionRepo.getLastCompleted() ?: return
-        val workout = workoutRepo.getById(session.workoutId)
-        val entries = sessionRepo.getEntriesForSession(session.id)
-        val summaries = entries.mapNotNull { entry ->
-            val exerciseName = workout?.exercises?.find { it.id == entry.exerciseId }?.name
-                ?: return@mapNotNull null
-            ExerciseSummary(exerciseName, entry.sets)
-        }
-        _lastSession.update {
-            it.copy(
+    fun prevMonth() { _currentMonth.update { it.minusMonths(1) } }
+    fun nextMonth() { _currentMonth.update { it.plusMonths(1) } }
+
+    fun loadDaySession(date: LocalDate) {
+        viewModelScope.launch {
+            val dayStart = date.atStartOfDay(zone).toInstant().toEpochMilli()
+            val dayEnd = date.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
+            val sessions = sessionRepo.observeAll().let { flow ->
+                var result = emptyList<com.doron.gymtracker.domain.model.Session>()
+                flow.collectLatest { result = it }
+                result
+            }
+            val session = sessions
+                .filter { it.finishedAt != null }
+                .firstOrNull { it.startedAt in dayStart until dayEnd }
+            if (session == null) { _selectedDaySession.value = null; return@launch }
+            val workout = workoutRepo.getById(session.workoutId)
+            val entries = sessionRepo.getEntriesForSession(session.id)
+            val summaries = entries.mapNotNull { entry ->
+                val name = workout?.exercises?.find { it.id == entry.exerciseId }?.name
+                    ?: return@mapNotNull null
+                ExerciseSummary(name, entry.sets)
+            }
+            _selectedDaySession.value = LastSessionUiState(
                 workoutLabel = workout?.label,
                 dateLabel = dateFormat.format(Date(session.startedAt)),
                 summaries = summaries
@@ -85,34 +94,5 @@ class HistoryViewModel @Inject constructor(
         }
     }
 
-    fun selectExerciseForTrend(name: String) {
-        _trends.update { it.copy(selectedExercise = name) }
-        viewModelScope.launch {
-            val sessions = sessionRepo.observeAll().first()
-            recomputeTrends(sessions)
-        }
-    }
-
-    private suspend fun recomputeTrends(sessions: List<com.doron.gymtracker.domain.model.Session>) {
-        val selectedName = _trends.value.selectedExercise ?: return
-        val points = sessions
-            .sortedBy { it.startedAt }
-            .mapNotNull { session ->
-                val workout = workoutRepo.getById(session.workoutId) ?: return@mapNotNull null
-                val exerciseDef = workout.exercises.find { it.name == selectedName } ?: return@mapNotNull null
-                val entries = sessionRepo.getEntriesForSession(session.id)
-                val entry = entries.find { it.exerciseId == exerciseDef.id } ?: return@mapNotNull null
-                val maxValue = entry.sets.mapNotNull { set ->
-                    when (set) {
-                        is RepSetRecord -> set.weightKg
-                        is TimedSetRecord -> set.durationSecs.toFloat()
-                    }
-                }.maxOrNull() ?: return@mapNotNull null
-                TrendPoint(
-                    dateLabel = dateFormat.format(Date(session.startedAt)),
-                    value = maxValue
-                )
-            }
-        _trends.update { it.copy(dataPoints = points) }
-    }
+    fun clearSelectedDay() { _selectedDaySession.value = null }
 }
