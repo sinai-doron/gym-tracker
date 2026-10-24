@@ -36,14 +36,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.doron.gymtracker.R
 import com.doron.gymtracker.domain.model.ExerciseDefinition
+import com.doron.gymtracker.domain.usecase.GetLastWeightUseCase
 import com.doron.gymtracker.domain.usecase.LogSetUseCase
+import com.doron.gymtracker.domain.usecase.ProgressionHintUseCase
 import com.doron.gymtracker.ui.components.ExerciseCard
 import com.doron.gymtracker.ui.components.SessionClockDisplay
 import com.doron.gymtracker.ui.theme.RestTimerColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SessionScreen(viewModel: SessionViewModel, logSetUseCase: LogSetUseCase, onFinished: () -> Unit) {
+fun SessionScreen(
+    viewModel: SessionViewModel,
+    logSetUseCase: LogSetUseCase,
+    progressionHintUseCase: ProgressionHintUseCase? = null,
+    getLastWeightUseCase: GetLastWeightUseCase? = null,
+    onFinished: () -> Unit
+) {
     val state by viewModel.uiState.collectAsState()
     var selectedExercise by remember { mutableStateOf<ExerciseDefinition?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -52,7 +60,9 @@ fun SessionScreen(viewModel: SessionViewModel, logSetUseCase: LogSetUseCase, onF
     // Collect all detail states so the session screen can read rest countdown + completed sets
     val detailStates = state.workout?.exercises?.associate { exercise ->
         exercise.id to (detailViewModels.getOrPut(exercise.id) {
-            ExerciseDetailViewModel(viewModel.sessionId, exercise, logSetUseCase)
+            ExerciseDetailViewModel(viewModel.sessionId, exercise, logSetUseCase,
+                progressionHint = progressionHintUseCase,
+                getLastWeight = getLastWeightUseCase)
         }.uiState.collectAsState().value)
     } ?: emptyMap()
 
@@ -137,7 +147,9 @@ fun SessionScreen(viewModel: SessionViewModel, logSetUseCase: LogSetUseCase, onF
         val exercise = selectedExercise
         if (exercise != null) {
             val detailVm = detailViewModels.getOrPut(exercise.id) {
-                ExerciseDetailViewModel(viewModel.sessionId, exercise, logSetUseCase)
+                ExerciseDetailViewModel(viewModel.sessionId, exercise, logSetUseCase,
+                    progressionHint = progressionHintUseCase,
+                    getLastWeight = getLastWeightUseCase)
             }
             ModalBottomSheet(onDismissRequest = { selectedExercise = null }, sheetState = sheetState) {
                 ExerciseDetailSheet(viewModel = detailVm)

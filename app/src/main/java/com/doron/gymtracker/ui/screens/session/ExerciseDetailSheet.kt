@@ -75,6 +75,7 @@ fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -
             when (state.exercise) {
                 is RepExerciseDefinition -> RepSetInput(
                     targetReps = (state.exercise as RepExerciseDefinition).targetReps,
+                    lastWeight = state.lastWeight,
                     onLog = { reps, weight -> viewModel.logRepSet(reps, weight); onEntryChanged() }
                 )
                 is TimedExerciseDefinition -> TimedSetInput(
@@ -95,9 +96,13 @@ fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -
 }
 
 @Composable
-private fun RepSetInput(targetReps: Int, onLog: (Int, Float) -> Unit) {
+private fun RepSetInput(targetReps: Int, lastWeight: Float?, onLog: (Int, Float) -> Unit) {
     var repsText by remember { mutableStateOf(targetReps.toString()) }
-    var weightText by remember { mutableStateOf("") }
+    // Pre-fill with last session's weight; show empty if no history
+    val initialWeight = if (lastWeight != null && lastWeight > 0f)
+        lastWeight.let { if (it == it.toLong().toFloat()) it.toLong().toString() else it.toString() }
+    else ""
+    var weightText by remember(lastWeight) { mutableStateOf(initialWeight) }
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         OutlinedTextField(

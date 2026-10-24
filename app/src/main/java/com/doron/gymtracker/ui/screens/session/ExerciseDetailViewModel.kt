@@ -9,6 +9,7 @@ import com.doron.gymtracker.domain.model.SetRecord
 import com.doron.gymtracker.domain.model.TimedSetRecord
 import com.doron.gymtracker.domain.model.ProgressionHint
 import com.doron.gymtracker.domain.model.RepExerciseDefinition
+import com.doron.gymtracker.domain.usecase.GetLastWeightUseCase
 import com.doron.gymtracker.domain.usecase.LogSetUseCase
 import com.doron.gymtracker.domain.usecase.ProgressionHintUseCase
 import kotlinx.coroutines.Job
@@ -25,14 +26,16 @@ data class ExerciseDetailUiState(
     val restCountdownSecs: Int? = null,
     val timerRunning: Boolean = false,
     val timerElapsedSecs: Int = 0,
-    val progressionHint: ProgressionHint = ProgressionHint.OnTrack
+    val progressionHint: ProgressionHint = ProgressionHint.OnTrack,
+    val lastWeight: Float? = null   // pre-fill from last session
 )
 
 class ExerciseDetailViewModel(
     private val sessionId: Long,
     exercise: ExerciseDefinition,
     private val logSet: LogSetUseCase,
-    private val progressionHint: ProgressionHintUseCase? = null
+    private val progressionHint: ProgressionHintUseCase? = null,
+    private val getLastWeight: GetLastWeightUseCase? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ExerciseDetailUiState(exercise))
@@ -43,10 +46,11 @@ class ExerciseDetailViewModel(
 
     init {
         val ex = _uiState.value.exercise
-        if (progressionHint != null && ex is RepExerciseDefinition) {
+        if (ex is RepExerciseDefinition) {
             viewModelScope.launch {
-                val hint = progressionHint(ex.id, ex.targetReps)
-                _uiState.update { it.copy(progressionHint = hint) }
+                val hint = progressionHint?.invoke(ex.id, ex.targetReps) ?: ProgressionHint.OnTrack
+                val lastWeight = getLastWeight?.invoke(ex.id)
+                _uiState.update { it.copy(progressionHint = hint, lastWeight = lastWeight) }
             }
         }
     }

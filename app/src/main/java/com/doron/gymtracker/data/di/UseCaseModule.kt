@@ -7,6 +7,7 @@ import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.usecase.FinishSessionUseCase
 import com.doron.gymtracker.domain.usecase.GetNextWorkoutUseCase
 import com.doron.gymtracker.domain.usecase.LogSetUseCase
+import com.doron.gymtracker.domain.usecase.GetLastWeightUseCase
 import com.doron.gymtracker.domain.usecase.IsDeloadWeekUseCase
 import com.doron.gymtracker.domain.usecase.ProgressionHintUseCase
 import com.doron.gymtracker.domain.usecase.ResolveExerciseVariantUseCase
@@ -43,6 +44,10 @@ object UseCaseModule {
     @Provides
     fun provideProgressionHintUseCase(repo: SessionRepository) =
         ProgressionHintUseCase(repo)
+
+    @Provides
+    fun provideGetLastWeightUseCase(repo: SessionRepository) =
+        GetLastWeightUseCase(repo)
 
     @Provides
     fun provideFinishSessionUseCase(
