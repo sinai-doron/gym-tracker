@@ -20,3 +20,10 @@ data class TimedSetRecord(
     override val completedAt: Long,
     val durationSecs: Int
 ) : SetRecord
+
+data class DistanceSetRecord(
+    override val id: Long,
+    override val entryId: Long,
+    override val completedAt: Long,
+    val distanceM: Int
+) : SetRecord

@@ -7,6 +7,7 @@ import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.model.ExerciseEntry
 import com.doron.gymtracker.domain.model.Workout
 import com.doron.gymtracker.domain.usecase.FinishSessionUseCase
+import com.doron.gymtracker.domain.usecase.IsDeloadWeekUseCase
 import com.doron.gymtracker.domain.usecase.ResolveExerciseVariantUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -22,7 +23,8 @@ data class SessionUiState(
     val workout: Workout? = null,
     val elapsedSecs: Long = 0L,
     val entries: Map<String, ExerciseEntry> = emptyMap(),
-    val isFinished: Boolean = false
+    val isFinished: Boolean = false,
+    val isDeloadWeek: Boolean = false
 )
 
 class SessionViewModel @AssistedInject constructor(
@@ -31,7 +33,8 @@ class SessionViewModel @AssistedInject constructor(
     private val sessionRepo: SessionRepository,
     private val workoutRepo: WorkoutRepository,
     private val finishSessionUseCase: FinishSessionUseCase,
-    private val resolveVariant: ResolveExerciseVariantUseCase
+    private val resolveVariant: ResolveExerciseVariantUseCase,
+    private val isDeloadWeek: IsDeloadWeekUseCase
 ) : ViewModel() {
 
     @AssistedFactory
@@ -39,10 +42,12 @@ class SessionViewModel @AssistedInject constructor(
         fun create(sessionId: Long, workoutId: String): SessionViewModel
     }
 
+
     private val _uiState = MutableStateFlow(SessionUiState())
     val uiState: StateFlow<SessionUiState> = _uiState.asStateFlow()
 
     init {
+        _uiState.update { it.copy(isDeloadWeek = isDeloadWeek()) }
         viewModelScope.launch {
             val raw = workoutRepo.getById(workoutId)
             // Resolve A/B variant for each exercise based on current week number

@@ -21,4 +21,5 @@
     <string name="sets_progress">%1$d / %2$d סטים</string>
     <string name="suggested_marker">★</string>
     <string name="no_sessions_month">אין אימונים בחודש זה</string>
+    <string name="deload_week_banner">שבוע דילוד — 60% ממשקל אחרון, 2 סטים</string>
 </resources>

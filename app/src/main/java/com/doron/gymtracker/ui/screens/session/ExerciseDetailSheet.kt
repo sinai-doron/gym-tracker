@@ -25,6 +25,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.doron.gymtracker.R
+import com.doron.gymtracker.domain.model.DistanceExerciseDefinition
 import com.doron.gymtracker.domain.model.RepExerciseDefinition
 import com.doron.gymtracker.domain.model.TimedExerciseDefinition
 import com.doron.gymtracker.ui.components.RestTimerOverlay
@@ -34,13 +35,17 @@ import com.doron.gymtracker.ui.components.SetLogRow
 fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -> Unit = {}) {
     val state by viewModel.uiState.collectAsState()
 
-    // imePadding lifts the sheet content above the keyboard
     Column(modifier = Modifier
         .fillMaxWidth()
         .padding(horizontal = 16.dp)
         .imePadding()
     ) {
         Text(state.exercise.name, style = MaterialTheme.typography.titleLarge)
+        if (state.exercise.isPerSide) {
+            Text("לכל צד – הזן לכל צד בנפרד",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
         Spacer(Modifier.height(8.dp))
 
         state.completedSets.forEachIndexed { i, set -> SetLogRow(setNumber = i + 1, record = set) }
@@ -64,6 +69,10 @@ fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -
                     onStart = { viewModel.startTimedSet() },
                     onStop = { viewModel.stopTimedSet(); onEntryChanged() }
                 )
+                is DistanceExerciseDefinition -> DistanceSetInput(
+                    targetDistanceM = (state.exercise as DistanceExerciseDefinition).targetDistanceM,
+                    onLog = { distanceM -> viewModel.logDistanceSet(distanceM); onEntryChanged() }
+                )
             }
         }
 
@@ -76,7 +85,6 @@ private fun RepSetInput(targetReps: Int, onLog: (Int, Float) -> Unit) {
     var repsText by remember { mutableStateOf(targetReps.toString()) }
     var weightText by remember { mutableStateOf("") }
 
-    // Number inputs must be LTR even in the RTL app — digits read left-to-right
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         OutlinedTextField(
             value = repsText,
@@ -127,5 +135,32 @@ private fun TimedSetInput(isRunning: Boolean, elapsedSecs: Int, onStart: () -> U
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(stringResource(if (isRunning) R.string.stop_timer else R.string.start_timer))
+    }
+}
+
+@Composable
+private fun DistanceSetInput(targetDistanceM: Int, onLog: (Int) -> Unit) {
+    var distanceText by remember { mutableStateOf("") }
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+        OutlinedTextField(
+            value = distanceText,
+            onValueChange = { distanceText = it },
+            label = { Text("מרחק (מ׳) — יעד: $targetDistanceM מ׳") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+    Spacer(Modifier.height(16.dp))
+    Button(
+        onClick = {
+            val dist = distanceText.toIntOrNull() ?: return@Button
+            onLog(dist)
+            distanceText = ""
+        },
+        modifier = Modifier.fillMaxWidth(),
+        enabled = distanceText.isNotBlank()
+    ) {
+        Text(stringResource(R.string.log_set))
     }
 }

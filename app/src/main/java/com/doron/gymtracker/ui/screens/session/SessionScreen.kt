@@ -1,5 +1,6 @@
 package com.doron.gymtracker.ui.screens.session
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -96,6 +97,19 @@ fun SessionScreen(viewModel: SessionViewModel, logSetUseCase: LogSetUseCase, onF
         }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+            Column(modifier = Modifier.fillMaxSize()) {
+            // Deload week banner
+            if (state.isDeloadWeek) {
+                Text(
+                    stringResource(R.string.deload_week_banner),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.85f))
+                        .padding(horizontal = 16.dp, vertical = 6.dp)
+                )
+            }
             LazyColumn(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -111,7 +125,7 @@ fun SessionScreen(viewModel: SessionViewModel, logSetUseCase: LogSetUseCase, onF
                 }
                 item { Spacer(Modifier.height(80.dp)) }
             }
-
+            } // end Column
             Button(
                 onClick = { viewModel.finishSession() },
                 modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(16.dp)

@@ -7,6 +7,7 @@ import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.usecase.FinishSessionUseCase
 import com.doron.gymtracker.domain.usecase.GetNextWorkoutUseCase
 import com.doron.gymtracker.domain.usecase.LogSetUseCase
+import com.doron.gymtracker.domain.usecase.IsDeloadWeekUseCase
 import com.doron.gymtracker.domain.usecase.ResolveExerciseVariantUseCase
 import com.doron.gymtracker.domain.usecase.StartSessionUseCase
 import dagger.Module
@@ -33,6 +34,10 @@ object UseCaseModule {
     @Provides
     fun provideResolveExerciseVariantUseCase(prefs: ProgramPrefs) =
         ResolveExerciseVariantUseCase(prefs)
+
+    @Provides
+    fun provideIsDeloadWeekUseCase(prefs: ProgramPrefs) =
+        IsDeloadWeekUseCase(prefs)
 
     @Provides
     fun provideFinishSessionUseCase(

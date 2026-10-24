@@ -8,8 +8,11 @@ data class ExerciseDefinitionEntity(
     @PrimaryKey val id: String,
     val workoutId: String,
     val name: String,
-    val type: String,       // "REP" or "TIMED"
+    val type: String,           // "REP", "TIMED", or "DISTANCE"
     val targetSets: Int,
     val restDurationSecs: Int,
-    val targetReps: Int?    // null for TIMED exercises
+    val targetReps: Int?,       // REP only
+    val targetDistanceM: Int?,  // DISTANCE only
+    val isOptional: Boolean = false,
+    val isPerSide: Boolean = false
 )

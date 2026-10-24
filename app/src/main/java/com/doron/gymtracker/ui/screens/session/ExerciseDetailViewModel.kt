@@ -2,6 +2,7 @@ package com.doron.gymtracker.ui.screens.session
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.doron.gymtracker.domain.model.DistanceSetRecord
 import com.doron.gymtracker.domain.model.ExerciseDefinition
 import com.doron.gymtracker.domain.model.RepSetRecord
 import com.doron.gymtracker.domain.model.SetRecord
@@ -73,6 +74,20 @@ class ExerciseDetailViewModel(
         )
         // Update state synchronously so UI reflects the set immediately
         _uiState.update { it.copy(timerRunning = false, timerElapsedSecs = 0, completedSets = it.completedSets + record) }
+        viewModelScope.launch {
+            logSet(sessionId, exercise.id, record)
+            startRestTimer(exercise.restDurationSecs)
+        }
+    }
+
+    fun logDistanceSet(distanceM: Int) {
+        val exercise = _uiState.value.exercise
+        val record = DistanceSetRecord(
+            id = 0L, entryId = 0L,
+            completedAt = System.currentTimeMillis(),
+            distanceM = distanceM
+        )
+        _uiState.update { it.copy(completedSets = it.completedSets + record) }
         viewModelScope.launch {
             logSet(sessionId, exercise.id, record)
             startRestTimer(exercise.restDurationSecs)

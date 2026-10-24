@@ -4,6 +4,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+
+
 class DomainModelTest {
 
     @Test
@@ -30,8 +32,20 @@ class DomainModelTest {
         val label = when (set) {
             is RepSetRecord -> "rep"
             is TimedSetRecord -> "timed"
+            is DistanceSetRecord -> "distance"
         }
         assertEquals("rep", label)
+    }
+
+    @Test
+    fun `DistanceSetRecord when is exhaustive`() {
+        val set: SetRecord = DistanceSetRecord(id = 3L, entryId = 1L, completedAt = 0L, distanceM = 35)
+        val label = when (set) {
+            is RepSetRecord -> "rep"
+            is TimedSetRecord -> "timed"
+            is DistanceSetRecord -> "distance"
+        }
+        assertEquals("distance", label)
     }
 
     @Test

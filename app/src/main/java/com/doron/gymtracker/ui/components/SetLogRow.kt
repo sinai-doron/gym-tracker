@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.doron.gymtracker.R
+import com.doron.gymtracker.domain.model.DistanceSetRecord
 import com.doron.gymtracker.domain.model.RepSetRecord
 import com.doron.gymtracker.domain.model.SetRecord
 import com.doron.gymtracker.domain.model.TimedSetRecord
@@ -25,6 +26,7 @@ fun SetLogRow(setNumber: Int, record: SetRecord) {
         val label = when (record) {
             is RepSetRecord -> "${record.reps} חזרות × ${record.weightKg} ק״ג"
             is TimedSetRecord -> "${record.durationSecs} שניות"
+            is DistanceSetRecord -> "${record.distanceM} מטרים"
         }
         Text(label, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
     }

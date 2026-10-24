@@ -14,9 +14,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.doron.gymtracker.R
+import com.doron.gymtracker.domain.model.DistanceSetRecord
 import com.doron.gymtracker.domain.model.ExerciseDefinition
 import com.doron.gymtracker.domain.model.RepSetRecord
 import com.doron.gymtracker.domain.model.SetRecord
@@ -29,19 +31,38 @@ fun ExerciseCard(
     onClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        modifier = Modifier
+            .fillMaxWidth()
+            .alpha(if (exercise.isOptional) 0.7f else 1f)
+            .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(exercise.name, style = MaterialTheme.typography.titleLarge)
-            Text(
-                stringResource(R.string.sets_progress, completedSets.size, exercise.targetSets),
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (completedSets.size >= exercise.targetSets)
-                    MaterialTheme.colorScheme.primary
-                else
-                    MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Row {
+                Text(exercise.name, style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.weight(1f))
+                if (exercise.isOptional) {
+                    Text("אופציונלי",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+            Row {
+                Text(
+                    stringResource(R.string.sets_progress, completedSets.size, exercise.targetSets),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (completedSets.size >= exercise.targetSets)
+                        MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
+                )
+                if (exercise.isPerSide) {
+                    Text("לכל צד",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
 
             if (completedSets.isNotEmpty()) {
                 Spacer(Modifier.height(8.dp))
@@ -57,23 +78,16 @@ fun ExerciseCard(
 
 @Composable
 private fun InlineSetRow(setNumber: Int, record: SetRecord) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
-    ) {
-        Text(
-            "סט $setNumber",
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+        Text("סט $setNumber",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f)
-        )
+            modifier = Modifier.weight(1f))
         val value = when (record) {
             is RepSetRecord -> "${record.reps} × ${record.weightKg} ק״ג"
             is TimedSetRecord -> "${record.durationSecs}″"
+            is DistanceSetRecord -> "${record.distanceM} מ׳"
         }
-        Text(
-            value,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.primary
-        )
+        Text(value, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
     }
 }

@@ -6,6 +6,7 @@ import com.doron.gymtracker.data.db.dao.SetRecordDao
 import com.doron.gymtracker.data.db.entities.ExerciseEntryEntity
 import com.doron.gymtracker.data.db.entities.SessionEntity
 import com.doron.gymtracker.data.db.entities.SetRecordEntity
+import com.doron.gymtracker.domain.model.DistanceSetRecord
 import com.doron.gymtracker.domain.model.ExerciseEntry
 import com.doron.gymtracker.domain.model.RepSetRecord
 import com.doron.gymtracker.domain.model.Session
@@ -55,12 +56,15 @@ class SessionRepositoryImpl @Inject constructor(
     private fun SessionEntity.toDomain() = Session(id, workoutId, startedAt, finishedAt)
 
     private fun SetRecord.toEntity(entryId: Long) = when (this) {
-        is RepSetRecord -> SetRecordEntity(0, entryId, completedAt, "REP", reps, weightKg, null)
-        is TimedSetRecord -> SetRecordEntity(0, entryId, completedAt, "TIMED", null, null, durationSecs)
+        is RepSetRecord -> SetRecordEntity(0, entryId, completedAt, "REP", reps, weightKg, null, null)
+        is TimedSetRecord -> SetRecordEntity(0, entryId, completedAt, "TIMED", null, null, durationSecs, null)
+        is DistanceSetRecord -> SetRecordEntity(0, entryId, completedAt, "DISTANCE", null, null, null, distanceM)
     }
 
     private fun SetRecordEntity.toDomain(): SetRecord = when (type) {
         "REP" -> RepSetRecord(id, entryId, completedAt, reps!!, weightKg!!)
-        else -> TimedSetRecord(id, entryId, completedAt, durationSecs!!)
+        "TIMED" -> TimedSetRecord(id, entryId, completedAt, durationSecs!!)
+        "DISTANCE" -> DistanceSetRecord(id, entryId, completedAt, distanceM!!)
+        else -> TimedSetRecord(id, entryId, completedAt, durationSecs ?: 0)
     }
 }
