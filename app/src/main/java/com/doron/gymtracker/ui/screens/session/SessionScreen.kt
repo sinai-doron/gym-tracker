@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,6 +23,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -36,6 +38,7 @@ import com.doron.gymtracker.domain.model.ExerciseDefinition
 import com.doron.gymtracker.domain.usecase.LogSetUseCase
 import com.doron.gymtracker.ui.components.ExerciseCard
 import com.doron.gymtracker.ui.components.SessionClockDisplay
+import com.doron.gymtracker.ui.theme.RestTimerColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,18 +48,48 @@ fun SessionScreen(viewModel: SessionViewModel, logSetUseCase: LogSetUseCase, onF
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val detailViewModels = remember { mutableStateMapOf<String, ExerciseDetailViewModel>() }
 
+    // Collect all detail states so the session screen can read rest countdown + completed sets
+    val detailStates = state.workout?.exercises?.associate { exercise ->
+        exercise.id to (detailViewModels.getOrPut(exercise.id) {
+            ExerciseDetailViewModel(viewModel.sessionId, exercise, logSetUseCase)
+        }.uiState.collectAsState().value)
+    } ?: emptyMap()
+
+    // Active rest countdown: find any exercise currently in a rest period
+    val activeRestSecs by remember {
+        derivedStateOf { detailStates.values.mapNotNull { it.restCountdownSecs }.firstOrNull() }
+    }
+
     LaunchedEffect(state.isFinished) { if (state.isFinished) onFinished() }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
-                        Text(
-                            stringResource(R.string.workout_label, state.workout?.label?.name ?: ""),
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                        SessionClockDisplay(state.elapsedSecs)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column {
+                            Text(
+                                stringResource(R.string.workout_label, state.workout?.label?.name ?: ""),
+                                style = MaterialTheme.typography.titleLarge
+                            )
+                            SessionClockDisplay(state.elapsedSecs)
+                        }
+                        // Rest timer — visible next to main clock whenever rest is active
+                        if (activeRestSecs != null) {
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text("מנוחה", style = MaterialTheme.typography.labelLarge,
+                                    color = RestTimerColor)
+                                Text(
+                                    "%02d:%02d".format(activeRestSecs!! / 60, activeRestSecs!! % 60),
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    color = RestTimerColor
+                                )
+                            }
+                        }
                     }
                 }
             )
@@ -69,15 +102,10 @@ fun SessionScreen(viewModel: SessionViewModel, logSetUseCase: LogSetUseCase, onF
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(state.workout?.exercises ?: emptyList()) { exercise ->
-                    val detailVm = detailViewModels.getOrPut(exercise.id) {
-                        ExerciseDetailViewModel(viewModel.sessionId, exercise, logSetUseCase)
-                    }
-                    val detailState by detailVm.uiState.collectAsState()
+                    val detailState = detailStates[exercise.id]
                     ExerciseCard(
                         exercise = exercise,
-                        entry = detailState.completedSets.takeIf { it.isNotEmpty() }?.let {
-                            com.doron.gymtracker.domain.model.ExerciseEntry(0L, viewModel.sessionId, exercise.id, it)
-                        },
+                        completedSets = detailState?.completedSets ?: emptyList(),
                         onClick = { selectedExercise = exercise }
                     )
                 }
