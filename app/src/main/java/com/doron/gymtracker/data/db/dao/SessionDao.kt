@@ -20,4 +20,7 @@ interface SessionDao {
 
     @Query("SELECT * FROM sessions WHERE finishedAt IS NOT NULL ORDER BY startedAt DESC LIMIT 1")
     suspend fun getLastCompleted(): SessionEntity?
+
+    @Query("SELECT * FROM sessions WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Long): SessionEntity?
 }
