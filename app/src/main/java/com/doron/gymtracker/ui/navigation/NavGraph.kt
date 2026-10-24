@@ -45,7 +45,7 @@ fun NavGraph() {
             )
         }
         composable("history") {
-            androidx.compose.material3.Text("History — coming soon")
+            com.doron.gymtracker.ui.screens.history.HistoryScreen()
         }
     }
 }
