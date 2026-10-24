@@ -45,7 +45,9 @@ fun NavGraph() {
             )
         }
         composable("history") {
-            com.doron.gymtracker.ui.screens.history.HistoryScreen()
+            com.doron.gymtracker.ui.screens.history.HistoryScreen(
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }

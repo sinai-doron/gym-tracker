@@ -24,7 +24,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -56,18 +58,31 @@ private val dayHeaders = listOf("א", "ב", "ג", "ד", "ה", "ו", "ש")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
+fun HistoryScreen(onBack: () -> Unit = {}, viewModel: HistoryViewModel = hiltViewModel()) {
     val month by viewModel.currentMonth.collectAsState()
     val sessionDates by viewModel.sessionDates.collectAsState()
     val selectedDay by viewModel.selectedDaySession.collectAsState()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        MonthHeader(month, onPrev = viewModel::prevMonth, onNext = viewModel::nextMonth)
-        Spacer(Modifier.height(12.dp))
-        DayHeaders()
-        Spacer(Modifier.height(4.dp))
-        CalendarGrid(month = month, sessionDates = sessionDates, onDayClick = { viewModel.loadDaySession(it) })
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.history)) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "חזרה")
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        Column(modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp)) {
+            MonthHeader(month, onPrev = viewModel::prevMonth, onNext = viewModel::nextMonth)
+            Spacer(Modifier.height(12.dp))
+            DayHeaders()
+            Spacer(Modifier.height(4.dp))
+            CalendarGrid(month = month, sessionDates = sessionDates, onDayClick = { viewModel.loadDaySession(it) })
+        }
     }
 
     if (selectedDay != null) {
