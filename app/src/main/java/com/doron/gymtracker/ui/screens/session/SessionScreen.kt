@@ -79,36 +79,18 @@ fun SessionScreen(
                     containerColor = MaterialTheme.colorScheme.background
                 ),
                 title = {
-                    Column {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                stringResource(R.string.workout_label, state.workout?.label?.name ?: ""),
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                            SessionClockDisplay(state.elapsedSecs)
-                        }
-                        // Rest timer — compact pill under the main header row
+                    Column(modifier = Modifier.padding(end = 16.dp)) {
+                        Text(
+                            stringResource(R.string.workout_label, state.workout?.label?.name ?: ""),
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                        SessionClockDisplay(state.elapsedSecs)
                         if (activeRestSecs != null) {
-                            androidx.compose.foundation.layout.Spacer(Modifier.height(2.dp))
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .background(
-                                        RestTimerColor.copy(alpha = 0.15f),
-                                        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp)
-                                    )
-                                    .padding(horizontal = 10.dp, vertical = 2.dp)
-                            ) {
-                                Text(
-                                    "מנוחה  %02d:%02d".format(activeRestSecs!! / 60, activeRestSecs!! % 60),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = RestTimerColor
-                                )
-                            }
+                            Text(
+                                "מנוחה  %02d:%02d".format(activeRestSecs!! / 60, activeRestSecs!! % 60),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = RestTimerColor
+                            )
                         }
                     }
                 }
