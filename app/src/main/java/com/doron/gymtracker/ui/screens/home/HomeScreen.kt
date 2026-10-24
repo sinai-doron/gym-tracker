@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
-    onSessionStart: (Long) -> Unit,
+    onSessionStart: (sessionId: Long, workoutId: String) -> Unit,
     onHistoryClick: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -48,16 +48,6 @@ fun HomeScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text("Gym Tracker", style = MaterialTheme.typography.headlineLarge)
-        Spacer(Modifier.height(8.dp))
-        Text("History", style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier
-                .align(Alignment.End)
-                .padding(bottom = 16.dp)
-                .let { m ->
-                    m // tap handled by button below
-                }
-        )
 
         Spacer(Modifier.height(32.dp))
 
@@ -83,8 +73,8 @@ fun HomeScreen(
         Button(
             onClick = {
                 scope.launch {
-                    val sessionId = viewModel.startSession()
-                    if (sessionId > 0) onSessionStart(sessionId)
+                    val result = viewModel.startSession()
+                    if (result != null) onSessionStart(result.first, result.second)
                 }
             },
             enabled = state.selectedWorkout != null,

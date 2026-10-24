@@ -43,8 +43,9 @@ class HomeViewModel @Inject constructor(
         _uiState.update { it.copy(selectedWorkout = workout) }
     }
 
-    suspend fun startSession(): Long {
-        val workoutId = _uiState.value.selectedWorkout?.id ?: return -1L
-        return startSession(workoutId)
+    suspend fun startSession(): Pair<Long, String>? {
+        val workout = _uiState.value.selectedWorkout ?: return null
+        val sessionId = startSession(workout.id)
+        return Pair(sessionId, workout.id)
     }
 }
