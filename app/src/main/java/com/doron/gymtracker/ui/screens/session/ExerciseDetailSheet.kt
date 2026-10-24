@@ -6,9 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -36,12 +34,11 @@ import com.doron.gymtracker.ui.components.SetLogRow
 fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -> Unit = {}) {
     val state by viewModel.uiState.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp)
-            .imePadding()
+    // imePadding lifts the sheet content above the keyboard
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 16.dp)
+        .imePadding()
     ) {
         Text(state.exercise.name, style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(8.dp))
@@ -79,7 +76,7 @@ private fun RepSetInput(targetReps: Int, onLog: (Int, Float) -> Unit) {
     var repsText by remember { mutableStateOf(targetReps.toString()) }
     var weightText by remember { mutableStateOf("") }
 
-    // Number fields must be LTR even in the RTL app — Hebrew digits read left-to-right
+    // Number inputs must be LTR even in the RTL app — digits read left-to-right
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         OutlinedTextField(
             value = repsText,
@@ -99,6 +96,7 @@ private fun RepSetInput(targetReps: Int, onLog: (Int, Float) -> Unit) {
             modifier = Modifier.fillMaxWidth()
         )
     }
+
     Spacer(Modifier.height(16.dp))
     Button(
         onClick = {
