@@ -13,14 +13,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.doron.gymtracker.R
 import com.doron.gymtracker.ui.theme.RestTimerColor
 
 @Composable
-fun RestTimerOverlay(
-    countdownSecs: Int,
-    onDismiss: () -> Unit
-) {
+fun RestTimerOverlay(countdownSecs: Int, onDismiss: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -29,7 +28,7 @@ fun RestTimerOverlay(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Rest", style = MaterialTheme.typography.titleLarge)
+        Text(stringResource(R.string.rest), style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(8.dp))
         Text(
             "%02d:%02d".format(countdownSecs / 60, countdownSecs % 60),
@@ -38,7 +37,7 @@ fun RestTimerOverlay(
         )
         Spacer(Modifier.height(16.dp))
         Button(onClick = onDismiss) {
-            Text("Skip Rest")
+            Text(stringResource(R.string.skip_rest))
         }
     }
 }

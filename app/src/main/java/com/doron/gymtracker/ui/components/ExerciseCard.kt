@@ -10,29 +10,23 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.doron.gymtracker.R
 import com.doron.gymtracker.domain.model.ExerciseDefinition
 import com.doron.gymtracker.domain.model.ExerciseEntry
 
 @Composable
-fun ExerciseCard(
-    exercise: ExerciseDefinition,
-    entry: ExerciseEntry?,
-    onClick: () -> Unit
-) {
+fun ExerciseCard(exercise: ExerciseDefinition, entry: ExerciseEntry?, onClick: () -> Unit) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(exercise.name, style = MaterialTheme.typography.titleLarge)
             val setsLogged = entry?.sets?.size ?: 0
             Text(
-                "$setsLogged / ${exercise.targetSets} sets",
+                stringResource(R.string.sets_progress, setsLogged, exercise.targetSets),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

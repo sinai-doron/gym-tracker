@@ -20,8 +20,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.doron.gymtracker.R
 import kotlinx.coroutines.launch
 
 @Composable
@@ -47,11 +49,11 @@ fun HomeScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Gym Tracker", style = MaterialTheme.typography.headlineLarge)
+        Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineLarge)
 
         Spacer(Modifier.height(32.dp))
 
-        Text("Select workout", style = MaterialTheme.typography.titleLarge)
+        Text(stringResource(R.string.select_workout), style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(16.dp))
 
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -62,7 +64,8 @@ fun HomeScreen(
                     selected = isSelected,
                     onClick = { viewModel.selectWorkout(workout) },
                     label = {
-                        Text(if (isSuggested) "${workout.label.name} ★" else workout.label.name)
+                        val label = workout.label.name
+                        Text(if (isSuggested) "$label ${stringResource(R.string.suggested_marker)}" else label)
                     }
                 )
             }
@@ -80,7 +83,7 @@ fun HomeScreen(
             enabled = state.selectedWorkout != null,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Start Session")
+            Text(stringResource(R.string.start_session))
         }
 
         Spacer(Modifier.height(16.dp))
@@ -89,7 +92,7 @@ fun HomeScreen(
             onClick = onHistoryClick,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("History")
+            Text(stringResource(R.string.history))
         }
     }
 }

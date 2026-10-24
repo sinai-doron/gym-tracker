@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -54,15 +55,12 @@ class HistoryViewModel @Inject constructor(
         viewModelScope.launch { loadLastSession() }
         viewModelScope.launch {
             sessionRepo.observeAll().collectLatest { sessions ->
+                val allWorkouts = sessions.mapNotNull { workoutRepo.getById(it.workoutId) }
                 val exerciseNames = sessions
                     .flatMap { sessionRepo.getEntriesForSession(it.id) }
                     .map { it.exerciseId }
                     .distinct()
-                    .mapNotNull { id ->
-                        sessions.firstOrNull()?.let { s ->
-                            workoutRepo.getById(s.workoutId)?.exercises?.find { it.id == id }?.name
-                        }
-                    }
+                    .mapNotNull { id -> allWorkouts.firstNotNullOfOrNull { w -> w.exercises.find { it.id == id }?.name } }
                 _trends.update { it.copy(exerciseNames = exerciseNames) }
                 recomputeTrends(sessions)
             }
@@ -90,11 +88,7 @@ class HistoryViewModel @Inject constructor(
     fun selectExerciseForTrend(name: String) {
         _trends.update { it.copy(selectedExercise = name) }
         viewModelScope.launch {
-            val sessions = sessionRepo.observeAll().let { flow ->
-                var result = emptyList<com.doron.gymtracker.domain.model.Session>()
-                flow.collectLatest { result = it }
-                result
-            }
+            val sessions = sessionRepo.observeAll().first()
             recomputeTrends(sessions)
         }
     }

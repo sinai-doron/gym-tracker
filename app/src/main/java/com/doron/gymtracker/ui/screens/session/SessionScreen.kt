@@ -29,30 +29,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.doron.gymtracker.R
 import com.doron.gymtracker.domain.model.ExerciseDefinition
 import com.doron.gymtracker.domain.usecase.LogSetUseCase
 import com.doron.gymtracker.ui.components.ExerciseCard
 import com.doron.gymtracker.ui.components.SessionClockDisplay
-import javax.inject.Inject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SessionScreen(
-    viewModel: SessionViewModel,
-    logSetUseCase: LogSetUseCase,
-    onFinished: () -> Unit
-) {
+fun SessionScreen(viewModel: SessionViewModel, logSetUseCase: LogSetUseCase, onFinished: () -> Unit) {
     val state by viewModel.uiState.collectAsState()
     var selectedExercise by remember { mutableStateOf<ExerciseDefinition?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    // One ExerciseDetailViewModel per exercise, keyed by exercise id
     val detailViewModels = remember { mutableStateMapOf<String, ExerciseDetailViewModel>() }
 
-    LaunchedEffect(state.isFinished) {
-        if (state.isFinished) onFinished()
-    }
+    LaunchedEffect(state.isFinished) { if (state.isFinished) onFinished() }
 
     Scaffold(
         topBar = {
@@ -60,7 +53,7 @@ fun SessionScreen(
                 title = {
                     Column {
                         Text(
-                            "Workout ${state.workout?.label?.name ?: ""}",
+                            stringResource(R.string.workout_label, state.workout?.label?.name ?: ""),
                             style = MaterialTheme.typography.titleLarge
                         )
                         SessionClockDisplay(state.elapsedSecs)
@@ -69,11 +62,7 @@ fun SessionScreen(
             )
         }
     ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
+        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             LazyColumn(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -86,7 +75,9 @@ fun SessionScreen(
                     val detailState by detailVm.uiState.collectAsState()
                     ExerciseCard(
                         exercise = exercise,
-                        entry = state.entries[exercise.id]?.copy(sets = detailState.completedSets),
+                        entry = detailState.completedSets.takeIf { it.isNotEmpty() }?.let {
+                            com.doron.gymtracker.domain.model.ExerciseEntry(0L, viewModel.sessionId, exercise.id, it)
+                        },
                         onClick = { selectedExercise = exercise }
                     )
                 }
@@ -95,12 +86,9 @@ fun SessionScreen(
 
             Button(
                 onClick = { viewModel.finishSession() },
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .padding(16.dp)
+                modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(16.dp)
             ) {
-                Text("Finish Session")
+                Text(stringResource(R.string.finish_session))
             }
         }
 
@@ -109,10 +97,7 @@ fun SessionScreen(
             val detailVm = detailViewModels.getOrPut(exercise.id) {
                 ExerciseDetailViewModel(viewModel.sessionId, exercise, logSetUseCase)
             }
-            ModalBottomSheet(
-                onDismissRequest = { selectedExercise = null },
-                sheetState = sheetState
-            ) {
+            ModalBottomSheet(onDismissRequest = { selectedExercise = null }, sheetState = sheetState) {
                 ExerciseDetailSheet(viewModel = detailVm)
             }
         }

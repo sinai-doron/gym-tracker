@@ -18,7 +18,13 @@ private val DarkColorScheme = darkColorScheme(
 fun GymTrackerTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = DarkColorScheme,
-        typography = Typography,
-        content = content
-    )
+        typography = Typography
+    ) {
+        // Force RTL for Hebrew — this is a single-language personal app
+        androidx.compose.runtime.CompositionLocalProvider(
+            androidx.compose.ui.platform.LocalLayoutDirection provides androidx.compose.ui.unit.LayoutDirection.Rtl
+        ) {
+            content()
+        }
+    }
 }

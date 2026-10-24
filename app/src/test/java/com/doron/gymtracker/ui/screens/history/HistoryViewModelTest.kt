@@ -74,10 +74,10 @@ class HistoryViewModelTest {
     fun `trends dataPoints ordered ascending by date when sessions exist`() = runTest(testDispatcher) {
         val session1 = Session(1L, "workout_a", startedAt = 1_000_000L, finishedAt = 1_001_000L)
         val session2 = Session(2L, "workout_a", startedAt = 2_000_000L, finishedAt = 2_001_000L)
-        val entry1 = ExerciseEntry(1L, 1L, "ex_a1", listOf(
+        val entry1 = ExerciseEntry(1L, 1L, "d1_e1", listOf(
             RepSetRecord(1L, 1L, 1_000_500L, reps = 8, weightKg = 60f)
         ))
-        val entry2 = ExerciseEntry(2L, 2L, "ex_a1", listOf(
+        val entry2 = ExerciseEntry(2L, 2L, "d1_e1", listOf(
             RepSetRecord(2L, 2L, 2_000_500L, reps = 8, weightKg = 65f)
         ))
         coEvery { sessionRepo.observeAll() } returns flowOf(listOf(session2, session1))
@@ -86,7 +86,7 @@ class HistoryViewModelTest {
         coEvery { sessionRepo.getEntriesForSession(2L) } returns listOf(entry2)
         coEvery { workoutRepo.getById("workout_a") } returns TrainingPlanData.workoutA
         val vm = HistoryViewModel(sessionRepo, workoutRepo)
-        vm.selectExerciseForTrend("Exercise A1 (TBD)")
+        vm.selectExerciseForTrend("לחיצת חזה עם מוט (שטוח)")
         testDispatcher.scheduler.advanceUntilIdle()
         val points = vm.trends.value.dataPoints
         assertTrue(points.size == 2)
