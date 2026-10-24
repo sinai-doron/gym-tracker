@@ -7,6 +7,7 @@ import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.model.ExerciseEntry
 import com.doron.gymtracker.domain.model.Workout
 import com.doron.gymtracker.domain.usecase.FinishSessionUseCase
+import com.doron.gymtracker.domain.usecase.ResolveExerciseVariantUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -29,7 +30,8 @@ class SessionViewModel @AssistedInject constructor(
     @Assisted val workoutId: String,
     private val sessionRepo: SessionRepository,
     private val workoutRepo: WorkoutRepository,
-    private val finishSessionUseCase: FinishSessionUseCase
+    private val finishSessionUseCase: FinishSessionUseCase,
+    private val resolveVariant: ResolveExerciseVariantUseCase
 ) : ViewModel() {
 
     @AssistedFactory
@@ -42,10 +44,14 @@ class SessionViewModel @AssistedInject constructor(
 
     init {
         viewModelScope.launch {
-            val workout = workoutRepo.getById(workoutId)
-            _uiState.update { it.copy(workout = workout) }
+            val raw = workoutRepo.getById(workoutId)
+            // Resolve A/B variant for each exercise based on current week number
+            val resolved = raw?.let { w ->
+                val now = System.currentTimeMillis()
+                w.copy(exercises = w.exercises.map { resolveVariant(it, now) })
+            }
+            _uiState.update { it.copy(workout = resolved) }
         }
-        // Running clock — ticks while session is active (stops when finished)
         viewModelScope.launch {
             while (!_uiState.value.isFinished) {
                 delay(1_000)

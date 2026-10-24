@@ -4,8 +4,10 @@ import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.data.seed.TrainingPlanData
 import com.doron.gymtracker.domain.usecase.FinishSessionUseCase
+import com.doron.gymtracker.domain.usecase.ResolveExerciseVariantUseCase
 import io.mockk.coEvery
 import io.mockk.coJustRun
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,6 +29,7 @@ class SessionViewModelTest {
     private lateinit var sessionRepo: SessionRepository
     private lateinit var workoutRepo: WorkoutRepository
     private lateinit var finishSession: FinishSessionUseCase
+    private lateinit var resolveVariant: ResolveExerciseVariantUseCase
 
     @Before
     fun setup() {
@@ -34,6 +37,8 @@ class SessionViewModelTest {
         sessionRepo = mockk()
         workoutRepo = mockk()
         finishSession = mockk()
+        resolveVariant = mockk()
+        every { resolveVariant(any(), any()) } answers { firstArg() } // identity — return exercise as-is
         coEvery { workoutRepo.getById("workout_a") } returns TrainingPlanData.workoutA
         coEvery { sessionRepo.getEntriesForSession(1L) } returns emptyList()
         coEvery { sessionRepo.observeAll() } returns flowOf(emptyList())
@@ -46,7 +51,7 @@ class SessionViewModelTest {
     }
 
     private fun makeViewModel() =
-        SessionViewModel(1L, "workout_a", sessionRepo, workoutRepo, finishSession)
+        SessionViewModel(1L, "workout_a", sessionRepo, workoutRepo, finishSession, resolveVariant)
 
     @Test
     fun `elapsedSecs increments each second`() = runTest(testDispatcher) {

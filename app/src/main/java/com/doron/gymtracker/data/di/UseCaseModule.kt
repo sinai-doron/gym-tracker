@@ -1,11 +1,13 @@
 package com.doron.gymtracker.data.di
 
+import com.doron.gymtracker.data.prefs.ProgramPrefs
 import com.doron.gymtracker.data.prefs.RotationPrefs
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.usecase.FinishSessionUseCase
 import com.doron.gymtracker.domain.usecase.GetNextWorkoutUseCase
 import com.doron.gymtracker.domain.usecase.LogSetUseCase
+import com.doron.gymtracker.domain.usecase.ResolveExerciseVariantUseCase
 import com.doron.gymtracker.domain.usecase.StartSessionUseCase
 import dagger.Module
 import dagger.Provides
@@ -27,6 +29,10 @@ object UseCaseModule {
     @Provides
     fun provideLogSetUseCase(repo: SessionRepository) =
         LogSetUseCase(repo)
+
+    @Provides
+    fun provideResolveExerciseVariantUseCase(prefs: ProgramPrefs) =
+        ResolveExerciseVariantUseCase(prefs)
 
     @Provides
     fun provideFinishSessionUseCase(

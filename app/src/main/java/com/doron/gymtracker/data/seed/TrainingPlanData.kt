@@ -5,29 +5,43 @@ import com.doron.gymtracker.domain.model.TimedExerciseDefinition
 import com.doron.gymtracker.domain.model.Workout
 import com.doron.gymtracker.domain.model.WorkoutLabel
 
-// Program: חזה וגב / רגליים / כתפיים וידיים
-// Start date: 2026-10-26
-// A/B variants per exercise: Phase 2. This seed uses the fixed exercise or Week A variant.
-// Distance exercises (הליכת איכר): modeled as TimedExercise until Phase 2 adds distance type.
+// Programme: חזה וגב / רגליים / כתפיים וידיים
+// Start date: 2026-10-26. variantB = Week B exercise; null = fixed.
 object TrainingPlanData {
 
     val workoutA = Workout(
         id = "workout_a",
         label = WorkoutLabel.A,
         exercises = listOf(
-            // 1. Fixed — לחיצת חזה עם מוט (שטוח)
+            // 1. Fixed
             RepExerciseDefinition("d1_e1", "לחיצת חזה עם מוט (שטוח)", targetSets = 4, restDurationSecs = 180, targetReps = 6),
-            // 2. Fixed — פולי עליון אחיזה רחבה
+            // 2. Fixed
             RepExerciseDefinition("d1_e2", "פולי עליון אחיזה רחבה", targetSets = 4, restDurationSecs = 120, targetReps = 6),
-            // 3. A/B — Week A: לחיצת חזה עליון עם משקולות
-            RepExerciseDefinition("d1_e3", "לחיצת חזה עליון עם משקולות", targetSets = 3, restDurationSecs = 90, targetReps = 10),
-            // 4. A/B — Week A: חתירה עם מוט על ספסל (תמיכת חזה)
-            RepExerciseDefinition("d1_e4", "חתירה עם מוט על ספסל (תמיכת חזה)", targetSets = 3, restDurationSecs = 120, targetReps = 8),
-            // 5. A/B — Week A: פרפר במכונה
-            RepExerciseDefinition("d1_e5", "פרפר במכונה", targetSets = 3, restDurationSecs = 60, targetReps = 12),
-            // 6. A/B — Week A: חתירה בכבל עם משולש
-            RepExerciseDefinition("d1_e6", "חתירה בכבל עם משולש", targetSets = 3, restDurationSecs = 90, targetReps = 10),
-            // 7. Fixed — פלאנק (hold 45-60s)
+            // 3. A/B
+            RepExerciseDefinition(
+                id = "d1_e3a", name = "לחיצת חזה עליון עם משקולות",
+                targetSets = 3, restDurationSecs = 90, targetReps = 10,
+                variantB = RepExerciseDefinition("d1_e3b", "לחיצת חזה עליון עם מוט", 3, 90, 10)
+            ),
+            // 4. A/B
+            RepExerciseDefinition(
+                id = "d1_e4a", name = "חתירה עם מוט על ספסל (תמיכת חזה)",
+                targetSets = 3, restDurationSecs = 120, targetReps = 8,
+                variantB = RepExerciseDefinition("d1_e4b", "חתירה עם משקולת ביד אחת", 3, 120, 8)
+            ),
+            // 5. A/B
+            RepExerciseDefinition(
+                id = "d1_e5a", name = "פרפר במכונה",
+                targetSets = 3, restDurationSecs = 60, targetReps = 12,
+                variantB = RepExerciseDefinition("d1_e5b", "פרפר בפולי תחתון", 3, 60, 12)
+            ),
+            // 6. A/B
+            RepExerciseDefinition(
+                id = "d1_e6a", name = "חתירה בכבל עם משולש",
+                targetSets = 3, restDurationSecs = 90, targetReps = 10,
+                variantB = RepExerciseDefinition("d1_e6b", "חתירה בכבל עם מוט ישר", 3, 90, 10)
+            ),
+            // 7. Fixed (hold 45-60s)
             TimedExerciseDefinition("d1_e7", "פלאנק", targetSets = 3, restDurationSecs = 60)
         )
     )
@@ -36,22 +50,34 @@ object TrainingPlanData {
         id = "workout_b",
         label = WorkoutLabel.B,
         exercises = listOf(
-            // 1. Fixed — סקוואט עם מוט חופשי
+            // 1. Fixed
             RepExerciseDefinition("d2_e1", "סקוואט עם מוט חופשי", targetSets = 4, restDurationSecs = 180, targetReps = 6),
-            // 2. A/B — Week A: דדליפט רומני עם מוט
-            RepExerciseDefinition("d2_e2", "דדליפט רומני עם מוט", targetSets = 3, restDurationSecs = 120, targetReps = 8),
-            // 3. A/B — Week A: סקוואט בולגרי (per side)
-            RepExerciseDefinition("d2_e3", "סקוואט בולגרי", targetSets = 3, restDurationSecs = 90, targetReps = 10),
-            // 4. Fixed — פשיטת ברכיים במכונה
+            // 2. A/B
+            RepExerciseDefinition(
+                id = "d2_e2a", name = "דדליפט רומני עם מוט",
+                targetSets = 3, restDurationSecs = 120, targetReps = 8,
+                variantB = RepExerciseDefinition("d2_e2b", "דדליפט רומני עם משקולות", 3, 120, 8)
+            ),
+            // 3. A/B (per side)
+            RepExerciseDefinition(
+                id = "d2_e3a", name = "סקוואט בולגרי",
+                targetSets = 3, restDurationSecs = 90, targetReps = 10,
+                variantB = RepExerciseDefinition("d2_e3b", "לאנג'ים בהליכה עם משקולות", 3, 90, 10)
+            ),
+            // 4. Fixed
             RepExerciseDefinition("d2_e4", "פשיטת ברכיים במכונה", targetSets = 3, restDurationSecs = 60, targetReps = 12),
-            // 5. Fixed — כפיפת ברכיים במכונה
+            // 5. Fixed
             RepExerciseDefinition("d2_e5", "כפיפת ברכיים במכונה", targetSets = 3, restDurationSecs = 60, targetReps = 12),
-            // 6. Fixed — קירוב ירכיים במכונה (optional if short on time)
+            // 6. Fixed (optional)
             RepExerciseDefinition("d2_e6", "קירוב ירכיים במכונה", targetSets = 3, restDurationSecs = 60, targetReps = 15),
-            // 7. Fixed — תאומים בסמית' על מדרגה
+            // 7. Fixed
             RepExerciseDefinition("d2_e7", "תאומים בסמית' על מדרגה", targetSets = 3, restDurationSecs = 60, targetReps = 15),
-            // 8. A/B — Week A: כפיפות בטן בכבל
-            RepExerciseDefinition("d2_e8", "כפיפות בטן בכבל", targetSets = 3, restDurationSecs = 60, targetReps = 12)
+            // 8. A/B
+            RepExerciseDefinition(
+                id = "d2_e8a", name = "כפיפות בטן בכבל",
+                targetSets = 3, restDurationSecs = 60, targetReps = 12,
+                variantB = RepExerciseDefinition("d2_e8b", "הרמות ברכיים בתלייה", 3, 60, 12)
+            )
         )
     )
 
@@ -59,21 +85,37 @@ object TrainingPlanData {
         id = "workout_c",
         label = WorkoutLabel.C,
         exercises = listOf(
-            // 1. Fixed — לחיצת כתפיים עם משקולות בישיבה
+            // 1. Fixed
             RepExerciseDefinition("d3_e1", "לחיצת כתפיים עם משקולות בישיבה", targetSets = 4, restDurationSecs = 120, targetReps = 8),
-            // 2. A/B — Week A: הרחקה לצדדים עם משקולות
-            RepExerciseDefinition("d3_e2", "הרחקה לצדדים עם משקולות", targetSets = 3, restDurationSecs = 60, targetReps = 12),
-            // 3. A/B — Week A: הרחקה אופקית במכונה (Reverse Pec Deck)
-            RepExerciseDefinition("d3_e3", "הרחקה אופקית במכונה", targetSets = 3, restDurationSecs = 60, targetReps = 12),
-            // 4. A/B — Week A: יד קדמית עם מוט
-            RepExerciseDefinition("d3_e4", "יד קדמית עם מוט", targetSets = 3, restDurationSecs = 90, targetReps = 8),
-            // 5. A/B — Week A: יד אחורית בפולי עליון עם מוט
-            RepExerciseDefinition("d3_e5", "יד אחורית בפולי עליון עם מוט", targetSets = 3, restDurationSecs = 90, targetReps = 10),
-            // 6. Fixed — יד קדמית כנגד פולי תחתון
+            // 2. A/B
+            RepExerciseDefinition(
+                id = "d3_e2a", name = "הרחקה לצדדים עם משקולות",
+                targetSets = 3, restDurationSecs = 60, targetReps = 12,
+                variantB = RepExerciseDefinition("d3_e2b", "הרחקה לצדדים בכבל", 3, 60, 12)
+            ),
+            // 3. A/B
+            RepExerciseDefinition(
+                id = "d3_e3a", name = "הרחקה אופקית במכונה",
+                targetSets = 3, restDurationSecs = 60, targetReps = 12,
+                variantB = RepExerciseDefinition("d3_e3b", "Face Pull בכבל", 3, 60, 12)
+            ),
+            // 4. A/B
+            RepExerciseDefinition(
+                id = "d3_e4a", name = "יד קדמית עם מוט",
+                targetSets = 3, restDurationSecs = 90, targetReps = 8,
+                variantB = RepExerciseDefinition("d3_e4b", "יד קדמית פטיש עם משקולות", 3, 90, 8)
+            ),
+            // 5. A/B
+            RepExerciseDefinition(
+                id = "d3_e5a", name = "יד אחורית בפולי עליון עם מוט",
+                targetSets = 3, restDurationSecs = 90, targetReps = 10,
+                variantB = RepExerciseDefinition("d3_e5b", "יד אחורית בפולי עליון עם חבל", 3, 90, 10)
+            ),
+            // 6. Fixed
             RepExerciseDefinition("d3_e6", "יד קדמית כנגד פולי תחתון", targetSets = 3, restDurationSecs = 60, targetReps = 12),
-            // 7. Fixed — פשיטה מאחורי הראש עם משקולת (optional if short on time)
+            // 7. Fixed (optional)
             RepExerciseDefinition("d3_e7", "פשיטה מאחורי הראש עם משקולת", targetSets = 3, restDurationSecs = 60, targetReps = 12),
-            // 8. Fixed — הליכת איכר (30-40m, modeled as timed until Phase 2 adds distance type)
+            // 8. Fixed (distance — modeled as timed until Phase 2-T11 adds distance type)
             TimedExerciseDefinition("d3_e8", "הליכת איכר", targetSets = 3, restDurationSecs = 90)
         )
     )
