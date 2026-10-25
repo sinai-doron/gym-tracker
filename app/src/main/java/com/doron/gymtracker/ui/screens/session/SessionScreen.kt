@@ -37,7 +37,9 @@ import com.doron.gymtracker.domain.model.ExerciseDefinition
 import com.doron.gymtracker.domain.usecase.GetLastWeightUseCase
 import com.doron.gymtracker.domain.usecase.LogSetUseCase
 import com.doron.gymtracker.domain.usecase.ProgressionHintUseCase
+import com.doron.gymtracker.media.NowPlayingProvider
 import com.doron.gymtracker.ui.components.ExerciseCard
+import com.doron.gymtracker.ui.components.NowPlayingBar
 import com.doron.gymtracker.ui.theme.RestTimerColor
 import com.doron.gymtracker.ui.theme.WarningAmber
 
@@ -152,7 +154,9 @@ fun SessionScreen(
             item { Spacer(Modifier.height(16.dp)) }
         }
 
-        // Bottom placeholder — Task 3 will add NowPlayingBar here
+        // Now Playing bar
+        val nowPlaying by NowPlayingProvider.state.collectAsState()
+        nowPlaying?.let { NowPlayingBar(state = it) }
     }
 
     val exercise = selectedExercise
