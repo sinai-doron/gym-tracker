@@ -12,6 +12,7 @@ import com.doron.gymtracker.domain.model.RepExerciseDefinition
 import com.doron.gymtracker.domain.usecase.GetLastWeightUseCase
 import com.doron.gymtracker.domain.usecase.LogSetUseCase
 import com.doron.gymtracker.domain.usecase.ProgressionHintUseCase
+import com.doron.gymtracker.media.RestTimerBeepPlayer
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -127,6 +128,7 @@ class ExerciseDetailViewModel(
             while (remaining > 0) {
                 delay(1_000)
                 remaining--
+                if (remaining in 1..3) RestTimerBeepPlayer.playBeep()
                 _uiState.update { it.copy(restCountdownSecs = if (remaining > 0) remaining else null) }
             }
         }
