@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -70,11 +71,7 @@ class HistoryViewModel @Inject constructor(
         viewModelScope.launch {
             val dayStart = date.atStartOfDay(zone).toInstant().toEpochMilli()
             val dayEnd = date.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
-            val sessions = sessionRepo.observeAll().let { flow ->
-                var result = emptyList<com.doron.gymtracker.domain.model.Session>()
-                flow.collectLatest { result = it }
-                result
-            }
+            val sessions = sessionRepo.observeAll().first()
             val session = sessions
                 .filter { it.finishedAt != null }
                 .firstOrNull { it.startedAt in dayStart until dayEnd }
