@@ -11,16 +11,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,7 +38,6 @@ import com.doron.gymtracker.domain.usecase.GetLastWeightUseCase
 import com.doron.gymtracker.domain.usecase.LogSetUseCase
 import com.doron.gymtracker.domain.usecase.ProgressionHintUseCase
 import com.doron.gymtracker.ui.components.ExerciseCard
-import com.doron.gymtracker.ui.components.SessionClockDisplay
 import com.doron.gymtracker.ui.theme.RestTimerColor
 import com.doron.gymtracker.ui.theme.WarningAmber
 
@@ -58,7 +55,6 @@ fun SessionScreen(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val detailViewModels = remember { mutableStateMapOf<String, ExerciseDetailViewModel>() }
 
-    // Collect all detail states so the session screen can read rest countdown + completed sets
     val detailStates = state.workout?.exercises?.associate { exercise ->
         exercise.id to (detailViewModels.getOrPut(exercise.id) {
             ExerciseDetailViewModel(viewModel.sessionId, exercise, logSetUseCase,
@@ -67,84 +63,107 @@ fun SessionScreen(
         }.uiState.collectAsState().value)
     } ?: emptyMap()
 
-    // Active rest countdown: recomputed each recomposition — detailStates is reactive via collectAsState
     val activeRestSecs = detailStates.values.mapNotNull { it.restCountdownSecs }.firstOrNull()
 
     LaunchedEffect(state.isFinished) { if (state.isFinished) onFinished() }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                ),
-                title = {
-                    Column(modifier = Modifier.padding(end = 16.dp)) {
-                        Text(
-                            stringResource(R.string.workout_label, state.workout?.label?.name ?: ""),
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                        SessionClockDisplay(state.elapsedSecs)
-                        if (activeRestSecs != null) {
-                            Text(
-                                "מנוחה  %02d:%02d".format(activeRestSecs!! / 60, activeRestSecs!! % 60),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = RestTimerColor
-                            )
-                        }
-                    }
-                }
-            )
-        }
-    ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-            Column(modifier = Modifier.fillMaxSize()) {
-            // Deload week banner
-            if (state.isDeloadWeek) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .statusBarsPadding()
+    ) {
+        // Sticky header: 3-column Row
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // RTL start: workout name + session clock
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    stringResource(R.string.deload_week_banner),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = androidx.compose.ui.graphics.Color(0xFF1A1035),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(WarningAmber)
-                        .padding(horizontal = 16.dp, vertical = 6.dp)
+                    stringResource(R.string.workout_label, state.workout?.label?.name ?: ""),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                val mins = state.elapsedSecs / 60
+                val secs = state.elapsedSecs % 60
+                Text(
+                    "%02d:%02d".format(mins, secs),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
-            LazyColumn(
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(state.workout?.exercises ?: emptyList()) { exercise ->
-                    val detailState = detailStates[exercise.id]
-                    ExerciseCard(
-                        exercise = exercise,
-                        completedSets = detailState?.completedSets ?: emptyList(),
-                        onClick = { selectedExercise = exercise }
-                    )
+
+            // Center: rest timer (hidden when inactive)
+            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                if (activeRestSecs != null) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            "מנוחה",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = RestTimerColor
+                        )
+                        Text(
+                            "%02d:%02d".format(activeRestSecs / 60, activeRestSecs % 60),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = RestTimerColor
+                        )
+                    }
                 }
-                item { Spacer(Modifier.height(80.dp)) }
             }
-            } // end Column
-            Button(
-                onClick = { viewModel.finishSession() },
-                modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(16.dp)
-            ) {
-                Text(stringResource(R.string.finish_session))
+
+            // RTL end: compact end-session button
+            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
+                FilledTonalButton(onClick = { viewModel.finishSession() }) {
+                    Text("סיים")
+                }
             }
         }
 
-        val exercise = selectedExercise
-        if (exercise != null) {
-            val detailVm = detailViewModels.getOrPut(exercise.id) {
-                ExerciseDetailViewModel(viewModel.sessionId, exercise, logSetUseCase,
-                    progressionHint = progressionHintUseCase,
-                    getLastWeight = getLastWeightUseCase)
+        // Deload week banner
+        if (state.isDeloadWeek) {
+            Text(
+                stringResource(R.string.deload_week_banner),
+                style = MaterialTheme.typography.bodyMedium,
+                color = androidx.compose.ui.graphics.Color(0xFF1A1035),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(WarningAmber)
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+            )
+        }
+
+        // Scrollable exercise list
+        LazyColumn(
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.weight(1f)
+        ) {
+            items(state.workout?.exercises ?: emptyList()) { exercise ->
+                val detailState = detailStates[exercise.id]
+                ExerciseCard(
+                    exercise = exercise,
+                    completedSets = detailState?.completedSets ?: emptyList(),
+                    onClick = { selectedExercise = exercise }
+                )
             }
-            ModalBottomSheet(onDismissRequest = { selectedExercise = null }, sheetState = sheetState) {
-                ExerciseDetailSheet(viewModel = detailVm)
-            }
+            item { Spacer(Modifier.height(16.dp)) }
+        }
+
+        // Bottom placeholder — Task 3 will add NowPlayingBar here
+    }
+
+    val exercise = selectedExercise
+    if (exercise != null) {
+        val detailVm = detailViewModels.getOrPut(exercise.id) {
+            ExerciseDetailViewModel(viewModel.sessionId, exercise, logSetUseCase,
+                progressionHint = progressionHintUseCase,
+                getLastWeight = getLastWeightUseCase)
+        }
+        ModalBottomSheet(onDismissRequest = { selectedExercise = null }, sheetState = sheetState) {
+            ExerciseDetailSheet(viewModel = detailVm)
         }
     }
 }
