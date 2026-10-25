@@ -1,6 +1,5 @@
 package com.doron.gymtracker.ui.screens.home
 
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -9,6 +8,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -33,7 +34,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -42,7 +42,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.doron.gymtracker.R
 import com.doron.gymtracker.ui.theme.Purple
-import com.doron.gymtracker.ui.theme.PurpleLight
 import kotlinx.coroutines.launch
 
 @Composable
@@ -91,30 +90,14 @@ fun HomeScreen(
         ) {
             Spacer(Modifier.weight(0.1f))
 
-            // Hero illustration area
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.size(220.dp)
-            ) {
-                // Decorative background circles
-                Canvas(modifier = Modifier.size(220.dp)) {
-                    drawCircle(
-                        color = PurpleLight,
-                        radius = 110.dp.toPx(),
-                        center = center
-                    )
-                    drawCircle(
-                        color = Purple.copy(alpha = 0.08f),
-                        radius = 80.dp.toPx(),
-                        center = Offset(center.x - 20.dp.toPx(), center.y + 15.dp.toPx())
-                    )
-                }
-                Image(
-                    painter = painterResource(R.drawable.ic_dumbbell_hero),
-                    contentDescription = null,
-                    modifier = Modifier.size(140.dp)
-                )
-            }
+            // App logo
+            Image(
+                painter = painterResource(R.drawable.ic_app_logo),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(200.dp)
+                    .clip(CircleShape)
+            )
 
             Spacer(Modifier.height(32.dp))
 

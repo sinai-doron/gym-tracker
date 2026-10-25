@@ -122,7 +122,7 @@ class SessionTimerService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(title)
             .setContentText(text)
-            .setSmallIcon(R.drawable.ic_dumbbell_hero)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(tapIntent)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
