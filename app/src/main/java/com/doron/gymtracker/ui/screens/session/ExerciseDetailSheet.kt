@@ -1,6 +1,8 @@
 package com.doron.gymtracker.ui.screens.session
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,8 +29,10 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.doron.gymtracker.R
 import com.doron.gymtracker.domain.model.DistanceExerciseDefinition
+import com.doron.gymtracker.domain.model.DistanceSetRecord
 import com.doron.gymtracker.domain.model.ProgressionHint
 import com.doron.gymtracker.domain.model.RepExerciseDefinition
+import com.doron.gymtracker.domain.model.RepSetRecord
 import com.doron.gymtracker.domain.model.TimedExerciseDefinition
 import com.doron.gymtracker.ui.components.RestTimerOverlay
 import com.doron.gymtracker.ui.components.SetLogRow
@@ -49,7 +54,14 @@ fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -
         }
         Spacer(Modifier.height(8.dp))
 
-        state.completedSets.forEachIndexed { i, set -> SetLogRow(setNumber = i + 1, record = set) }
+        state.completedSets.forEachIndexed { i, set ->
+            SetLogRow(
+                setNumber = i + 1,
+                record = set,
+                isEditing = state.editingSetIndex == i,
+                onClick = if (state.restCountdownSecs == null) {{ viewModel.startEditing(i) }} else null
+            )
+        }
 
         // Progression hint — only shown for rep exercises
         val hintText = when (val h = state.progressionHint) {
@@ -74,11 +86,23 @@ fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -
                 onAdjust = { delta -> viewModel.adjustRestTimer(delta) }
             )
         } else {
+            val editIdx = state.editingSetIndex
+            val editingSet = if (editIdx != null) state.completedSets.getOrNull(editIdx) else null
+
             when (state.exercise) {
                 is RepExerciseDefinition -> RepSetInput(
                     targetReps = (state.exercise as RepExerciseDefinition).targetReps,
                     lastWeight = state.lastWeight,
-                    onLog = { reps, weight -> viewModel.logRepSet(reps, weight); onEntryChanged() }
+                    editingSet = editingSet as? RepSetRecord,
+                    onLog = { reps, weight ->
+                        if (editIdx != null) {
+                            viewModel.updateRepSet(editIdx, reps, weight)
+                        } else {
+                            viewModel.logRepSet(reps, weight)
+                        }
+                        onEntryChanged()
+                    },
+                    onCancelEdit = if (editIdx != null) {{ viewModel.cancelEditing() }} else null
                 )
                 is TimedExerciseDefinition -> TimedSetInput(
                     isRunning = state.timerRunning,
@@ -88,7 +112,16 @@ fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -
                 )
                 is DistanceExerciseDefinition -> DistanceSetInput(
                     targetDistanceM = (state.exercise as DistanceExerciseDefinition).targetDistanceM,
-                    onLog = { distanceM -> viewModel.logDistanceSet(distanceM); onEntryChanged() }
+                    editingSet = editingSet as? DistanceSetRecord,
+                    onLog = { distanceM ->
+                        if (editIdx != null) {
+                            viewModel.updateDistanceSet(editIdx, distanceM)
+                        } else {
+                            viewModel.logDistanceSet(distanceM)
+                        }
+                        onEntryChanged()
+                    },
+                    onCancelEdit = if (editIdx != null) {{ viewModel.cancelEditing() }} else null
                 )
             }
         }
@@ -98,13 +131,25 @@ fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -
 }
 
 @Composable
-private fun RepSetInput(targetReps: Int, lastWeight: Float?, onLog: (Int, Float) -> Unit) {
-    var repsText by remember { mutableStateOf(targetReps.toString()) }
-    // Pre-fill with last session's weight; show empty if no history
+private fun RepSetInput(
+    targetReps: Int,
+    lastWeight: Float?,
+    editingSet: RepSetRecord? = null,
+    onLog: (Int, Float) -> Unit,
+    onCancelEdit: (() -> Unit)? = null
+) {
     val initialWeight = if (lastWeight != null && lastWeight > 0f)
         lastWeight.let { if (it == it.toLong().toFloat()) it.toLong().toString() else it.toString() }
     else ""
-    var weightText by remember(lastWeight) { mutableStateOf(initialWeight) }
+    var repsText by remember(editingSet) {
+        mutableStateOf(editingSet?.reps?.toString() ?: targetReps.toString())
+    }
+    var weightText by remember(editingSet, lastWeight) {
+        mutableStateOf(
+            editingSet?.weightKg?.let { if (it == it.toLong().toFloat()) it.toLong().toString() else it.toString() }
+                ?: initialWeight
+        )
+    }
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         OutlinedTextField(
@@ -127,18 +172,29 @@ private fun RepSetInput(targetReps: Int, lastWeight: Float?, onLog: (Int, Float)
     }
 
     Spacer(Modifier.height(16.dp))
-    Button(
-        onClick = {
-            val reps = repsText.toIntOrNull() ?: return@Button
-            val weight = weightText.toFloatOrNull() ?: return@Button
-            onLog(reps, weight)
-            repsText = targetReps.toString()
-            // weight carries forward to the next set intentionally
-        },
-        modifier = Modifier.fillMaxWidth(),
-        enabled = repsText.isNotBlank() && weightText.isNotBlank()
-    ) {
-        Text(stringResource(R.string.log_set))
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (onCancelEdit != null) {
+            OutlinedButton(
+                onClick = onCancelEdit,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("ביטול")
+            }
+        }
+        Button(
+            onClick = {
+                val reps = repsText.toIntOrNull() ?: return@Button
+                val weight = weightText.toFloatOrNull() ?: return@Button
+                onLog(reps, weight)
+                if (editingSet == null) {
+                    repsText = targetReps.toString()
+                }
+            },
+            modifier = Modifier.weight(1f),
+            enabled = repsText.isNotBlank() && weightText.isNotBlank()
+        ) {
+            Text(if (editingSet != null) "עדכן סט" else stringResource(R.string.log_set))
+        }
     }
 }
 
@@ -160,8 +216,15 @@ private fun TimedSetInput(isRunning: Boolean, elapsedSecs: Int, onStart: () -> U
 }
 
 @Composable
-private fun DistanceSetInput(targetDistanceM: Int, onLog: (Int) -> Unit) {
-    var distanceText by remember { mutableStateOf("") }
+private fun DistanceSetInput(
+    targetDistanceM: Int,
+    editingSet: DistanceSetRecord? = null,
+    onLog: (Int) -> Unit,
+    onCancelEdit: (() -> Unit)? = null
+) {
+    var distanceText by remember(editingSet) {
+        mutableStateOf(editingSet?.distanceM?.toString() ?: "")
+    }
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         OutlinedTextField(
             value = distanceText,
@@ -173,15 +236,25 @@ private fun DistanceSetInput(targetDistanceM: Int, onLog: (Int) -> Unit) {
         )
     }
     Spacer(Modifier.height(16.dp))
-    Button(
-        onClick = {
-            val dist = distanceText.toIntOrNull() ?: return@Button
-            onLog(dist)
-            distanceText = ""
-        },
-        modifier = Modifier.fillMaxWidth(),
-        enabled = distanceText.isNotBlank()
-    ) {
-        Text(stringResource(R.string.log_set))
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (onCancelEdit != null) {
+            OutlinedButton(
+                onClick = onCancelEdit,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("ביטול")
+            }
+        }
+        Button(
+            onClick = {
+                val dist = distanceText.toIntOrNull() ?: return@Button
+                onLog(dist)
+                if (editingSet == null) distanceText = ""
+            },
+            modifier = Modifier.weight(1f),
+            enabled = distanceText.isNotBlank()
+        ) {
+            Text(if (editingSet != null) "עדכן סט" else stringResource(R.string.log_set))
+        }
     }
 }

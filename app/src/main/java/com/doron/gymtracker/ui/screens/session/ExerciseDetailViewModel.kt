@@ -12,6 +12,7 @@ import com.doron.gymtracker.domain.model.RepExerciseDefinition
 import com.doron.gymtracker.domain.usecase.GetLastWeightUseCase
 import com.doron.gymtracker.domain.usecase.LogSetUseCase
 import com.doron.gymtracker.domain.usecase.ProgressionHintUseCase
+import com.doron.gymtracker.domain.usecase.UpdateSetUseCase
 import com.doron.gymtracker.media.RestTimerBeepPlayer
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -29,13 +30,15 @@ data class ExerciseDetailUiState(
     val timerRunning: Boolean = false,
     val timerElapsedSecs: Int = 0,
     val progressionHint: ProgressionHint = ProgressionHint.OnTrack,
-    val lastWeight: Float? = null
+    val lastWeight: Float? = null,
+    val editingSetIndex: Int? = null
 )
 
 class ExerciseDetailViewModel(
     private val sessionId: Long,
     exercise: ExerciseDefinition,
     private val logSet: LogSetUseCase,
+    private val updateSet: UpdateSetUseCase? = null,
     private val progressionHint: ProgressionHintUseCase? = null,
     private val getLastWeight: GetLastWeightUseCase? = null
 ) : ViewModel() {
@@ -65,8 +68,9 @@ class ExerciseDetailViewModel(
                 completedAt = System.currentTimeMillis(),
                 reps = reps, weightKg = weightKg
             )
-            logSet(sessionId, exercise.id, record)
-            _uiState.update { it.copy(completedSets = it.completedSets + record, lastWeight = weightKg) }
+            val dbId = logSet(sessionId, exercise.id, record)
+            val saved = record.copy(id = dbId)
+            _uiState.update { it.copy(completedSets = it.completedSets + saved, lastWeight = weightKg) }
             startRestTimer(exercise.restDurationSecs)
         }
     }
@@ -93,10 +97,11 @@ class ExerciseDetailViewModel(
             completedAt = System.currentTimeMillis(),
             durationSecs = elapsed
         )
-        // Update state synchronously so UI reflects the set immediately
-        _uiState.update { it.copy(timerRunning = false, timerElapsedSecs = 0, completedSets = it.completedSets + record) }
+        _uiState.update { it.copy(timerRunning = false, timerElapsedSecs = 0) }
         viewModelScope.launch {
-            logSet(sessionId, exercise.id, record)
+            val dbId = logSet(sessionId, exercise.id, record)
+            val saved = record.copy(id = dbId)
+            _uiState.update { it.copy(completedSets = it.completedSets + saved) }
             startRestTimer(exercise.restDurationSecs)
         }
     }
@@ -108,10 +113,41 @@ class ExerciseDetailViewModel(
             completedAt = System.currentTimeMillis(),
             distanceM = distanceM
         )
-        _uiState.update { it.copy(completedSets = it.completedSets + record) }
         viewModelScope.launch {
-            logSet(sessionId, exercise.id, record)
+            val dbId = logSet(sessionId, exercise.id, record)
+            val saved = record.copy(id = dbId)
+            _uiState.update { it.copy(completedSets = it.completedSets + saved) }
             startRestTimer(exercise.restDurationSecs)
+        }
+    }
+
+    fun startEditing(index: Int) {
+        _uiState.update { it.copy(editingSetIndex = index) }
+    }
+
+    fun cancelEditing() {
+        _uiState.update { it.copy(editingSetIndex = null) }
+    }
+
+    fun updateRepSet(index: Int, reps: Int, weightKg: Float) {
+        viewModelScope.launch {
+            val sets = _uiState.value.completedSets.toMutableList()
+            val old = sets[index] as? RepSetRecord ?: return@launch
+            val updated = old.copy(reps = reps, weightKg = weightKg)
+            updateSet?.invoke(updated)
+            sets[index] = updated
+            _uiState.update { it.copy(completedSets = sets, editingSetIndex = null, lastWeight = weightKg) }
+        }
+    }
+
+    fun updateDistanceSet(index: Int, distanceM: Int) {
+        viewModelScope.launch {
+            val sets = _uiState.value.completedSets.toMutableList()
+            val old = sets[index] as? DistanceSetRecord ?: return@launch
+            val updated = old.copy(distanceM = distanceM)
+            updateSet?.invoke(updated)
+            sets[index] = updated
+            _uiState.update { it.copy(completedSets = sets, editingSetIndex = null) }
         }
     }
 

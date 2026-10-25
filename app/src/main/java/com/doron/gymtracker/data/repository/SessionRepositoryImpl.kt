@@ -53,12 +53,17 @@ class SessionRepositoryImpl @Inject constructor(
         return setDao.insert(record.toEntity(entry.id))
     }
 
+    override suspend fun updateSetRecord(record: SetRecord) {
+        val entryId = record.entryId
+        setDao.update(record.toEntity(entryId))
+    }
+
     private fun SessionEntity.toDomain() = Session(id, workoutId, startedAt, finishedAt)
 
     private fun SetRecord.toEntity(entryId: Long) = when (this) {
-        is RepSetRecord -> SetRecordEntity(0, entryId, completedAt, "REP", reps, weightKg, null, null)
-        is TimedSetRecord -> SetRecordEntity(0, entryId, completedAt, "TIMED", null, null, durationSecs, null)
-        is DistanceSetRecord -> SetRecordEntity(0, entryId, completedAt, "DISTANCE", null, null, null, distanceM)
+        is RepSetRecord -> SetRecordEntity(id, entryId, completedAt, "REP", reps, weightKg, null, null)
+        is TimedSetRecord -> SetRecordEntity(id, entryId, completedAt, "TIMED", null, null, durationSecs, null)
+        is DistanceSetRecord -> SetRecordEntity(id, entryId, completedAt, "DISTANCE", null, null, null, distanceM)
     }
 
     private fun SetRecordEntity.toDomain(): SetRecord = when (type) {

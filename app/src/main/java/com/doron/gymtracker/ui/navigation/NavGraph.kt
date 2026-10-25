@@ -12,6 +12,7 @@ import com.doron.gymtracker.domain.usecase.GetLastWeightUseCase
 import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.domain.usecase.LogSetUseCase
 import com.doron.gymtracker.domain.usecase.ProgressionHintUseCase
+import com.doron.gymtracker.domain.usecase.UpdateSetUseCase
 import com.doron.gymtracker.ui.screens.home.HomeScreen
 import com.doron.gymtracker.ui.screens.session.SessionScreen
 import com.doron.gymtracker.ui.screens.session.SessionViewModel
@@ -49,6 +50,7 @@ fun NavGraph() {
             SessionScreen(
                 viewModel = viewModel,
                 logSetUseCase = factoryHolder.logSetUseCase,
+                updateSetUseCase = factoryHolder.updateSetUseCase,
                 progressionHintUseCase = factoryHolder.progressionHintUseCase,
                 getLastWeightUseCase = factoryHolder.getLastWeightUseCase,
                 settingsPrefs = factoryHolder.settingsPrefs,
@@ -67,6 +69,7 @@ fun NavGraph() {
 class SessionViewModelFactoryHolder @Inject constructor(
     val factory: SessionViewModel.Factory,
     val logSetUseCase: LogSetUseCase,
+    val updateSetUseCase: UpdateSetUseCase,
     val progressionHintUseCase: ProgressionHintUseCase,
     val getLastWeightUseCase: GetLastWeightUseCase,
     val settingsPrefs: SettingsPrefs

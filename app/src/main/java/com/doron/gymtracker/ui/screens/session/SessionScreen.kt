@@ -46,6 +46,7 @@ import com.doron.gymtracker.domain.model.ExerciseDefinition
 import com.doron.gymtracker.domain.usecase.GetLastWeightUseCase
 import com.doron.gymtracker.domain.usecase.LogSetUseCase
 import com.doron.gymtracker.domain.usecase.ProgressionHintUseCase
+import com.doron.gymtracker.domain.usecase.UpdateSetUseCase
 import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.media.MediaPermissionHelper
 import com.doron.gymtracker.media.NowPlayingProvider
@@ -60,6 +61,7 @@ import com.doron.gymtracker.ui.theme.WarningAmber
 fun SessionScreen(
     viewModel: SessionViewModel,
     logSetUseCase: LogSetUseCase,
+    updateSetUseCase: UpdateSetUseCase? = null,
     progressionHintUseCase: ProgressionHintUseCase? = null,
     getLastWeightUseCase: GetLastWeightUseCase? = null,
     settingsPrefs: SettingsPrefs? = null,
@@ -73,6 +75,7 @@ fun SessionScreen(
     val detailStates = state.workout?.exercises?.associate { exercise ->
         exercise.id to (detailViewModels.getOrPut(exercise.id) {
             ExerciseDetailViewModel(viewModel.sessionId, exercise, logSetUseCase,
+                updateSet = updateSetUseCase,
                 progressionHint = progressionHintUseCase,
                 getLastWeight = getLastWeightUseCase)
         }.uiState.collectAsState().value)
@@ -231,6 +234,7 @@ fun SessionScreen(
     if (exercise != null) {
         val detailVm = detailViewModels.getOrPut(exercise.id) {
             ExerciseDetailViewModel(viewModel.sessionId, exercise, logSetUseCase,
+                updateSet = updateSetUseCase,
                 progressionHint = progressionHintUseCase,
                 getLastWeight = getLastWeightUseCase)
         }

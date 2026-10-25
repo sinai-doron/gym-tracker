@@ -12,4 +12,5 @@ interface SessionRepository {
     suspend fun getLastCompleted(): Session?
     suspend fun getEntriesForSession(sessionId: Long): List<ExerciseEntry>
     suspend fun addSetRecord(sessionId: Long, exerciseId: String, record: SetRecord): Long
+    suspend fun updateSetRecord(record: SetRecord)
 }
