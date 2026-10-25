@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.doron.gymtracker.MainActivity
@@ -105,17 +106,19 @@ class SessionTimerService : Service() {
 
         val sessionTime = formatTime(sessionElapsedSecs)
         val rest = restRemainingSecs
+        val largeIcon = BitmapFactory.decodeResource(resources, R.drawable.ic_app_logo)
 
-        val title = "$workoutName — $sessionTime"
-        val text = buildString {
-            if (rest != null && rest > 0) {
-                append("מנוחה ${formatTime(rest.toLong())}")
-                if (currentExercise.isNotEmpty()) append(" · $currentExercise")
-            } else if (currentExercise.isNotEmpty()) {
-                append(currentExercise)
-                if (setInfo.isNotEmpty()) append(" · $setInfo")
+        val title: String
+        val text: String
+        if (rest != null && rest > 0) {
+            title = "מנוחה ${formatTime(rest.toLong())}"
+            text = "$workoutName — $sessionTime"
+        } else {
+            title = "$workoutName — $sessionTime"
+            text = if (currentExercise.isNotEmpty()) {
+                if (setInfo.isNotEmpty()) "$currentExercise · $setInfo" else currentExercise
             } else {
-                append("אימון פעיל")
+                "אימון פעיל"
             }
         }
 
@@ -123,6 +126,7 @@ class SessionTimerService : Service() {
             .setContentTitle(title)
             .setContentText(text)
             .setSmallIcon(R.drawable.ic_notification)
+            .setLargeIcon(largeIcon)
             .setContentIntent(tapIntent)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
