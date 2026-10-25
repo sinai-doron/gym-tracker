@@ -27,16 +27,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import kotlinx.coroutines.launch
 import com.doron.gymtracker.R
 import com.doron.gymtracker.domain.model.ExerciseDefinition
 import com.doron.gymtracker.domain.usecase.GetLastWeightUseCase
 import com.doron.gymtracker.domain.usecase.LogSetUseCase
 import com.doron.gymtracker.domain.usecase.ProgressionHintUseCase
+import com.doron.gymtracker.data.prefs.SettingsPrefs
+import com.doron.gymtracker.media.MediaPermissionHelper
 import com.doron.gymtracker.media.NowPlayingProvider
 import com.doron.gymtracker.ui.components.ExerciseCard
 import com.doron.gymtracker.ui.components.NowPlayingBar
@@ -50,6 +58,7 @@ fun SessionScreen(
     logSetUseCase: LogSetUseCase,
     progressionHintUseCase: ProgressionHintUseCase? = null,
     getLastWeightUseCase: GetLastWeightUseCase? = null,
+    settingsPrefs: SettingsPrefs? = null,
     onFinished: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -154,9 +163,45 @@ fun SessionScreen(
             item { Spacer(Modifier.height(16.dp)) }
         }
 
-        // Now Playing bar
+        // Now Playing bar / permission prompt
         val nowPlaying by NowPlayingProvider.state.collectAsState()
-        nowPlaying?.let { NowPlayingBar(state = it) }
+        val context = LocalContext.current
+        val scope = rememberCoroutineScope()
+        val permDismissed by (settingsPrefs?.mediaPermissionDismissed
+            ?: kotlinx.coroutines.flow.flowOf(false)).collectAsState(initial = false)
+        var hasPermission by remember { mutableStateOf(MediaPermissionHelper.isNotificationListenerEnabled(context)) }
+
+        LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+            hasPermission = MediaPermissionHelper.isNotificationListenerEnabled(context)
+        }
+
+        if (nowPlaying != null) {
+            NowPlayingBar(state = nowPlaying!!)
+        } else if (!hasPermission && !permDismissed) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "הפעל גישה למדיה כדי לשלוט במוזיקה",
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.weight(1f)
+                )
+                FilledTonalButton(onClick = {
+                    MediaPermissionHelper.openNotificationListenerSettings(context)
+                }) {
+                    Text("הפעל")
+                }
+                androidx.compose.material3.IconButton(onClick = {
+                    scope.launch { settingsPrefs?.dismissMediaPermission() }
+                }) {
+                    Text("✕", style = MaterialTheme.typography.titleMedium)
+                }
+            }
+        }
     }
 
     val exercise = selectedExercise

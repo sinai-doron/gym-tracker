@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.doron.gymtracker.domain.usecase.GetLastWeightUseCase
+import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.domain.usecase.LogSetUseCase
 import com.doron.gymtracker.domain.usecase.ProgressionHintUseCase
 import com.doron.gymtracker.ui.screens.home.HomeScreen
@@ -50,6 +51,7 @@ fun NavGraph() {
                 logSetUseCase = factoryHolder.logSetUseCase,
                 progressionHintUseCase = factoryHolder.progressionHintUseCase,
                 getLastWeightUseCase = factoryHolder.getLastWeightUseCase,
+                settingsPrefs = factoryHolder.settingsPrefs,
                 onFinished = { navController.popBackStack() }
             )
         }
@@ -66,5 +68,6 @@ class SessionViewModelFactoryHolder @Inject constructor(
     val factory: SessionViewModel.Factory,
     val logSetUseCase: LogSetUseCase,
     val progressionHintUseCase: ProgressionHintUseCase,
-    val getLastWeightUseCase: GetLastWeightUseCase
+    val getLastWeightUseCase: GetLastWeightUseCase,
+    val settingsPrefs: SettingsPrefs
 ) : ViewModel()
