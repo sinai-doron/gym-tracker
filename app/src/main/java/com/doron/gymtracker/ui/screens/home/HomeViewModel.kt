@@ -2,6 +2,7 @@ package com.doron.gymtracker.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.doron.gymtracker.data.StepCounterManager
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.model.Workout
 import com.doron.gymtracker.domain.usecase.GetNextWorkoutUseCase
@@ -18,14 +19,17 @@ data class HomeUiState(
     val suggestedWorkout: Workout? = null,
     val selectedWorkout: Workout? = null,
     val allWorkouts: List<Workout> = emptyList(),
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val todaySteps: Int = 0,
+    val stepsAvailable: Boolean = false
 )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getNextWorkout: GetNextWorkoutUseCase,
     private val startSession: StartSessionUseCase,
-    private val workoutRepo: WorkoutRepository
+    private val workoutRepo: WorkoutRepository,
+    val stepCounter: StepCounterManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -35,8 +39,27 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val suggested = getNextWorkout()
             val all = workoutRepo.getAll()
-            _uiState.update { it.copy(suggestedWorkout = suggested, selectedWorkout = suggested, allWorkouts = all, isLoading = false) }
+            _uiState.update {
+                it.copy(
+                    suggestedWorkout = suggested,
+                    selectedWorkout = suggested,
+                    allWorkouts = all,
+                    isLoading = false,
+                    stepsAvailable = stepCounter.isAvailable
+                )
+            }
+            stepCounter.start()
         }
+        viewModelScope.launch {
+            stepCounter.todaySteps.collect { steps ->
+                _uiState.update { it.copy(todaySteps = steps) }
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        stepCounter.stop()
     }
 
     fun selectWorkout(workout: Workout) {
