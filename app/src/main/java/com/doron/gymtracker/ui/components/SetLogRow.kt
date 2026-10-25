@@ -29,7 +29,11 @@ fun SetLogRow(setNumber: Int, record: SetRecord) {
                     record.weightKg.toLong().toString() else record.weightKg.toString()
                 "${record.reps} חזרות × $w ק״ג"
             }
-            is TimedSetRecord -> "${record.durationSecs} שניות"
+            is TimedSetRecord -> {
+                val m = record.durationSecs / 60
+                val s = record.durationSecs % 60
+                "%d:%02d".format(m, s)
+            }
             is DistanceSetRecord -> "${record.distanceM} מטרים"
         }
         Text(label, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)

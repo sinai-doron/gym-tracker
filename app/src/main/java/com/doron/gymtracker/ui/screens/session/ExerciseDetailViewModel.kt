@@ -64,7 +64,7 @@ class ExerciseDetailViewModel(
                 reps = reps, weightKg = weightKg
             )
             logSet(sessionId, exercise.id, record)
-            _uiState.update { it.copy(completedSets = it.completedSets + record) }
+            _uiState.update { it.copy(completedSets = it.completedSets + record, lastWeight = weightKg) }
             startRestTimer(exercise.restDurationSecs)
         }
     }
