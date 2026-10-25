@@ -47,6 +47,7 @@ import com.doron.gymtracker.domain.usecase.ProgressionHintUseCase
 import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.media.MediaPermissionHelper
 import com.doron.gymtracker.media.NowPlayingProvider
+import com.doron.gymtracker.service.SessionTimerService
 import com.doron.gymtracker.ui.components.ExerciseCard
 import com.doron.gymtracker.ui.components.NowPlayingBar
 import com.doron.gymtracker.ui.theme.RestTimerColor
@@ -76,9 +77,23 @@ fun SessionScreen(
     } ?: emptyMap()
 
     val activeRestSecs = detailStates.values.mapNotNull { it.restCountdownSecs }.firstOrNull()
+    val context = LocalContext.current
+
+    // Start foreground service when workout loads
+    LaunchedEffect(state.workout) {
+        state.workout?.let {
+            SessionTimerService.start(context, it.label.name)
+        }
+    }
+
+    // Sync rest timer to service notification
+    LaunchedEffect(activeRestSecs) {
+        SessionTimerService.updateRest(activeRestSecs)
+    }
 
     // Show summary screen when finished
     if (state.isFinished) {
+        SessionTimerService.stop(context)
         val summaryData = remember {
             buildSummaryData(
                 workoutName = state.workout?.label?.name ?: "",
@@ -178,7 +193,6 @@ fun SessionScreen(
 
         // Now Playing bar / permission prompt
         val nowPlaying by NowPlayingProvider.state.collectAsState()
-        val context = LocalContext.current
         val scope = rememberCoroutineScope()
         val permDismissed by (settingsPrefs?.mediaPermissionDismissed
             ?: kotlinx.coroutines.flow.flowOf(false)).collectAsState(initial = false)
