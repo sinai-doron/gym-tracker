@@ -69,7 +69,9 @@ fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -
         if (state.restCountdownSecs != null) {
             RestTimerOverlay(
                 countdownSecs = state.restCountdownSecs!!,
-                onDismiss = { viewModel.dismissRestTimer() }
+                totalSecs = state.restTotalSecs,
+                onDismiss = { viewModel.dismissRestTimer() },
+                onAdjust = { delta -> viewModel.adjustRestTimer(delta) }
             )
         } else {
             when (state.exercise) {

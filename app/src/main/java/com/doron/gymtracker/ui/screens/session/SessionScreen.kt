@@ -34,8 +34,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import kotlinx.coroutines.launch
@@ -112,52 +114,46 @@ fun SessionScreen(
             .statusBarsPadding()
             .navigationBarsPadding()
     ) {
-        // Sticky header: 3-column Row
+        // Header: workout name + end button
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.background)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // RTL start: workout name + session clock
-            Column(modifier = Modifier.weight(1f)) {
+            Text(
+                state.workout?.label?.name ?: "",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f)
+            )
+            FilledTonalButton(onClick = { viewModel.finishSession() }) {
+                Text("סיים")
+            }
+        }
+
+        // Big countdown area
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            val mins = state.elapsedSecs / 60
+            val secs = state.elapsedSecs % 60
+            Text(
+                "%02d:%02d".format(mins, secs),
+                fontSize = 56.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            if (activeRestSecs != null) {
                 Text(
-                    stringResource(R.string.workout_label, state.workout?.label?.name ?: ""),
-                    style = MaterialTheme.typography.titleMedium
-                )
-                val mins = state.elapsedSecs / 60
-                val secs = state.elapsedSecs % 60
-                Text(
-                    "%02d:%02d".format(mins, secs),
+                    "מנוחה %d:%02d".format(activeRestSecs / 60, activeRestSecs % 60),
                     style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.primary
+                    fontWeight = FontWeight.SemiBold,
+                    color = RestTimerColor
                 )
-            }
-
-            // Center: rest timer (hidden when inactive)
-            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                if (activeRestSecs != null) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            "מנוחה",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = RestTimerColor
-                        )
-                        Text(
-                            "%02d:%02d".format(activeRestSecs / 60, activeRestSecs % 60),
-                            style = MaterialTheme.typography.titleLarge,
-                            color = RestTimerColor
-                        )
-                    }
-                }
-            }
-
-            // RTL end: compact end-session button
-            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
-                FilledTonalButton(onClick = { viewModel.finishSession() }) {
-                    Text("סיים")
-                }
             }
         }
 

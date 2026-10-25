@@ -25,10 +25,11 @@ data class ExerciseDetailUiState(
     val exercise: ExerciseDefinition,
     val completedSets: List<SetRecord> = emptyList(),
     val restCountdownSecs: Int? = null,
+    val restTotalSecs: Int = 0,
     val timerRunning: Boolean = false,
     val timerElapsedSecs: Int = 0,
     val progressionHint: ProgressionHint = ProgressionHint.OnTrack,
-    val lastWeight: Float? = null   // pre-fill from last session
+    val lastWeight: Float? = null
 )
 
 class ExerciseDetailViewModel(
@@ -117,12 +118,30 @@ class ExerciseDetailViewModel(
     fun dismissRestTimer() {
         restTimerJob?.cancel()
         restTimerJob = null
-        _uiState.update { it.copy(restCountdownSecs = null) }
+        _uiState.update { it.copy(restCountdownSecs = null, restTotalSecs = 0) }
+    }
+
+    fun adjustRestTimer(deltaSecs: Int) {
+        val current = _uiState.value.restCountdownSecs ?: return
+        val newRemaining = (current + deltaSecs).coerceAtLeast(5)
+        val newTotal = (_uiState.value.restTotalSecs + deltaSecs).coerceAtLeast(newRemaining)
+        restTimerJob?.cancel()
+        _uiState.update { it.copy(restCountdownSecs = newRemaining, restTotalSecs = newTotal) }
+        restTimerJob = viewModelScope.launch {
+            var remaining = newRemaining
+            while (remaining > 0) {
+                delay(1_000)
+                remaining--
+                if (remaining in 1..3) RestTimerBeepPlayer.playBeep()
+                _uiState.update { it.copy(restCountdownSecs = if (remaining > 0) remaining else null) }
+            }
+            _uiState.update { it.copy(restTotalSecs = 0) }
+        }
     }
 
     private fun startRestTimer(durationSecs: Int) {
         restTimerJob?.cancel()
-        _uiState.update { it.copy(restCountdownSecs = durationSecs) }
+        _uiState.update { it.copy(restCountdownSecs = durationSecs, restTotalSecs = durationSecs) }
         restTimerJob = viewModelScope.launch {
             var remaining = durationSecs
             while (remaining > 0) {
@@ -131,6 +150,7 @@ class ExerciseDetailViewModel(
                 if (remaining in 1..3) RestTimerBeepPlayer.playBeep()
                 _uiState.update { it.copy(restCountdownSecs = if (remaining > 0) remaining else null) }
             }
+            _uiState.update { it.copy(restTotalSecs = 0) }
         }
     }
 }
