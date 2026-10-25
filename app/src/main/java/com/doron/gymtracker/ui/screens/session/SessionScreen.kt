@@ -77,7 +77,18 @@ fun SessionScreen(
 
     val activeRestSecs = detailStates.values.mapNotNull { it.restCountdownSecs }.firstOrNull()
 
-    LaunchedEffect(state.isFinished) { if (state.isFinished) onFinished() }
+    // Show summary screen when finished
+    if (state.isFinished) {
+        val summaryData = remember {
+            buildSummaryData(
+                workoutName = state.workout?.label?.name ?: "",
+                durationSecs = state.elapsedSecs,
+                detailStates = detailStates
+            )
+        }
+        SessionSummaryScreen(data = summaryData, onGoHome = onFinished)
+        return
+    }
 
     Column(
         modifier = Modifier
