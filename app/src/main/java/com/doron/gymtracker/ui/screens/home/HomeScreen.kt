@@ -170,7 +170,7 @@ fun HomeScreen(
                             labelColor = MaterialTheme.colorScheme.onSurfaceVariant
                         ),
                         label = {
-                            val label = workout.label.name
+                            val label = workout.label.displayName
                             Text(
                                 if (isSuggested) "$label ${stringResource(R.string.suggested_marker)}" else label,
                                 style = MaterialTheme.typography.bodyLarge

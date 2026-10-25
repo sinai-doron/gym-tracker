@@ -84,7 +84,7 @@ fun SessionScreen(
     // Start foreground service when workout loads
     LaunchedEffect(state.workout) {
         state.workout?.let {
-            SessionTimerService.start(context, it.label.name)
+            SessionTimerService.start(context, it.label.displayName)
         }
     }
 
@@ -98,7 +98,7 @@ fun SessionScreen(
         SessionTimerService.stop(context)
         val summaryData = remember {
             buildSummaryData(
-                workoutName = state.workout?.label?.name ?: "",
+                workoutName = state.workout?.label?.displayName ?: "",
                 durationSecs = state.elapsedSecs,
                 detailStates = detailStates
             )
@@ -123,7 +123,7 @@ fun SessionScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                state.workout?.label?.name ?: "",
+                state.workout?.label?.displayName ?: "",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f)
             )

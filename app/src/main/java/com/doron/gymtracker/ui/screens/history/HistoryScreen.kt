@@ -219,7 +219,7 @@ private fun DayCell(
 private fun DaySessionSheet(state: LastSessionUiState) {
     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         Text(
-            "אימון ${state.workoutLabel?.name ?: ""} — ${state.dateLabel ?: ""}",
+            "אימון ${state.workoutLabel?.displayName ?: ""} — ${state.dateLabel ?: ""}",
             style = MaterialTheme.typography.titleLarge
         )
         Spacer(Modifier.height(16.dp))

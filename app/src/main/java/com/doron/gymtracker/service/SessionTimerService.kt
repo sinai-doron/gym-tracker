@@ -7,7 +7,12 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.doron.gymtracker.MainActivity
@@ -106,7 +111,7 @@ class SessionTimerService : Service() {
 
         val sessionTime = formatTime(sessionElapsedSecs)
         val rest = restRemainingSecs
-        val largeIcon = BitmapFactory.decodeResource(resources, R.drawable.ic_app_logo)
+        val largeIcon = circularBitmap(BitmapFactory.decodeResource(resources, R.drawable.ic_app_logo))
 
         val title: String
         val text: String
@@ -139,6 +144,17 @@ class SessionTimerService : Service() {
     private fun updateNotification() {
         getSystemService(NotificationManager::class.java)
             .notify(NOTIFICATION_ID, buildNotification())
+    }
+
+    private fun circularBitmap(src: Bitmap): Bitmap {
+        val size = minOf(src.width, src.height)
+        val output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(output)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        canvas.drawCircle(size / 2f, size / 2f, size / 2f, paint)
+        paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+        canvas.drawBitmap(src, 0f, 0f, paint)
+        return output
     }
 
     private fun formatTime(secs: Long): String {
