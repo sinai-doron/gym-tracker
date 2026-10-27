@@ -21,7 +21,8 @@ object RestTimerBeepPlayer {
 
     fun playBeep() {
         try {
-            val toneGen = ToneGenerator(AudioManager.STREAM_ALARM, VOLUME)
+            // STREAM_MUSIC follows the active output (e.g. Bluetooth); STREAM_ALARM always rings on the phone speaker
+            val toneGen = ToneGenerator(AudioManager.STREAM_MUSIC, VOLUME)
             toneGen.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, BEEP_DURATION_MS)
             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                 toneGen.release()
