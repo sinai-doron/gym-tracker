@@ -17,12 +17,20 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -30,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.doron.gymtracker.domain.model.RepSetRecord
 import com.doron.gymtracker.domain.model.SetRecord
+import com.doron.gymtracker.domain.model.TrackLog
 import com.doron.gymtracker.ui.theme.Purple
 import com.doron.gymtracker.ui.theme.SuccessGreen
 
@@ -41,10 +50,12 @@ data class SessionSummaryData(
     val totalSets: Int,
     val totalVolumeKg: Float,
     val maxWeightKg: Float,
-    val exerciseBreakdown: List<ExerciseSummaryLine>
+    val exerciseBreakdown: List<ExerciseSummaryLine>,
+    val tracks: List<TrackLog> = emptyList()
 )
 
 data class ExerciseSummaryLine(
+    val exerciseId: String,
     val name: String,
     val setsCompleted: Int,
     val setsTarget: Int,
@@ -54,7 +65,8 @@ data class ExerciseSummaryLine(
 fun buildSummaryData(
     workoutName: String,
     durationSecs: Long,
-    detailStates: Map<String, ExerciseDetailUiState>
+    detailStates: Map<String, ExerciseDetailUiState>,
+    tracks: List<TrackLog> = emptyList()
 ): SessionSummaryData {
     var totalSets = 0
     var totalVolume = 0f
@@ -79,6 +91,7 @@ fun buildSummaryData(
 
         lines.add(
             ExerciseSummaryLine(
+                exerciseId = detail.exercise.id,
                 name = detail.exercise.name,
                 setsCompleted = sets.size,
                 setsTarget = target,
@@ -95,15 +108,19 @@ fun buildSummaryData(
         totalSets = totalSets,
         totalVolumeKg = totalVolume,
         maxWeightKg = maxWeight,
-        exerciseBreakdown = lines
+        exerciseBreakdown = lines,
+        tracks = tracks
     )
 }
 
 @Composable
 fun SessionSummaryScreen(
     data: SessionSummaryData,
+    onDeleteExercise: ((exerciseId: String) -> Unit)? = null,
     onGoHome: () -> Unit
 ) {
+    var deleteTarget by remember { mutableStateOf<ExerciseSummaryLine?>(null) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -195,10 +212,10 @@ fun SessionSummaryScreen(
                         MaterialTheme.colorScheme.surface,
                         MaterialTheme.shapes.small
                     )
-                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                    .padding(start = 14.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(modifier = Modifier.weight(1f)) {
+                Column(modifier = Modifier.weight(1f).padding(vertical = 6.dp)) {
                     Text(
                         line.name,
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
@@ -223,8 +240,62 @@ fun SessionSummaryScreen(
                         modifier = Modifier.size(20.dp)
                     )
                 }
+                if (onDeleteExercise != null) {
+                    IconButton(onClick = { deleteTarget = line }) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "מחק תרגיל",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
             }
             Spacer(Modifier.height(6.dp))
+        }
+
+        if (data.tracks.isNotEmpty()) {
+            Spacer(Modifier.height(24.dp))
+
+            Text(
+                "♫ פסקול האימון",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+            )
+
+            data.tracks.forEachIndexed { index, track ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            MaterialTheme.colorScheme.surface,
+                            MaterialTheme.shapes.small
+                        )
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "${index + 1}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(end = 12.dp)
+                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            track.title,
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
+                        )
+                        if (track.artist.isNotBlank()) {
+                            Text(
+                                track.artist,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+                Spacer(Modifier.height(4.dp))
+            }
         }
 
         Spacer(Modifier.height(32.dp))
@@ -244,6 +315,27 @@ fun SessionSummaryScreen(
         }
 
         Spacer(Modifier.height(24.dp))
+    }
+
+    deleteTarget?.let { line ->
+        AlertDialog(
+            onDismissRequest = { deleteTarget = null },
+            title = { Text("מחיקת תרגיל?") },
+            text = { Text("למחוק את ${line.name} ואת כל הסטים שלו מהאימון?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    onDeleteExercise?.invoke(line.exerciseId)
+                    deleteTarget = null
+                }) {
+                    Text("מחק", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { deleteTarget = null }) {
+                    Text("ביטול")
+                }
+            }
+        )
     }
 }
 

@@ -6,9 +6,11 @@ import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.model.ExerciseEntry
 import com.doron.gymtracker.domain.model.Workout
+import com.doron.gymtracker.domain.model.TrackLog
 import com.doron.gymtracker.domain.usecase.FinishSessionUseCase
 import com.doron.gymtracker.domain.usecase.IsDeloadWeekUseCase
 import com.doron.gymtracker.domain.usecase.ResolveExerciseVariantUseCase
+import com.doron.gymtracker.media.NowPlayingProvider
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -24,7 +26,8 @@ data class SessionUiState(
     val elapsedSecs: Long = 0L,
     val entries: Map<String, ExerciseEntry> = emptyMap(),
     val isFinished: Boolean = false,
-    val isDeloadWeek: Boolean = false
+    val isDeloadWeek: Boolean = false,
+    val tracks: List<TrackLog> = emptyList()
 )
 
 class SessionViewModel @AssistedInject constructor(
@@ -65,6 +68,20 @@ class SessionViewModel @AssistedInject constructor(
                 _uiState.update { it.copy(elapsedSecs = it.elapsedSecs + 1) }
             }
         }
+        viewModelScope.launch {
+            var lastTrackKey = ""
+            NowPlayingProvider.state.collect { nowPlaying ->
+                if (_uiState.value.isFinished) return@collect
+                if (nowPlaying == null || !nowPlaying.isPlaying) return@collect
+                val key = "${nowPlaying.title}|${nowPlaying.artist}"
+                if (key != lastTrackKey && nowPlaying.title.isNotBlank()) {
+                    lastTrackKey = key
+                    sessionRepo.logTrack(sessionId, nowPlaying.title, nowPlaying.artist)
+                    val tracks = sessionRepo.getTracksForSession(sessionId)
+                    _uiState.update { it.copy(tracks = tracks) }
+                }
+            }
+        }
     }
 
     fun finishSession() {
@@ -91,6 +108,12 @@ class SessionViewModel @AssistedInject constructor(
     fun deleteSet(setId: Long) {
         viewModelScope.launch {
             sessionRepo.deleteSetRecord(setId)
+        }
+    }
+
+    fun deleteExerciseFromSession(exerciseId: String) {
+        viewModelScope.launch {
+            sessionRepo.deleteExerciseFromSession(sessionId, exerciseId)
         }
     }
 }

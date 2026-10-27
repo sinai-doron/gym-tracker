@@ -1,17 +1,22 @@
 package com.doron.gymtracker.data.repository
 
 import com.doron.gymtracker.data.db.dao.ExerciseEntryDao
+import com.doron.gymtracker.data.db.dao.LocationLogDao
 import com.doron.gymtracker.data.db.dao.SessionDao
 import com.doron.gymtracker.data.db.dao.SetRecordDao
+import com.doron.gymtracker.data.db.dao.TrackLogDao
 import com.doron.gymtracker.data.db.entities.ExerciseEntryEntity
+import com.doron.gymtracker.data.db.entities.LocationLogEntity
 import com.doron.gymtracker.data.db.entities.SessionEntity
 import com.doron.gymtracker.data.db.entities.SetRecordEntity
+import com.doron.gymtracker.data.db.entities.TrackLogEntity
 import com.doron.gymtracker.domain.model.DistanceSetRecord
 import com.doron.gymtracker.domain.model.ExerciseEntry
 import com.doron.gymtracker.domain.model.RepSetRecord
 import com.doron.gymtracker.domain.model.Session
 import com.doron.gymtracker.domain.model.SetRecord
 import com.doron.gymtracker.domain.model.TimedSetRecord
+import com.doron.gymtracker.domain.model.TrackLog
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -19,16 +24,29 @@ import javax.inject.Inject
 class SessionRepositoryImpl @Inject constructor(
     private val sessionDao: SessionDao,
     private val entryDao: ExerciseEntryDao,
-    private val setDao: SetRecordDao
+    private val setDao: SetRecordDao,
+    private val trackLogDao: TrackLogDao,
+    private val locationLogDao: LocationLogDao
 ) : SessionRepository {
 
     override suspend fun startSession(workoutId: String): Long =
         sessionDao.insert(SessionEntity(0, workoutId, System.currentTimeMillis(), null))
 
+    override suspend fun startCardioSession(type: String): Long =
+        sessionDao.insert(SessionEntity(0, type, System.currentTimeMillis(), null, type = type))
+
     override suspend fun finishSession(sessionId: Long) {
         val existing = sessionDao.getById(sessionId) ?: return
         sessionDao.update(existing.copy(finishedAt = System.currentTimeMillis()))
     }
+
+    override suspend fun finishCardioSession(sessionId: Long, distanceMeters: Double) {
+        val existing = sessionDao.getById(sessionId) ?: return
+        sessionDao.update(existing.copy(finishedAt = System.currentTimeMillis(), distanceMeters = distanceMeters))
+    }
+
+    override suspend fun getById(sessionId: Long): Session? =
+        sessionDao.getById(sessionId)?.toDomain()
 
     override fun observeAll(): Flow<List<Session>> =
         sessionDao.observeAll().map { list -> list.map { it.toDomain() } }
@@ -62,7 +80,54 @@ class SessionRepositoryImpl @Inject constructor(
         setDao.deleteById(setId)
     }
 
-    private fun SessionEntity.toDomain() = Session(id, workoutId, startedAt, finishedAt)
+    override suspend fun logTrack(sessionId: Long, title: String, artist: String) {
+        trackLogDao.insert(TrackLogEntity(0, sessionId, System.currentTimeMillis(), title, artist))
+    }
+
+    override suspend fun getTracksForSession(sessionId: Long): List<TrackLog> =
+        trackLogDao.getForSession(sessionId).map {
+            TrackLog(it.id, it.sessionId, it.startedAt, it.title, it.artist)
+        }
+
+    override suspend fun logLocation(sessionId: Long, lat: Double, lng: Double, speed: Float?, altitude: Double?) {
+        locationLogDao.insert(LocationLogEntity(0, sessionId, System.currentTimeMillis(), lat, lng, speed, altitude))
+    }
+
+    override suspend fun getLocationsForSession(sessionId: Long): List<LocationLogEntity> =
+        locationLogDao.getForSession(sessionId)
+
+    override suspend fun deleteExerciseFromSession(sessionId: Long, exerciseId: String) {
+        entryDao.deleteSetsForExercise(sessionId, exerciseId)
+        entryDao.deleteForSessionAndExercise(sessionId, exerciseId)
+    }
+
+    override suspend fun deleteSession(sessionId: Long) {
+        setDao.deleteForSession(sessionId)
+        entryDao.deleteForSession(sessionId)
+        trackLogDao.deleteForSession(sessionId)
+        locationLogDao.deleteForSession(sessionId)
+        sessionDao.deleteById(sessionId)
+    }
+
+    override suspend fun getCompletedSince(sinceMillis: Long): List<Session> =
+        sessionDao.getCompletedSince(sinceMillis).map { it.toDomain() }
+
+    override suspend fun getTotalVolumeSince(sinceMillis: Long): Float {
+        val sessions = sessionDao.getCompletedSince(sinceMillis)
+        var total = 0f
+        for (session in sessions) {
+            if (session.type != "GYM") continue
+            val sets = setDao.getForSession(session.id)
+            for (set in sets) {
+                if (set.type == "REP" && set.reps != null && set.weightKg != null) {
+                    total += set.reps * set.weightKg
+                }
+            }
+        }
+        return total
+    }
+
+    private fun SessionEntity.toDomain() = Session(id, workoutId, startedAt, finishedAt, type, distanceMeters)
 
     private fun SetRecord.toEntity(entryId: Long) = when (this) {
         is RepSetRecord -> SetRecordEntity(id, entryId, completedAt, "REP", reps, weightKg, null, null)

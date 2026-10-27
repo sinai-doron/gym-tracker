@@ -40,6 +40,7 @@ import com.doron.gymtracker.domain.model.ProgressionHint
 import com.doron.gymtracker.domain.model.RepExerciseDefinition
 import com.doron.gymtracker.domain.model.RepSetRecord
 import com.doron.gymtracker.domain.model.TimedExerciseDefinition
+import com.doron.gymtracker.ui.components.ExerciseIllustration
 import com.doron.gymtracker.ui.components.RestTimerOverlay
 import com.doron.gymtracker.ui.components.SetLogRow
 import com.doron.gymtracker.ui.theme.RestTimerColor
@@ -53,6 +54,8 @@ fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -
         .padding(horizontal = 16.dp)
         .imePadding()
     ) {
+        ExerciseIllustration(exerciseId = state.exercise.id)
+        Spacer(Modifier.height(12.dp))
         Text(state.exercise.name, style = MaterialTheme.typography.titleLarge)
         if (state.exercise.isPerSide) {
             Text("לכל צד – הזן לכל צד בנפרד",

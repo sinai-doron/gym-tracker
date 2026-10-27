@@ -1,5 +1,6 @@
 package com.doron.gymtracker.data.di
 
+import com.doron.gymtracker.data.HealthConnectManager
 import com.doron.gymtracker.data.prefs.ProgramPrefs
 import com.doron.gymtracker.data.prefs.RotationPrefs
 import com.doron.gymtracker.data.repository.SessionRepository
@@ -53,6 +54,7 @@ object UseCaseModule {
     fun provideFinishSessionUseCase(
         sessionRepo: SessionRepository,
         workoutRepo: WorkoutRepository,
-        prefs: RotationPrefs
-    ) = FinishSessionUseCase(sessionRepo, workoutRepo, prefs)
+        prefs: RotationPrefs,
+        healthConnect: HealthConnectManager
+    ) = FinishSessionUseCase(sessionRepo, workoutRepo, prefs, healthConnect)
 }

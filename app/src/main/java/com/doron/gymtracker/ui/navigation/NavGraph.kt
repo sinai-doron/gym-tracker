@@ -13,6 +13,12 @@ import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.domain.usecase.LogSetUseCase
 import com.doron.gymtracker.domain.usecase.ProgressionHintUseCase
 import com.doron.gymtracker.domain.usecase.UpdateSetUseCase
+import com.doron.gymtracker.ui.screens.cardio.CardioSessionScreen
+import com.doron.gymtracker.ui.screens.cardio.CardioSessionViewModel
+import com.doron.gymtracker.ui.screens.cardio.GpsLockScreen
+import com.doron.gymtracker.ui.screens.cardio.GpsLockViewModel
+import com.doron.gymtracker.ui.screens.history.SessionDetailScreen
+import com.doron.gymtracker.ui.screens.history.SessionDetailViewModel
 import com.doron.gymtracker.ui.screens.home.HomeScreen
 import com.doron.gymtracker.ui.screens.session.SessionScreen
 import com.doron.gymtracker.ui.screens.session.SessionViewModel
@@ -28,6 +34,9 @@ fun NavGraph() {
             HomeScreen(
                 onSessionStart = { sessionId, workoutId ->
                     navController.navigate("session/$sessionId/$workoutId")
+                },
+                onCardioStart = { type ->
+                    navController.navigate("gps-lock/$type")
                 },
                 onHistoryClick = { navController.navigate("history") },
                 onSettingsClick = { navController.navigate("settings") }
@@ -57,8 +66,46 @@ fun NavGraph() {
                 onFinished = { navController.popBackStack() }
             )
         }
+        composable("gps-lock/{type}") { backStackEntry ->
+            val type = backStackEntry.arguments?.getString("type") ?: return@composable
+            val viewModel = hiltViewModel<GpsLockViewModel>()
+            androidx.compose.runtime.LaunchedEffect(Unit) { viewModel.startListening() }
+            GpsLockScreen(
+                type = type,
+                viewModel = viewModel,
+                onReady = { sessionId, readyType ->
+                    navController.navigate("cardio/$sessionId/$readyType") {
+                        popUpTo("gps-lock/$type") { inclusive = true }
+                    }
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable("cardio/{sessionId}/{type}") { backStackEntry ->
+            val sessionId = backStackEntry.arguments?.getString("sessionId")?.toLongOrNull() ?: return@composable
+            val type = backStackEntry.arguments?.getString("type") ?: return@composable
+            val viewModel = hiltViewModel<CardioSessionViewModel, CardioSessionViewModel.Factory>(
+                creationCallback = { factory -> factory.create(sessionId, type) }
+            )
+            CardioSessionScreen(
+                viewModel = viewModel,
+                onFinished = { navController.popBackStack() }
+            )
+        }
         composable("history") {
             com.doron.gymtracker.ui.screens.history.HistoryScreen(
+                onBack = { navController.popBackStack() },
+                onSessionClick = { sessionId ->
+                    navController.navigate("history/session/$sessionId")
+                }
+            )
+        }
+        composable("history/session/{sessionId}") { backStackEntry ->
+            val sessionId = backStackEntry.arguments?.getString("sessionId")?.toLongOrNull() ?: return@composable
+            val viewModel = hiltViewModel<SessionDetailViewModel>()
+            androidx.compose.runtime.LaunchedEffect(sessionId) { viewModel.load(sessionId) }
+            SessionDetailScreen(
+                viewModel = viewModel,
                 onBack = { navController.popBackStack() }
             )
         }

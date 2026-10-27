@@ -26,4 +26,7 @@ interface SetRecordDao {
         WHERE ee.sessionId = :sessionId
     """)
     suspend fun getForSession(sessionId: Long): List<SetRecordEntity>
+
+    @Query("DELETE FROM set_records WHERE entryId IN (SELECT id FROM exercise_entries WHERE sessionId = :sessionId)")
+    suspend fun deleteForSession(sessionId: Long)
 }

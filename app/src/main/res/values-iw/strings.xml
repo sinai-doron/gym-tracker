@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">מעקב אימונים</string>
+    <string name="select_workout">בחר אימון</string>
+    <string name="start_session">התחל אימון</string>
+    <string name="finish_session">סיים אימון</string>
+    <string name="history">היסטוריה</string>
+    <string name="last_session">אימון אחרון</string>
+    <string name="trends">מגמות</string>
+    <string name="no_sessions_yet">אין אימונים עדיין</string>
+    <string name="no_data_yet">אין נתונים עדיין</string>
+    <string name="select_exercise">בחר תרגיל</string>
+    <string name="reps">חזרות</string>
+    <string name="weight_kg">משקל (ק״ג)</string>
+    <string name="log_set">שמור סט</string>
+    <string name="start_timer">התחל טיימר</string>
+    <string name="stop_timer">עצור טיימר</string>
+    <string name="rest">מנוחה</string>
+    <string name="skip_rest">דלג על מנוחה</string>
+    <string name="workout_label">אימון %s</string>
+    <string name="sets_progress">%1$d / %2$d סטים</string>
+    <string name="suggested_marker">★</string>
+    <string name="no_sessions_month">אין אימונים בחודש זה</string>
+    <string name="deload_week_banner">שבוע דילוד — 60% ממשקל אחרון, 2 סטים</string>
+    <string name="settings">הגדרות</string>
+    <string name="language">שפה</string>
+</resources>

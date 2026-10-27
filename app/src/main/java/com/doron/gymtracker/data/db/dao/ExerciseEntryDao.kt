@@ -15,4 +15,13 @@ interface ExerciseEntryDao {
 
     @Query("SELECT * FROM exercise_entries WHERE sessionId = :sessionId AND exerciseId = :exerciseId LIMIT 1")
     suspend fun getForSessionAndExercise(sessionId: Long, exerciseId: String): ExerciseEntryEntity?
+
+    @Query("DELETE FROM set_records WHERE entryId IN (SELECT id FROM exercise_entries WHERE sessionId = :sessionId AND exerciseId = :exerciseId)")
+    suspend fun deleteSetsForExercise(sessionId: Long, exerciseId: String)
+
+    @Query("DELETE FROM exercise_entries WHERE sessionId = :sessionId AND exerciseId = :exerciseId")
+    suspend fun deleteForSessionAndExercise(sessionId: Long, exerciseId: String)
+
+    @Query("DELETE FROM exercise_entries WHERE sessionId = :sessionId")
+    suspend fun deleteForSession(sessionId: Long)
 }

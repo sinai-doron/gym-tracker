@@ -123,14 +123,24 @@ fun SessionScreen(
     // Show summary screen when finished
     if (state.isFinished) {
         SessionTimerService.stop(context)
-        val summaryData = remember {
+        val summaryExerciseIds = remember { mutableStateOf(detailStates.keys.toSet()) }
+        val summaryData = remember(summaryExerciseIds.value) {
+            val filtered = detailStates.filterKeys { it in summaryExerciseIds.value }
             buildSummaryData(
                 workoutName = state.workout?.label?.displayName ?: "",
                 durationSecs = state.elapsedSecs,
-                detailStates = detailStates
+                detailStates = filtered,
+                tracks = state.tracks
             )
         }
-        SessionSummaryScreen(data = summaryData, onGoHome = onFinished)
+        SessionSummaryScreen(
+            data = summaryData,
+            onDeleteExercise = { exerciseId ->
+                viewModel.deleteExerciseFromSession(exerciseId)
+                summaryExerciseIds.value = summaryExerciseIds.value - exerciseId
+            },
+            onGoHome = onFinished
+        )
         return
     }
 
