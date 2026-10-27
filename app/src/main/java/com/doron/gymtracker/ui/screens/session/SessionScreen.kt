@@ -78,16 +78,19 @@ fun SessionScreen(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val detailViewModels = remember { mutableStateMapOf<String, ExerciseDetailViewModel>() }
 
+    fun detailViewModelFor(exercise: ExerciseDefinition) = detailViewModels.getOrPut(exercise.id) {
+        ExerciseDetailViewModel(viewModel.sessionId, exercise, logSetUseCase,
+            updateSet = updateSetUseCase,
+            progressionHint = progressionHintUseCase,
+            getLastWeight = getLastWeightUseCase,
+            restTimer = viewModel.restTimer)
+    }
+
     val detailStates = state.workout?.exercises?.associate { exercise ->
-        exercise.id to (detailViewModels.getOrPut(exercise.id) {
-            ExerciseDetailViewModel(viewModel.sessionId, exercise, logSetUseCase,
-                updateSet = updateSetUseCase,
-                progressionHint = progressionHintUseCase,
-                getLastWeight = getLastWeightUseCase)
-        }.uiState.collectAsState().value)
+        exercise.id to detailViewModelFor(exercise).uiState.collectAsState().value
     } ?: emptyMap()
 
-    val activeRestSecs = detailStates.values.mapNotNull { it.restCountdownSecs }.firstOrNull()
+    val activeRestSecs = viewModel.restTimer.state.collectAsState().value?.remainingSecs
     val context = LocalContext.current
 
     // Android 13+ hides the session notification until the user allows notifications
@@ -269,12 +272,7 @@ fun SessionScreen(
 
     val exercise = selectedExercise
     if (exercise != null) {
-        val detailVm = detailViewModels.getOrPut(exercise.id) {
-            ExerciseDetailViewModel(viewModel.sessionId, exercise, logSetUseCase,
-                updateSet = updateSetUseCase,
-                progressionHint = progressionHintUseCase,
-                getLastWeight = getLastWeightUseCase)
-        }
+        val detailVm = detailViewModelFor(exercise)
         ModalBottomSheet(onDismissRequest = { selectedExercise = null }, sheetState = sheetState) {
             ExerciseDetailSheet(viewModel = detailVm)
         }

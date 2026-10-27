@@ -43,6 +43,8 @@ class SessionViewModel @AssistedInject constructor(
     }
 
 
+    val restTimer = RestTimer(viewModelScope)
+
     private val _uiState = MutableStateFlow(SessionUiState())
     val uiState: StateFlow<SessionUiState> = _uiState.asStateFlow()
 
@@ -67,6 +69,7 @@ class SessionViewModel @AssistedInject constructor(
 
     fun finishSession() {
         viewModelScope.launch {
+            restTimer.dismiss()
             finishSessionUseCase(sessionId)
             _uiState.update { it.copy(isFinished = true) }
         }

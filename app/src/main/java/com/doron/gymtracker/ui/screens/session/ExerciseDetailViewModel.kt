@@ -13,7 +13,6 @@ import com.doron.gymtracker.domain.usecase.GetLastWeightUseCase
 import com.doron.gymtracker.domain.usecase.LogSetUseCase
 import com.doron.gymtracker.domain.usecase.ProgressionHintUseCase
 import com.doron.gymtracker.domain.usecase.UpdateSetUseCase
-import com.doron.gymtracker.media.RestTimerBeepPlayer
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,16 +39,25 @@ class ExerciseDetailViewModel(
     private val logSet: LogSetUseCase,
     private val updateSet: UpdateSetUseCase? = null,
     private val progressionHint: ProgressionHintUseCase? = null,
-    private val getLastWeight: GetLastWeightUseCase? = null
+    private val getLastWeight: GetLastWeightUseCase? = null,
+    restTimer: RestTimer? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ExerciseDetailUiState(exercise))
     val uiState: StateFlow<ExerciseDetailUiState> = _uiState.asStateFlow()
 
-    private var restTimerJob: Job? = null
+    private val restTimer = restTimer ?: RestTimer(viewModelScope)
     private var setTimerJob: Job? = null
 
     init {
+        // Mirror the session-wide rest timer so every exercise sheet shows the same countdown
+        viewModelScope.launch {
+            this@ExerciseDetailViewModel.restTimer.state.collect { rest ->
+                _uiState.update {
+                    it.copy(restCountdownSecs = rest?.remainingSecs, restTotalSecs = rest?.totalSecs ?: 0)
+                }
+            }
+        }
         val ex = _uiState.value.exercise
         if (ex is RepExerciseDefinition) {
             viewModelScope.launch {
@@ -151,42 +159,9 @@ class ExerciseDetailViewModel(
         }
     }
 
-    fun dismissRestTimer() {
-        restTimerJob?.cancel()
-        restTimerJob = null
-        _uiState.update { it.copy(restCountdownSecs = null, restTotalSecs = 0) }
-    }
+    fun dismissRestTimer() = restTimer.dismiss()
 
-    fun adjustRestTimer(deltaSecs: Int) {
-        val current = _uiState.value.restCountdownSecs ?: return
-        val newRemaining = (current + deltaSecs).coerceAtLeast(5)
-        val newTotal = (_uiState.value.restTotalSecs + deltaSecs).coerceAtLeast(newRemaining)
-        restTimerJob?.cancel()
-        _uiState.update { it.copy(restCountdownSecs = newRemaining, restTotalSecs = newTotal) }
-        restTimerJob = viewModelScope.launch {
-            var remaining = newRemaining
-            while (remaining > 0) {
-                delay(1_000)
-                remaining--
-                if (remaining in 1..3) RestTimerBeepPlayer.playBeep()
-                _uiState.update { it.copy(restCountdownSecs = if (remaining > 0) remaining else null) }
-            }
-            _uiState.update { it.copy(restTotalSecs = 0) }
-        }
-    }
+    fun adjustRestTimer(deltaSecs: Int) = restTimer.adjust(deltaSecs)
 
-    private fun startRestTimer(durationSecs: Int) {
-        restTimerJob?.cancel()
-        _uiState.update { it.copy(restCountdownSecs = durationSecs, restTotalSecs = durationSecs) }
-        restTimerJob = viewModelScope.launch {
-            var remaining = durationSecs
-            while (remaining > 0) {
-                delay(1_000)
-                remaining--
-                if (remaining in 1..3) RestTimerBeepPlayer.playBeep()
-                _uiState.update { it.copy(restCountdownSecs = if (remaining > 0) remaining else null) }
-            }
-            _uiState.update { it.copy(restTotalSecs = 0) }
-        }
-    }
+    private fun startRestTimer(durationSecs: Int) = restTimer.start(durationSecs)
 }

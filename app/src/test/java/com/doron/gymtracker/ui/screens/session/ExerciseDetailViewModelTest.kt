@@ -100,4 +100,21 @@ class ExerciseDetailViewModelTest {
         advanceTimeBy(50)
         assertTrue(vm.uiState.value.completedSets.isEmpty())
     }
+
+    @Test
+    fun `logging a set on a second exercise replaces the running rest timer`() = runTest(testDispatcher) {
+        val restTimer = RestTimer(backgroundScope)
+        val vmA = ExerciseDetailViewModel(1L, repExercise, logSet, restTimer = restTimer)
+        val vmB = ExerciseDetailViewModel(1L, timedExercise, logSet, restTimer = restTimer)
+        vmA.logRepSet(8, 80f)
+        advanceTimeBy(10_050)
+        vmB.startTimedSet()
+        advanceTimeBy(50)
+        vmB.stopTimedSet()
+        advanceTimeBy(50)
+        assertEquals(timedExercise.restDurationSecs, restTimer.state.value?.remainingSecs)
+        assertEquals(timedExercise.restDurationSecs, vmA.uiState.value.restCountdownSecs)
+        assertEquals(timedExercise.restDurationSecs, vmB.uiState.value.restCountdownSecs)
+        restTimer.dismiss()
+    }
 }
