@@ -89,15 +89,15 @@ class HistoryViewModelTest {
     }
 
     @Test
-    fun `selectedDaySession is null initially`() = runTest(testDispatcher) {
+    fun `selectedDaySessions is null initially`() = runTest(testDispatcher) {
         val vm = makeVm()
-        assertNull(vm.selectedDaySession.value)
+        assertNull(vm.selectedDaySessions.value)
     }
 
     @Test
-    fun `clearSelectedDay sets selectedDaySession to null`() = runTest(testDispatcher) {
+    fun `clearSelectedDay sets selectedDaySessions to null`() = runTest(testDispatcher) {
         val vm = makeVm()
         vm.clearSelectedDay()
-        assertNull(vm.selectedDaySession.value)
+        assertNull(vm.selectedDaySessions.value)
     }
 }
