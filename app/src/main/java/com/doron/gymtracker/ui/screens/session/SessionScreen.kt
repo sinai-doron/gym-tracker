@@ -135,27 +135,45 @@ fun SessionScreen(
             }
         }
 
-        // Big countdown area
-        Column(
+        // Timers side by side — in RTL the first child is on the right:
+        // overall session time on the right, rest countdown on the left
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            verticalAlignment = Alignment.Top
         ) {
-            val mins = state.elapsedSecs / 60
-            val secs = state.elapsedSecs % 60
-            Text(
-                "%02d:%02d".format(mins, secs),
-                fontSize = 56.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            if (activeRestSecs != null) {
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Text(
-                    "מנוחה %d:%02d".format(activeRestSecs / 60, activeRestSecs % 60),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold,
+                    "%02d:%02d".format(state.elapsedSecs / 60, state.elapsedSecs % 60),
+                    fontSize = 48.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    "זמן אימון",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                val rest = activeRestSecs ?: 0
+                Text(
+                    "%d:%02d".format(rest / 60, rest % 60),
+                    fontSize = 48.sp,
+                    fontWeight = FontWeight.Bold,
                     color = RestTimerColor
+                )
+                Text(
+                    "מנוחה",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
