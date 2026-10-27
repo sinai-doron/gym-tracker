@@ -42,6 +42,7 @@ import com.doron.gymtracker.domain.model.RepSetRecord
 import com.doron.gymtracker.domain.model.TimedExerciseDefinition
 import com.doron.gymtracker.ui.components.RestTimerOverlay
 import com.doron.gymtracker.ui.components.SetLogRow
+import com.doron.gymtracker.ui.theme.RestTimerColor
 
 @Composable
 fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -> Unit = {}) {
@@ -93,7 +94,7 @@ fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -
                 setNumber = i + 1,
                 record = set,
                 isEditing = state.editingSetIndex == i,
-                onClick = if (state.restCountdownSecs == null) {{ viewModel.startEditing(i) }} else null
+                onClick = { viewModel.startEditing(i) }
             )
         }
 
@@ -112,7 +113,9 @@ fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -
 
         Spacer(Modifier.height(16.dp))
 
-        if (state.restCountdownSecs != null) {
+        val editIdx = state.editingSetIndex
+        val restSecs = state.restCountdownSecs
+        if (restSecs != null && editIdx == null) {
             RestTimerOverlay(
                 countdownSecs = state.restCountdownSecs!!,
                 totalSecs = state.restTotalSecs,
@@ -120,8 +123,17 @@ fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -
                 onAdjust = { delta -> viewModel.adjustRestTimer(delta) }
             )
         } else {
-            val editIdx = state.editingSetIndex
             val editingSet = if (editIdx != null) state.completedSets.getOrNull(editIdx) else null
+
+            // Editing during rest: the countdown keeps running, so keep it visible
+            if (restSecs != null) {
+                Text(
+                    "מנוחה %d:%02d".format(restSecs / 60, restSecs % 60),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = RestTimerColor,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
 
             when (state.exercise) {
                 is RepExerciseDefinition -> RepSetInput(
@@ -138,12 +150,22 @@ fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -
                     },
                     onCancelEdit = if (editIdx != null) {{ viewModel.cancelEditing() }} else null
                 )
-                is TimedExerciseDefinition -> TimedSetInput(
-                    isRunning = state.timerRunning,
-                    elapsedSecs = state.timerElapsedSecs,
-                    onStart = { viewModel.startTimedSet() },
-                    onStop = { viewModel.stopTimedSet(); onEntryChanged() }
-                )
+                is TimedExerciseDefinition -> if (editIdx != null) {
+                    // A timed set has nothing to edit — it can only be deleted
+                    OutlinedButton(
+                        onClick = { viewModel.cancelEditing() },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("ביטול")
+                    }
+                } else {
+                    TimedSetInput(
+                        isRunning = state.timerRunning,
+                        elapsedSecs = state.timerElapsedSecs,
+                        onStart = { viewModel.startTimedSet() },
+                        onStop = { viewModel.stopTimedSet(); onEntryChanged() }
+                    )
+                }
                 is DistanceExerciseDefinition -> DistanceSetInput(
                     targetDistanceM = (state.exercise as DistanceExerciseDefinition).targetDistanceM,
                     editingSet = editingSet as? DistanceSetRecord,
@@ -157,6 +179,17 @@ fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -
                     },
                     onCancelEdit = if (editIdx != null) {{ viewModel.cancelEditing() }} else null
                 )
+            }
+
+            if (editIdx != null) {
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = { viewModel.deleteSet(editIdx); onEntryChanged() },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("מחק סט")
+                }
             }
         }
 

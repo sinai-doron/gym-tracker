@@ -43,7 +43,8 @@ class ExerciseDetailViewModel(
     private val progressionHint: ProgressionHintUseCase? = null,
     private val getLastWeight: GetLastWeightUseCase? = null,
     restTimer: RestTimer? = null,
-    private val onTargetSetsChanged: (exerciseId: String, sets: Int) -> Unit = { _, _ -> }
+    private val onTargetSetsChanged: (exerciseId: String, sets: Int) -> Unit = { _, _ -> },
+    private val onSetDeleted: (setId: Long) -> Unit = {}
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ExerciseDetailUiState(exercise))
@@ -159,6 +160,14 @@ class ExerciseDetailViewModel(
             updateSet?.invoke(updated)
             sets[index] = updated
             _uiState.update { it.copy(completedSets = sets, editingSetIndex = null) }
+        }
+    }
+
+    fun deleteSet(index: Int) {
+        val record = _uiState.value.completedSets.getOrNull(index) ?: return
+        onSetDeleted(record.id)
+        _uiState.update {
+            it.copy(completedSets = it.completedSets.filterIndexed { i, _ -> i != index }, editingSetIndex = null)
         }
     }
 

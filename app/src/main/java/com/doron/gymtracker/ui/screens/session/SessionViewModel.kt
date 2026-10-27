@@ -87,4 +87,10 @@ class SessionViewModel @AssistedInject constructor(
             workoutRepo.updateTargetSets(exerciseId, sets)
         }
     }
+
+    fun deleteSet(setId: Long) {
+        viewModelScope.launch {
+            sessionRepo.deleteSetRecord(setId)
+        }
+    }
 }

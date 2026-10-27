@@ -134,4 +134,34 @@ class ExerciseDetailViewModelTest {
         repeat(20) { vm.changeTargetSets(-1) }
         assertEquals(1, vm.uiState.value.exercise.targetSets)
     }
+
+    @Test
+    fun `deleteSet removes the set and reports its id`() = runTest(testDispatcher) {
+        var deletedId: Long? = null
+        val vm = ExerciseDetailViewModel(1L, repExercise, logSet, onSetDeleted = { deletedId = it })
+        vm.logRepSet(8, 80f)
+        advanceTimeBy(50)
+        vm.startEditing(0)
+        vm.deleteSet(0)
+        assertTrue(vm.uiState.value.completedSets.isEmpty())
+        assertNull(vm.uiState.value.editingSetIndex)
+        assertEquals(1L, deletedId)
+        vm.dismissRestTimer()
+    }
+
+    @Test
+    fun `sets can be edited while resting`() = runTest(testDispatcher) {
+        val vm = ExerciseDetailViewModel(1L, repExercise, logSet)
+        vm.logRepSet(8, 80f)
+        advanceTimeBy(50)
+        assertNotNull(vm.uiState.value.restCountdownSecs)
+        vm.startEditing(0)
+        vm.updateRepSet(0, 10, 85f)
+        advanceTimeBy(50)
+        val set = vm.uiState.value.completedSets.first() as RepSetRecord
+        assertEquals(10, set.reps)
+        assertEquals(85f, set.weightKg)
+        assertNotNull(vm.uiState.value.restCountdownSecs)
+        vm.dismissRestTimer()
+    }
 }

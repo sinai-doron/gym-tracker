@@ -84,7 +84,8 @@ fun SessionScreen(
             progressionHint = progressionHintUseCase,
             getLastWeight = getLastWeightUseCase,
             restTimer = viewModel.restTimer,
-            onTargetSetsChanged = viewModel::updateTargetSets)
+            onTargetSetsChanged = viewModel::updateTargetSets,
+            onSetDeleted = viewModel::deleteSet)
     }
 
     val detailStates = state.workout?.exercises?.associate { exercise ->

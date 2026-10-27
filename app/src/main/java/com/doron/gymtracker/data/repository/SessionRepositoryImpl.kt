@@ -58,6 +58,10 @@ class SessionRepositoryImpl @Inject constructor(
         setDao.update(record.toEntity(entryId))
     }
 
+    override suspend fun deleteSetRecord(setId: Long) {
+        setDao.deleteById(setId)
+    }
+
     private fun SessionEntity.toDomain() = Session(id, workoutId, startedAt, finishedAt)
 
     private fun SetRecord.toEntity(entryId: Long) = when (this) {

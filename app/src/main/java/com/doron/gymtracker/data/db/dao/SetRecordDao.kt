@@ -14,6 +14,9 @@ interface SetRecordDao {
     @Update
     suspend fun update(record: SetRecordEntity)
 
+    @Query("DELETE FROM set_records WHERE id = :id")
+    suspend fun deleteById(id: Long)
+
     @Query("SELECT * FROM set_records WHERE entryId = :entryId")
     suspend fun getForEntry(entryId: Long): List<SetRecordEntity>
 
