@@ -11,22 +11,35 @@ import com.doron.gymtracker.domain.model.TimedExerciseDefinition
 import com.doron.gymtracker.domain.model.Workout
 import com.doron.gymtracker.domain.model.WorkoutLabel
 import javax.inject.Inject
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class WorkoutRepositoryImpl @Inject constructor(
     private val dao: WorkoutDao
 ) : WorkoutRepository {
 
+    private val seedLock = Mutex()
+    @Volatile private var seeded = false
+
+    // Seeds in one transaction; also repairs installs where an earlier crash left
+    // workouts saved without their exercises.
     override suspend fun ensureSeeded() {
-        if (dao.getAll().isNotEmpty()) return
-        val workoutEntities = TrainingPlanData.all.map { WorkoutEntity(it.id, it.label.name) }
-        dao.insertAll(workoutEntities)
-        val exerciseEntities = TrainingPlanData.all.flatMap { workout ->
-            workout.exercises.map { it.toEntity(workout.id) }
+        if (seeded) return
+        seedLock.withLock {
+            if (seeded) return
+            if (dao.exerciseCount() == 0) {
+                val workoutEntities = TrainingPlanData.all.map { WorkoutEntity(it.id, it.label.name) }
+                val exerciseEntities = TrainingPlanData.all.flatMap { workout ->
+                    workout.exercises.map { it.toEntity(workout.id) }
+                }
+                dao.seed(workoutEntities, exerciseEntities)
+            }
+            seeded = true
         }
-        dao.insertAllExercises(exerciseEntities)
     }
 
     override suspend fun getAll(): List<Workout> {
+        ensureSeeded()
         val workoutEntities = dao.getAll()
         return workoutEntities.map { entity ->
             val exercises = dao.getExercisesForWorkout(entity.id).map { it.toDomain() }

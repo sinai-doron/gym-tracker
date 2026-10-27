@@ -25,18 +25,33 @@ class WorkoutRepositoryTest {
     }
 
     @Test
-    fun `ensureSeeded calls insertAll with 3 workouts when DB is empty`() = runTest {
-        coEvery { dao.getAll() } returns emptyList()
+    fun `ensureSeeded seeds 3 workouts with exercises when DB is empty`() = runTest {
+        coEvery { dao.exerciseCount() } returns 0
         repo.ensureSeeded()
-        coVerify(exactly = 1) { dao.insertAll(match { it.size == 3 }) }
+        coVerify(exactly = 1) { dao.seed(match { it.size == 3 }, match { it.isNotEmpty() }) }
     }
 
     @Test
-    fun `ensureSeeded is idempotent — skips insert when rows exist`() = runTest {
+    fun `ensureSeeded is idempotent — skips insert when exercises exist`() = runTest {
+        coEvery { dao.exerciseCount() } returns 10
+        repo.ensureSeeded()
+        coVerify(exactly = 0) { dao.seed(any(), any()) }
+    }
+
+    @Test
+    fun `ensureSeeded repairs workouts saved without exercises`() = runTest {
         val seededEntities = TrainingPlanData.all.map { WorkoutEntity(it.id, it.label.name) }
         coEvery { dao.getAll() } returns seededEntities
+        coEvery { dao.exerciseCount() } returns 0
         repo.ensureSeeded()
-        coVerify(exactly = 0) { dao.insertAll(any()) }
+        coVerify(exactly = 1) { dao.seed(any(), any()) }
+    }
+
+    @Test
+    fun `getAll seeds before reading`() = runTest {
+        coEvery { dao.exerciseCount() } returns 0
+        repo.getAll()
+        coVerify(exactly = 1) { dao.seed(any(), any()) }
     }
 
     @Test
