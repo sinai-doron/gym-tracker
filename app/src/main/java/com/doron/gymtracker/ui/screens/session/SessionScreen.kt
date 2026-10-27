@@ -83,7 +83,8 @@ fun SessionScreen(
             updateSet = updateSetUseCase,
             progressionHint = progressionHintUseCase,
             getLastWeight = getLastWeightUseCase,
-            restTimer = viewModel.restTimer)
+            restTimer = viewModel.restTimer,
+            onTargetSetsChanged = viewModel::updateTargetSets)
     }
 
     val detailStates = state.workout?.exercises?.associate { exercise ->
@@ -222,7 +223,7 @@ fun SessionScreen(
             items(state.workout?.exercises ?: emptyList()) { exercise ->
                 val detailState = detailStates[exercise.id]
                 ExerciseCard(
-                    exercise = exercise,
+                    exercise = detailState?.exercise ?: exercise,
                     completedSets = detailState?.completedSets ?: emptyList(),
                     onClick = { selectedExercise = exercise }
                 )

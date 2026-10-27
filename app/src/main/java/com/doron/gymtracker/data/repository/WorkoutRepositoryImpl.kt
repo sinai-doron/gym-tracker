@@ -50,6 +50,9 @@ class WorkoutRepositoryImpl @Inject constructor(
     override suspend fun getById(id: String): Workout? =
         getAll().firstOrNull { it.id == id }
 
+    override suspend fun updateTargetSets(exerciseId: String, sets: Int) =
+        dao.updateTargetSets(exerciseId, sets)
+
     private fun ExerciseDefinition.toEntity(workoutId: String) = when (this) {
         is RepExerciseDefinition -> ExerciseDefinitionEntity(
             id, workoutId, name, "REP", targetSets, restDurationSecs,

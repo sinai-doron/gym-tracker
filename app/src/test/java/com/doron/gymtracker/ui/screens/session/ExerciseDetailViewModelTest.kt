@@ -117,4 +117,21 @@ class ExerciseDetailViewModelTest {
         assertEquals(timedExercise.restDurationSecs, vmB.uiState.value.restCountdownSecs)
         restTimer.dismiss()
     }
+
+    @Test
+    fun `changeTargetSets updates the exercise and reports the new count`() = runTest(testDispatcher) {
+        var saved: Pair<String, Int>? = null
+        val vm = ExerciseDetailViewModel(1L, repExercise, logSet,
+            onTargetSetsChanged = { id, sets -> saved = id to sets })
+        vm.changeTargetSets(1)
+        assertEquals(repExercise.targetSets + 1, vm.uiState.value.exercise.targetSets)
+        assertEquals(repExercise.id to repExercise.targetSets + 1, saved)
+    }
+
+    @Test
+    fun `changeTargetSets never goes below one set`() = runTest(testDispatcher) {
+        val vm = ExerciseDetailViewModel(1L, repExercise, logSet)
+        repeat(20) { vm.changeTargetSets(-1) }
+        assertEquals(1, vm.uiState.value.exercise.targetSets)
+    }
 }

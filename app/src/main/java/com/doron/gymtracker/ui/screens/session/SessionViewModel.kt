@@ -80,4 +80,11 @@ class SessionViewModel @AssistedInject constructor(
             state.copy(entries = state.entries + (entry.exerciseId to entry))
         }
     }
+
+    /** Saves a new set count to the training plan, so it sticks for future sessions too. */
+    fun updateTargetSets(exerciseId: String, sets: Int) {
+        viewModelScope.launch {
+            workoutRepo.updateTargetSets(exerciseId, sets)
+        }
+    }
 }

@@ -6,4 +6,5 @@ interface WorkoutRepository {
     suspend fun ensureSeeded()
     suspend fun getAll(): List<Workout>
     suspend fun getById(id: String): Workout?
+    suspend fun updateTargetSets(exerciseId: String, sets: Int)
 }

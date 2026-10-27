@@ -9,6 +9,8 @@ import com.doron.gymtracker.domain.model.SetRecord
 import com.doron.gymtracker.domain.model.TimedSetRecord
 import com.doron.gymtracker.domain.model.ProgressionHint
 import com.doron.gymtracker.domain.model.RepExerciseDefinition
+import com.doron.gymtracker.domain.model.DistanceExerciseDefinition
+import com.doron.gymtracker.domain.model.TimedExerciseDefinition
 import com.doron.gymtracker.domain.usecase.GetLastWeightUseCase
 import com.doron.gymtracker.domain.usecase.LogSetUseCase
 import com.doron.gymtracker.domain.usecase.ProgressionHintUseCase
@@ -40,7 +42,8 @@ class ExerciseDetailViewModel(
     private val updateSet: UpdateSetUseCase? = null,
     private val progressionHint: ProgressionHintUseCase? = null,
     private val getLastWeight: GetLastWeightUseCase? = null,
-    restTimer: RestTimer? = null
+    restTimer: RestTimer? = null,
+    private val onTargetSetsChanged: (exerciseId: String, sets: Int) -> Unit = { _, _ -> }
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ExerciseDetailUiState(exercise))
@@ -164,4 +167,17 @@ class ExerciseDetailViewModel(
     fun adjustRestTimer(deltaSecs: Int) = restTimer.adjust(deltaSecs)
 
     private fun startRestTimer(durationSecs: Int) = restTimer.start(durationSecs)
+
+    fun changeTargetSets(delta: Int) {
+        val exercise = _uiState.value.exercise
+        val sets = (exercise.targetSets + delta).coerceIn(1, 10)
+        if (sets == exercise.targetSets) return
+        val updated = when (exercise) {
+            is RepExerciseDefinition -> exercise.copy(targetSets = sets)
+            is TimedExerciseDefinition -> exercise.copy(targetSets = sets)
+            is DistanceExerciseDefinition -> exercise.copy(targetSets = sets)
+        }
+        _uiState.update { it.copy(exercise = updated) }
+        onTargetSetsChanged(exercise.id, sets)
+    }
 }

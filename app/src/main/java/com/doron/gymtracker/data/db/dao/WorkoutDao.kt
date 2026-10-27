@@ -28,6 +28,9 @@ interface WorkoutDao {
     @Query("SELECT * FROM workouts")
     suspend fun getAll(): List<WorkoutEntity>
 
+    @Query("UPDATE exercise_definitions SET targetSets = :sets WHERE id = :exerciseId")
+    suspend fun updateTargetSets(exerciseId: String, sets: Int)
+
     @Query("SELECT * FROM exercise_definitions WHERE workoutId = :workoutId")
     suspend fun getExercisesForWorkout(workoutId: String): List<ExerciseDefinitionEntity>
 }
