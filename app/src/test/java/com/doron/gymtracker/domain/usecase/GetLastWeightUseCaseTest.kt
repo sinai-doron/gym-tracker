@@ -26,14 +26,14 @@ class GetLastWeightUseCaseTest {
 
     @Test
     fun `returns null when no completed sessions`() = runTest {
-        coEvery { repo.getLastCompleted() } returns null
+        coEvery { repo.getCompletedSince(0) } returns emptyList()
         assertNull(useCase("d1_e1"))
     }
 
     @Test
     fun `returns max weight from last session for the exercise`() = runTest {
         val session = Session(1L, "workout_a", 0L, 1000L)
-        coEvery { repo.getLastCompleted() } returns session
+        coEvery { repo.getCompletedSince(0) } returns listOf(session)
         coEvery { repo.getEntriesForSession(1L) } returns listOf(
             ExerciseEntry(1L, 1L, "d1_e1", listOf(
                 RepSetRecord(1L, 1L, 0L, reps = 6, weightKg = 60f),
@@ -44,14 +44,23 @@ class GetLastWeightUseCaseTest {
     }
 
     @Test
-    fun `returns null when exercise not in last session`() = runTest {
-        val session = Session(1L, "workout_a", 0L, 1000L)
-        coEvery { repo.getLastCompleted() } returns session
-        coEvery { repo.getEntriesForSession(1L) } returns listOf(
-            ExerciseEntry(1L, 1L, "d1_e2", listOf(
-                RepSetRecord(1L, 1L, 0L, reps = 6, weightKg = 60f)
-            ))
+    fun `looks past sessions of other workouts`() = runTest {
+        val workoutB = Session(2L, "workout_b", 2000L, 3000L)
+        val workoutA = Session(1L, "workout_a", 0L, 1000L)
+        coEvery { repo.getCompletedSince(0) } returns listOf(workoutB, workoutA)
+        coEvery { repo.getEntriesForSession(2L) } returns listOf(
+            ExerciseEntry(2L, 2L, "d2_e1", listOf(RepSetRecord(3L, 2L, 0L, reps = 8, weightKg = 100f)))
         )
+        coEvery { repo.getEntriesForSession(1L) } returns listOf(
+            ExerciseEntry(1L, 1L, "d1_e1", listOf(RepSetRecord(1L, 1L, 0L, reps = 6, weightKg = 60f)))
+        )
+        assertEquals(60f, useCase("d1_e1"))
+    }
+
+    @Test
+    fun `ignores cardio sessions`() = runTest {
+        val run = Session(3L, "", 0L, 1000L, type = "RUNNING")
+        coEvery { repo.getCompletedSince(0) } returns listOf(run)
         assertNull(useCase("d1_e1"))
     }
 }
