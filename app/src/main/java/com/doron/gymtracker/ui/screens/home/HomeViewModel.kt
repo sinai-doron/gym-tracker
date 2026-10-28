@@ -15,6 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.temporal.TemporalAdjusters
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -116,7 +117,8 @@ class HomeViewModel @Inject constructor(
 
     private suspend fun loadWeeklyStats() {
         val today = LocalDate.now()
-        val weekStart = today.with(DayOfWeek.SUNDAY)
+        // previousOrSame: with(SUNDAY) uses Monday-based ISO weeks and jumps to the coming Sunday
+        val weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
         val weekStartMillis = weekStart.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
         val sessions = sessionRepo.getCompletedSince(weekStartMillis)
@@ -131,19 +133,8 @@ class HomeViewModel @Inject constructor(
             s.finishedAt?.let {
                 java.time.Instant.ofEpochMilli(s.startedAt).atZone(ZoneId.systemDefault()).toLocalDate()
             }
-        }.toSet().sortedDescending()
-
-        var streak = 0
-        var checkDate = today
-        for (date in datesWithSessions) {
-            if (date == checkDate || date == checkDate.minusDays(1)) {
-                if (date == checkDate.minusDays(1)) checkDate = date
-                streak++
-                checkDate = date.minusDays(1)
-            } else if (date.isBefore(checkDate)) {
-                break
-            }
-        }
+        }.toSet()
+        val streak = streakDays(datesWithSessions, today)
 
         _uiState.update {
             it.copy(weeklyStats = WeeklyStats(
@@ -154,4 +145,18 @@ class HomeViewModel @Inject constructor(
             ))
         }
     }
+}
+
+/**
+ * Consecutive days with a finished session, ending today — or yesterday, so the
+ * streak isn't shown as broken before today's workout.
+ */
+internal fun streakDays(datesWithSessions: Set<LocalDate>, today: LocalDate): Int {
+    var day = if (today in datesWithSessions) today else today.minusDays(1)
+    var streak = 0
+    while (day in datesWithSessions) {
+        streak++
+        day = day.minusDays(1)
+    }
+    return streak
 }
