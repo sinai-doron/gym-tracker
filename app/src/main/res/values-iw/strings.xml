@@ -24,4 +24,18 @@
     <string name="deload_week_banner">שבוע דילוד — 60% ממשקל אחרון, 2 סטים</string>
     <string name="settings">הגדרות</string>
     <string name="language">שפה</string>
+    <string name="next_workout">האימון הבא</string>
+    <string name="choose_other_workout">בחר אימון אחר</string>
+    <string name="workouts">אימונים</string>
+    <string name="up_next">הבא בתור</string>
+    <string name="never_done">עוד לא בוצע</string>
+    <string name="done_today">בוצע היום</string>
+    <string name="done_yesterday">בוצע אתמול</string>
+    <string name="done_days_ago">בוצע לפני %d ימים</string>
+    <string name="typical_minutes">כ-%d דק׳</string>
+    <string name="exercises_count">%d תרגילים</string>
+    <string name="sets_count">%d סטים</string>
+    <string name="weight_value">%s ק״ג</string>
+    <string name="distance_value">%d מ׳</string>
+    <string name="more_exercises">ועוד %d תרגילים</string>
 </resources>

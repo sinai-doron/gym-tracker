@@ -23,6 +23,7 @@ import com.doron.gymtracker.ui.screens.home.HomeScreen
 import com.doron.gymtracker.ui.screens.session.SessionScreen
 import com.doron.gymtracker.ui.screens.session.SessionViewModel
 import com.doron.gymtracker.ui.screens.settings.SettingsScreen
+import com.doron.gymtracker.ui.screens.workouts.WorkoutsScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -38,8 +39,20 @@ fun NavGraph() {
                 onCardioStart = { type ->
                     navController.navigate("gps-lock/$type")
                 },
+                onChooseWorkout = { navController.navigate("workouts") },
                 onHistoryClick = { navController.navigate("history") },
                 onSettingsClick = { navController.navigate("settings") }
+            )
+        }
+        composable("workouts") {
+            WorkoutsScreen(
+                onBack = { navController.popBackStack() },
+                onSessionStart = { sessionId, workoutId ->
+                    // Finishing the session should land back on home, not on this screen
+                    navController.navigate("session/$sessionId/$workoutId") {
+                        popUpTo("workouts") { inclusive = true }
+                    }
+                }
             )
         }
         composable("settings") {

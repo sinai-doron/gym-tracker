@@ -6,7 +6,9 @@ import com.doron.gymtracker.data.StepCounterManager
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.data.seed.TrainingPlanData
+import com.doron.gymtracker.domain.model.WorkoutPreview
 import com.doron.gymtracker.domain.usecase.GetNextWorkoutUseCase
+import com.doron.gymtracker.domain.usecase.GetWorkoutPreviewUseCase
 import com.doron.gymtracker.domain.usecase.StartSessionUseCase
 import io.mockk.coEvery
 import io.mockk.every
@@ -49,7 +51,9 @@ class HomeViewModelTest {
         every { stepCounter.todaySteps } returns MutableStateFlow(0)
         healthConnect = mockk(relaxed = true)
         every { healthConnect.isAvailable } returns false
-        viewModel = HomeViewModel(getNextWorkout, startSession, workoutRepo, sessionRepo, stepCounter, healthConnect)
+        val getWorkoutPreview = mockk<GetWorkoutPreviewUseCase>()
+        coEvery { getWorkoutPreview(any(), any()) } answers { WorkoutPreview(firstArg(), emptyList(), null, null) }
+        viewModel = HomeViewModel(getNextWorkout, startSession, workoutRepo, sessionRepo, stepCounter, healthConnect, getWorkoutPreview)
     }
 
     @After
@@ -64,6 +68,12 @@ class HomeViewModelTest {
             val state = expectMostRecentItem()
             assertEquals("workout_b", state.suggestedWorkout?.id)
         }
+    }
+
+    @Test
+    fun `preview is built for the suggested workout`() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals("workout_b", viewModel.uiState.value.nextWorkoutPreview?.workout?.id)
     }
 
     @Test

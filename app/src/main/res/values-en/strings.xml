@@ -24,4 +24,18 @@
     <string name="deload_week_banner">Deload week — 60%% of last weight, 2 sets</string>
     <string name="settings">Settings</string>
     <string name="language">Language</string>
+    <string name="next_workout">Next workout</string>
+    <string name="choose_other_workout">Choose another workout</string>
+    <string name="workouts">Workouts</string>
+    <string name="up_next">Up next</string>
+    <string name="never_done">Not done yet</string>
+    <string name="done_today">Done today</string>
+    <string name="done_yesterday">Done yesterday</string>
+    <string name="done_days_ago">Done %d days ago</string>
+    <string name="typical_minutes">~%d min</string>
+    <string name="exercises_count">%d exercises</string>
+    <string name="sets_count">%d sets</string>
+    <string name="weight_value">%s kg</string>
+    <string name="distance_value">%d m</string>
+    <string name="more_exercises">+%d more exercises</string>
 </resources>

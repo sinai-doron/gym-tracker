@@ -7,7 +7,9 @@ import com.doron.gymtracker.data.StepCounterManager
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.model.Workout
+import com.doron.gymtracker.domain.model.WorkoutPreview
 import com.doron.gymtracker.domain.usecase.GetNextWorkoutUseCase
+import com.doron.gymtracker.domain.usecase.GetWorkoutPreviewUseCase
 import com.doron.gymtracker.domain.usecase.StartSessionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.DayOfWeek
@@ -30,6 +32,7 @@ data class WeeklyStats(
 data class HomeUiState(
     val suggestedWorkout: Workout? = null,
     val selectedWorkout: Workout? = null,
+    val nextWorkoutPreview: WorkoutPreview? = null,
     val allWorkouts: List<Workout> = emptyList(),
     val isLoading: Boolean = true,
     val todaySteps: Int = 0,
@@ -44,32 +47,16 @@ class HomeViewModel @Inject constructor(
     private val workoutRepo: WorkoutRepository,
     private val sessionRepo: SessionRepository,
     val stepCounter: StepCounterManager,
-    private val healthConnect: HealthConnectManager
+    private val healthConnect: HealthConnectManager,
+    private val getWorkoutPreview: GetWorkoutPreviewUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
+        refresh()
         viewModelScope.launch {
-            val suggested = getNextWorkout()
-            val all = workoutRepo.getAll()
-            val hcHasPerms = healthConnect.isAvailable && healthConnect.hasPermissions()
-            val hasSteps = stepCounter.isAvailable || hcHasPerms
-            _uiState.update {
-                it.copy(
-                    suggestedWorkout = suggested,
-                    selectedWorkout = suggested,
-                    allWorkouts = all,
-                    isLoading = false,
-                    stepsAvailable = hasSteps
-                )
-            }
-            if (hcHasPerms) {
-                val hcSteps = healthConnect.readTodaySteps()
-                _uiState.update { it.copy(todaySteps = hcSteps.toInt()) }
-            }
-            loadWeeklyStats()
             if (stepCounter.isAvailable) {
                 stepCounter.start()
             }
@@ -85,6 +72,32 @@ class HomeViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         stepCounter.stop()
+    }
+
+    /** Reloads everything that changes after a workout: next workout, its preview, stats. */
+    fun refresh() {
+        viewModelScope.launch {
+            val suggested = getNextWorkout()
+            val all = workoutRepo.getAll()
+            val preview = getWorkoutPreview(suggested)
+            val hcHasPerms = healthConnect.isAvailable && healthConnect.hasPermissions()
+            val hasSteps = stepCounter.isAvailable || hcHasPerms
+            _uiState.update {
+                it.copy(
+                    suggestedWorkout = suggested,
+                    selectedWorkout = suggested,
+                    nextWorkoutPreview = preview,
+                    allWorkouts = all,
+                    isLoading = false,
+                    stepsAvailable = hasSteps
+                )
+            }
+            if (hcHasPerms) {
+                val hcSteps = healthConnect.readTodaySteps()
+                _uiState.update { it.copy(todaySteps = hcSteps.toInt()) }
+            }
+            loadWeeklyStats()
+        }
     }
 
     fun selectWorkout(workout: Workout) {
