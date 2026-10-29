@@ -1,6 +1,7 @@
 package com.doron.gymtracker.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -43,23 +44,32 @@ fun WorkoutMetaRow(preview: WorkoutPreview, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ExercisePreviewList(exercises: List<ExercisePreview>, modifier: Modifier = Modifier) {
+fun ExercisePreviewList(
+    exercises: List<ExercisePreview>,
+    modifier: Modifier = Modifier,
+    onExerciseClick: ((exerciseId: String) -> Unit)? = null
+) {
     // Reserve the weight column on every row so the sets column stays aligned
     val showWeights = exercises.any { it.lastWeightKg != null }
     Column(modifier = modifier) {
         exercises.forEachIndexed { i, item ->
             if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
-            ExercisePreviewRow(item, showWeights)
+            ExercisePreviewRow(item, showWeights, onExerciseClick)
         }
     }
 }
 
 @Composable
-private fun ExercisePreviewRow(item: ExercisePreview, showWeights: Boolean) {
+private fun ExercisePreviewRow(
+    item: ExercisePreview,
+    showWeights: Boolean,
+    onClick: ((exerciseId: String) -> Unit)?
+) {
     val exercise = item.exercise
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .let { m -> if (onClick != null) m.clickable { onClick(exercise.id) } else m }
             .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

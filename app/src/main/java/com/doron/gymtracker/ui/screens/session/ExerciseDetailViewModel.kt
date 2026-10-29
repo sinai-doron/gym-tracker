@@ -44,10 +44,11 @@ class ExerciseDetailViewModel(
     private val getLastWeight: GetLastWeightUseCase? = null,
     restTimer: RestTimer? = null,
     private val onTargetSetsChanged: (exerciseId: String, sets: Int) -> Unit = { _, _ -> },
-    private val onSetDeleted: (setId: Long) -> Unit = {}
+    private val onSetDeleted: (setId: Long) -> Unit = {},
+    loggedSets: List<SetRecord> = emptyList()
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(ExerciseDetailUiState(exercise))
+    private val _uiState = MutableStateFlow(ExerciseDetailUiState(exercise, completedSets = loggedSets))
     val uiState: StateFlow<ExerciseDetailUiState> = _uiState.asStateFlow()
 
     private val restTimer = restTimer ?: RestTimer(viewModelScope)

@@ -2,6 +2,7 @@ package com.doron.gymtracker.data.repository
 
 import com.doron.gymtracker.data.db.entities.LocationLogEntity
 import com.doron.gymtracker.domain.model.ExerciseEntry
+import com.doron.gymtracker.domain.model.ExerciseSessionSets
 import com.doron.gymtracker.domain.model.Session
 import com.doron.gymtracker.domain.model.SetRecord
 import com.doron.gymtracker.domain.model.TrackLog
@@ -26,6 +27,10 @@ interface SessionRepository {
     suspend fun deleteExerciseFromSession(sessionId: Long, exerciseId: String)
     suspend fun deleteSession(sessionId: Long)
     suspend fun getUnfinishedStartedBefore(beforeMillis: Long): List<Session>
+    /** The gym session still in progress, if any (e.g. the app was closed mid-workout). */
+    suspend fun getOpenGymSession(): Session?
+    /** The exercise's sets per finished session, oldest session first. */
+    suspend fun getExerciseHistory(exerciseId: String): List<ExerciseSessionSets>
     /** Time of the last logged set or GPS point, or null if nothing was recorded. */
     suspend fun getLastActivityAt(sessionId: Long): Long?
     suspend fun closeSession(sessionId: Long, finishedAt: Long)

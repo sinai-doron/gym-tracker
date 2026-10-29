@@ -30,16 +30,17 @@ class SessionTimerService : Service() {
         private const val CHANNEL_ID = "session_timer"
         private const val NOTIFICATION_ID = 1001
 
-        @Volatile var sessionElapsedSecs = 0L
-            private set
+        @Volatile private var sessionStartedAt = 0L
+        val sessionElapsedSecs: Long
+            get() = if (sessionStartedAt == 0L) 0L else (System.currentTimeMillis() - sessionStartedAt) / 1000
         @Volatile var restRemainingSecs: Int? = null
         @Volatile var workoutName: String = ""
         @Volatile var currentExercise: String = ""
         @Volatile var setInfo: String = ""
 
-        fun start(context: Context, name: String) {
+        fun start(context: Context, name: String, startedAt: Long) {
             workoutName = name
-            sessionElapsedSecs = 0
+            sessionStartedAt = startedAt
             restRemainingSecs = null
             context.startForegroundService(Intent(context, SessionTimerService::class.java))
         }
@@ -73,7 +74,6 @@ class SessionTimerService : Service() {
         scope.launch {
             while (true) {
                 delay(1_000)
-                sessionElapsedSecs++
                 updateNotification()
             }
         }
@@ -83,7 +83,7 @@ class SessionTimerService : Service() {
 
     override fun onDestroy() {
         scope.cancel()
-        sessionElapsedSecs = 0
+        sessionStartedAt = 0
         restRemainingSecs = null
         super.onDestroy()
     }

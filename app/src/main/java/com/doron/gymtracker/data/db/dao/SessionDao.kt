@@ -27,6 +27,9 @@ interface SessionDao {
     @Query("DELETE FROM sessions WHERE id = :id")
     suspend fun deleteById(id: Long)
 
+    @Query("SELECT * FROM sessions WHERE finishedAt IS NULL AND type = 'GYM' ORDER BY startedAt DESC LIMIT 1")
+    suspend fun getLatestUnfinishedGym(): SessionEntity?
+
     @Query("SELECT * FROM sessions WHERE finishedAt IS NULL AND startedAt < :beforeMillis")
     suspend fun getUnfinishedStartedBefore(beforeMillis: Long): List<SessionEntity>
 

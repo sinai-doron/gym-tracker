@@ -28,6 +28,21 @@ android {
         manifestPlaceholders["MAPS_API_KEY"] = localProps.getProperty("MAPS_API_KEY", "")
     }
 
+    // One fixed key, so an install from any computer updates the app in place instead of
+    // requiring an uninstall (which wipes the workout data). The key stays out of this public
+    // repo: point signing.storeFile in local.properties at it; without it the default debug
+    // key of the current machine is used.
+    signingConfigs {
+        getByName("debug") {
+            localProps.getProperty("signing.storeFile")?.let { path ->
+                storeFile = file(path)
+                storePassword = localProps.getProperty("signing.storePassword", "android")
+                keyAlias = localProps.getProperty("signing.keyAlias", "androiddebugkey")
+                keyPassword = localProps.getProperty("signing.keyPassword", "android")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false

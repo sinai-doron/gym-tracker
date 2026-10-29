@@ -58,7 +58,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.doron.gymtracker.R
+import com.doron.gymtracker.domain.model.Session
 import com.doron.gymtracker.domain.model.Weather
+import com.doron.gymtracker.domain.model.Workout
+import com.doron.gymtracker.domain.usecase.ProgramStatus
 import com.doron.gymtracker.domain.model.WeatherCondition
 import com.doron.gymtracker.domain.model.WorkoutPreview
 import com.doron.gymtracker.ui.components.ExercisePreviewList
@@ -72,6 +75,7 @@ fun HomeScreen(
     onSessionStart: (sessionId: Long, workoutId: String) -> Unit,
     onCardioStart: (type: String) -> Unit,
     onChooseWorkout: () -> Unit,
+    onExerciseProgress: (exerciseId: String) -> Unit,
     onHistoryClick: () -> Unit,
     onSettingsClick: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
@@ -183,10 +187,17 @@ fun HomeScreen(
                 }
             }
 
+            // Programme week: A/B variants and the next deload
+            state.programStatus?.let { ProgramStatusLine(it) }
+            Spacer(Modifier.height(8.dp))
+
             // Weather
             val weather = state.weather
             if (weather != null) {
                 WeatherRow(weather)
+            } else if (state.weatherLoading) {
+                // Hold the row's space so the cards below don't jump when the weather arrives
+                Spacer(Modifier.height(WEATHER_ROW_HEIGHT))
             } else if (state.weatherNeedsPermission) {
                 TextButton(
                     onClick = { weatherLocationLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION) },
@@ -202,10 +213,22 @@ fun HomeScreen(
 
             Spacer(Modifier.height(12.dp))
 
+            val openSession = state.openSession
+            val openWorkout = state.openSessionWorkout
+            if (openSession != null && openWorkout != null) {
+                ResumeWorkoutCard(
+                    session = openSession,
+                    workout = openWorkout,
+                    onResume = { onSessionStart(openSession.id, openSession.workoutId) }
+                )
+                Spacer(Modifier.height(12.dp))
+            }
+
             state.nextWorkoutPreview?.let { preview ->
                 NextWorkoutCard(
                     preview = preview,
                     onShowAll = onChooseWorkout,
+                    onExerciseClick = onExerciseProgress,
                     onStart = {
                         scope.launch {
                             val result = viewModel.startSession()
@@ -267,12 +290,69 @@ fun HomeScreen(
 }
 
 @Composable
+private fun ProgramStatusLine(status: ProgramStatus) {
+    val parts = listOf(
+        stringResource(R.string.program_week, status.weekNumber),
+        stringResource(if (status.isWeekB) R.string.week_b else R.string.week_a),
+        when (status.weeksUntilDeload) {
+            0 -> stringResource(R.string.deload_now)
+            1 -> stringResource(R.string.deload_next_week)
+            else -> stringResource(R.string.deload_in_weeks, status.weeksUntilDeload)
+        }
+    )
+    Text(
+        parts.joinToString(" · "),
+        style = MaterialTheme.typography.bodyMedium,
+        color = if (status.isDeloadWeek) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+    )
+}
+
+@Composable
+private fun ResumeWorkoutCard(session: Session, workout: Workout, onResume: () -> Unit) {
+    val startTime = remember(session.startedAt) {
+        java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault()).format(java.util.Date(session.startedAt))
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Purple.copy(alpha = 0.12f), RoundedCornerShape(20.dp))
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                stringResource(R.string.open_workout),
+                style = MaterialTheme.typography.labelMedium,
+                color = Purple
+            )
+            Text(
+                workout.label.displayName,
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+            )
+            Text(
+                stringResource(R.string.started_at, startTime),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Button(
+            onClick = onResume,
+            shape = MaterialTheme.shapes.large,
+            colors = ButtonDefaults.buttonColors(containerColor = Purple)
+        ) {
+            Text(stringResource(R.string.resume_workout))
+        }
+    }
+}
+
+@Composable
 private fun WeatherRow(weather: Weather) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .height(WEATHER_ROW_HEIGHT)
             .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
-            .padding(horizontal = 16.dp, vertical = 10.dp),
+            .padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(weather.condition.emoji, fontSize = 28.sp)
@@ -310,9 +390,15 @@ private fun WeatherCondition.labelRes(): Int = when (this) {
 }
 
 private const val HOME_EXERCISES_SHOWN = 3
+private val WEATHER_ROW_HEIGHT = 56.dp
 
 @Composable
-private fun NextWorkoutCard(preview: WorkoutPreview, onShowAll: () -> Unit, onStart: () -> Unit) {
+private fun NextWorkoutCard(
+    preview: WorkoutPreview,
+    onShowAll: () -> Unit,
+    onExerciseClick: (String) -> Unit,
+    onStart: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -349,7 +435,7 @@ private fun NextWorkoutCard(preview: WorkoutPreview, onShowAll: () -> Unit, onSt
         Spacer(Modifier.height(12.dp))
         WorkoutMetaRow(preview)
         Spacer(Modifier.height(8.dp))
-        ExercisePreviewList(preview.exercises.take(HOME_EXERCISES_SHOWN))
+        ExercisePreviewList(preview.exercises.take(HOME_EXERCISES_SHOWN), onExerciseClick = onExerciseClick)
         val hidden = preview.exercises.size - HOME_EXERCISES_SHOWN
         if (hidden > 0) {
             // The workouts screen opens on the upcoming workout, so this shows the full list

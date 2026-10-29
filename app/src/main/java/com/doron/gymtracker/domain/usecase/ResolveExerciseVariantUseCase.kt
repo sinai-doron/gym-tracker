@@ -12,8 +12,6 @@ class ResolveExerciseVariantUseCase @Inject constructor(
         sessionDateMs: Long = System.currentTimeMillis()
     ): ExerciseDefinition {
         val variantB = exercise.variantB ?: return exercise
-        val elapsedMs = sessionDateMs - prefs.programStartEpochMs
-        val weekNumber = (elapsedMs / (7L * 24 * 60 * 60 * 1000)).toInt() + 1
-        return if (weekNumber % 2 == 0) variantB else exercise
+        return if (prefs.weekNumber(sessionDateMs) % 2 == 0) variantB else exercise
     }
 }

@@ -74,6 +74,7 @@ fun SessionScreen(
     progressionHintUseCase: ProgressionHintUseCase? = null,
     getLastWeightUseCase: GetLastWeightUseCase? = null,
     settingsPrefs: SettingsPrefs? = null,
+    onShowProgress: (exerciseId: String) -> Unit = {},
     onFinished: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -88,7 +89,8 @@ fun SessionScreen(
             getLastWeight = getLastWeightUseCase,
             restTimer = viewModel.restTimer,
             onTargetSetsChanged = viewModel::updateTargetSets,
-            onSetDeleted = viewModel::deleteSet)
+            onSetDeleted = viewModel::deleteSet,
+            loggedSets = state.loggedSets[exercise.id].orEmpty())
     }
 
     val detailStates = state.workout?.exercises?.associate { exercise ->
@@ -114,7 +116,7 @@ fun SessionScreen(
     // Start foreground service when workout loads
     LaunchedEffect(state.workout) {
         state.workout?.let {
-            SessionTimerService.start(context, it.label.displayName)
+            SessionTimerService.start(context, it.label.displayName, state.startedAt)
         }
     }
 
@@ -322,7 +324,13 @@ fun SessionScreen(
     if (exercise != null) {
         val detailVm = detailViewModelFor(exercise)
         ModalBottomSheet(onDismissRequest = { selectedExercise = null }, sheetState = sheetState) {
-            ExerciseDetailSheet(viewModel = detailVm)
+            ExerciseDetailSheet(
+                viewModel = detailVm,
+                onShowProgress = {
+                    selectedExercise = null
+                    onShowProgress(exercise.id)
+                }
+            )
         }
     }
 }

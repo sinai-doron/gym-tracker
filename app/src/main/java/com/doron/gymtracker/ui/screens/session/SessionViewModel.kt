@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.model.ExerciseEntry
+import com.doron.gymtracker.domain.model.SetRecord
 import com.doron.gymtracker.domain.model.Workout
 import com.doron.gymtracker.domain.model.TrackLog
 import com.doron.gymtracker.domain.usecase.FinishSessionUseCase
@@ -27,7 +28,10 @@ data class SessionUiState(
     val entries: Map<String, ExerciseEntry> = emptyMap(),
     val isFinished: Boolean = false,
     val isDeloadWeek: Boolean = false,
-    val tracks: List<TrackLog> = emptyList()
+    val tracks: List<TrackLog> = emptyList(),
+    val startedAt: Long = 0L,
+    /** Sets already logged in this session (non-empty when resuming), by exercise id. */
+    val loggedSets: Map<String, List<SetRecord>> = emptyMap()
 )
 
 class SessionViewModel @AssistedInject constructor(
@@ -54,18 +58,19 @@ class SessionViewModel @AssistedInject constructor(
     init {
         _uiState.update { it.copy(isDeloadWeek = isDeloadWeek()) }
         viewModelScope.launch {
+            // A resumed session keeps its original start time and the sets already logged
+            val startedAt = sessionRepo.getById(sessionId)?.startedAt ?: System.currentTimeMillis()
+            val loggedSets = sessionRepo.getEntriesForSession(sessionId).associate { it.exerciseId to it.sets }
             val raw = workoutRepo.getById(workoutId)
-            // Resolve A/B variant for each exercise based on current week number
+            // Resolve A/B variant by the week the session started in
             val resolved = raw?.let { w ->
-                val now = System.currentTimeMillis()
-                w.copy(exercises = w.exercises.map { resolveVariant(it, now) })
+                w.copy(exercises = w.exercises.map { resolveVariant(it, startedAt) })
             }
-            _uiState.update { it.copy(workout = resolved) }
-        }
-        viewModelScope.launch {
+            // Loaded together so exercise sheets are created with their logged sets
+            _uiState.update { it.copy(workout = resolved, startedAt = startedAt, loggedSets = loggedSets) }
             while (!_uiState.value.isFinished) {
+                _uiState.update { it.copy(elapsedSecs = (System.currentTimeMillis() - startedAt) / 1000) }
                 delay(1_000)
-                _uiState.update { it.copy(elapsedSecs = it.elapsedSecs + 1) }
             }
         }
         viewModelScope.launch {

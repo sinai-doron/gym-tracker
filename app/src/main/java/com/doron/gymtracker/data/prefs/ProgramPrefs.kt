@@ -13,4 +13,8 @@ class ProgramPrefs @Inject constructor() {
             .atStartOfDay()
             .toInstant(ZoneOffset.UTC)
             .toEpochMilli()
+
+    /** 1-based programme week containing [atMs]. */
+    fun weekNumber(atMs: Long): Int =
+        ((atMs - programStartEpochMs) / (7L * 24 * 60 * 60 * 1000)).toInt() + 1
 }

@@ -7,8 +7,10 @@ class IsDeloadWeekUseCase @Inject constructor(
     private val prefs: ProgramPrefs
 ) {
     operator fun invoke(sessionDateMs: Long = System.currentTimeMillis()): Boolean {
-        val elapsedMs = sessionDateMs - prefs.programStartEpochMs
-        val weekNumber = (elapsedMs / (7L * 24 * 60 * 60 * 1000)).toInt() + 1
-        return weekNumber % 6 == 0
+        return prefs.weekNumber(sessionDateMs) % DELOAD_EVERY_WEEKS == 0
+    }
+
+    companion object {
+        const val DELOAD_EVERY_WEEKS = 6
     }
 }

@@ -23,6 +23,7 @@ class IsDeloadWeekUseCaseTest {
     fun setup() {
         prefs = mockk()
         every { prefs.programStartEpochMs } returns startEpoch
+        every { prefs.weekNumber(any()) } answers { callOriginal() }
         useCase = IsDeloadWeekUseCase(prefs)
     }
 

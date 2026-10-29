@@ -29,6 +29,16 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.doron.gymtracker.data.BackupManager
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.AlertDialog
+import androidx.activity.result.contract.ActivityResultContracts
+import android.widget.Toast
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -58,6 +68,57 @@ fun SettingsScreen(
     val currentLanguage by viewModel.languageCode.collectAsState()
     val healthConnectGranted by viewModel.healthConnectGranted.collectAsState()
     val context = LocalContext.current
+
+    val backupEvent by viewModel.backupEvent.collectAsState()
+    var pendingRestore by remember { mutableStateOf<android.net.Uri?>(null) }
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/zip")
+    ) { uri -> uri?.let { viewModel.exportBackup(it) } }
+    val restoreLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri -> pendingRestore = uri }
+
+    LaunchedEffect(backupEvent) {
+        when (val event = backupEvent) {
+            SettingsViewModel.BackupEvent.Saved ->
+                Toast.makeText(context, R.string.backup_saved, Toast.LENGTH_SHORT).show()
+            SettingsViewModel.BackupEvent.Restored -> {
+                // The database was swapped underneath the running app: start fresh
+                val restart = context.packageManager.getLaunchIntentForPackage(context.packageName)!!
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                context.startActivity(restart)
+                Runtime.getRuntime().exit(0)
+            }
+            is SettingsViewModel.BackupEvent.Failed -> Toast.makeText(
+                context,
+                when (event.reason) {
+                    BackupManager.RestoreResult.NotABackup -> R.string.backup_not_valid
+                    BackupManager.RestoreResult.FromNewerVersion -> R.string.backup_newer_version
+                    else -> R.string.backup_failed
+                },
+                Toast.LENGTH_LONG
+            ).show()
+            null -> Unit
+        }
+        if (backupEvent != null) viewModel.backupEventHandled()
+    }
+
+    pendingRestore?.let { uri ->
+        AlertDialog(
+            onDismissRequest = { pendingRestore = null },
+            title = { Text(stringResource(R.string.restore_confirm_title)) },
+            text = { Text(stringResource(R.string.restore_confirm_text)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    pendingRestore = null
+                    viewModel.restoreBackup(uri)
+                }) { Text(stringResource(R.string.restore_backup), color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingRestore = null }) { Text(stringResource(R.string.cancel)) }
+            }
+        )
+    }
 
     val hcPermissionLauncher = rememberLauncherForActivityResult(
         PermissionController.createRequestPermissionResultContract()
@@ -124,6 +185,37 @@ fun SettingsScreen(
                                     modifier = Modifier.padding(start = 8.dp)
                                 )
                             }
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(24.dp))
+                Text(stringResource(R.string.backup), style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(12.dp))
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            stringResource(R.string.backup_description),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        Button(
+                            onClick = { exportLauncher.launch("gym-tracker-backup-${java.time.LocalDate.now()}.zip") },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(stringResource(R.string.save_backup))
+                        }
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedButton(
+                            onClick = { restoreLauncher.launch(arrayOf("application/zip", "application/octet-stream")) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(stringResource(R.string.restore_backup))
                         }
                     }
                 }

@@ -12,6 +12,7 @@ import com.doron.gymtracker.data.db.entities.SetRecordEntity
 import com.doron.gymtracker.data.db.entities.TrackLogEntity
 import com.doron.gymtracker.domain.model.DistanceSetRecord
 import com.doron.gymtracker.domain.model.ExerciseEntry
+import com.doron.gymtracker.domain.model.ExerciseSessionSets
 import com.doron.gymtracker.domain.model.RepSetRecord
 import com.doron.gymtracker.domain.model.Session
 import com.doron.gymtracker.domain.model.SetRecord
@@ -103,6 +104,16 @@ class SessionRepositoryImpl @Inject constructor(
 
     override suspend fun getUnfinishedStartedBefore(beforeMillis: Long): List<Session> =
         sessionDao.getUnfinishedStartedBefore(beforeMillis).map { it.toDomain() }
+
+    override suspend fun getOpenGymSession(): Session? =
+        sessionDao.getLatestUnfinishedGym()?.toDomain()
+
+    override suspend fun getExerciseHistory(exerciseId: String): List<ExerciseSessionSets> =
+        setDao.getHistoryForExercise(exerciseId)
+            .groupBy { it.sessionId }
+            .map { (sessionId, rows) ->
+                ExerciseSessionSets(sessionId, rows.first().sessionStartedAt, rows.map { it.set.toDomain() })
+            }
 
     override suspend fun getLastActivityAt(sessionId: Long): Long? {
         val lastSet = setDao.getForSession(sessionId).maxOfOrNull { it.completedAt }

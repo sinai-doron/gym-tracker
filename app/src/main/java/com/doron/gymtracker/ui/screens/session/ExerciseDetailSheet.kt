@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
@@ -46,7 +47,11 @@ import com.doron.gymtracker.ui.components.SetLogRow
 import com.doron.gymtracker.ui.theme.RestTimerColor
 
 @Composable
-fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -> Unit = {}) {
+fun ExerciseDetailSheet(
+    viewModel: ExerciseDetailViewModel,
+    onEntryChanged: () -> Unit = {},
+    onShowProgress: (() -> Unit)? = null
+) {
     val state by viewModel.uiState.collectAsState()
 
     Column(modifier = Modifier
@@ -56,7 +61,18 @@ fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -
     ) {
         ExerciseIllustration(exerciseId = state.exercise.id)
         Spacer(Modifier.height(12.dp))
-        Text(state.exercise.name, style = MaterialTheme.typography.titleLarge)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                state.exercise.name,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f)
+            )
+            if (onShowProgress != null) {
+                TextButton(onClick = onShowProgress) {
+                    Text("📈 " + stringResource(R.string.progress))
+                }
+            }
+        }
         if (state.exercise.isPerSide) {
             Text("לכל צד – הזן לכל צד בנפרד",
                 style = MaterialTheme.typography.bodySmall,

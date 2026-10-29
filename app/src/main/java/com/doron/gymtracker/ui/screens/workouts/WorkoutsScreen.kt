@@ -53,6 +53,7 @@ import kotlinx.coroutines.launch
 fun WorkoutsScreen(
     onBack: () -> Unit,
     onSessionStart: (sessionId: Long, workoutId: String) -> Unit,
+    onExerciseProgress: (exerciseId: String) -> Unit,
     viewModel: WorkoutsViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -112,7 +113,7 @@ fun WorkoutsScreen(
             ) {
                 WorkoutMetaRow(preview)
                 Spacer(Modifier.height(8.dp))
-                ExercisePreviewList(preview.exercises)
+                ExercisePreviewList(preview.exercises, onExerciseClick = onExerciseProgress)
             }
 
             Button(

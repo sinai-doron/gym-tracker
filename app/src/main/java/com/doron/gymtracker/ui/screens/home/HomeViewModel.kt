@@ -7,11 +7,14 @@ import com.doron.gymtracker.data.StepCounterManager
 import com.doron.gymtracker.data.WeatherRepository
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.WorkoutRepository
+import com.doron.gymtracker.domain.model.Session
 import com.doron.gymtracker.domain.model.Weather
 import com.doron.gymtracker.domain.model.Workout
 import com.doron.gymtracker.domain.model.WorkoutPreview
 import com.doron.gymtracker.domain.usecase.CloseStaleSessionsUseCase
 import com.doron.gymtracker.domain.usecase.GetNextWorkoutUseCase
+import com.doron.gymtracker.domain.usecase.GetProgramStatusUseCase
+import com.doron.gymtracker.domain.usecase.ProgramStatus
 import com.doron.gymtracker.domain.usecase.GetWorkoutPreviewUseCase
 import com.doron.gymtracker.domain.usecase.StartSessionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -44,6 +47,11 @@ data class HomeUiState(
     val healthConnectNeedsPermission: Boolean = false,
     val weather: Weather? = null,
     val weatherNeedsPermission: Boolean = false,
+    val weatherLoading: Boolean = false,
+    /** A gym session left open (e.g. the app was closed mid-workout), offered for resuming. */
+    val openSession: Session? = null,
+    val openSessionWorkout: Workout? = null,
+    val programStatus: ProgramStatus? = null,
     val weeklyStats: WeeklyStats = WeeklyStats()
 )
 
@@ -57,7 +65,8 @@ class HomeViewModel @Inject constructor(
     private val healthConnect: HealthConnectManager,
     private val getWorkoutPreview: GetWorkoutPreviewUseCase,
     private val closeStaleSessions: CloseStaleSessionsUseCase,
-    private val weatherRepo: WeatherRepository
+    private val weatherRepo: WeatherRepository,
+    private val getProgramStatus: GetProgramStatusUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -83,16 +92,17 @@ class HomeViewModel @Inject constructor(
         // Weather is fetched separately so a slow network never delays the rest of the screen
         viewModelScope.launch {
             val needsPermission = !weatherRepo.hasLocationPermission()
-            _uiState.update { it.copy(weatherNeedsPermission = needsPermission) }
+            _uiState.update { it.copy(weatherNeedsPermission = needsPermission, weatherLoading = !needsPermission) }
             if (!needsPermission) {
                 val weather = weatherRepo.currentWeather()
-                _uiState.update { it.copy(weather = weather ?: it.weather) }
+                _uiState.update { it.copy(weather = weather ?: it.weather, weatherLoading = false) }
             }
         }
         viewModelScope.launch {
             closeStaleSessions()
             val suggested = getNextWorkout()
             val all = workoutRepo.getAll()
+            val openSession = sessionRepo.getOpenGymSession()
             val preview = getWorkoutPreview(suggested)
             val hcHasPerms = healthConnect.isAvailable && healthConnect.hasPermissions()
             // Permission may have just been granted, so try starting the sensor on every refresh
@@ -103,6 +113,9 @@ class HomeViewModel @Inject constructor(
                     suggestedWorkout = suggested,
                     selectedWorkout = suggested,
                     nextWorkoutPreview = preview,
+                    openSession = openSession,
+                    openSessionWorkout = all.firstOrNull { w -> w.id == openSession?.workoutId },
+                    programStatus = getProgramStatus(),
                     allWorkouts = all,
                     isLoading = false,
                     stepsAvailable = hasSteps,

@@ -22,6 +22,7 @@ import com.doron.gymtracker.ui.screens.history.SessionDetailViewModel
 import com.doron.gymtracker.ui.screens.home.HomeScreen
 import com.doron.gymtracker.ui.screens.session.SessionScreen
 import com.doron.gymtracker.ui.screens.session.SessionViewModel
+import com.doron.gymtracker.ui.screens.progress.ExerciseProgressScreen
 import com.doron.gymtracker.ui.screens.settings.SettingsScreen
 import com.doron.gymtracker.ui.screens.workouts.WorkoutsScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,6 +41,7 @@ fun NavGraph() {
                     navController.navigate("gps-lock/$type")
                 },
                 onChooseWorkout = { navController.navigate("workouts") },
+                onExerciseProgress = { id -> navController.navigate("exercise-progress/$id") },
                 onHistoryClick = { navController.navigate("history") },
                 onSettingsClick = { navController.navigate("settings") }
             )
@@ -47,6 +49,7 @@ fun NavGraph() {
         composable("workouts") {
             WorkoutsScreen(
                 onBack = { navController.popBackStack() },
+                onExerciseProgress = { id -> navController.navigate("exercise-progress/$id") },
                 onSessionStart = { sessionId, workoutId ->
                     // Finishing the session should land back on home, not on this screen
                     navController.navigate("session/$sessionId/$workoutId") {
@@ -54,6 +57,9 @@ fun NavGraph() {
                     }
                 }
             )
+        }
+        composable("exercise-progress/{exerciseId}") {
+            ExerciseProgressScreen(onBack = { navController.popBackStack() })
         }
         composable("settings") {
             SettingsScreen(onBack = { navController.popBackStack() })
@@ -76,6 +82,7 @@ fun NavGraph() {
                 progressionHintUseCase = factoryHolder.progressionHintUseCase,
                 getLastWeightUseCase = factoryHolder.getLastWeightUseCase,
                 settingsPrefs = factoryHolder.settingsPrefs,
+                onShowProgress = { id -> navController.navigate("exercise-progress/$id") },
                 onFinished = { navController.popBackStack() }
             )
         }
