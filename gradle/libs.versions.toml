@@ -20,8 +20,7 @@ mockk = "1.13.14"
 appcompat = "1.7.0"
 healthConnect = "1.1.0-alpha12"
 playServicesLocation = "21.3.0"
-playServicesMaps = "19.0.0"
-mapsCompose = "6.2.1"
+maplibre = "13.6.1"
 coil = "2.6.0"
 
 [libraries]
@@ -56,8 +55,7 @@ mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 health-connect = { group = "androidx.health.connect", name = "connect-client", version.ref = "healthConnect" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
-play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
-maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "mapsCompose" }
+maplibre = { group = "org.maplibre.gl", name = "android-sdk", version.ref = "maplibre" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 
 [plugins]

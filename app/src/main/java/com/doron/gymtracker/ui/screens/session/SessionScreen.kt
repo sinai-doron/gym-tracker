@@ -61,7 +61,7 @@ import com.doron.gymtracker.media.MediaPermissionHelper
 import com.doron.gymtracker.media.NowPlayingProvider
 import com.doron.gymtracker.service.SessionTimerService
 import com.doron.gymtracker.ui.components.ExerciseCard
-import com.doron.gymtracker.ui.components.NowPlayingBar
+import com.doron.gymtracker.ui.components.MusicControls
 import com.doron.gymtracker.ui.theme.RestTimerColor
 import com.doron.gymtracker.ui.theme.WarningAmber
 
@@ -280,44 +280,7 @@ fun SessionScreen(
             item { Spacer(Modifier.height(16.dp)) }
         }
 
-        // Now Playing bar / permission prompt
-        val nowPlaying by NowPlayingProvider.state.collectAsState()
-        val scope = rememberCoroutineScope()
-        val permDismissed by (settingsPrefs?.mediaPermissionDismissed
-            ?: kotlinx.coroutines.flow.flowOf(false)).collectAsState(initial = false)
-        var hasPermission by remember { mutableStateOf(MediaPermissionHelper.isNotificationListenerEnabled(context)) }
-
-        LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-            hasPermission = MediaPermissionHelper.isNotificationListenerEnabled(context)
-        }
-
-        if (nowPlaying != null) {
-            NowPlayingBar(state = nowPlaying!!)
-        } else if (!hasPermission && !permDismissed) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .padding(horizontal = 12.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    "הפעל גישה למדיה כדי לשלוט במוזיקה",
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.weight(1f)
-                )
-                FilledTonalButton(onClick = {
-                    MediaPermissionHelper.openNotificationListenerSettings(context)
-                }) {
-                    Text("הפעל")
-                }
-                androidx.compose.material3.IconButton(onClick = {
-                    scope.launch { settingsPrefs?.dismissMediaPermission() }
-                }) {
-                    Text("✕", style = MaterialTheme.typography.titleMedium)
-                }
-            }
-        }
+        MusicControls(settingsPrefs = settingsPrefs)
     }
 
     val exercise = selectedExercise

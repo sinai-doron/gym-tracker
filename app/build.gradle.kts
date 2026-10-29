@@ -25,7 +25,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        manifestPlaceholders["MAPS_API_KEY"] = localProps.getProperty("MAPS_API_KEY", "")
+
+        // MapLibre ships native code per CPU type; keep phones (arm64) and the emulator (x86_64)
+        ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
     }
 
     // One fixed key, so an install from any computer updates the app in place instead of
@@ -100,9 +102,8 @@ dependencies {
     // Location
     implementation(libs.play.services.location)
 
-    // Maps
-    implementation(libs.play.services.maps)
-    implementation(libs.maps.compose)
+    // Maps: MapLibre with OpenFreeMap vector tiles (no API key), styled in assets/map_style_run.json
+    implementation(libs.maplibre)
 
     // Image loading
     implementation(libs.coil.compose)

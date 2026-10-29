@@ -39,15 +39,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.doron.gymtracker.data.LocationPoint
+import com.doron.gymtracker.ui.components.MusicControls
+import com.doron.gymtracker.ui.components.RunMap
 import com.doron.gymtracker.ui.theme.Purple
 import com.doron.gymtracker.ui.theme.SuccessGreen
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Polyline
-import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
 fun CardioSessionScreen(
@@ -130,6 +125,13 @@ fun CardioSessionScreen(
         }
 
         Spacer(Modifier.weight(1f))
+
+        MusicControls(
+            settingsPrefs = viewModel.settingsPrefs,
+            modifier = Modifier.clip(RoundedCornerShape(16.dp))
+        )
+
+        Spacer(Modifier.height(24.dp))
 
         // Stop button
         ElevatedButton(
@@ -370,39 +372,14 @@ private fun SummaryCard(label: String, value: String, modifier: Modifier = Modif
 
 @Composable
 private fun RouteMap(route: List<LocationPoint>) {
-    val points = remember(route) { route.map { LatLng(it.latitude, it.longitude) } }
-    val cameraPositionState = rememberCameraPositionState()
-
-    LaunchedEffect(points) {
-        if (points.size >= 2) {
-            val bounds = LatLngBounds.builder().apply {
-                points.forEach { include(it) }
-            }.build()
-            cameraPositionState.animate(CameraUpdateFactory.newLatLngBounds(bounds, 80))
-        }
-    }
-
-    GoogleMap(
+    RunMap(
         modifier = Modifier
             .fillMaxWidth()
             .height(250.dp)
             .clip(RoundedCornerShape(16.dp)),
-        cameraPositionState = cameraPositionState,
-        uiSettings = MapUiSettings(
-            zoomControlsEnabled = false,
-            scrollGesturesEnabled = false,
-            zoomGesturesEnabled = false,
-            tiltGesturesEnabled = false,
-            rotationGesturesEnabled = false,
-            mapToolbarEnabled = false
-        )
-    ) {
-        Polyline(
-            points = points,
-            color = Purple,
-            width = 12f
-        )
-    }
+        route = route,
+        follow = false
+    )
 }
 
 private fun formatTime(totalSecs: Long): String {
