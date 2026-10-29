@@ -41,9 +41,9 @@ class SessionRepositoryImpl @Inject constructor(
         sessionDao.update(existing.copy(finishedAt = System.currentTimeMillis()))
     }
 
-    override suspend fun finishCardioSession(sessionId: Long, distanceMeters: Double) {
+    override suspend fun finishCardioSession(sessionId: Long, distanceMeters: Double, finishedAt: Long) {
         val existing = sessionDao.getById(sessionId) ?: return
-        sessionDao.update(existing.copy(finishedAt = System.currentTimeMillis(), distanceMeters = distanceMeters))
+        sessionDao.update(existing.copy(finishedAt = finishedAt, distanceMeters = distanceMeters))
     }
 
     override suspend fun getById(sessionId: Long): Session? =
@@ -90,8 +90,8 @@ class SessionRepositoryImpl @Inject constructor(
             TrackLog(it.id, it.sessionId, it.startedAt, it.title, it.artist)
         }
 
-    override suspend fun logLocation(sessionId: Long, lat: Double, lng: Double, speed: Float?, altitude: Double?) {
-        locationLogDao.insert(LocationLogEntity(0, sessionId, System.currentTimeMillis(), lat, lng, speed, altitude))
+    override suspend fun logLocation(sessionId: Long, lat: Double, lng: Double, speed: Float?, altitude: Double?, timestamp: Long) {
+        locationLogDao.insert(LocationLogEntity(0, sessionId, timestamp, lat, lng, speed, altitude))
     }
 
     override suspend fun getLocationsForSession(sessionId: Long): List<LocationLogEntity> =
@@ -107,6 +107,9 @@ class SessionRepositoryImpl @Inject constructor(
 
     override suspend fun getOpenGymSession(): Session? =
         sessionDao.getLatestUnfinishedGym()?.toDomain()
+
+    override suspend fun getOpenCardioSession(): Session? =
+        sessionDao.getLatestUnfinishedCardio()?.toDomain()
 
     override suspend fun getExerciseHistory(exerciseId: String): List<ExerciseSessionSets> =
         setDao.getHistoryForExercise(exerciseId)

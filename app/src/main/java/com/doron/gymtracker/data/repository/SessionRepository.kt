@@ -12,7 +12,7 @@ interface SessionRepository {
     suspend fun startSession(workoutId: String): Long
     suspend fun startCardioSession(type: String): Long
     suspend fun finishSession(sessionId: Long)
-    suspend fun finishCardioSession(sessionId: Long, distanceMeters: Double)
+    suspend fun finishCardioSession(sessionId: Long, distanceMeters: Double, finishedAt: Long = System.currentTimeMillis())
     fun observeAll(): Flow<List<Session>>
     suspend fun getById(sessionId: Long): Session?
     suspend fun getLastCompleted(): Session?
@@ -22,13 +22,15 @@ interface SessionRepository {
     suspend fun deleteSetRecord(setId: Long)
     suspend fun logTrack(sessionId: Long, title: String, artist: String)
     suspend fun getTracksForSession(sessionId: Long): List<TrackLog>
-    suspend fun logLocation(sessionId: Long, lat: Double, lng: Double, speed: Float?, altitude: Double?)
+    suspend fun logLocation(sessionId: Long, lat: Double, lng: Double, speed: Float?, altitude: Double?, timestamp: Long)
     suspend fun getLocationsForSession(sessionId: Long): List<LocationLogEntity>
     suspend fun deleteExerciseFromSession(sessionId: Long, exerciseId: String)
     suspend fun deleteSession(sessionId: Long)
     suspend fun getUnfinishedStartedBefore(beforeMillis: Long): List<Session>
     /** The gym session still in progress, if any (e.g. the app was closed mid-workout). */
     suspend fun getOpenGymSession(): Session?
+    /** A run or walk that was started and never finished, if any. */
+    suspend fun getOpenCardioSession(): Session?
     /** The exercise's sets per finished session, oldest session first. */
     suspend fun getExerciseHistory(exerciseId: String): List<ExerciseSessionSets>
     /** Time of the last logged set or GPS point, or null if nothing was recorded. */

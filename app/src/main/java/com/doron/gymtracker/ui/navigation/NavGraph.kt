@@ -1,6 +1,7 @@
 package com.doron.gymtracker.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -8,8 +9,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.doron.gymtracker.domain.usecase.GetLastWeightUseCase
+import com.doron.gymtracker.data.CardioRun
 import com.doron.gymtracker.data.prefs.SettingsPrefs
+import com.doron.gymtracker.domain.usecase.GetLastWeightUseCase
 import com.doron.gymtracker.domain.usecase.LogSetUseCase
 import com.doron.gymtracker.domain.usecase.ProgressionHintUseCase
 import com.doron.gymtracker.domain.usecase.UpdateSetUseCase
@@ -20,18 +22,23 @@ import com.doron.gymtracker.ui.screens.cardio.GpsLockViewModel
 import com.doron.gymtracker.ui.screens.history.SessionDetailScreen
 import com.doron.gymtracker.ui.screens.history.SessionDetailViewModel
 import com.doron.gymtracker.ui.screens.home.HomeScreen
-import com.doron.gymtracker.ui.screens.session.SessionScreen
-import com.doron.gymtracker.ui.screens.session.SessionViewModel
 import com.doron.gymtracker.ui.screens.plan.PlanEditorScreen
 import com.doron.gymtracker.ui.screens.progress.ExerciseProgressScreen
+import com.doron.gymtracker.ui.screens.session.SessionScreen
+import com.doron.gymtracker.ui.screens.session.SessionViewModel
 import com.doron.gymtracker.ui.screens.settings.SettingsScreen
 import com.doron.gymtracker.ui.screens.workouts.WorkoutsScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @Composable
-fun NavGraph() {
+fun NavGraph(runToResume: CardioRun? = null) {
     val navController = rememberNavController()
+    LaunchedEffect(runToResume) {
+        runToResume?.let { run ->
+            navController.navigate("cardio/${run.sessionId}/${run.type}") { launchSingleTop = true }
+        }
+    }
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
             HomeScreen(

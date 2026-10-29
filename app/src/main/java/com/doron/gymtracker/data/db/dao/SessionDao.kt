@@ -30,6 +30,9 @@ interface SessionDao {
     @Query("SELECT * FROM sessions WHERE finishedAt IS NULL AND type = 'GYM' ORDER BY startedAt DESC LIMIT 1")
     suspend fun getLatestUnfinishedGym(): SessionEntity?
 
+    @Query("SELECT * FROM sessions WHERE finishedAt IS NULL AND type IN ('RUNNING', 'WALKING') ORDER BY startedAt DESC LIMIT 1")
+    suspend fun getLatestUnfinishedCardio(): SessionEntity?
+
     @Query("SELECT * FROM sessions WHERE finishedAt IS NULL AND startedAt < :beforeMillis")
     suspend fun getUnfinishedStartedBefore(beforeMillis: Long): List<SessionEntity>
 
