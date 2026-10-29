@@ -1,8 +1,12 @@
 package com.doron.gymtracker.data
 
 import android.util.Log
+import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.data.repository.SessionRepository
+import com.doron.gymtracker.domain.model.RunDetails
+import com.doron.gymtracker.domain.model.RunTarget
 import com.doron.gymtracker.domain.model.TrackLog
+import com.doron.gymtracker.domain.model.Weather
 import com.doron.gymtracker.media.NowPlayingProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -11,6 +15,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,11 +29,26 @@ data class CardioRun(
     val distanceMeters: Double = 0.0,
     val currentSpeed: Float = 0f,
     val route: List<LocationPoint> = emptyList(),
-    val tracks: List<TrackLog> = emptyList()
-)
+    val tracks: List<TrackLog> = emptyList(),
+    val target: RunTarget = RunTarget(),
+    /** 0 when laps are off. */
+    val lapMeters: Int = 0,
+    val laps: List<Lap> = emptyList(),
+    /** Null when the phone can't count steps (no sensor or no permission). */
+    val steps: Int? = null,
+    /** Steps per minute over the last half minute. */
+    val cadence: Int? = null,
+    val elevationGainM: Double = 0.0,
+    val weather: Weather? = null,
+    /** For calories; null until set in settings. */
+    val bodyWeightKg: Float? = null
+) {
+    val calories: Int?
+        get() = bodyWeightKg?.let { RunCalories.estimate(type, distanceMeters, it) }
+}
 
 /**
- * Records a run: GPS fixes, distance and the songs played. It lives as long as
+ * Records a run: GPS fixes, distance, laps, climb, steps and the songs played. It lives as long as
  * CardioTrackingService (a foreground service), not the screen, so recording carries on
  * with the screen off or the app in the background. Every fix is saved as it arrives,
  * so a run the system killed can be picked back up from the database.
@@ -36,7 +56,10 @@ data class CardioRun(
 @Singleton
 class CardioRecorder @Inject constructor(
     private val locationTracker: LocationTracker,
-    private val sessionRepo: SessionRepository
+    private val sessionRepo: SessionRepository,
+    private val settingsPrefs: SettingsPrefs,
+    private val stepCounter: StepCounterManager,
+    private val weatherRepo: WeatherRepository
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val _run = MutableStateFlow<CardioRun?>(null)
@@ -45,6 +68,8 @@ class CardioRecorder @Inject constructor(
     private var job: Job? = null
     // Last fix that counted towards the distance; small moves are measured from it
     private var anchor: LocationPoint? = null
+    // Recent step counter readings, for the current cadence
+    private val stepSamples = ArrayDeque<StepSample>()
 
     fun isRecording(sessionId: Long): Boolean =
         job?.isActive == true && _run.value?.sessionId == sessionId
@@ -57,12 +82,26 @@ class CardioRecorder @Inject constructor(
             val session = sessionRepo.getById(sessionId) ?: return@launch
             val saved = savedRoute(sessionId)
             anchor = saved.lastOrNull()
+            stepSamples.clear()
+            // A new run takes the target and lap length chosen in settings; a resumed one keeps its own
+            val details = sessionRepo.getRunDetails(sessionId)
+                ?: RunDetails(sessionId, settingsPrefs.runTarget.first(), settingsPrefs.lapDistanceM.first())
+                    .also { sessionRepo.saveRunDetails(it) }
             _run.value = CardioRun(
                 sessionId, session.type, session.startedAt,
                 distanceMeters = RouteDistance.total(saved),
                 route = saved,
-                tracks = sessionRepo.getTracksForSession(sessionId)
+                tracks = sessionRepo.getTracksForSession(sessionId),
+                target = details.target,
+                lapMeters = details.lapMeters,
+                laps = Laps.split(session.startedAt, saved, details.lapMeters.toDouble()),
+                steps = details.steps,
+                elevationGainM = Elevation.gain(saved),
+                weather = details.weatherCondition?.let { Weather(details.weatherTempC ?: 0, 0, 0, it) },
+                bodyWeightKg = settingsPrefs.bodyWeightKg.first()
             )
+            if (details.weatherCondition == null) launch { recordWeather(sessionId) }
+            launch { countSteps(sessionId) }
             launch { locationTracker.locationUpdates().collect(::onFix) }
             launch { logTracks(sessionId) }
         }
@@ -73,6 +112,7 @@ class CardioRecorder @Inject constructor(
         job?.cancel()
         job = null
         anchor = null
+        stepSamples.clear()
         return _run.value.also { _run.value = null }
     }
 
@@ -94,17 +134,53 @@ class CardioRecorder @Inject constructor(
     private suspend fun onFix(point: LocationPoint) {
         val run = _run.value ?: return
         if (!RouteDistance.isUsable(point)) return
-        sessionRepo.logLocation(run.sessionId, point.latitude, point.longitude, point.speed, point.altitude, point.timestamp)
+        sessionRepo.logLocation(run.sessionId, point)
         val from = anchor
         val added = if (from == null) 0.0 else RouteDistance.step(from, point)
         if (from == null || added > 0) anchor = point
         _run.update {
-            it?.copy(
+            if (it == null) return@update null
+            val route = it.route + point
+            it.copy(
                 distanceMeters = it.distanceMeters + added,
-                currentSpeed = point.speed ?: RouteDistance.recentSpeed(it.route, point),
-                route = it.route + point
+                // Pace over the last few seconds of route is steadier than a single fix's speed,
+                // and some fixes report 0 or nothing at all
+                currentSpeed = RouteDistance.recentSpeed(it.route, point),
+                route = route,
+                elevationGainM = if (point.altitude != null) Elevation.gain(route) else it.elevationGainM,
+                // Only recut the laps when this fix could have finished one
+                laps = if (added > 0 && it.lapMeters > 0) Laps.split(it.startedAt, route, it.lapMeters.toDouble()) else it.laps
             )
         }
+    }
+
+    /** Steps since the run started, from the phone's step counter (which counts since boot). */
+    private suspend fun countSteps(sessionId: Long) {
+        stepCounter.counterUpdates().collect { counter ->
+            val details = sessionRepo.getRunDetails(sessionId) ?: return@collect
+            val stepsSoFar = _run.value?.steps ?: 0
+            // The first reading of a run sets the start; a reboot resets the counter, so carry on from it
+            val start = details.stepCounterAtStart?.takeIf { counter >= it } ?: (counter - stepsSoFar)
+            if (start != details.stepCounterAtStart) sessionRepo.saveRunDetails(details.copy(stepCounterAtStart = start))
+
+            val now = System.currentTimeMillis()
+            stepSamples.addLast(StepSample(now, counter))
+            while (stepSamples.isNotEmpty() && now - stepSamples.first().timestamp > Cadence.WINDOW_MS) {
+                stepSamples.removeFirst()
+            }
+            _run.update {
+                it?.copy(steps = (counter - start).toInt(), cadence = Cadence.current(stepSamples.toList(), now))
+            }
+        }
+    }
+
+    /** The weather where the run started, kept with the run. */
+    private suspend fun recordWeather(sessionId: Long) {
+        val weather = weatherRepo.currentWeather() ?: return
+        sessionRepo.getRunDetails(sessionId)?.let {
+            sessionRepo.saveRunDetails(it.copy(weatherTempC = weather.temperatureC, weatherCondition = weather.condition))
+        }
+        _run.update { it?.copy(weather = weather) }
     }
 
     private suspend fun logTracks(sessionId: Long) {
@@ -121,9 +197,7 @@ class CardioRecorder @Inject constructor(
     }
 
     private suspend fun savedRoute(sessionId: Long): List<LocationPoint> =
-        sessionRepo.getLocationsForSession(sessionId).map {
-            LocationPoint(it.latitude, it.longitude, it.speed, it.altitude, accuracy = null, timestamp = it.timestamp)
-        }
+        sessionRepo.getRouteForSession(sessionId)
 
     private companion object {
         const val TAG = "CardioRecorder"

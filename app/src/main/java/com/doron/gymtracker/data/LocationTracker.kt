@@ -22,7 +22,9 @@ data class LocationPoint(
     val speed: Float?,
     val altitude: Double?,
     val accuracy: Float?,
-    val timestamp: Long
+    val timestamp: Long,
+    /** Direction of travel, degrees clockwise from north. */
+    val bearing: Float? = null
 )
 
 /** Raw GPS fixes. Stateless: distance and pace are worked out by [CardioRecorder]. */
@@ -51,7 +53,8 @@ class LocationTracker @Inject constructor(
                             if (loc.hasSpeed()) loc.speed else null,
                             if (loc.hasAltitude()) loc.altitude else null,
                             if (loc.hasAccuracy()) loc.accuracy else null,
-                            loc.time
+                            loc.time,
+                            if (loc.hasBearing()) loc.bearing else null
                         )
                     )
                 }

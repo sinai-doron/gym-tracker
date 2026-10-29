@@ -1,8 +1,9 @@
 package com.doron.gymtracker.data.repository
 
-import com.doron.gymtracker.data.db.entities.LocationLogEntity
+import com.doron.gymtracker.data.LocationPoint
 import com.doron.gymtracker.domain.model.ExerciseEntry
 import com.doron.gymtracker.domain.model.ExerciseSessionSets
+import com.doron.gymtracker.domain.model.RunDetails
 import com.doron.gymtracker.domain.model.Session
 import com.doron.gymtracker.domain.model.SetRecord
 import com.doron.gymtracker.domain.model.TrackLog
@@ -22,8 +23,10 @@ interface SessionRepository {
     suspend fun deleteSetRecord(setId: Long)
     suspend fun logTrack(sessionId: Long, title: String, artist: String)
     suspend fun getTracksForSession(sessionId: Long): List<TrackLog>
-    suspend fun logLocation(sessionId: Long, lat: Double, lng: Double, speed: Float?, altitude: Double?, timestamp: Long)
-    suspend fun getLocationsForSession(sessionId: Long): List<LocationLogEntity>
+    suspend fun logLocation(sessionId: Long, point: LocationPoint)
+    suspend fun getRouteForSession(sessionId: Long): List<LocationPoint>
+    suspend fun getRunDetails(sessionId: Long): RunDetails?
+    suspend fun saveRunDetails(details: RunDetails)
     suspend fun deleteExerciseFromSession(sessionId: Long, exerciseId: String)
     suspend fun deleteSession(sessionId: Long)
     suspend fun getUnfinishedStartedBefore(beforeMillis: Long): List<Session>

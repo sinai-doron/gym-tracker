@@ -61,6 +61,20 @@ class SettingsViewModel @Inject constructor(
         refreshHealthConnectStatus()
     }
 
+    val lapDistanceM: StateFlow<Int> = prefs.lapDistanceM
+        .stateIn(viewModelScope, SharingStarted.Eagerly, SettingsPrefs.DEFAULT_LAP_DISTANCE_M)
+
+    val bodyWeightKg: StateFlow<Float?> = prefs.bodyWeightKg
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    fun setBodyWeightKg(kg: Float?) {
+        viewModelScope.launch { prefs.setBodyWeightKg(kg) }
+    }
+
+    fun setLapDistanceM(meters: Int) {
+        viewModelScope.launch { prefs.setLapDistanceM(meters) }
+    }
+
     fun setLanguage(code: String) {
         viewModelScope.launch { prefs.setLanguageCode(code) }
     }

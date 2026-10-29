@@ -25,6 +25,8 @@ private val MEDIA_PERMISSION_DISMISSED = booleanPreferencesKey("media_permission
 private val RUN_TARGET_TYPE = stringPreferencesKey("run_target_type")
 private val RUN_TARGET_DISTANCE_KM = floatPreferencesKey("run_target_distance_km")
 private val RUN_TARGET_DURATION_MIN = intPreferencesKey("run_target_duration_min")
+private val LAP_DISTANCE_M = intPreferencesKey("lap_distance_m")
+private val BODY_WEIGHT_KG = floatPreferencesKey("body_weight_kg")
 
 @Singleton
 class SettingsPrefs @Inject constructor(
@@ -59,5 +61,27 @@ class SettingsPrefs @Inject constructor(
             prefs[RUN_TARGET_DISTANCE_KM] = target.distanceKm
             prefs[RUN_TARGET_DURATION_MIN] = target.durationMin
         }
+    }
+
+    /** Lap length for runs, in meters; 0 turns laps off. */
+    val lapDistanceM: Flow<Int> = context.settingsDataStore.data
+        .map { prefs -> prefs[LAP_DISTANCE_M] ?: DEFAULT_LAP_DISTANCE_M }
+
+    suspend fun setLapDistanceM(meters: Int) {
+        context.settingsDataStore.edit { prefs -> prefs[LAP_DISTANCE_M] = meters }
+    }
+
+    /** For calories; null until set. */
+    val bodyWeightKg: Flow<Float?> = context.settingsDataStore.data.map { prefs -> prefs[BODY_WEIGHT_KG] }
+
+    suspend fun setBodyWeightKg(kg: Float?) {
+        context.settingsDataStore.edit { prefs ->
+            if (kg == null) prefs.remove(BODY_WEIGHT_KG) else prefs[BODY_WEIGHT_KG] = kg
+        }
+    }
+
+    companion object {
+        const val DEFAULT_LAP_DISTANCE_M = 1000
+        val LAP_DISTANCE_OPTIONS_M = listOf(0, 200, 400, 500, 1000, 2000, 5000)
     }
 }

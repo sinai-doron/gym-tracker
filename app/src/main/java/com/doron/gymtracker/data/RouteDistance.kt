@@ -5,6 +5,9 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
+/** Distance covered by [timestamp]. */
+data class DistanceMark(val timestamp: Long, val meters: Double)
+
 /**
  * Decides which GPS fixes are good enough to keep and how much distance each adds.
  * Inaccurate fixes are dropped (they draw spikes on the map and inflate the distance),
@@ -26,20 +29,32 @@ object RouteDistance {
     }
 
     /** Distance of a whole recorded route, using the same rules as live recording. */
-    fun total(points: List<LocationPoint>): Double {
+    fun total(points: List<LocationPoint>): Double = marks(points).lastOrNull()?.meters ?: 0.0
+
+    /**
+     * Distance covered so far at each fix that counted, using the same rules as live
+     * recording: what laps are cut from.
+     */
+    fun marks(points: List<LocationPoint>): List<DistanceMark> {
         var anchor: LocationPoint? = null
         var sum = 0.0
+        val marks = mutableListOf<DistanceMark>()
         points.filter(::isUsable).forEach { p ->
             val a = anchor
             if (a == null) {
                 anchor = p
+                marks += DistanceMark(p.timestamp, 0.0)
             } else {
                 val d = step(a, p)
                 // Only move the anchor once the step counts, so slow walking still adds up
-                if (d > 0) { sum += d; anchor = p }
+                if (d > 0) {
+                    sum += d
+                    anchor = p
+                    marks += DistanceMark(p.timestamp, sum)
+                }
             }
         }
-        return sum
+        return marks
     }
 
     /**

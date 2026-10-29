@@ -17,7 +17,10 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
@@ -63,6 +66,23 @@ class StepCounterManager @Inject constructor(
     fun stop() {
         sensorManager.unregisterListener(this)
         isListening = false
+    }
+
+    /** Each reading of the phone's step counter (steps since boot) while collected; nothing without permission. */
+    fun counterUpdates(): Flow<Long> = callbackFlow {
+        if (!isAvailable) {
+            close()
+            return@callbackFlow
+        }
+        val listener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent) {
+                trySend(event.values[0].toLong())
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+        }
+        sensorManager.registerListener(listener, stepSensor, SensorManager.SENSOR_DELAY_NORMAL)
+        awaitClose { sensorManager.unregisterListener(listener) }
     }
 
     private fun hasActivityPermission(): Boolean =

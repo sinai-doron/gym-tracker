@@ -95,4 +95,12 @@
     <string name="move_up">Move up</string>
     <string name="move_down">Move down</string>
     <string name="edit_plan">Edit</string>
+    <string name="running_settings">Running</string>
+    <string name="lap_length">Lap length</string>
+    <string name="laps_off">Off</string>
+    <string name="meters_value">%1$d m</string>
+    <string name="km_value">%1$s km</string>
+    <string name="lap_length_hint">The phone beeps and vibrates at every lap</string>
+    <string name="body_weight">Body weight (kg)</string>
+    <string name="body_weight_hint">Used to estimate calories for runs and walks</string>
 </resources>

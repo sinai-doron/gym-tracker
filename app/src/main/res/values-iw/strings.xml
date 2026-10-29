@@ -95,4 +95,12 @@
     <string name="move_up">הזז למעלה</string>
     <string name="move_down">הזז למטה</string>
     <string name="edit_plan">ערוך</string>
+    <string name="running_settings">ריצה</string>
+    <string name="lap_length">אורך הקפה</string>
+    <string name="laps_off">כבוי</string>
+    <string name="meters_value">%1$d מ׳</string>
+    <string name="km_value">%1$s ק״מ</string>
+    <string name="lap_length_hint">בכל הקפה הטלפון מצפצף ורוטט</string>
+    <string name="body_weight">משקל גוף (ק״ג)</string>
+    <string name="body_weight_hint">לחישוב קלוריות בריצה ובהליכה</string>
 </resources>

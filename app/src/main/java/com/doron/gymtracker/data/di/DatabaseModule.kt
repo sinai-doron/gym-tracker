@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.doron.gymtracker.data.db.GymDatabase
 import com.doron.gymtracker.data.db.dao.ExerciseEntryDao
 import com.doron.gymtracker.data.db.dao.LocationLogDao
+import com.doron.gymtracker.data.db.dao.RunDetailsDao
 import com.doron.gymtracker.data.db.dao.SessionDao
 import com.doron.gymtracker.data.db.dao.SetRecordDao
 import com.doron.gymtracker.data.db.dao.TrackLogDao
@@ -24,7 +25,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): GymDatabase =
         Room.databaseBuilder(context, GymDatabase::class.java, "gym_tracker.db")
-            .addMigrations(GymDatabase.MIGRATION_1_2, GymDatabase.MIGRATION_2_3, GymDatabase.MIGRATION_3_4, GymDatabase.MIGRATION_4_5, GymDatabase.MIGRATION_5_6, GymDatabase.MIGRATION_6_7)
+            .addMigrations(GymDatabase.MIGRATION_1_2, GymDatabase.MIGRATION_2_3, GymDatabase.MIGRATION_3_4, GymDatabase.MIGRATION_4_5, GymDatabase.MIGRATION_5_6, GymDatabase.MIGRATION_6_7, GymDatabase.MIGRATION_7_8)
             .build()
 
     @Provides fun provideWorkoutDao(db: GymDatabase): WorkoutDao = db.workoutDao()
@@ -33,4 +34,5 @@ object DatabaseModule {
     @Provides fun provideSetRecordDao(db: GymDatabase): SetRecordDao = db.setRecordDao()
     @Provides fun provideTrackLogDao(db: GymDatabase): TrackLogDao = db.trackLogDao()
     @Provides fun provideLocationLogDao(db: GymDatabase): LocationLogDao = db.locationLogDao()
+    @Provides fun provideRunDetailsDao(db: GymDatabase): RunDetailsDao = db.runDetailsDao()
 }

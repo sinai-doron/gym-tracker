@@ -12,6 +12,8 @@ object RestTimerBeepPlayer {
 
     private const val BEEP_DURATION_MS = 300
     private const val VOLUME = 100
+    private const val CELEBRATION_BEEPS = 3
+    private const val CELEBRATION_GAP_MS = 450L
 
     private var appContext: Context? = null
 
@@ -30,6 +32,14 @@ object RestTimerBeepPlayer {
         } catch (_: Exception) {}
 
         vibrate()
+    }
+
+    /** A longer, three-beep alert, e.g. for reaching a run's target. */
+    fun playCelebration() {
+        val handler = android.os.Handler(android.os.Looper.getMainLooper())
+        repeat(CELEBRATION_BEEPS) { i ->
+            handler.postDelayed({ playBeep() }, i * CELEBRATION_GAP_MS)
+        }
     }
 
     private fun vibrate() {

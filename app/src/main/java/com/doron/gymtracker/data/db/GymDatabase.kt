@@ -6,6 +6,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.doron.gymtracker.data.db.dao.ExerciseEntryDao
 import com.doron.gymtracker.data.db.dao.LocationLogDao
+import com.doron.gymtracker.data.db.dao.RunDetailsDao
 import com.doron.gymtracker.data.db.dao.SessionDao
 import com.doron.gymtracker.data.db.dao.SetRecordDao
 import com.doron.gymtracker.data.db.dao.TrackLogDao
@@ -13,6 +14,7 @@ import com.doron.gymtracker.data.db.dao.WorkoutDao
 import com.doron.gymtracker.data.db.entities.ExerciseDefinitionEntity
 import com.doron.gymtracker.data.db.entities.ExerciseEntryEntity
 import com.doron.gymtracker.data.db.entities.LocationLogEntity
+import com.doron.gymtracker.data.db.entities.RunDetailsEntity
 import com.doron.gymtracker.data.db.entities.SessionEntity
 import com.doron.gymtracker.data.db.entities.SetRecordEntity
 import com.doron.gymtracker.data.db.entities.TrackLogEntity
@@ -26,9 +28,10 @@ import com.doron.gymtracker.data.db.entities.WorkoutEntity
         ExerciseEntryEntity::class,
         SetRecordEntity::class,
         TrackLogEntity::class,
-        LocationLogEntity::class
+        LocationLogEntity::class,
+        RunDetailsEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class GymDatabase : RoomDatabase() {
@@ -38,6 +41,7 @@ abstract class GymDatabase : RoomDatabase() {
     abstract fun setRecordDao(): SetRecordDao
     abstract fun trackLogDao(): TrackLogDao
     abstract fun locationLogDao(): LocationLogDao
+    abstract fun runDetailsDao(): RunDetailsDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -105,6 +109,29 @@ abstract class GymDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE exercise_definitions ADD COLUMN sortOrder INTEGER NOT NULL DEFAULT 0")
                 database.execSQL("UPDATE exercise_definitions SET sortOrder = rowid")
                 database.execSQL("ALTER TABLE exercise_definitions ADD COLUMN isRemoved INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        // Run stats (target, laps, steps, climb, calories, weather) and each fix's accuracy and direction
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `run_details` (
+                        `sessionId` INTEGER NOT NULL,
+                        `targetType` TEXT NOT NULL,
+                        `targetValue` REAL,
+                        `lapMeters` INTEGER NOT NULL,
+                        `stepCounterAtStart` INTEGER,
+                        `steps` INTEGER,
+                        `elevationGainM` REAL,
+                        `calories` INTEGER,
+                        `weatherTempC` INTEGER,
+                        `weatherCondition` TEXT,
+                        PRIMARY KEY(`sessionId`)
+                    )
+                """.trimIndent())
+                database.execSQL("ALTER TABLE location_log ADD COLUMN accuracy REAL")
+                database.execSQL("ALTER TABLE location_log ADD COLUMN bearing REAL")
             }
         }
     }

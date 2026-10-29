@@ -5,13 +5,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -21,6 +25,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -34,15 +39,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.doron.gymtracker.data.Elevation
+import com.doron.gymtracker.data.Lap
 import com.doron.gymtracker.data.LocationPoint
+import com.doron.gymtracker.domain.model.RunTargetType
+import com.doron.gymtracker.ui.components.ElevationChart
 import com.doron.gymtracker.ui.components.MusicControls
 import com.doron.gymtracker.ui.components.RunMap
 import com.doron.gymtracker.ui.theme.Purple
 import com.doron.gymtracker.ui.theme.SuccessGreen
+import kotlin.math.roundToInt
 
 @Composable
 fun CardioSessionScreen(
@@ -64,32 +75,36 @@ fun CardioSessionScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(24.dp),
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(Modifier.height(48.dp))
-
-        Text(
-            if (state.type == "RUNNING") "🏃 ריצה" else "🚶 הליכה",
-            style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.onBackground
+        // The route so far, following the runner
+        RunMap(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .clip(RoundedCornerShape(24.dp)),
+            position = state.route.lastOrNull(),
+            route = state.route
         )
 
-        Spacer(Modifier.height(40.dp))
+        Spacer(Modifier.height(12.dp))
 
-        // Timer - big center display
         Text(
             formatTime(state.elapsedSecs),
-            style = MaterialTheme.typography.displayLarge.copy(
-                fontWeight = FontWeight.Bold,
-                fontSize = 64.sp
-            ),
+            style = MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.Bold),
             color = Purple
         )
 
-        Spacer(Modifier.height(32.dp))
+        state.targetProgress?.let { progress ->
+            Spacer(Modifier.height(8.dp))
+            TargetProgress(state, progress)
+        }
 
-        // Stats grid
+        Spacer(Modifier.height(12.dp))
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -113,31 +128,41 @@ fun CardioSessionScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             StatBox(
-                label = "מהירות",
-                value = if (state.currentSpeed > 0.3f) "%.1f קמ״ש".format(state.currentSpeed * 3.6f) else "—",
+                label = "קצב ממוצע",
+                value = state.avgPaceSecsPerKm?.let { "${formatPace(it)} /ק״מ" } ?: "—",
                 modifier = Modifier.weight(1f)
             )
-            StatBox(
-                label = "נקודות GPS",
-                value = "${state.route.size}",
-                modifier = Modifier.weight(1f)
-            )
+            if (state.lapMeters > 0) {
+                StatBox(
+                    label = "הקפה ${state.currentLapNumber} · %.2f ק״מ".format(state.currentLapMeters / 1000.0),
+                    value = formatTime(state.currentLapSecs),
+                    modifier = Modifier.weight(1f)
+                )
+            } else {
+                StatBox(
+                    label = "מהירות",
+                    value = if (state.currentSpeed > 0.3f) "%.1f קמ״ש".format(state.currentSpeed * 3.6f) else "—",
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
 
-        Spacer(Modifier.weight(1f))
+        RunExtras(state)
+
+        Spacer(Modifier.height(12.dp))
 
         MusicControls(
             settingsPrefs = viewModel.settingsPrefs,
             modifier = Modifier.clip(RoundedCornerShape(16.dp))
         )
 
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(12.dp))
 
         // Stop button
         ElevatedButton(
             onClick = { showFinishDialog = true },
-            modifier = Modifier
-                .size(80.dp),
+            modifier = Modifier.size(64.dp),
+            contentPadding = PaddingValues(0.dp),
             colors = ButtonDefaults.elevatedButtonColors(
                 containerColor = MaterialTheme.colorScheme.errorContainer
             )
@@ -146,11 +171,9 @@ fun CardioSessionScreen(
                 Icons.Default.Close,
                 contentDescription = "סיום",
                 tint = MaterialTheme.colorScheme.error,
-                modifier = Modifier.size(36.dp)
+                modifier = Modifier.size(30.dp)
             )
         }
-
-        Spacer(Modifier.height(32.dp))
     }
 
     if (showFinishDialog) {
@@ -219,6 +242,15 @@ private fun CardioSummary(
             color = SuccessGreen
         )
 
+        state.weather?.let {
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "${it.condition.emoji} ${it.temperatureC}° בתחילת ה${if (state.type == "RUNNING") "ריצה" else "הליכה"}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
         Spacer(Modifier.height(32.dp))
 
         Row(
@@ -248,9 +280,51 @@ private fun CardioSummary(
             SummaryCard("קצב ממוצע", avgPace, Modifier.weight(1f))
         }
 
+        Spacer(Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            SummaryCard("צעדים", state.steps?.let { "%,d".format(it) } ?: "—", Modifier.weight(1f))
+            SummaryCard("קדנס ממוצע", state.avgCadence?.let { "$it צעדים/ד׳" } ?: "—", Modifier.weight(1f))
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            SummaryCard("עלייה מצטברת", "${state.elevationGainM.roundToInt()} מ׳", Modifier.weight(1f))
+            SummaryCard("קלוריות", state.calories?.let { "$it קק״ל" } ?: "הגדר משקל", Modifier.weight(1f))
+        }
+
         if (state.route.size >= 2) {
             Spacer(Modifier.height(24.dp))
             RouteMap(route = state.route)
+        }
+
+        val profile = remember(state.route) { Elevation.profile(state.route) }
+        if (profile.size >= 2) {
+            Spacer(Modifier.height(24.dp))
+            Text(
+                "גובה",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+            )
+            ElevationChart(
+                points = profile,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface, MaterialTheme.shapes.medium)
+                    .padding(12.dp)
+            )
+        }
+
+        if (state.laps.isNotEmpty()) {
+            Spacer(Modifier.height(24.dp))
+            LapTable(state.laps)
         }
 
         if (state.tracks.isNotEmpty()) {
@@ -314,12 +388,123 @@ private fun CardioSummary(
     }
 }
 
+/** Steps and cadence, climb, calories and weather, as far as they're known. */
+@Composable
+private fun RunExtras(state: CardioUiState) {
+    val items = listOfNotNull(
+        state.steps?.let { steps -> "👟 %,d".format(steps) + (state.cadence?.let { " · $it/ד׳" } ?: "") },
+        "⛰ ${state.elevationGainM.roundToInt()} מ׳",
+        state.calories?.let { "🔥 $it קק״ל" },
+        state.weather?.let { "${it.condition.emoji} ${it.temperatureC}°" }
+    )
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 10.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        items.forEach {
+            Text(
+                it,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1
+            )
+        }
+    }
+}
+
+/** "2.30 / 5 ק״מ" or "12:40 / 30:00" with a bar; green once the target is reached. */
+@Composable
+private fun TargetProgress(state: CardioUiState, progress: Float) {
+    val reached = progress >= 1f
+    val color = if (reached) SuccessGreen else Purple
+    val text = when (state.target.type) {
+        RunTargetType.DISTANCE -> "%.2f / %s ק״מ".format(state.distanceMeters / 1000.0, formatKm(state.target.distanceKm))
+        else -> "${formatTime(state.elapsedSecs)} / ${formatTime(state.target.durationMin * 60L)}"
+    }
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                if (reached) "🎯 המטרה הושגה!" else "🎯 מטרה",
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                color = color,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                // LTR isolate keeps "2.30 / 5" in order in RTL
+                "\u2066$text\u2069",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Spacer(Modifier.height(6.dp))
+        LinearProgressIndicator(
+            progress = { progress.coerceAtMost(1f) },
+            color = color,
+            trackColor = color.copy(alpha = 0.15f),
+            strokeCap = StrokeCap.Round,
+            gapSize = 0.dp,
+            drawStopIndicator = {},
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(8.dp)
+        )
+    }
+}
+
+/** Each lap's time and pace, the fastest in purple. */
+@Composable
+private fun LapTable(laps: List<Lap>) {
+    val fastest = laps.minByOrNull { it.paceSecsPerKm }
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            "הקפות",
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surface, MaterialTheme.shapes.medium)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            laps.forEach { lap ->
+                val best = lap == fastest && laps.size > 1
+                val weight = if (best) FontWeight.Bold else FontWeight.Normal
+                val color = if (best) Purple else MaterialTheme.colorScheme.onSurface
+                Row(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+                    Text(
+                        "${lap.number} · %s ק״מ".format(formatKm((lap.distanceMeters / 1000).toFloat())),
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = weight),
+                        color = color,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        formatTime(lap.durationSecs),
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = weight),
+                        color = color,
+                        modifier = Modifier.width(72.dp)
+                    )
+                    Text(
+                        "${formatPace(lap.paceSecsPerKm)} /ק״מ",
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = weight),
+                        color = color,
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.width(96.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
 @Composable
 private fun StatBox(label: String, value: String, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .background(MaterialTheme.colorScheme.surface, MaterialTheme.shapes.medium)
-            .padding(vertical = 20.dp, horizontal = 12.dp),
+            .padding(vertical = 12.dp, horizontal = 12.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -381,6 +566,11 @@ private fun RouteMap(route: List<LocationPoint>) {
         follow = false
     )
 }
+
+private fun formatPace(secsPerKm: Long): String = "%d:%02d".format(secsPerKm / 60, secsPerKm % 60)
+
+private fun formatKm(km: Float): String =
+    if (km == km.toInt().toFloat()) km.toInt().toString() else "%.1f".format(km)
 
 private fun formatTime(totalSecs: Long): String {
     val h = totalSecs / 3600

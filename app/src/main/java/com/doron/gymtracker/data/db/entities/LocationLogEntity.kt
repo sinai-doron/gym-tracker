@@ -11,5 +11,8 @@ data class LocationLogEntity(
     val latitude: Double,
     val longitude: Double,
     val speed: Float?,
-    val altitude: Double?
+    val altitude: Double?,
+    val accuracy: Float? = null,
+    /** Direction of travel, degrees clockwise from north. */
+    val bearing: Float? = null
 )

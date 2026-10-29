@@ -1,12 +1,15 @@
 package com.doron.gymtracker.data.repository
 
+import com.doron.gymtracker.data.LocationPoint
 import com.doron.gymtracker.data.db.dao.ExerciseEntryDao
 import com.doron.gymtracker.data.db.dao.LocationLogDao
+import com.doron.gymtracker.data.db.dao.RunDetailsDao
 import com.doron.gymtracker.data.db.dao.SessionDao
 import com.doron.gymtracker.data.db.dao.SetRecordDao
 import com.doron.gymtracker.data.db.dao.TrackLogDao
 import com.doron.gymtracker.data.db.entities.ExerciseEntryEntity
 import com.doron.gymtracker.data.db.entities.LocationLogEntity
+import com.doron.gymtracker.data.db.entities.RunDetailsEntity
 import com.doron.gymtracker.data.db.entities.SessionEntity
 import com.doron.gymtracker.data.db.entities.SetRecordEntity
 import com.doron.gymtracker.data.db.entities.TrackLogEntity
@@ -14,20 +17,25 @@ import com.doron.gymtracker.domain.model.DistanceSetRecord
 import com.doron.gymtracker.domain.model.ExerciseEntry
 import com.doron.gymtracker.domain.model.ExerciseSessionSets
 import com.doron.gymtracker.domain.model.RepSetRecord
+import com.doron.gymtracker.domain.model.RunDetails
+import com.doron.gymtracker.domain.model.RunTarget
+import com.doron.gymtracker.domain.model.RunTargetType
 import com.doron.gymtracker.domain.model.Session
 import com.doron.gymtracker.domain.model.SetRecord
 import com.doron.gymtracker.domain.model.TimedSetRecord
 import com.doron.gymtracker.domain.model.TrackLog
+import com.doron.gymtracker.domain.model.WeatherCondition
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import javax.inject.Inject
 
 class SessionRepositoryImpl @Inject constructor(
     private val sessionDao: SessionDao,
     private val entryDao: ExerciseEntryDao,
     private val setDao: SetRecordDao,
     private val trackLogDao: TrackLogDao,
-    private val locationLogDao: LocationLogDao
+    private val locationLogDao: LocationLogDao,
+    private val runDetailsDao: RunDetailsDao
 ) : SessionRepository {
 
     override suspend fun startSession(workoutId: String): Long =
@@ -90,12 +98,61 @@ class SessionRepositoryImpl @Inject constructor(
             TrackLog(it.id, it.sessionId, it.startedAt, it.title, it.artist)
         }
 
-    override suspend fun logLocation(sessionId: Long, lat: Double, lng: Double, speed: Float?, altitude: Double?, timestamp: Long) {
-        locationLogDao.insert(LocationLogEntity(0, sessionId, timestamp, lat, lng, speed, altitude))
+    override suspend fun logLocation(sessionId: Long, point: LocationPoint) {
+        locationLogDao.insert(
+            LocationLogEntity(
+                0, sessionId, point.timestamp, point.latitude, point.longitude,
+                point.speed, point.altitude, point.accuracy, point.bearing
+            )
+        )
     }
 
-    override suspend fun getLocationsForSession(sessionId: Long): List<LocationLogEntity> =
-        locationLogDao.getForSession(sessionId)
+    override suspend fun getRouteForSession(sessionId: Long): List<LocationPoint> =
+        locationLogDao.getForSession(sessionId).map {
+            LocationPoint(it.latitude, it.longitude, it.speed, it.altitude, it.accuracy, it.timestamp, it.bearing)
+        }
+
+    override suspend fun getRunDetails(sessionId: Long): RunDetails? =
+        runDetailsDao.get(sessionId)?.let {
+            val type = runCatching { RunTargetType.valueOf(it.targetType) }.getOrDefault(RunTargetType.NONE)
+            RunDetails(
+                sessionId = it.sessionId,
+                target = when (type) {
+                    RunTargetType.DISTANCE -> RunTarget(type, distanceKm = it.targetValue?.toFloat() ?: RunTarget.DEFAULT_DISTANCE_KM)
+                    RunTargetType.DURATION -> RunTarget(type, durationMin = it.targetValue?.toInt() ?: RunTarget.DEFAULT_DURATION_MIN)
+                    else -> RunTarget(type)
+                },
+                lapMeters = it.lapMeters,
+                stepCounterAtStart = it.stepCounterAtStart,
+                steps = it.steps,
+                elevationGainM = it.elevationGainM,
+                calories = it.calories,
+                weatherTempC = it.weatherTempC,
+                weatherCondition = it.weatherCondition?.let { c -> runCatching { WeatherCondition.valueOf(c) }.getOrNull() }
+            )
+        }
+
+    override suspend fun saveRunDetails(details: RunDetails) {
+        val target = details.target
+        runDetailsDao.upsert(
+            RunDetailsEntity(
+                sessionId = details.sessionId,
+                targetType = target.type.name,
+                targetValue = when (target.type) {
+                    RunTargetType.DISTANCE -> target.distanceKm.toDouble()
+                    RunTargetType.DURATION -> target.durationMin.toDouble()
+                    else -> null
+                },
+                lapMeters = details.lapMeters,
+                stepCounterAtStart = details.stepCounterAtStart,
+                steps = details.steps,
+                elevationGainM = details.elevationGainM,
+                calories = details.calories,
+                weatherTempC = details.weatherTempC,
+                weatherCondition = details.weatherCondition?.name
+            )
+        )
+    }
 
     override suspend fun deleteExerciseFromSession(sessionId: Long, exerciseId: String) {
         entryDao.deleteSetsForExercise(sessionId, exerciseId)
@@ -134,6 +191,7 @@ class SessionRepositoryImpl @Inject constructor(
         entryDao.deleteForSession(sessionId)
         trackLogDao.deleteForSession(sessionId)
         locationLogDao.deleteForSession(sessionId)
+        runDetailsDao.deleteForSession(sessionId)
         sessionDao.deleteById(sessionId)
     }
 

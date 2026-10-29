@@ -4,7 +4,10 @@ import android.app.LocaleManager
 import android.content.Intent
 import android.os.Build
 import android.os.LocaleList
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,45 +15,53 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import com.doron.gymtracker.data.BackupManager
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.AlertDialog
-import androidx.activity.result.contract.ActivityResultContracts
-import android.widget.Toast
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.health.connect.client.PermissionController
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.doron.gymtracker.R
+import com.doron.gymtracker.data.BackupManager
 import com.doron.gymtracker.data.HealthConnectManager
+import com.doron.gymtracker.data.prefs.SettingsPrefs
 
 data class LanguageOption(val code: String, val displayName: String)
 
@@ -67,6 +78,8 @@ fun SettingsScreen(
 ) {
     val currentLanguage by viewModel.languageCode.collectAsState()
     val healthConnectGranted by viewModel.healthConnectGranted.collectAsState()
+    val lapDistanceM by viewModel.lapDistanceM.collectAsState()
+    val bodyWeightKg by viewModel.bodyWeightKg.collectAsState()
     val context = LocalContext.current
 
     val backupEvent by viewModel.backupEvent.collectAsState()
@@ -151,7 +164,7 @@ fun SettingsScreen(
             color = MaterialTheme.colorScheme.background,
             modifier = Modifier.fillMaxSize().padding(padding)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(16.dp)) {
                 Text(
                     stringResource(R.string.language),
                     style = MaterialTheme.typography.titleLarge
@@ -186,6 +199,27 @@ fun SettingsScreen(
                                 )
                             }
                         }
+                    }
+                }
+
+                Spacer(Modifier.height(24.dp))
+                Text(stringResource(R.string.running_settings), style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(12.dp))
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        LapLengthDropdown(selectedM = lapDistanceM, onSelect = viewModel::setLapDistanceM)
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            stringResource(R.string.lap_length_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(Modifier.height(16.dp))
+                        BodyWeightField(bodyWeightKg, onChange = viewModel::setBodyWeightKg)
                     }
                 }
 
@@ -272,3 +306,65 @@ fun SettingsScreen(
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LapLengthDropdown(selectedM: Int, onSelect: (Int) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        OutlinedTextField(
+            value = lapLengthLabel(selectedM),
+            onValueChange = {},
+            readOnly = true,
+            singleLine = true,
+            label = { Text(stringResource(R.string.lap_length)) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            shape = MaterialTheme.shapes.large,
+            modifier = Modifier
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                .fillMaxWidth()
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            SettingsPrefs.LAP_DISTANCE_OPTIONS_M.forEach { meters ->
+                DropdownMenuItem(
+                    text = { Text(lapLengthLabel(meters)) },
+                    onClick = {
+                        onSelect(meters)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+/** Saved as you type; anything that isn't a sensible weight clears it. */
+@Composable
+private fun BodyWeightField(weightKg: Float?, onChange: (Float?) -> Unit) {
+    var text by remember(weightKg == null) { mutableStateOf(weightKg?.let(::formatWeight) ?: "") }
+    OutlinedTextField(
+        value = text,
+        onValueChange = { input ->
+            text = input.filter { it.isDigit() || it == '.' }.take(5)
+            onChange(text.toFloatOrNull()?.takeIf { it in 25f..300f })
+        },
+        label = { Text(stringResource(R.string.body_weight)) },
+        supportingText = { Text(stringResource(R.string.body_weight_hint)) },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+        shape = MaterialTheme.shapes.large,
+        modifier = Modifier.fillMaxWidth()
+    )
+}
+
+private fun formatWeight(kg: Float): String =
+    if (kg == kg.toInt().toFloat()) kg.toInt().toString() else kg.toString()
+
+@Composable
+private fun lapLengthLabel(meters: Int): String = when {
+    meters == 0 -> stringResource(R.string.laps_off)
+    meters < 1000 -> stringResource(R.string.meters_value, meters)
+    meters % 1000 == 0 -> stringResource(R.string.km_value, (meters / 1000).toString())
+    else -> stringResource(R.string.km_value, "%.1f".format(meters / 1000.0))
+}
+

@@ -16,12 +16,16 @@ import com.doron.gymtracker.MainActivity
 import com.doron.gymtracker.R
 import com.doron.gymtracker.data.CardioRecorder
 import com.doron.gymtracker.data.CardioRun
+import com.doron.gymtracker.data.RunMilestone
+import com.doron.gymtracker.data.RunMilestones
+import com.doron.gymtracker.media.RestTimerBeepPlayer
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
@@ -42,6 +46,7 @@ class CardioTrackingService : Service() {
         private const val EXTRA_SESSION_ID = "session_id"
         // Refresh the notification every 10 m, not on every GPS fix
         private const val NOTIFY_EVERY_M = 10
+        private const val MILESTONE_CHECK_MS = 1_000L
 
         fun start(context: Context, sessionId: Long) {
             context.startForegroundService(
@@ -58,6 +63,8 @@ class CardioTrackingService : Service() {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var notifyJob: Job? = null
+    private var milestonesJob: Job? = null
+    private val milestones = RunMilestones()
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -94,7 +101,26 @@ class CardioTrackingService : Service() {
                     }
             }
         }
+        if (milestonesJob == null) {
+            // Polled rather than event-driven: a duration target is reached by the clock, not a fix
+            milestonesJob = scope.launch {
+                while (true) {
+                    recorder.run.value?.let { run ->
+                        milestones.check(run, System.currentTimeMillis()).forEach(::announce)
+                    }
+                    delay(MILESTONE_CHECK_MS)
+                }
+            }
+        }
         return START_REDELIVER_INTENT
+    }
+
+    private fun announce(milestone: RunMilestone) {
+        Log.i(TAG, "Milestone: $milestone")
+        when (milestone) {
+            is RunMilestone.LapDone -> RestTimerBeepPlayer.playBeep()
+            RunMilestone.TargetReached -> RestTimerBeepPlayer.playCelebration()
+        }
     }
 
     override fun onDestroy() {

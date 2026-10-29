@@ -3,11 +3,15 @@ package com.doron.gymtracker.ui.screens.cardio
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.doron.gymtracker.data.Cadence
 import com.doron.gymtracker.data.CardioRecorder
+import com.doron.gymtracker.data.Lap
 import com.doron.gymtracker.data.LocationPoint
 import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.data.repository.SessionRepository
+import com.doron.gymtracker.domain.model.RunTarget
 import com.doron.gymtracker.domain.model.TrackLog
+import com.doron.gymtracker.domain.model.Weather
 import com.doron.gymtracker.service.CardioTrackingService
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -28,14 +32,42 @@ data class CardioUiState(
     val currentSpeed: Float = 0f,
     val route: List<LocationPoint> = emptyList(),
     val tracks: List<TrackLog> = emptyList(),
+    val target: RunTarget = RunTarget(),
+    val lapMeters: Int = 0,
+    val laps: List<Lap> = emptyList(),
+    val steps: Int? = null,
+    val cadence: Int? = null,
+    val elevationGainM: Double = 0.0,
+    val weather: Weather? = null,
+    val calories: Int? = null,
     val isFinished: Boolean = false
 ) {
+    val avgCadence: Int? get() = steps?.let { Cadence.average(it, elapsedSecs) }
+
+    /** Target progress (1 = reached), or null with no target. */
+    val targetProgress: Float?
+        get() = target.progress(distanceMeters, elapsedSecs)
+
+    /** The lap being run now: its number, meters so far and seconds so far. */
+    val currentLapNumber: Int get() = laps.size + 1
+    val currentLapMeters: Double get() = distanceMeters - laps.size * lapMeters.toDouble()
+    val currentLapSecs: Long
+        get() = (laps.lastOrNull()?.endedAt ?: startedAt)?.let { (System.currentTimeMillis() - it) / 1000 } ?: 0
+
+    /** Average pace so far, seconds per km, or null before there's enough distance. */
+    val avgPaceSecsPerKm: Long?
+        get() = if (distanceMeters >= MIN_DISTANCE_FOR_PACE_M) (elapsedSecs * 1000 / distanceMeters).toLong() else null
+
     val currentPace: String
         get() {
             if (currentSpeed <= 0.3f) return ""
             val paceSecsPerKm = (1000.0 / currentSpeed).toInt()
             return "%d:%02d".format(paceSecsPerKm / 60, paceSecsPerKm % 60)
         }
+
+    private companion object {
+        const val MIN_DISTANCE_FOR_PACE_M = 50.0
+    }
 }
 
 /**
@@ -73,7 +105,15 @@ class CardioSessionViewModel @AssistedInject constructor(
                         distanceMeters = run.distanceMeters,
                         currentSpeed = run.currentSpeed,
                         route = run.route,
-                        tracks = run.tracks
+                        tracks = run.tracks,
+                        target = run.target,
+                        lapMeters = run.lapMeters,
+                        laps = run.laps,
+                        steps = run.steps,
+                        cadence = run.cadence,
+                        elevationGainM = run.elevationGainM,
+                        weather = run.weather,
+                        calories = run.calories
                     )
                 }
             }
@@ -98,11 +138,21 @@ class CardioSessionViewModel @AssistedInject constructor(
                 isFinished = true,
                 distanceMeters = run?.distanceMeters ?: state.distanceMeters,
                 route = run?.route ?: state.route,
-                tracks = run?.tracks ?: state.tracks
+                tracks = run?.tracks ?: state.tracks,
+                laps = run?.laps ?: state.laps,
+                steps = run?.steps ?: state.steps,
+                elevationGainM = run?.elevationGainM ?: state.elevationGainM,
+                calories = run?.calories ?: state.calories
             )
         }
         viewModelScope.launch {
-            sessionRepo.finishCardioSession(sessionId, _uiState.value.distanceMeters)
+            val final = _uiState.value
+            sessionRepo.finishCardioSession(sessionId, final.distanceMeters)
+            sessionRepo.getRunDetails(sessionId)?.let {
+                sessionRepo.saveRunDetails(
+                    it.copy(steps = final.steps, elevationGainM = final.elevationGainM, calories = final.calories)
+                )
+            }
         }
     }
 
