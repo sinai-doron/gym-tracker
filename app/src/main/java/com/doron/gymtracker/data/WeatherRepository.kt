@@ -32,6 +32,7 @@ class WeatherRepository @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     private var cached: Weather? = null
+    private var cachedFor: Location? = null
     private var cachedAt = 0L
 
     fun hasLocationPermission(): Boolean =
@@ -39,7 +40,6 @@ class WeatherRepository @Inject constructor(
             PackageManager.PERMISSION_GRANTED
 
     suspend fun currentWeather(): Weather? {
-        cached?.let { if (System.currentTimeMillis() - cachedAt < CACHE_MS) return it }
         if (!hasLocationPermission()) return null
         return try {
             val location = approximateLocation()
@@ -47,9 +47,13 @@ class WeatherRepository @Inject constructor(
                 Log.w("Weather", "No location available")
                 return cached
             }
+            // A recent reading only stands for where it was taken (a run abroad shouldn't get home's weather)
+            val near = cachedFor?.let { it.distanceTo(location) < CACHE_RADIUS_M } ?: false
+            cached?.let { if (near && System.currentTimeMillis() - cachedAt < CACHE_MS) return it }
             fetch(location).also {
                 cached = it
                 cachedAt = System.currentTimeMillis()
+                cachedFor = location
             }
         } catch (e: Exception) {
             Log.w("Weather", "Failed to load weather", e)
@@ -104,6 +108,7 @@ class WeatherRepository @Inject constructor(
 
     private companion object {
         const val CACHE_MS = 30 * 60 * 1000L
+        const val CACHE_RADIUS_M = 10_000f
         const val TIMEOUT_MS = 10_000
         const val LOCATION_TIMEOUT_MS = 10_000L
     }

@@ -21,11 +21,19 @@ object RestTimerBeepPlayer {
         appContext = context.applicationContext
     }
 
-    fun playBeep() {
+    fun playBeep() = playTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD)
+
+    /** Two low notes: a run auto-paused. */
+    fun playPause() = playTone(ToneGenerator.TONE_PROP_NACK)
+
+    /** Two high notes: a run moving again. */
+    fun playResume() = playTone(ToneGenerator.TONE_PROP_ACK)
+
+    private fun playTone(tone: Int) {
         try {
             // STREAM_MUSIC follows the active output (e.g. Bluetooth); STREAM_ALARM always rings on the phone speaker
             val toneGen = ToneGenerator(AudioManager.STREAM_MUSIC, VOLUME)
-            toneGen.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, BEEP_DURATION_MS)
+            toneGen.startTone(tone, BEEP_DURATION_MS)
             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                 toneGen.release()
             }, (BEEP_DURATION_MS + 100).toLong())
@@ -42,7 +50,7 @@ object RestTimerBeepPlayer {
         }
     }
 
-    private fun vibrate() {
+    fun vibrate() {
         val ctx = appContext ?: return
         try {
             val vibrator = if (Build.VERSION.SDK_INT >= 31) {

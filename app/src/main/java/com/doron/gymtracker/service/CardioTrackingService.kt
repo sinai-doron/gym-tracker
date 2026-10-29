@@ -16,9 +16,13 @@ import com.doron.gymtracker.MainActivity
 import com.doron.gymtracker.R
 import com.doron.gymtracker.data.CardioRecorder
 import com.doron.gymtracker.data.CardioRun
+import com.doron.gymtracker.data.RunAnnouncements
 import com.doron.gymtracker.data.RunMilestone
 import com.doron.gymtracker.data.RunMilestones
+import com.doron.gymtracker.data.prefs.AudioFeedback
+import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.media.RestTimerBeepPlayer
+import com.doron.gymtracker.media.RunVoice
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -60,11 +64,14 @@ class CardioTrackingService : Service() {
     }
 
     @Inject lateinit var recorder: CardioRecorder
+    @Inject lateinit var voice: RunVoice
+    @Inject lateinit var settingsPrefs: SettingsPrefs
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var notifyJob: Job? = null
     private var milestonesJob: Job? = null
     private val milestones = RunMilestones()
+    @Volatile private var audioFeedback = AudioFeedback.VOICE
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -102,11 +109,25 @@ class CardioTrackingService : Service() {
             }
         }
         if (milestonesJob == null) {
+            scope.launch {
+                settingsPrefs.audioFeedback.collect {
+                    audioFeedback = it
+                    if (it == AudioFeedback.VOICE) voice.warmUp()
+                }
+            }
             // Polled rather than event-driven: a duration target is reached by the clock, not a fix
             milestonesJob = scope.launch {
+                var wasPaused = false
                 while (true) {
                     recorder.run.value?.let { run ->
-                        milestones.check(run, System.currentTimeMillis()).forEach(::announce)
+                        val now = System.currentTimeMillis()
+                        milestones.check(run, now).forEach { announce(it, run, now) }
+                        // Auto-pause stops and restarts the notification's clock
+                        val paused = run.clock.isPaused(now)
+                        if (paused != wasPaused) {
+                            wasPaused = paused
+                            getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, buildNotification(run))
+                        }
                     }
                     delay(MILESTONE_CHECK_MS)
                 }
@@ -115,16 +136,30 @@ class CardioTrackingService : Service() {
         return START_REDELIVER_INTENT
     }
 
-    private fun announce(milestone: RunMilestone) {
+    private fun announce(milestone: RunMilestone, run: CardioRun, now: Long) {
         Log.i(TAG, "Milestone: $milestone")
-        when (milestone) {
-            is RunMilestone.LapDone -> RestTimerBeepPlayer.playBeep()
-            RunMilestone.TargetReached -> RestTimerBeepPlayer.playCelebration()
+        when (audioFeedback) {
+            AudioFeedback.OFF -> Unit
+            AudioFeedback.VOICE -> if (voice.unavailable) tone(milestone) else {
+                voice.speak(RunAnnouncements.text(milestone, run, now))
+                if (milestone is RunMilestone.LapDone || milestone == RunMilestone.TargetReached) {
+                    RestTimerBeepPlayer.vibrate()
+                }
+            }
+            AudioFeedback.TONES -> tone(milestone)
         }
+    }
+
+    private fun tone(milestone: RunMilestone) = when (milestone) {
+        is RunMilestone.LapDone -> RestTimerBeepPlayer.playBeep()
+        RunMilestone.TargetReached -> RestTimerBeepPlayer.playCelebration()
+        RunMilestone.Paused -> RestTimerBeepPlayer.playPause()
+        RunMilestone.Resumed -> RestTimerBeepPlayer.playResume()
     }
 
     override fun onDestroy() {
         scope.cancel()
+        voice.shutdown()
         recorder.stop()
         super.onDestroy()
     }
@@ -152,14 +187,18 @@ class CardioTrackingService : Service() {
 
         val typeName = if (run?.type == "WALKING") "הליכה" else "ריצה"
         val distKm = (run?.distanceMeters ?: 0.0) / 1000.0
+        val now = System.currentTimeMillis()
+        val clock = run?.clock
+        val paused = clock?.isPaused(now) == true
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(typeName)
+            .setContentTitle(if (paused) "$typeName · ⏸ מושהה" else typeName)
             .setContentText("%.2f ק״מ".format(distKm))
-            // The system ticks the clock itself, so the notification needn't update every second
-            .setUsesChronometer(run != null)
-            .setShowWhen(run != null)
-            .setWhen(run?.startedAt ?: System.currentTimeMillis())
+            // The system ticks the clock itself, so the notification needn't update every second;
+            // it counts moving time, so it starts as far back as the run has been moving
+            .setUsesChronometer(clock != null && !paused)
+            .setShowWhen(clock != null && !paused)
+            .setWhen(clock?.let { now - it.activeMs(now) } ?: now)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(tapIntent)
             .setOngoing(true)

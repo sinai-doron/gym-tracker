@@ -1,6 +1,7 @@
 package com.doron.gymtracker.ui.components
 
 import android.content.Context
+import android.view.MotionEvent
 import android.view.Gravity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -64,7 +65,15 @@ fun RunMap(
     val mapView = remember {
         MapLibre.getInstance(context)
         // Texture mode, so the map respects the rounded corners it's clipped to
-        MapView(context, MapLibreMapOptions.createFromAttributes(context).textureMode(true)).apply { onCreate(null) }
+        val options = MapLibreMapOptions.createFromAttributes(context).textureMode(true)
+        if (interactive) {
+            MapView(context, options)
+        } else {
+            // A picture of the route: let touches through, so a page it sits in still scrolls
+            object : MapView(context, options) {
+                override fun dispatchTouchEvent(event: MotionEvent?): Boolean = false
+            }
+        }.apply { onCreate(null) }
     }
     var map by remember { mutableStateOf<MapLibreMap?>(null) }
     var style by remember { mutableStateOf<Style?>(null) }

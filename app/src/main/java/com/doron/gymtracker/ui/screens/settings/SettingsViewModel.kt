@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import android.net.Uri
 import com.doron.gymtracker.data.BackupManager
 import com.doron.gymtracker.data.HealthConnectManager
+import com.doron.gymtracker.data.prefs.AudioFeedback
 import com.doron.gymtracker.data.prefs.SettingsPrefs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -71,6 +72,13 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { prefs.setBodyWeightKg(kg) }
     }
 
+    val audioFeedback: StateFlow<AudioFeedback> = prefs.audioFeedback
+        .stateIn(viewModelScope, SharingStarted.Eagerly, AudioFeedback.VOICE)
+
+    fun setAudioFeedback(feedback: AudioFeedback) {
+        viewModelScope.launch { prefs.setAudioFeedback(feedback) }
+    }
+
     fun setLapDistanceM(meters: Int) {
         viewModelScope.launch { prefs.setLapDistanceM(meters) }
     }
@@ -81,7 +89,7 @@ class SettingsViewModel @Inject constructor(
 
     fun refreshHealthConnectStatus() {
         viewModelScope.launch {
-            _healthConnectGranted.value = healthConnect.hasPermissions()
+            _healthConnectGranted.value = healthConnect.hasAllPermissions()
         }
     }
 }

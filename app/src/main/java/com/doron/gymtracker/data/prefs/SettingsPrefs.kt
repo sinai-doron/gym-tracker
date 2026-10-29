@@ -27,6 +27,9 @@ private val RUN_TARGET_DISTANCE_KM = floatPreferencesKey("run_target_distance_km
 private val RUN_TARGET_DURATION_MIN = intPreferencesKey("run_target_duration_min")
 private val LAP_DISTANCE_M = intPreferencesKey("lap_distance_m")
 private val BODY_WEIGHT_KG = floatPreferencesKey("body_weight_kg")
+private val AUDIO_FEEDBACK = stringPreferencesKey("audio_feedback")
+
+enum class AudioFeedback { VOICE, TONES, OFF }
 
 @Singleton
 class SettingsPrefs @Inject constructor(
@@ -78,6 +81,15 @@ class SettingsPrefs @Inject constructor(
         context.settingsDataStore.edit { prefs ->
             if (kg == null) prefs.remove(BODY_WEIGHT_KG) else prefs[BODY_WEIGHT_KG] = kg
         }
+    }
+
+    /** How runs speak up for laps, the target and auto-pause. */
+    val audioFeedback: Flow<AudioFeedback> = context.settingsDataStore.data.map { prefs ->
+        prefs[AUDIO_FEEDBACK]?.let { runCatching { AudioFeedback.valueOf(it) }.getOrNull() } ?: AudioFeedback.VOICE
+    }
+
+    suspend fun setAudioFeedback(feedback: AudioFeedback) {
+        context.settingsDataStore.edit { prefs -> prefs[AUDIO_FEEDBACK] = feedback.name }
     }
 
     companion object {

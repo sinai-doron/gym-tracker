@@ -41,8 +41,12 @@ data class CardioRun(
     val elevationGainM: Double = 0.0,
     val weather: Weather? = null,
     /** For calories; null until set in settings. */
-    val bodyWeightKg: Float? = null
+    val bodyWeightKg: Float? = null,
+    /** When each fix that moved the run happened: what auto-pause is worked out from. */
+    val moves: List<Long> = emptyList()
 ) {
+    val clock: ActiveClock get() = ActiveClock(startedAt, moves)
+
     val calories: Int?
         get() = bodyWeightKg?.let { RunCalories.estimate(type, distanceMeters, it) }
 }
@@ -87,6 +91,7 @@ class CardioRecorder @Inject constructor(
             val details = sessionRepo.getRunDetails(sessionId)
                 ?: RunDetails(sessionId, settingsPrefs.runTarget.first(), settingsPrefs.lapDistanceM.first())
                     .also { sessionRepo.saveRunDetails(it) }
+            val moves = RouteDistance.marks(saved).map { it.timestamp }
             _run.value = CardioRun(
                 sessionId, session.type, session.startedAt,
                 distanceMeters = RouteDistance.total(saved),
@@ -94,11 +99,12 @@ class CardioRecorder @Inject constructor(
                 tracks = sessionRepo.getTracksForSession(sessionId),
                 target = details.target,
                 lapMeters = details.lapMeters,
-                laps = Laps.split(session.startedAt, saved, details.lapMeters.toDouble()),
+                laps = Laps.split(session.startedAt, saved, details.lapMeters.toDouble(), ActiveClock(session.startedAt, moves)),
                 steps = details.steps,
                 elevationGainM = Elevation.gain(saved),
                 weather = details.weatherCondition?.let { Weather(details.weatherTempC ?: 0, 0, 0, it) },
-                bodyWeightKg = settingsPrefs.bodyWeightKg.first()
+                bodyWeightKg = settingsPrefs.bodyWeightKg.first(),
+                moves = moves
             )
             if (details.weatherCondition == null) launch { recordWeather(sessionId) }
             launch { countSteps(sessionId) }
@@ -141,7 +147,10 @@ class CardioRecorder @Inject constructor(
         _run.update {
             if (it == null) return@update null
             val route = it.route + point
+            val moved = from == null || added > 0
+            val moves = if (moved) it.moves + point.timestamp else it.moves
             it.copy(
+                moves = moves,
                 distanceMeters = it.distanceMeters + added,
                 // Pace over the last few seconds of route is steadier than a single fix's speed,
                 // and some fixes report 0 or nothing at all
@@ -149,7 +158,9 @@ class CardioRecorder @Inject constructor(
                 route = route,
                 elevationGainM = if (point.altitude != null) Elevation.gain(route) else it.elevationGainM,
                 // Only recut the laps when this fix could have finished one
-                laps = if (added > 0 && it.lapMeters > 0) Laps.split(it.startedAt, route, it.lapMeters.toDouble()) else it.laps
+                laps = if (added > 0 && it.lapMeters > 0) {
+                    Laps.split(it.startedAt, route, it.lapMeters.toDouble(), ActiveClock(it.startedAt, moves))
+                } else it.laps
             )
         }
     }

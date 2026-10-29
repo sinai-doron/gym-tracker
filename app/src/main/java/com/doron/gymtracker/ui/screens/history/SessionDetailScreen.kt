@@ -34,21 +34,30 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.doron.gymtracker.data.ActiveClock
+import com.doron.gymtracker.data.Elevation
+import com.doron.gymtracker.data.Laps
+import com.doron.gymtracker.data.RouteDistance
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.model.RepSetRecord
+import com.doron.gymtracker.domain.model.RunTarget
+import com.doron.gymtracker.domain.model.Session
 import com.doron.gymtracker.domain.model.TrackLog
+import com.doron.gymtracker.domain.model.Weather
+import com.doron.gymtracker.ui.screens.cardio.CardioUiState
+import com.doron.gymtracker.ui.screens.cardio.RunReport
 import com.doron.gymtracker.ui.theme.Purple
 import com.doron.gymtracker.ui.theme.SuccessGreen
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 data class SessionDetailData(
     val sessionType: String = "GYM",
@@ -62,7 +71,9 @@ data class SessionDetailData(
     val totalVolumeKg: Float,
     val distanceKm: Double? = null,
     val exerciseBreakdown: List<ExerciseBreakdownLine>,
-    val tracks: List<TrackLog> = emptyList()
+    val tracks: List<TrackLog> = emptyList(),
+    /** For a run or walk: everything recorded, shown like the finish screen. */
+    val run: CardioUiState? = null
 )
 
 data class ExerciseBreakdownLine(
@@ -148,12 +159,39 @@ class SessionDetailViewModel @Inject constructor(
                 totalVolumeKg = totalVolume,
                 distanceKm = session.distanceMeters?.let { it / 1000.0 },
                 exerciseBreakdown = lines,
-                tracks = tracks
+                tracks = tracks,
+                run = if (isCardio) runReport(session, durationSecs, tracks) else null
             )
             _isLoading.value = false
         }
     }
 
+    /** A finished run as the finish screen shows it, rebuilt from what was saved. */
+    private suspend fun runReport(session: Session, durationSecs: Long, tracks: List<TrackLog>): CardioUiState {
+        val route = sessionRepo.getRouteForSession(session.id)
+        // Runs from before run details were kept have none: work out what the route allows
+        val details = sessionRepo.getRunDetails(session.id)
+        val lapMeters = details?.lapMeters ?: 0
+        // Moving time, as during the run: auto-paused stretches don't count
+        val clock = ActiveClock.forRoute(session.startedAt, route)
+        val finishedAt = session.finishedAt ?: (session.startedAt + durationSecs * 1000)
+        return CardioUiState(
+            type = session.type,
+            startedAt = session.startedAt,
+            elapsedSecs = clock.activeMs(finishedAt) / 1000,
+            distanceMeters = session.distanceMeters ?: RouteDistance.total(route),
+            route = route,
+            tracks = tracks,
+            target = details?.target ?: RunTarget(),
+            lapMeters = lapMeters,
+            laps = Laps.split(session.startedAt, route, lapMeters.toDouble(), clock),
+            steps = details?.steps,
+            elevationGainM = details?.elevationGainM ?: Elevation.gain(route),
+            weather = details?.weatherCondition?.let { Weather(details.weatherTempC ?: 0, 0, 0, it) },
+            calories = details?.calories,
+            isFinished = true
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -231,33 +269,8 @@ fun SessionDetailScreen(
                         Modifier.weight(1f)
                     )
                 }
-            } else {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    StatCard("משך", formatDuration(d.durationSecs), Modifier.weight(1f))
-                    StatCard("מרחק", d.distanceKm?.let { "%.2f ק״מ".format(it) } ?: "—", Modifier.weight(1f))
-                }
-
-                Spacer(Modifier.height(12.dp))
-
-                val avgSpeedKmh = if (d.durationSecs > 0 && d.distanceKm != null) {
-                    d.distanceKm / (d.durationSecs / 3600.0)
-                } else 0.0
-                val avgPace = if (avgSpeedKmh > 0.5) {
-                    val paceMin = (60.0 / avgSpeedKmh).toInt()
-                    val paceSec = ((60.0 / avgSpeedKmh - paceMin) * 60).toInt()
-                    "%d:%02d /ק״מ".format(paceMin, paceSec)
-                } else "—"
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    StatCard("מהירות ממוצעת", "%.1f קמ״ש".format(avgSpeedKmh), Modifier.weight(1f))
-                    StatCard("קצב ממוצע", avgPace, Modifier.weight(1f))
-                }
+            } else if (d.run != null) {
+                RunReport(d.run)
             }
 
             if (d.sessionType == "GYM" && d.exerciseBreakdown.isNotEmpty()) {
@@ -309,7 +322,8 @@ fun SessionDetailScreen(
                 }
             }
 
-            if (d.tracks.isNotEmpty()) {
+            // A run lists its songs in its report
+            if (d.tracks.isNotEmpty() && d.run == null) {
                 Spacer(Modifier.height(24.dp))
 
                 Text(

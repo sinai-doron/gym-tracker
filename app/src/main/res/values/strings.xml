@@ -103,4 +103,9 @@
     <string name="lap_length_hint">בכל הקפה הטלפון מצפצף ורוטט</string>
     <string name="body_weight">משקל גוף (ק״ג)</string>
     <string name="body_weight_hint">לחישוב קלוריות בריצה ובהליכה</string>
+    <string name="audio_feedback">משוב קולי</string>
+    <string name="audio_feedback_voice">קול</string>
+    <string name="audio_feedback_tones">צלילים</string>
+    <string name="audio_feedback_off">כבוי</string>
+    <string name="audio_feedback_hint">הקפות, מטרה והשהיה אוטומטית — באוזניות כשמחוברות</string>
 </resources>

@@ -18,8 +18,9 @@ object Laps {
     /**
      * The full laps of [lapMeters] along [route], timed from [startedAt]. Each lap ends at
      * the moment its distance was crossed, interpolated between the two fixes around it.
+     * With a [clock], lap times leave out auto-paused time.
      */
-    fun split(startedAt: Long, route: List<LocationPoint>, lapMeters: Double): List<Lap> {
+    fun split(startedAt: Long, route: List<LocationPoint>, lapMeters: Double, clock: ActiveClock? = null): List<Lap> {
         if (lapMeters <= 0) return emptyList()
         val laps = mutableListOf<Lap>()
         var lapStart = startedAt
@@ -33,7 +34,8 @@ object Laps {
                 val boundary = (laps.size + 1) * lapMeters
                 val fraction = (boundary - prev.meters) / (mark.meters - prev.meters)
                 val endedAt = prev.timestamp + ((mark.timestamp - prev.timestamp) * fraction).roundToLong()
-                laps += Lap(laps.size + 1, lapMeters, ((endedAt - lapStart) / 1000.0).roundToLong(), endedAt)
+                val lapMs = clock?.let { it.activeMs(endedAt) - it.activeMs(lapStart) } ?: (endedAt - lapStart)
+                laps += Lap(laps.size + 1, lapMeters, (lapMs / 1000.0).roundToLong(), endedAt)
                 lapStart = endedAt
             }
         }

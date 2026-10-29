@@ -61,6 +61,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import com.doron.gymtracker.R
 import com.doron.gymtracker.data.BackupManager
 import com.doron.gymtracker.data.HealthConnectManager
+import com.doron.gymtracker.data.prefs.AudioFeedback
 import com.doron.gymtracker.data.prefs.SettingsPrefs
 
 data class LanguageOption(val code: String, val displayName: String)
@@ -80,6 +81,7 @@ fun SettingsScreen(
     val healthConnectGranted by viewModel.healthConnectGranted.collectAsState()
     val lapDistanceM by viewModel.lapDistanceM.collectAsState()
     val bodyWeightKg by viewModel.bodyWeightKg.collectAsState()
+    val audioFeedback by viewModel.audioFeedback.collectAsState()
     val context = LocalContext.current
 
     val backupEvent by viewModel.backupEvent.collectAsState()
@@ -219,6 +221,14 @@ fun SettingsScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(Modifier.height(16.dp))
+                        AudioFeedbackDropdown(audioFeedback, onSelect = viewModel::setAudioFeedback)
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            stringResource(R.string.audio_feedback_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(Modifier.height(16.dp))
                         BodyWeightField(bodyWeightKg, onChange = viewModel::setBodyWeightKg)
                     }
                 }
@@ -291,7 +301,7 @@ fun SettingsScreen(
                                             val intent = Intent("android.health.connect.action.HEALTH_HOME_SETTINGS")
                                             context.startActivity(intent)
                                         } catch (e: Exception) {
-                                            hcPermissionLauncher.launch(HealthConnectManager.PERMISSIONS)
+                                            hcPermissionLauncher.launch(HealthConnectManager.ALL_PERMISSIONS)
                                         }
                                     },
                                     modifier = Modifier.fillMaxWidth()
@@ -337,6 +347,46 @@ private fun LapLengthDropdown(selectedM: Int, onSelect: (Int) -> Unit) {
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AudioFeedbackDropdown(selected: AudioFeedback, onSelect: (AudioFeedback) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        OutlinedTextField(
+            value = audioFeedbackLabel(selected),
+            onValueChange = {},
+            readOnly = true,
+            singleLine = true,
+            label = { Text(stringResource(R.string.audio_feedback)) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            shape = MaterialTheme.shapes.large,
+            modifier = Modifier
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                .fillMaxWidth()
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            AudioFeedback.entries.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(audioFeedbackLabel(option)) },
+                    onClick = {
+                        onSelect(option)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun audioFeedbackLabel(feedback: AudioFeedback): String = stringResource(
+    when (feedback) {
+        AudioFeedback.VOICE -> R.string.audio_feedback_voice
+        AudioFeedback.TONES -> R.string.audio_feedback_tones
+        AudioFeedback.OFF -> R.string.audio_feedback_off
+    }
+)
 
 /** Saved as you type; anything that isn't a sensible weight clears it. */
 @Composable

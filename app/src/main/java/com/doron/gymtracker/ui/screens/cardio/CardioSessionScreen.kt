@@ -1,6 +1,9 @@
 package com.doron.gymtracker.ui.screens.cardio
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -47,7 +51,9 @@ import androidx.compose.ui.unit.sp
 import com.doron.gymtracker.data.Elevation
 import com.doron.gymtracker.data.Lap
 import com.doron.gymtracker.data.LocationPoint
+import com.doron.gymtracker.domain.model.RunBadge
 import com.doron.gymtracker.domain.model.RunTargetType
+import com.doron.gymtracker.ui.components.BadgeImage
 import com.doron.gymtracker.ui.components.ElevationChart
 import com.doron.gymtracker.ui.components.MusicControls
 import com.doron.gymtracker.ui.components.RunMap
@@ -65,6 +71,9 @@ fun CardioSessionScreen(
 
     if (state.isFinished) {
         CardioSummary(state = state, onDone = onFinished)
+        if (state.newBadges.isNotEmpty()) {
+            NewBadgesDialog(state.newBadges, onDismiss = viewModel::badgesSeen)
+        }
         return
     }
 
@@ -95,8 +104,15 @@ fun CardioSessionScreen(
         Text(
             formatTime(state.elapsedSecs),
             style = MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.Bold),
-            color = Purple
+            color = if (state.isPaused) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else Purple
         )
+        if (state.isPaused) {
+            Text(
+                "⏸ מושהה – ימשיך כשתזוז",
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
 
         state.targetProgress?.let { progress ->
             Spacer(Modifier.height(8.dp))
@@ -242,6 +258,35 @@ private fun CardioSummary(
             color = SuccessGreen
         )
 
+        RunReport(state)
+
+        Spacer(Modifier.height(32.dp))
+
+        ElevatedButton(
+            onClick = onDone,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            colors = ButtonDefaults.elevatedButtonColors(containerColor = Purple)
+        ) {
+            Text(
+                "סגור",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+        }
+
+        Spacer(Modifier.height(32.dp))
+    }
+}
+
+/**
+ * Everything recorded for a run: weather, stats, route, elevation, laps and songs. Shown
+ * when a run ends and again from History.
+ */
+@Composable
+fun RunReport(state: CardioUiState, modifier: Modifier = Modifier) {
+    Column(modifier = modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         state.weather?.let {
             Spacer(Modifier.height(4.dp))
             Text(
@@ -368,24 +413,50 @@ private fun CardioSummary(
             }
         }
 
-        Spacer(Modifier.height(32.dp))
-
-        ElevatedButton(
-            onClick = onDone,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            colors = ButtonDefaults.elevatedButtonColors(containerColor = Purple)
-        ) {
-            Text(
-                "סגור",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = MaterialTheme.colorScheme.onPrimary
-            )
-        }
-
-        Spacer(Modifier.height(32.dp))
     }
+}
+
+/** Celebrates badges earned for the first time; the biggest one leads. */
+@Composable
+private fun NewBadgesDialog(badges: List<RunBadge>, onDismiss: () -> Unit) {
+    val top = badges.maxBy { it.meters }
+    var shown by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { shown = true }
+    val scale by animateFloatAsState(
+        targetValue = if (shown) 1f else 0.3f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        label = "badge"
+    )
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = { TextButton(onClick = onDismiss) { Text("יופי!", color = Purple) } },
+        title = {
+            Text(
+                if (badges.size > 1) "🎉 ${badges.size} הישגים חדשים!" else "🎉 הישג חדש!",
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+        },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    badges.sortedBy { it.meters }.forEach {
+                        BadgeImage(
+                            it, earned = true,
+                            size = if (it == top) 160.dp else 72.dp,
+                            modifier = Modifier.scale(scale)
+                        )
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    "רצת לראשונה ${top.label}",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+    )
 }
 
 /** Steps and cadence, climb, calories and weather, as far as they're known. */

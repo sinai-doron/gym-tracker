@@ -103,4 +103,9 @@
     <string name="lap_length_hint">The phone beeps and vibrates at every lap</string>
     <string name="body_weight">Body weight (kg)</string>
     <string name="body_weight_hint">Used to estimate calories for runs and walks</string>
+    <string name="audio_feedback">Audio feedback</string>
+    <string name="audio_feedback_voice">Voice</string>
+    <string name="audio_feedback_tones">Tones</string>
+    <string name="audio_feedback_off">Off</string>
+    <string name="audio_feedback_hint">Laps, target and auto-pause — through headphones when connected</string>
 </resources>

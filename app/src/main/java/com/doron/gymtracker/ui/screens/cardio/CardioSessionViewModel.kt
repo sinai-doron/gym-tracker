@@ -3,13 +3,18 @@ package com.doron.gymtracker.ui.screens.cardio
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.doron.gymtracker.data.ActiveClock
 import com.doron.gymtracker.data.Cadence
 import com.doron.gymtracker.data.CardioRecorder
+import com.doron.gymtracker.data.HealthConnectManager
 import com.doron.gymtracker.data.Lap
 import com.doron.gymtracker.data.LocationPoint
+import com.doron.gymtracker.data.RunRecord
 import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.data.repository.SessionRepository
+import com.doron.gymtracker.domain.model.RunBadge
 import com.doron.gymtracker.domain.model.RunTarget
+import com.doron.gymtracker.domain.usecase.GetRunBadgesUseCase
 import com.doron.gymtracker.domain.model.TrackLog
 import com.doron.gymtracker.domain.model.Weather
 import com.doron.gymtracker.service.CardioTrackingService
@@ -40,8 +45,16 @@ data class CardioUiState(
     val elevationGainM: Double = 0.0,
     val weather: Weather? = null,
     val calories: Int? = null,
-    val isFinished: Boolean = false
+    val isFinished: Boolean = false,
+    /** Badges this run earned for the first time, to celebrate on the finish screen. */
+    val newBadges: List<RunBadge> = emptyList(),
+    /** When each fix that moved the run happened, for auto-pause. */
+    val moves: List<Long> = emptyList(),
+    /** Stopped for long enough that the clock has stopped too. */
+    val isPaused: Boolean = false
 ) {
+    val clock: ActiveClock? get() = startedAt?.let { ActiveClock(it, moves) }
+
     val avgCadence: Int? get() = steps?.let { Cadence.average(it, elapsedSecs) }
 
     /** Target progress (1 = reached), or null with no target. */
@@ -52,7 +65,12 @@ data class CardioUiState(
     val currentLapNumber: Int get() = laps.size + 1
     val currentLapMeters: Double get() = distanceMeters - laps.size * lapMeters.toDouble()
     val currentLapSecs: Long
-        get() = (laps.lastOrNull()?.endedAt ?: startedAt)?.let { (System.currentTimeMillis() - it) / 1000 } ?: 0
+        get() {
+            val clock = clock ?: return 0
+            val lapStart = laps.lastOrNull()?.endedAt ?: startedAt ?: return 0
+            val now = System.currentTimeMillis()
+            return (clock.activeMs(now) - clock.activeMs(lapStart)) / 1000
+        }
 
     /** Average pace so far, seconds per km, or null before there's enough distance. */
     val avgPaceSecsPerKm: Long?
@@ -81,6 +99,8 @@ class CardioSessionViewModel @AssistedInject constructor(
     private val sessionRepo: SessionRepository,
     private val recorder: CardioRecorder,
     private val app: Application,
+    private val healthConnect: HealthConnectManager,
+    private val getRunBadges: GetRunBadgesUseCase,
     val settingsPrefs: SettingsPrefs
 ) : ViewModel() {
 
@@ -113,7 +133,8 @@ class CardioSessionViewModel @AssistedInject constructor(
                         cadence = run.cadence,
                         elevationGainM = run.elevationGainM,
                         weather = run.weather,
-                        calories = run.calories
+                        calories = run.calories,
+                        moves = run.moves
                     )
                 }
             }
@@ -123,7 +144,12 @@ class CardioSessionViewModel @AssistedInject constructor(
         viewModelScope.launch {
             while (!_uiState.value.isFinished) {
                 _uiState.value.startedAt?.let { start ->
-                    _uiState.update { it.copy(elapsedSecs = (System.currentTimeMillis() - start) / 1000) }
+                    // Moving time: the clock stops while auto-paused
+                    val now = System.currentTimeMillis()
+                    _uiState.update { state ->
+                        val clock = ActiveClock(start, state.moves)
+                        state.copy(elapsedSecs = clock.activeMs(now) / 1000, isPaused = clock.isPaused(now))
+                    }
                 }
                 delay(1_000)
             }
@@ -142,18 +168,41 @@ class CardioSessionViewModel @AssistedInject constructor(
                 laps = run?.laps ?: state.laps,
                 steps = run?.steps ?: state.steps,
                 elevationGainM = run?.elevationGainM ?: state.elevationGainM,
-                calories = run?.calories ?: state.calories
+                calories = run?.calories ?: state.calories,
+                moves = run?.moves ?: state.moves,
+                isPaused = false,
+                // The final moving time, up to the moment the run was finished
+                elapsedSecs = run?.clock?.activeMs(System.currentTimeMillis())?.div(1000) ?: state.elapsedSecs
             )
         }
         viewModelScope.launch {
             val final = _uiState.value
             sessionRepo.finishCardioSession(sessionId, final.distanceMeters)
+            _uiState.update { it.copy(newBadges = getRunBadges.earnedBy(sessionId)) }
             sessionRepo.getRunDetails(sessionId)?.let {
                 sessionRepo.saveRunDetails(
                     it.copy(steps = final.steps, elevationGainM = final.elevationGainM, calories = final.calories)
                 )
             }
+            final.startedAt?.let { startedAt ->
+                healthConnect.writeRun(
+                    RunRecord(
+                        type = final.type,
+                        startedAt = startedAt,
+                        finishedAt = sessionRepo.getById(sessionId)?.finishedAt ?: System.currentTimeMillis(),
+                        distanceMeters = final.distanceMeters,
+                        elevationGainM = final.elevationGainM,
+                        calories = final.calories,
+                        laps = final.laps,
+                        route = final.route
+                    )
+                )
+            }
         }
+    }
+
+    fun badgesSeen() {
+        _uiState.update { it.copy(newBadges = emptyList()) }
     }
 
     /** Deletes a run/walk started by mistake. */
