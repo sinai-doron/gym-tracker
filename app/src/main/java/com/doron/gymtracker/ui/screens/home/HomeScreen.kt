@@ -9,6 +9,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.health.connect.client.PermissionController
 import com.doron.gymtracker.data.HealthConnectManager
 import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -486,19 +488,59 @@ private fun CardioButton(label: String, modifier: Modifier, onClick: () -> Unit)
 
 @Composable
 private fun WeeklyStatsRow(stats: WeeklyStats) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
-            .padding(vertical = 14.dp, horizontal = 8.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly
+            .padding(vertical = 14.dp, horizontal = 8.dp)
     ) {
-        WeeklyStatItem("אימונים", "${stats.sessionsCount}")
-        WeeklyStatItem("דקות", "${stats.totalMinutes}")
-        if (stats.totalVolumeKg > 0) {
-            WeeklyStatItem("נפח", "%,.0f".format(stats.totalVolumeKg))
+        if (stats.days.isNotEmpty()) {
+            WeekStrip(stats.days)
+            Spacer(Modifier.height(14.dp))
         }
-        WeeklyStatItem("רצף", "${stats.streakDays}", highlight = stats.streakDays >= 3)
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            WeeklyStatItem("אימונים", "${stats.sessionsCount}")
+            WeeklyStatItem("דקות", "${stats.totalMinutes}")
+            if (stats.totalVolumeKg > 0) {
+                WeeklyStatItem("נפח", "%,.0f".format(stats.totalVolumeKg))
+            }
+            WeeklyStatItem("רצף", "${stats.streakDays}", highlight = stats.streakDays >= 3)
+        }
+    }
+}
+
+/** Sunday to Saturday (right to left in Hebrew): trained days filled with the workout, today outlined. */
+@Composable
+private fun WeekStrip(days: List<WeekDay>) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+        days.forEach { day ->
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    day.date.dayOfWeek.getDisplayName(java.time.format.TextStyle.NARROW, java.util.Locale.getDefault()),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (day.isToday) Purple else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(4.dp))
+                // Today gets an outer ring with a gap, so it stands out filled or empty
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .border(2.dp, if (day.isToday) Purple else Color.Transparent, CircleShape)
+                        .padding(4.dp)
+                        .background(
+                            if (day.mark != null) Purple else Purple.copy(alpha = 0.08f),
+                            CircleShape
+                        )
+                ) {
+                    Text(
+                        day.mark ?: "",
+                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
+        }
     }
 }
 

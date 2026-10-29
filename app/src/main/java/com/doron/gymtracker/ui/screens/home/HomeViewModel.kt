@@ -33,8 +33,13 @@ data class WeeklyStats(
     val sessionsCount: Int = 0,
     val totalMinutes: Int = 0,
     val totalVolumeKg: Float = 0f,
-    val streakDays: Int = 0
+    val streakDays: Int = 0,
+    /** Sunday to Saturday of the current week. */
+    val days: List<WeekDay> = emptyList()
 )
+
+/** One day in the week strip. [mark] is what was trained (workout letter or a cardio icon), or null. */
+data class WeekDay(val date: LocalDate, val mark: String?, val isToday: Boolean)
 
 data class HomeUiState(
     val suggestedWorkout: Workout? = null,
@@ -164,13 +169,16 @@ class HomeViewModel @Inject constructor(
             }
         }.toSet()
         val streak = streakDays(datesWithSessions, today)
+        val labels = _uiState.value.allWorkouts.associate { it.id to it.label.name }
+        val days = weekDays(weekStart, today, sessions, labels, ZoneId.systemDefault())
 
         _uiState.update {
             it.copy(weeklyStats = WeeklyStats(
                 sessionsCount = sessions.size,
                 totalMinutes = totalMinutes,
                 totalVolumeKg = volume,
-                streakDays = streak
+                streakDays = streak,
+                days = days
             ))
         }
     }
@@ -188,4 +196,25 @@ internal fun streakDays(datesWithSessions: Set<LocalDate>, today: LocalDate): In
         day = day.minusDays(1)
     }
     return streak
+}
+
+/**
+ * The seven days from [weekStart], each marked with what was trained that day: the gym workout's
+ * letter if there was one, otherwise a run or walk icon.
+ */
+internal fun weekDays(
+    weekStart: LocalDate,
+    today: LocalDate,
+    sessions: List<Session>,
+    workoutLabels: Map<String, String>,
+    zone: ZoneId
+): List<WeekDay> {
+    val byDate = sessions.groupBy { java.time.Instant.ofEpochMilli(it.startedAt).atZone(zone).toLocalDate() }
+    return (0L until 7L).map { offset ->
+        val date = weekStart.plusDays(offset)
+        val daySessions = byDate[date].orEmpty()
+        val mark = daySessions.firstOrNull { it.type == "GYM" }?.let { workoutLabels[it.workoutId] }
+            ?: daySessions.firstOrNull()?.let { if (it.type == "RUNNING") "🏃" else "🚶" }
+        WeekDay(date, mark, isToday = date == today)
+    }
 }

@@ -24,7 +24,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): GymDatabase =
         Room.databaseBuilder(context, GymDatabase::class.java, "gym_tracker.db")
-            .addMigrations(GymDatabase.MIGRATION_1_2, GymDatabase.MIGRATION_2_3, GymDatabase.MIGRATION_3_4, GymDatabase.MIGRATION_4_5, GymDatabase.MIGRATION_5_6)
+            .addMigrations(GymDatabase.MIGRATION_1_2, GymDatabase.MIGRATION_2_3, GymDatabase.MIGRATION_3_4, GymDatabase.MIGRATION_4_5, GymDatabase.MIGRATION_5_6, GymDatabase.MIGRATION_6_7)
             .build()
 
     @Provides fun provideWorkoutDao(db: GymDatabase): WorkoutDao = db.workoutDao()

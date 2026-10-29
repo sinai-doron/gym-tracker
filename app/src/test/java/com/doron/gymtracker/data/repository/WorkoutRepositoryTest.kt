@@ -4,6 +4,7 @@ import com.doron.gymtracker.data.db.dao.WorkoutDao
 import com.doron.gymtracker.data.db.entities.ExerciseDefinitionEntity
 import com.doron.gymtracker.data.db.entities.WorkoutEntity
 import com.doron.gymtracker.data.seed.TrainingPlanData
+import com.doron.gymtracker.domain.model.RepExerciseDefinition
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -78,5 +79,47 @@ class WorkoutRepositoryTest {
         coEvery { dao.getAll() } returns seededEntities
         coEvery { dao.getExercisesForWorkout(any()) } returns emptyList()
         assertNull(repo.getById("nonexistent"))
+    }
+
+    private fun row(id: String, order: Int, variantOf: String? = null) =
+        ExerciseDefinitionEntity(id, "workout_a", id, "REP", 3, 90, 10, null, variantOfId = variantOf, sortOrder = order)
+
+    @Test
+    fun `moveExercise swaps neighbours and renumbers`() = runTest {
+        coEvery { dao.getExercisesForWorkout("workout_a") } returns
+            listOf(row("e1", 1), row("e2", 2), row("e2b", 0, variantOf = "e2"), row("e3", 3))
+        repo.moveExercise("workout_a", "e2", -1)
+        coVerify { dao.setSortOrder("e2", 1) }
+        coVerify { dao.setSortOrder("e1", 2) }
+        coVerify { dao.setSortOrder("e3", 3) }
+        coVerify(exactly = 0) { dao.setSortOrder("e2b", any()) }
+    }
+
+    @Test
+    fun `moveExercise past either end does nothing`() = runTest {
+        coEvery { dao.getExercisesForWorkout("workout_a") } returns listOf(row("e1", 1), row("e2", 2))
+        repo.moveExercise("workout_a", "e1", -1)
+        repo.moveExercise("workout_a", "e2", 1)
+        coVerify(exactly = 0) { dao.setSortOrder(any(), any()) }
+    }
+
+    @Test
+    fun `updateExercise keeps workout, position and type`() = runTest {
+        coEvery { dao.getExercise("e1") } returns row("e1", 4)
+        repo.updateExercise(RepExerciseDefinition("e1", "New name", 5, 120, 8, isBodyweight = true))
+        coVerify {
+            dao.updateExercise(match {
+                it.name == "New name" && it.targetSets == 5 && it.restDurationSecs == 120 &&
+                    it.targetReps == 8 && it.isBodyweight && it.workoutId == "workout_a" &&
+                    it.sortOrder == 4 && it.type == "REP"
+            })
+        }
+    }
+
+    @Test
+    fun `addExercise goes to the end of the workout`() = runTest {
+        coEvery { dao.maxSortOrder("workout_a") } returns 7
+        repo.addExercise("workout_a", RepExerciseDefinition("custom_1", "Dips", 3, 90, 10))
+        coVerify { dao.insertExercise(match { it.id == "custom_1" && it.sortOrder == 8 }) }
     }
 }

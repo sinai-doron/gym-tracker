@@ -17,5 +17,9 @@ data class ExerciseDefinitionEntity(
     val isPerSide: Boolean = false,
     val isBodyweight: Boolean = false,
     /** Set on a week-B variant row: the id of the week-A exercise it alternates with. */
-    val variantOfId: String? = null
+    val variantOfId: String? = null,
+    /** Position within the workout; the user can reorder exercises. */
+    val sortOrder: Int = 0,
+    /** Removed by the user. Kept (not deleted) so history stays and the plan sync won't re-add it. */
+    val isRemoved: Boolean = false
 )

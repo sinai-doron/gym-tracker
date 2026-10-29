@@ -33,7 +33,7 @@ class WorkoutsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(WorkoutsUiState())
     val uiState: StateFlow<WorkoutsUiState> = _uiState.asStateFlow()
 
-    init {
+    fun reload() {
         viewModelScope.launch {
             val nextId = getNextWorkout().id
             val previews = workoutRepo.getAll().sortedBy { it.label }.map { getWorkoutPreview(it) }
@@ -41,7 +41,10 @@ class WorkoutsViewModel @Inject constructor(
                 it.copy(
                     previews = previews,
                     nextWorkoutId = nextId,
-                    selectedIndex = previews.indexOfFirst { p -> p.workout.id == nextId }.coerceAtLeast(0),
+                    // First load opens on the upcoming workout; later reloads keep the user's pick
+                    selectedIndex = if (it.isLoading) {
+                        previews.indexOfFirst { p -> p.workout.id == nextId }.coerceAtLeast(0)
+                    } else it.selectedIndex,
                     isLoading = false
                 )
             }

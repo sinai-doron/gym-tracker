@@ -75,4 +75,24 @@
     <string name="restore_confirm_title">Restore from backup?</string>
     <string name="restore_confirm_text">All current data will be replaced by the backup, and the app will restart.</string>
     <string name="cancel">Cancel</string>
+    <string name="edit_workout">Edit %1$s · %2$s</string>
+    <string name="add_exercise">Add exercise</string>
+    <string name="edit_exercise">Edit exercise</string>
+    <string name="exercise_name">Exercise name</string>
+    <string name="sets_label">Sets</string>
+    <string name="target_reps">Target reps</string>
+    <string name="target_distance">Target distance (m)</string>
+    <string name="rest_label">Rest</string>
+    <string name="rest_value">Rest %s</string>
+    <string name="bodyweight_label">Bodyweight</string>
+    <string name="kind_reps">Reps</string>
+    <string name="kind_time">Time</string>
+    <string name="kind_distance">Distance</string>
+    <string name="save">Save</string>
+    <string name="remove">Remove</string>
+    <string name="remove_exercise_title">Remove \"%s\"?</string>
+    <string name="remove_exercise_text">The exercise is removed from the workout. Its history is kept.</string>
+    <string name="move_up">Move up</string>
+    <string name="move_down">Move down</string>
+    <string name="edit_plan">Edit</string>
 </resources>

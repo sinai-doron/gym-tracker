@@ -22,6 +22,7 @@ import com.doron.gymtracker.ui.screens.history.SessionDetailViewModel
 import com.doron.gymtracker.ui.screens.home.HomeScreen
 import com.doron.gymtracker.ui.screens.session.SessionScreen
 import com.doron.gymtracker.ui.screens.session.SessionViewModel
+import com.doron.gymtracker.ui.screens.plan.PlanEditorScreen
 import com.doron.gymtracker.ui.screens.progress.ExerciseProgressScreen
 import com.doron.gymtracker.ui.screens.settings.SettingsScreen
 import com.doron.gymtracker.ui.screens.workouts.WorkoutsScreen
@@ -50,6 +51,7 @@ fun NavGraph() {
             WorkoutsScreen(
                 onBack = { navController.popBackStack() },
                 onExerciseProgress = { id -> navController.navigate("exercise-progress/$id") },
+                onEditPlan = { workoutId -> navController.navigate("plan/$workoutId") },
                 onSessionStart = { sessionId, workoutId ->
                     // Finishing the session should land back on home, not on this screen
                     navController.navigate("session/$sessionId/$workoutId") {
@@ -57,6 +59,9 @@ fun NavGraph() {
                     }
                 }
             )
+        }
+        composable("plan/{workoutId}") {
+            PlanEditorScreen(onBack = { navController.popBackStack() })
         }
         composable("exercise-progress/{exerciseId}") {
             ExerciseProgressScreen(onBack = { navController.popBackStack() })

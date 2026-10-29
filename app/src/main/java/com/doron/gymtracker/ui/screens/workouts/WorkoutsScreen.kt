@@ -18,6 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -27,6 +28,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -42,6 +44,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.doron.gymtracker.R
 import com.doron.gymtracker.ui.components.ExercisePreviewList
 import com.doron.gymtracker.ui.components.WorkoutMetaRow
@@ -54,10 +58,13 @@ fun WorkoutsScreen(
     onBack: () -> Unit,
     onSessionStart: (sessionId: Long, workoutId: String) -> Unit,
     onExerciseProgress: (exerciseId: String) -> Unit,
+    onEditPlan: (workoutId: String) -> Unit,
     viewModel: WorkoutsViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
+    // Coming back from the plan editor: show the edited exercises
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.reload() }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -68,6 +75,14 @@ fun WorkoutsScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                    }
+                },
+                actions = {
+                    state.previews.getOrNull(state.selectedIndex)?.let { selected ->
+                        TextButton(onClick = { onEditPlan(selected.workout.id) }) {
+                            Icon(Icons.Default.Edit, contentDescription = null, tint = Purple)
+                            Text(" " + stringResource(R.string.edit_plan), color = Purple)
+                        }
                     }
                 }
             )

@@ -28,7 +28,7 @@ import com.doron.gymtracker.data.db.entities.WorkoutEntity
         TrackLogEntity::class,
         LocationLogEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 abstract class GymDatabase : RoomDatabase() {
@@ -96,6 +96,15 @@ abstract class GymDatabase : RoomDatabase() {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE exercise_definitions ADD COLUMN variantOfId TEXT")
                 database.execSQL("UPDATE exercise_definitions SET name = 'כפיפות בטן' WHERE id = 'd2_e8a'")
+            }
+        }
+
+        // The plan becomes editable: exercise order and soft removal.
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE exercise_definitions ADD COLUMN sortOrder INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("UPDATE exercise_definitions SET sortOrder = rowid")
+                database.execSQL("ALTER TABLE exercise_definitions ADD COLUMN isRemoved INTEGER NOT NULL DEFAULT 0")
             }
         }
     }

@@ -21,7 +21,7 @@
     <string name="sets_progress">%1$d / %2$d סטים</string>
     <string name="suggested_marker">★</string>
     <string name="no_sessions_month">אין אימונים בחודש זה</string>
-    <string name="deload_week_banner">שבוע דילוד — 60% ממשקל אחרון, 2 סטים</string>
+    <string name="deload_week_banner">שבוע הורדת עומס — 60% ממשקל אחרון, 2 סטים</string>
     <string name="settings">הגדרות</string>
     <string name="language">שפה</string>
     <string name="next_workout">האימון הבא</string>
@@ -51,9 +51,9 @@
     <string name="program_week">שבוע %d</string>
     <string name="week_a">שבוע A</string>
     <string name="week_b">שבוע B</string>
-    <string name="deload_now">שבוע דילואד</string>
-    <string name="deload_next_week">דילואד בשבוע הבא</string>
-    <string name="deload_in_weeks">דילואד בעוד %d שבועות</string>
+    <string name="deload_now">שבוע הורדת עומס</string>
+    <string name="deload_next_week">הורדת עומס בשבוע הבא</string>
+    <string name="deload_in_weeks">הורדת עומס בעוד %d שבועות</string>
     <string name="open_workout">אימון פתוח</string>
     <string name="started_at">התחיל ב-%s</string>
     <string name="resume_workout">המשך אימון</string>
@@ -75,4 +75,24 @@
     <string name="restore_confirm_title">לשחזר מגיבוי?</string>
     <string name="restore_confirm_text">כל הנתונים הנוכחיים יוחלפו בתוכן הגיבוי, והאפליקציה תופעל מחדש.</string>
     <string name="cancel">ביטול</string>
+    <string name="edit_workout">עריכת %1$s · %2$s</string>
+    <string name="add_exercise">הוסף תרגיל</string>
+    <string name="edit_exercise">עריכת תרגיל</string>
+    <string name="exercise_name">שם התרגיל</string>
+    <string name="sets_label">סטים</string>
+    <string name="target_reps">חזרות ביעד</string>
+    <string name="target_distance">מרחק ביעד (מ׳)</string>
+    <string name="rest_label">מנוחה</string>
+    <string name="rest_value">מנוחה %s</string>
+    <string name="bodyweight_label">משקל גוף</string>
+    <string name="kind_reps">חזרות</string>
+    <string name="kind_time">זמן</string>
+    <string name="kind_distance">מרחק</string>
+    <string name="save">שמור</string>
+    <string name="remove">הסר</string>
+    <string name="remove_exercise_title">להסיר את \"%s\"?</string>
+    <string name="remove_exercise_text">התרגיל יוסר מהאימון. ההיסטוריה שלו נשמרת.</string>
+    <string name="move_up">הזז למעלה</string>
+    <string name="move_down">הזז למטה</string>
+    <string name="edit_plan">ערוך</string>
 </resources>

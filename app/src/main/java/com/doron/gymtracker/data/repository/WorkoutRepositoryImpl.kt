@@ -30,7 +30,7 @@ class WorkoutRepositoryImpl @Inject constructor(
             if (seeded) return
             val workoutEntities = TrainingPlanData.all.map { WorkoutEntity(it.id, it.label.name) }
             val exerciseEntities = TrainingPlanData.all.flatMap { workout ->
-                workout.exercises.map { it.toEntity(workout.id) } +
+                workout.exercises.mapIndexed { i, ex -> ex.toEntity(workout.id, sortOrder = i + 1) } +
                     workout.exercises.mapNotNull { base ->
                         base.variantB?.toEntity(workout.id, variantOfId = base.id)
                     }
@@ -59,22 +59,44 @@ class WorkoutRepositoryImpl @Inject constructor(
     override suspend fun updateTargetSets(exerciseId: String, sets: Int) =
         dao.updateTargetSets(exerciseId, sets)
 
-    private fun ExerciseDefinition.toEntity(workoutId: String, variantOfId: String? = null) = when (this) {
+    override suspend fun updateExercise(exercise: ExerciseDefinition) {
+        val existing = dao.getExercise(exercise.id) ?: return
+        val edited = exercise.toEntity(existing.workoutId, existing.variantOfId, existing.sortOrder)
+        dao.updateExercise(edited.copy(type = existing.type))
+    }
+
+    override suspend fun addExercise(workoutId: String, exercise: ExerciseDefinition) {
+        dao.insertExercise(exercise.toEntity(workoutId, sortOrder = dao.maxSortOrder(workoutId) + 1))
+    }
+
+    override suspend fun removeExercise(exerciseId: String) = dao.markRemoved(exerciseId)
+
+    override suspend fun moveExercise(workoutId: String, exerciseId: String, direction: Int) {
+        val bases = dao.getExercisesForWorkout(workoutId).filter { it.variantOfId == null }
+        val from = bases.indexOfFirst { it.id == exerciseId }
+        val to = from + direction
+        if (from < 0 || to !in bases.indices) return
+        // Renumber the whole list so ties from older rows can't make the swap a no-op
+        val reordered = bases.toMutableList().apply { add(to, removeAt(from)) }
+        reordered.forEachIndexed { i, row -> dao.setSortOrder(row.id, i + 1) }
+    }
+
+    private fun ExerciseDefinition.toEntity(workoutId: String, variantOfId: String? = null, sortOrder: Int = 0) = when (this) {
         is RepExerciseDefinition -> ExerciseDefinitionEntity(
             id, workoutId, name, "REP", targetSets, restDurationSecs,
             targetReps = targetReps, targetDistanceM = null,
             isOptional = isOptional, isPerSide = isPerSide, isBodyweight = isBodyweight,
-            variantOfId = variantOfId
+            variantOfId = variantOfId, sortOrder = sortOrder
         )
         is TimedExerciseDefinition -> ExerciseDefinitionEntity(
             id, workoutId, name, "TIMED", targetSets, restDurationSecs,
             targetReps = null, targetDistanceM = null,
-            isOptional = isOptional, isPerSide = isPerSide, variantOfId = variantOfId
+            isOptional = isOptional, isPerSide = isPerSide, variantOfId = variantOfId, sortOrder = sortOrder
         )
         is DistanceExerciseDefinition -> ExerciseDefinitionEntity(
             id, workoutId, name, "DISTANCE", targetSets, restDurationSecs,
             targetReps = null, targetDistanceM = targetDistanceM,
-            isOptional = isOptional, isPerSide = isPerSide, variantOfId = variantOfId
+            isOptional = isOptional, isPerSide = isPerSide, variantOfId = variantOfId, sortOrder = sortOrder
         )
     }
 
