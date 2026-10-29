@@ -14,5 +14,6 @@ data class ExerciseDefinitionEntity(
     val targetReps: Int?,       // REP only
     val targetDistanceM: Int?,  // DISTANCE only
     val isOptional: Boolean = false,
-    val isPerSide: Boolean = false
+    val isPerSide: Boolean = false,
+    val isBodyweight: Boolean = false
 )

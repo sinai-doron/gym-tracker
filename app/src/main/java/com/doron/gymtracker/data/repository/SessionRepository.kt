@@ -25,6 +25,10 @@ interface SessionRepository {
     suspend fun getLocationsForSession(sessionId: Long): List<LocationLogEntity>
     suspend fun deleteExerciseFromSession(sessionId: Long, exerciseId: String)
     suspend fun deleteSession(sessionId: Long)
+    suspend fun getUnfinishedStartedBefore(beforeMillis: Long): List<Session>
+    /** Time of the last logged set or GPS point, or null if nothing was recorded. */
+    suspend fun getLastActivityAt(sessionId: Long): Long?
+    suspend fun closeSession(sessionId: Long, finishedAt: Long)
     suspend fun getCompletedSince(sinceMillis: Long): List<Session>
     suspend fun getTotalVolumeSince(sinceMillis: Long): Float
 }

@@ -154,7 +154,7 @@ private fun InlineSetRow(setNumber: Int, record: SetRecord) {
             is RepSetRecord -> {
                 val w = if (record.weightKg == record.weightKg.toLong().toFloat())
                     record.weightKg.toLong().toString() else record.weightKg.toString()
-                "${record.reps} × $w ק״ג"
+                if (record.weightKg == 0f) "${record.reps} חזרות" else "${record.reps} × $w ק״ג"
             }
             is TimedSetRecord -> formatDuration(record.durationSecs)
             is DistanceSetRecord -> "${record.distanceM} מ׳"

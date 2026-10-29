@@ -4,6 +4,10 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import android.os.Build
+import androidx.compose.runtime.LaunchedEffect
+import androidx.health.connect.client.PermissionController
+import com.doron.gymtracker.data.HealthConnectManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -54,6 +58,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.doron.gymtracker.R
+import com.doron.gymtracker.domain.model.Weather
+import com.doron.gymtracker.domain.model.WeatherCondition
 import com.doron.gymtracker.domain.model.WorkoutPreview
 import com.doron.gymtracker.ui.components.ExercisePreviewList
 import com.doron.gymtracker.ui.components.WorkoutMetaRow
@@ -74,6 +80,25 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     var pendingCardioType by remember { mutableStateOf<String?>(null) }
+
+    // Step counting needs ACTIVITY_RECOGNITION (sensor) or Health Connect (full-day steps)
+    val activityPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { viewModel.refresh() }
+    val weatherLocationLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { viewModel.refresh() }
+    val healthConnectPermissionLauncher = rememberLauncherForActivityResult(
+        PermissionController.createRequestPermissionResultContract()
+    ) { viewModel.refresh() }
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION)
+                != PackageManager.PERMISSION_GRANTED
+        ) {
+            activityPermissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
+        }
+    }
 
     // Coming back from a workout changes the next workout and the stats
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refresh() }
@@ -134,7 +159,15 @@ fun HomeScreen(
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.weight(1f)
                 )
-                if (state.stepsAvailable) {
+                if (state.healthConnectNeedsPermission) {
+                    TextButton(onClick = { healthConnectPermissionLauncher.launch(HealthConnectManager.PERMISSIONS) }) {
+                        Text(
+                            "👣 " + stringResource(R.string.connect_steps),
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                            color = Purple
+                        )
+                    }
+                } else if (state.stepsAvailable) {
                     Text(
                         "👣 %,d".format(state.todaySteps),
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
@@ -146,6 +179,23 @@ fun HomeScreen(
                         Icons.Default.Settings,
                         contentDescription = stringResource(R.string.settings),
                         tint = Purple.copy(alpha = 0.6f)
+                    )
+                }
+            }
+
+            // Weather
+            val weather = state.weather
+            if (weather != null) {
+                WeatherRow(weather)
+            } else if (state.weatherNeedsPermission) {
+                TextButton(
+                    onClick = { weatherLocationLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION) },
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Text(
+                        "📍 " + stringResource(R.string.show_weather),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Purple
                     )
                 }
             }
@@ -214,6 +264,49 @@ fun HomeScreen(
             Spacer(Modifier.height(12.dp))
         }
     }
+}
+
+@Composable
+private fun WeatherRow(weather: Weather) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(weather.condition.emoji, fontSize = 28.sp)
+        Spacer(Modifier.width(10.dp))
+        Text(
+            "${weather.temperatureC}°",
+            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(Modifier.width(10.dp))
+        Text(
+            stringResource(weather.condition.labelRes()),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f)
+        )
+        // LTR isolate keeps "↑28° ↓19°" in order inside RTL text
+        Text(
+            "\u2066↑${weather.highC}°  ↓${weather.lowC}°\u2069",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+private fun WeatherCondition.labelRes(): Int = when (this) {
+    WeatherCondition.CLEAR -> R.string.weather_clear
+    WeatherCondition.PARTLY_CLOUDY -> R.string.weather_partly_cloudy
+    WeatherCondition.CLOUDY -> R.string.weather_cloudy
+    WeatherCondition.FOG -> R.string.weather_fog
+    WeatherCondition.DRIZZLE -> R.string.weather_drizzle
+    WeatherCondition.RAIN -> R.string.weather_rain
+    WeatherCondition.SNOW -> R.string.weather_snow
+    WeatherCondition.THUNDERSTORM -> R.string.weather_thunderstorm
 }
 
 private const val HOME_EXERCISES_SHOWN = 3

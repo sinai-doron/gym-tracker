@@ -18,7 +18,9 @@ data class RepExerciseDefinition(
     val targetReps: Int,
     override val variantB: ExerciseDefinition? = null,
     override val isOptional: Boolean = false,
-    override val isPerSide: Boolean = false
+    override val isPerSide: Boolean = false,
+    /** Bodyweight / free-form: logged by reps only, no weight. */
+    val isBodyweight: Boolean = false
 ) : ExerciseDefinition
 
 data class TimedExerciseDefinition(

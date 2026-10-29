@@ -140,7 +140,7 @@ fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -
 
             when (state.exercise) {
                 is RepExerciseDefinition -> RepSetInput(
-                    targetReps = (state.exercise as RepExerciseDefinition).targetReps,
+                    isBodyweight = (state.exercise as RepExerciseDefinition).isBodyweight,
                     lastWeight = state.lastWeight,
                     editingSet = editingSet as? RepSetRecord,
                     onLog = { reps, weight ->
@@ -200,9 +200,12 @@ fun ExerciseDetailSheet(viewModel: ExerciseDetailViewModel, onEntryChanged: () -
     }
 }
 
+// New sets start at the reps usually done, regardless of the plan's target
+private const val DEFAULT_REPS = 10
+
 @Composable
 private fun RepSetInput(
-    targetReps: Int,
+    isBodyweight: Boolean,
     lastWeight: Float?,
     editingSet: RepSetRecord? = null,
     onLog: (Int, Float) -> Unit,
@@ -212,7 +215,7 @@ private fun RepSetInput(
         lastWeight.let { if (it == it.toLong().toFloat()) it.toLong().toString() else it.toString() }
     else ""
     var repsText by remember(editingSet) {
-        mutableStateOf(editingSet?.reps?.toString() ?: targetReps.toString())
+        mutableStateOf(editingSet?.reps?.toString() ?: DEFAULT_REPS.toString())
     }
     var weightText by remember(editingSet, lastWeight) {
         mutableStateOf(
@@ -230,15 +233,18 @@ private fun RepSetInput(
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
-        Spacer(Modifier.height(8.dp))
-        OutlinedTextField(
-            value = weightText,
-            onValueChange = { weightText = it },
-            label = { Text(stringResource(R.string.weight_kg)) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
+        // Bodyweight exercises are logged by reps only (stored as 0 kg)
+        if (!isBodyweight) {
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(
+                value = weightText,
+                onValueChange = { weightText = it },
+                label = { Text(stringResource(R.string.weight_kg)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 
     Spacer(Modifier.height(16.dp))
@@ -254,14 +260,14 @@ private fun RepSetInput(
         Button(
             onClick = {
                 val reps = repsText.toIntOrNull() ?: return@Button
-                val weight = weightText.toFloatOrNull() ?: return@Button
+                val weight = if (isBodyweight) 0f else weightText.toFloatOrNull() ?: return@Button
                 onLog(reps, weight)
                 if (editingSet == null) {
-                    repsText = targetReps.toString()
+                    repsText = DEFAULT_REPS.toString()
                 }
             },
             modifier = Modifier.weight(1f),
-            enabled = repsText.isNotBlank() && weightText.isNotBlank()
+            enabled = repsText.isNotBlank() && (isBodyweight || weightText.isNotBlank())
         ) {
             Text(if (editingSet != null) "עדכן סט" else stringResource(R.string.log_set))
         }

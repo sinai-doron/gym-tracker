@@ -111,6 +111,15 @@ class CardioSessionViewModel @AssistedInject constructor(
         }
     }
 
+    /** Deletes a run/walk started by mistake. */
+    fun discard(onDiscarded: () -> Unit) {
+        viewModelScope.launch {
+            CardioTrackingService.stop(app)
+            sessionRepo.deleteSession(sessionId)
+            onDiscarded()
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         if (!_uiState.value.isFinished) {

@@ -101,6 +101,20 @@ class SessionRepositoryImpl @Inject constructor(
         entryDao.deleteForSessionAndExercise(sessionId, exerciseId)
     }
 
+    override suspend fun getUnfinishedStartedBefore(beforeMillis: Long): List<Session> =
+        sessionDao.getUnfinishedStartedBefore(beforeMillis).map { it.toDomain() }
+
+    override suspend fun getLastActivityAt(sessionId: Long): Long? {
+        val lastSet = setDao.getForSession(sessionId).maxOfOrNull { it.completedAt }
+        val lastLocation = locationLogDao.getForSession(sessionId).lastOrNull()?.timestamp
+        return listOfNotNull(lastSet, lastLocation).maxOrNull()
+    }
+
+    override suspend fun closeSession(sessionId: Long, finishedAt: Long) {
+        val existing = sessionDao.getById(sessionId) ?: return
+        sessionDao.update(existing.copy(finishedAt = finishedAt))
+    }
+
     override suspend fun deleteSession(sessionId: Long) {
         setDao.deleteForSession(sessionId)
         entryDao.deleteForSession(sessionId)

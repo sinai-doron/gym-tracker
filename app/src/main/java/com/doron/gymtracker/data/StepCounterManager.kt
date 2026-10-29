@@ -1,10 +1,14 @@
 package com.doron.gymtracker.data
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.Build
+import androidx.core.content.ContextCompat
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
@@ -39,13 +43,17 @@ class StepCounterManager @Inject constructor(
     private val _todaySteps = MutableStateFlow(0)
     val todaySteps: StateFlow<Int> = _todaySteps.asStateFlow()
 
-    val isAvailable: Boolean get() = stepSensor != null
+    // Android 10+ delivers no step events without the ACTIVITY_RECOGNITION runtime permission
+    val isAvailable: Boolean get() = stepSensor != null && hasActivityPermission()
+
+    private var isListening = false
 
     private var baseline: Float = 0f
     private var baselineDate: Long = 0L
 
     suspend fun start() {
-        if (stepSensor == null) return
+        if (!isAvailable || isListening) return
+        isListening = true
         val prefs = context.stepDataStore.data.first()
         baseline = prefs[KEY_BASELINE] ?: 0f
         baselineDate = prefs[KEY_BASELINE_DATE] ?: 0L
@@ -54,14 +62,21 @@ class StepCounterManager @Inject constructor(
 
     fun stop() {
         sensorManager.unregisterListener(this)
+        isListening = false
     }
+
+    private fun hasActivityPermission(): Boolean =
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.Q ||
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION) ==
+            PackageManager.PERMISSION_GRANTED
 
     override fun onSensorChanged(event: SensorEvent) {
         if (event.sensor.type != Sensor.TYPE_STEP_COUNTER) return
         val totalSteps = event.values[0]
         val todayEpoch = LocalDate.now(ZoneId.systemDefault()).toEpochDay()
 
-        if (baselineDate != todayEpoch) {
+        // The sensor counts since boot: a new day, or a reboot (count went down), restarts the baseline
+        if (baselineDate != todayEpoch || totalSteps < baseline) {
             baseline = totalSteps
             baselineDate = todayEpoch
             scope.launch {

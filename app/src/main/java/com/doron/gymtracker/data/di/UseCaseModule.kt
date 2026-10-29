@@ -5,6 +5,7 @@ import com.doron.gymtracker.data.prefs.ProgramPrefs
 import com.doron.gymtracker.data.prefs.RotationPrefs
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.WorkoutRepository
+import com.doron.gymtracker.domain.usecase.CloseStaleSessionsUseCase
 import com.doron.gymtracker.domain.usecase.FinishSessionUseCase
 import com.doron.gymtracker.domain.usecase.GetNextWorkoutUseCase
 import com.doron.gymtracker.domain.usecase.GetWorkoutPreviewUseCase
@@ -26,6 +27,10 @@ object UseCaseModule {
     @Provides
     fun provideGetNextWorkoutUseCase(prefs: RotationPrefs, repo: WorkoutRepository) =
         GetNextWorkoutUseCase(prefs, repo)
+
+    @Provides
+    fun provideCloseStaleSessionsUseCase(repo: SessionRepository) =
+        CloseStaleSessionsUseCase(repo)
 
     @Provides
     fun provideStartSessionUseCase(repo: SessionRepository) =

@@ -57,7 +57,7 @@ class WorkoutRepositoryImpl @Inject constructor(
         is RepExerciseDefinition -> ExerciseDefinitionEntity(
             id, workoutId, name, "REP", targetSets, restDurationSecs,
             targetReps = targetReps, targetDistanceM = null,
-            isOptional = isOptional, isPerSide = isPerSide
+            isOptional = isOptional, isPerSide = isPerSide, isBodyweight = isBodyweight
         )
         is TimedExerciseDefinition -> ExerciseDefinitionEntity(
             id, workoutId, name, "TIMED", targetSets, restDurationSecs,
@@ -74,7 +74,7 @@ class WorkoutRepositoryImpl @Inject constructor(
     private fun ExerciseDefinitionEntity.toDomain(): ExerciseDefinition = when (type) {
         "REP" -> RepExerciseDefinition(
             id, name, targetSets, restDurationSecs, targetReps!!,
-            isOptional = isOptional, isPerSide = isPerSide
+            isOptional = isOptional, isPerSide = isPerSide, isBodyweight = isBodyweight
         )
         "DISTANCE" -> DistanceExerciseDefinition(
             id, name, targetSets, restDurationSecs, targetDistanceM!!,

@@ -2,6 +2,7 @@ package com.doron.gymtracker.domain.usecase
 
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.domain.model.ExercisePreview
+import com.doron.gymtracker.domain.model.RepExerciseDefinition
 import com.doron.gymtracker.domain.model.Workout
 import com.doron.gymtracker.domain.model.WorkoutPreview
 import javax.inject.Inject
@@ -21,7 +22,8 @@ class GetWorkoutPreviewUseCase @Inject constructor(
         return WorkoutPreview(
             workout = workout,
             exercises = workout.exercises.map { resolveVariant(it, now) }.map {
-                ExercisePreview(it, getLastWeight(it.id))
+                val bodyweight = it is RepExerciseDefinition && it.isBodyweight
+                ExercisePreview(it, if (bodyweight) null else getLastWeight(it.id))
             },
             lastDoneAt = pastSessions.firstOrNull()?.startedAt,
             typicalMinutes = if (recentMinutes.isEmpty()) null else recentMinutes.average().toInt()

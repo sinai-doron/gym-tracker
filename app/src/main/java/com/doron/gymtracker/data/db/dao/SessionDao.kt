@@ -27,6 +27,9 @@ interface SessionDao {
     @Query("DELETE FROM sessions WHERE id = :id")
     suspend fun deleteById(id: Long)
 
+    @Query("SELECT * FROM sessions WHERE finishedAt IS NULL AND startedAt < :beforeMillis")
+    suspend fun getUnfinishedStartedBefore(beforeMillis: Long): List<SessionEntity>
+
     @Query("SELECT * FROM sessions WHERE finishedAt IS NOT NULL AND startedAt >= :sinceMillis ORDER BY startedAt DESC")
     suspend fun getCompletedSince(sinceMillis: Long): List<SessionEntity>
 }

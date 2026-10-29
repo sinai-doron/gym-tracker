@@ -34,7 +34,7 @@ fun SetLogRow(setNumber: Int, record: SetRecord, isEditing: Boolean = false, onC
             is RepSetRecord -> {
                 val w = if (record.weightKg == record.weightKg.toLong().toFloat())
                     record.weightKg.toLong().toString() else record.weightKg.toString()
-                "${record.reps} חזרות × $w ק״ג"
+                if (record.weightKg == 0f) "${record.reps} חזרות" else "${record.reps} חזרות × $w ק״ג"
             }
             is TimedSetRecord -> {
                 val m = record.durationSecs / 60

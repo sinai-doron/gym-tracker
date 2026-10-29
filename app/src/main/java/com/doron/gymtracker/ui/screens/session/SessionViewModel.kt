@@ -92,6 +92,15 @@ class SessionViewModel @AssistedInject constructor(
         }
     }
 
+    /** Deletes a session started by mistake, with everything logged in it. */
+    fun discardSession(onDiscarded: () -> Unit) {
+        restTimer.dismiss()
+        viewModelScope.launch {
+            sessionRepo.deleteSession(sessionId)
+            onDiscarded()
+        }
+    }
+
     fun onEntryUpdated(entry: ExerciseEntry) {
         _uiState.update { state ->
             state.copy(entries = state.entries + (entry.exerciseId to entry))

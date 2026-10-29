@@ -28,7 +28,7 @@ import com.doron.gymtracker.data.db.entities.WorkoutEntity
         TrackLogEntity::class,
         LocationLogEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class GymDatabase : RoomDatabase() {
@@ -78,6 +78,15 @@ abstract class GymDatabase : RoomDatabase() {
                         `altitude` REAL
                     )
                 """)
+            }
+        }
+
+        // Bodyweight exercises are logged without weight. The plan is seeded once,
+        // so existing installs need the seeded bodyweight exercises flagged here.
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE exercise_definitions ADD COLUMN isBodyweight INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("UPDATE exercise_definitions SET isBodyweight = 1 WHERE id IN ('d2_e8a', 'd2_e8b')")
             }
         }
     }

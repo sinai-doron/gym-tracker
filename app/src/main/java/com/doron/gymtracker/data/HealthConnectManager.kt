@@ -7,7 +7,7 @@ import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.metadata.Metadata
-import androidx.health.connect.client.request.ReadRecordsRequest
+import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.Instant
@@ -73,13 +73,15 @@ class HealthConnectManager @Inject constructor(
         return try {
             val now = Instant.now()
             val startOfDay = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()
-            val response = c.readRecords(
-                ReadRecordsRequest(
-                    recordType = StepsRecord::class,
+            // aggregate() de-duplicates steps written by several apps (e.g. phone + watch);
+            // summing raw records double-counts them and is capped at one page of records
+            val response = c.aggregate(
+                AggregateRequest(
+                    metrics = setOf(StepsRecord.COUNT_TOTAL),
                     timeRangeFilter = TimeRangeFilter.between(startOfDay, now)
                 )
             )
-            response.records.sumOf { it.count }
+            response[StepsRecord.COUNT_TOTAL] ?: 0
         } catch (e: Exception) {
             Log.w("HealthConnect", "Failed to read steps", e)
             0

@@ -38,4 +38,14 @@
     <string name="weight_value">%s ק״ג</string>
     <string name="distance_value">%d מ׳</string>
     <string name="more_exercises">ועוד %d תרגילים</string>
+    <string name="connect_steps">חבר צעדים</string>
+    <string name="weather_clear">בהיר</string>
+    <string name="weather_partly_cloudy">מעונן חלקית</string>
+    <string name="weather_cloudy">מעונן</string>
+    <string name="weather_fog">ערפל</string>
+    <string name="weather_drizzle">טפטוף</string>
+    <string name="weather_rain">גשם</string>
+    <string name="weather_snow">שלג</string>
+    <string name="weather_thunderstorm">סופת רעמים</string>
+    <string name="show_weather">הצג מזג אוויר</string>
 </resources>

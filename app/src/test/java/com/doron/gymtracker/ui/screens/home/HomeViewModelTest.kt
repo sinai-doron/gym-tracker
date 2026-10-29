@@ -53,7 +53,8 @@ class HomeViewModelTest {
         every { healthConnect.isAvailable } returns false
         val getWorkoutPreview = mockk<GetWorkoutPreviewUseCase>()
         coEvery { getWorkoutPreview(any(), any()) } answers { WorkoutPreview(firstArg(), emptyList(), null, null) }
-        viewModel = HomeViewModel(getNextWorkout, startSession, workoutRepo, sessionRepo, stepCounter, healthConnect, getWorkoutPreview)
+        viewModel = HomeViewModel(getNextWorkout, startSession, workoutRepo, sessionRepo, stepCounter, healthConnect,
+            getWorkoutPreview, mockk(relaxed = true), mockk(relaxed = true))
     }
 
     @After

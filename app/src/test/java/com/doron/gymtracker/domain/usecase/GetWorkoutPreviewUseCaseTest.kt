@@ -60,4 +60,14 @@ class GetWorkoutPreviewUseCaseTest {
         assertEquals(60f, preview.exercises.first().lastWeightKg)
         assertNull(preview.exercises.last().lastWeightKg)
     }
+
+    @Test
+    fun `bodyweight exercises have no last weight`() = runTest {
+        val crunches = TrainingPlanData.workoutB.exercises.last()
+        coEvery { sessionRepo.getCompletedSince(0) } returns emptyList()
+        coEvery { getLastWeight(any()) } returns 40f
+        val preview = useCase(TrainingPlanData.workoutB)
+        assertNull(preview.exercises.single { it.exercise.id == crunches.id }.lastWeightKg)
+        assertEquals(40f, preview.exercises.first().lastWeightKg)
+    }
 }

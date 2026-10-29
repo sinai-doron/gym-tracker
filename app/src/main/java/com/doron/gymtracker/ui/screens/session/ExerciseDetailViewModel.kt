@@ -63,7 +63,7 @@ class ExerciseDetailViewModel(
             }
         }
         val ex = _uiState.value.exercise
-        if (ex is RepExerciseDefinition) {
+        if (ex is RepExerciseDefinition && !ex.isBodyweight) {
             viewModelScope.launch {
                 val hint = progressionHint?.invoke(ex.id, ex.targetReps) ?: ProgressionHint.OnTrack
                 val lastWeight = getLastWeight?.invoke(ex.id)

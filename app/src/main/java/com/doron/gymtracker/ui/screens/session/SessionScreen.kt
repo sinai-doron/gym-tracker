@@ -3,6 +3,7 @@ package com.doron.gymtracker.ui.screens.session
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -21,11 +22,13 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -142,6 +145,39 @@ fun SessionScreen(
             onGoHome = onFinished
         )
         return
+    }
+
+    // Leaving with BACK used to leave the session open forever; make the user choose
+    var showExitDialog by remember { mutableStateOf(false) }
+    BackHandler { showExitDialog = true }
+    if (showExitDialog) {
+        AlertDialog(
+            onDismissRequest = { showExitDialog = false },
+            title = { Text("לסיים את האימון?") },
+            text = { Text("אפשר לסיים ולשמור את הסטים, או לבטל את האימון ולמחוק אותו.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showExitDialog = false
+                    viewModel.finishSession()
+                }) {
+                    Text("סיים")
+                }
+            },
+            dismissButton = {
+                Row {
+                    TextButton(onClick = {
+                        showExitDialog = false
+                        SessionTimerService.stop(context)
+                        viewModel.discardSession(onDiscarded = onFinished)
+                    }) {
+                        Text("בטל אימון", color = MaterialTheme.colorScheme.error)
+                    }
+                    TextButton(onClick = { showExitDialog = false }) {
+                        Text("המשך")
+                    }
+                }
+            }
+        )
     }
 
     Column(

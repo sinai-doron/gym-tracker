@@ -1,5 +1,6 @@
 package com.doron.gymtracker.ui.screens.cardio
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -60,6 +61,9 @@ fun CardioSessionScreen(
         CardioSummary(state = state, onDone = onFinished)
         return
     }
+
+    // Leaving with BACK used to leave the session open forever; ask instead
+    BackHandler { showFinishDialog = true }
 
     Column(
         modifier = Modifier
@@ -168,8 +172,16 @@ fun CardioSessionScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showFinishDialog = false }) {
-                    Text("המשך")
+                Row {
+                    TextButton(onClick = {
+                        showFinishDialog = false
+                        viewModel.discard(onDiscarded = onFinished)
+                    }) {
+                        Text("בטל", color = MaterialTheme.colorScheme.error)
+                    }
+                    TextButton(onClick = { showFinishDialog = false }) {
+                        Text("המשך")
+                    }
                 }
             }
         )
