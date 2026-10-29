@@ -226,6 +226,11 @@ fun HomeScreen(
                 Spacer(Modifier.height(12.dp))
             }
 
+            // Weekly stats
+            WeeklyStatsRow(state.weeklyStats)
+
+            Spacer(Modifier.height(12.dp))
+
             state.nextWorkoutPreview?.let { preview ->
                 NextWorkoutCard(
                     preview = preview,
@@ -255,11 +260,6 @@ fun HomeScreen(
                     color = Purple
                 )
             }
-
-            Spacer(Modifier.height(20.dp))
-
-            // Weekly stats
-            WeeklyStatsRow(state.weeklyStats)
 
             Spacer(Modifier.height(14.dp))
 
