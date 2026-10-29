@@ -28,7 +28,7 @@ import com.doron.gymtracker.data.db.entities.WorkoutEntity
         TrackLogEntity::class,
         LocationLogEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class GymDatabase : RoomDatabase() {
@@ -87,6 +87,15 @@ abstract class GymDatabase : RoomDatabase() {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE exercise_definitions ADD COLUMN isBodyweight INTEGER NOT NULL DEFAULT 0")
                 database.execSQL("UPDATE exercise_definitions SET isBodyweight = 1 WHERE id IN ('d2_e8a', 'd2_e8b')")
+            }
+        }
+
+        // Week-B variants become their own rows (inserted by WorkoutRepository's plan sync).
+        // The crunches are bodyweight, not cable, so the seeded name is fixed here too.
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE exercise_definitions ADD COLUMN variantOfId TEXT")
+                database.execSQL("UPDATE exercise_definitions SET name = 'כפיפות בטן' WHERE id = 'd2_e8a'")
             }
         }
     }

@@ -15,5 +15,7 @@ data class ExerciseDefinitionEntity(
     val targetDistanceM: Int?,  // DISTANCE only
     val isOptional: Boolean = false,
     val isPerSide: Boolean = false,
-    val isBodyweight: Boolean = false
+    val isBodyweight: Boolean = false,
+    /** Set on a week-B variant row: the id of the week-A exercise it alternates with. */
+    val variantOfId: String? = null
 )

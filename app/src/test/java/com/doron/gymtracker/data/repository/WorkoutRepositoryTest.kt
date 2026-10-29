@@ -25,33 +25,42 @@ class WorkoutRepositoryTest {
     }
 
     @Test
-    fun `ensureSeeded seeds 3 workouts with exercises when DB is empty`() = runTest {
-        coEvery { dao.exerciseCount() } returns 0
+    fun `ensureSeeded inserts the whole plan including week-B variants`() = runTest {
         repo.ensureSeeded()
-        coVerify(exactly = 1) { dao.seed(match { it.size == 3 }, match { it.isNotEmpty() }) }
+        coVerify(exactly = 1) {
+            dao.seed(
+                match { it.size == 3 },
+                match { rows ->
+                    rows.any { it.id == "d1_e1" && it.variantOfId == null } &&
+                        rows.any { it.id == "d1_e3b" && it.variantOfId == "d1_e3a" }
+                }
+            )
+        }
     }
 
     @Test
-    fun `ensureSeeded is idempotent — skips insert when exercises exist`() = runTest {
-        coEvery { dao.exerciseCount() } returns 10
+    fun `ensureSeeded runs once per app start`() = runTest {
         repo.ensureSeeded()
-        coVerify(exactly = 0) { dao.seed(any(), any()) }
-    }
-
-    @Test
-    fun `ensureSeeded repairs workouts saved without exercises`() = runTest {
-        val seededEntities = TrainingPlanData.all.map { WorkoutEntity(it.id, it.label.name) }
-        coEvery { dao.getAll() } returns seededEntities
-        coEvery { dao.exerciseCount() } returns 0
         repo.ensureSeeded()
         coVerify(exactly = 1) { dao.seed(any(), any()) }
     }
 
     @Test
     fun `getAll seeds before reading`() = runTest {
-        coEvery { dao.exerciseCount() } returns 0
         repo.getAll()
         coVerify(exactly = 1) { dao.seed(any(), any()) }
+    }
+
+    @Test
+    fun `getAll attaches variant rows to their week-A exercise`() = runTest {
+        coEvery { dao.getAll() } returns listOf(WorkoutEntity("workout_a", "A"))
+        coEvery { dao.getExercisesForWorkout("workout_a") } returns listOf(
+            ExerciseDefinitionEntity("d1_e3a", "workout_a", "A", "REP", 3, 90, 10, null),
+            ExerciseDefinitionEntity("d1_e3b", "workout_a", "B", "REP", 3, 90, 10, null, variantOfId = "d1_e3a")
+        )
+        val exercises = repo.getAll().single().exercises
+        assertEquals(listOf("d1_e3a"), exercises.map { it.id })
+        assertEquals("d1_e3b", exercises.single().variantB?.id)
     }
 
     @Test

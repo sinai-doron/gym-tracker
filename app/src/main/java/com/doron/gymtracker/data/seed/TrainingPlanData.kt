@@ -61,7 +61,7 @@ object TrainingPlanData {
             RepExerciseDefinition("d2_e6", "קירוב ירכיים במכונה", targetSets = 3, restDurationSecs = 60, targetReps = 15, isOptional = true),
             RepExerciseDefinition("d2_e7", "תאומים בסמית' על מדרגה", targetSets = 3, restDurationSecs = 60, targetReps = 15),
             RepExerciseDefinition(
-                id = "d2_e8a", name = "כפיפות בטן בכבל",
+                id = "d2_e8a", name = "כפיפות בטן",
                 targetSets = 3, restDurationSecs = 60, targetReps = 12,
                 isBodyweight = true,
                 variantB = RepExerciseDefinition("d2_e8b", "הרמות ברכיים בתלייה", 3, 60, 12, isBodyweight = true)

@@ -21,19 +21,21 @@ class WorkoutRepositoryImpl @Inject constructor(
     private val seedLock = Mutex()
     @Volatile private var seeded = false
 
-    // Seeds in one transaction; also repairs installs where an earlier crash left
-    // workouts saved without their exercises.
+    // Inserts whatever part of the plan is missing, in one transaction (IGNORE keeps existing
+    // rows, so edited set counts survive). Covers a fresh install, an install a crash left
+    // half-seeded, and exercises added to the plan later, like the week-B variant rows.
     override suspend fun ensureSeeded() {
         if (seeded) return
         seedLock.withLock {
             if (seeded) return
-            if (dao.exerciseCount() == 0) {
-                val workoutEntities = TrainingPlanData.all.map { WorkoutEntity(it.id, it.label.name) }
-                val exerciseEntities = TrainingPlanData.all.flatMap { workout ->
-                    workout.exercises.map { it.toEntity(workout.id) }
-                }
-                dao.seed(workoutEntities, exerciseEntities)
+            val workoutEntities = TrainingPlanData.all.map { WorkoutEntity(it.id, it.label.name) }
+            val exerciseEntities = TrainingPlanData.all.flatMap { workout ->
+                workout.exercises.map { it.toEntity(workout.id) } +
+                    workout.exercises.mapNotNull { base ->
+                        base.variantB?.toEntity(workout.id, variantOfId = base.id)
+                    }
             }
+            dao.seed(workoutEntities, exerciseEntities)
             seeded = true
         }
     }
@@ -42,7 +44,11 @@ class WorkoutRepositoryImpl @Inject constructor(
         ensureSeeded()
         val workoutEntities = dao.getAll()
         return workoutEntities.map { entity ->
-            val exercises = dao.getExercisesForWorkout(entity.id).map { it.toDomain() }
+            val rows = dao.getExercisesForWorkout(entity.id)
+            val variantsByBase = rows.filter { it.variantOfId != null }.associateBy { it.variantOfId }
+            val exercises = rows.filter { it.variantOfId == null }.map { base ->
+                base.toDomain(variantB = variantsByBase[base.id]?.toDomain())
+            }
             Workout(entity.id, WorkoutLabel.valueOf(entity.label), exercises)
         }
     }
@@ -53,35 +59,36 @@ class WorkoutRepositoryImpl @Inject constructor(
     override suspend fun updateTargetSets(exerciseId: String, sets: Int) =
         dao.updateTargetSets(exerciseId, sets)
 
-    private fun ExerciseDefinition.toEntity(workoutId: String) = when (this) {
+    private fun ExerciseDefinition.toEntity(workoutId: String, variantOfId: String? = null) = when (this) {
         is RepExerciseDefinition -> ExerciseDefinitionEntity(
             id, workoutId, name, "REP", targetSets, restDurationSecs,
             targetReps = targetReps, targetDistanceM = null,
-            isOptional = isOptional, isPerSide = isPerSide, isBodyweight = isBodyweight
+            isOptional = isOptional, isPerSide = isPerSide, isBodyweight = isBodyweight,
+            variantOfId = variantOfId
         )
         is TimedExerciseDefinition -> ExerciseDefinitionEntity(
             id, workoutId, name, "TIMED", targetSets, restDurationSecs,
             targetReps = null, targetDistanceM = null,
-            isOptional = isOptional, isPerSide = isPerSide
+            isOptional = isOptional, isPerSide = isPerSide, variantOfId = variantOfId
         )
         is DistanceExerciseDefinition -> ExerciseDefinitionEntity(
             id, workoutId, name, "DISTANCE", targetSets, restDurationSecs,
             targetReps = null, targetDistanceM = targetDistanceM,
-            isOptional = isOptional, isPerSide = isPerSide
+            isOptional = isOptional, isPerSide = isPerSide, variantOfId = variantOfId
         )
     }
 
-    private fun ExerciseDefinitionEntity.toDomain(): ExerciseDefinition = when (type) {
+    private fun ExerciseDefinitionEntity.toDomain(variantB: ExerciseDefinition? = null): ExerciseDefinition = when (type) {
         "REP" -> RepExerciseDefinition(
-            id, name, targetSets, restDurationSecs, targetReps!!,
+            id, name, targetSets, restDurationSecs, targetReps!!, variantB = variantB,
             isOptional = isOptional, isPerSide = isPerSide, isBodyweight = isBodyweight
         )
         "DISTANCE" -> DistanceExerciseDefinition(
-            id, name, targetSets, restDurationSecs, targetDistanceM!!,
+            id, name, targetSets, restDurationSecs, targetDistanceM!!, variantB = variantB,
             isOptional = isOptional, isPerSide = isPerSide
         )
         else -> TimedExerciseDefinition(
-            id, name, targetSets, restDurationSecs,
+            id, name, targetSets, restDurationSecs, variantB = variantB,
             isOptional = isOptional, isPerSide = isPerSide
         )
     }
