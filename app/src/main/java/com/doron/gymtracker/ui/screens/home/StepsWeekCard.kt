@@ -41,6 +41,8 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.doron.gymtracker.ui.components.Activity
+import com.doron.gymtracker.ui.components.ActivityIcon
 import com.doron.gymtracker.ui.theme.Purple
 import com.doron.gymtracker.ui.theme.SuccessGreen
 import java.time.format.TextStyle as DateTextStyle
@@ -171,8 +173,12 @@ fun StepsWeekCard(week: StepsWeek, modifier: Modifier = Modifier) {
 
 /** The title every home card with one shares: bold at the start, an optional summary at the end. */
 @Composable
-fun CardTitle(title: String, modifier: Modifier = Modifier, trailing: String? = null) {
+fun CardTitle(title: String, modifier: Modifier = Modifier, trailing: String? = null, activity: Activity? = null) {
     Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        activity?.let {
+            ActivityIcon(it, size = 28.dp)
+            Spacer(Modifier.width(8.dp))
+        }
         Text(
             title,
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),

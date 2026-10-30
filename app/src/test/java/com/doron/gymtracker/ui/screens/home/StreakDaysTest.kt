@@ -25,7 +25,7 @@ class StreakDaysTest {
     fun `last session two days ago is no streak`() = assertEquals(0, streakDays(daysAgo(2, 3), today))
 
     @Test
-    fun `week strip marks gym letters over cardio, today flagged`() {
+    fun `week strip colors gym and cardio days, letters for the gym, today flagged`() {
         val zone = java.time.ZoneOffset.UTC
         val sunday = LocalDate.of(2026, 10, 25)
         fun at(day: LocalDate, hour: Int) = day.atTime(hour, 0).toInstant(zone).toEpochMilli()
@@ -36,7 +36,9 @@ class StreakDaysTest {
         )
         val days = weekDays(sunday, sunday.plusDays(3), sessions, mapOf("workout_a" to "A"), zone)
         assertEquals(7, days.size)
-        assertEquals(listOf("A", "🚶", null, null, null, null, null), days.map { it.mark })
+        assertEquals(listOf("A", null, null, null, null, null, null), days.map { it.mark })
+        assertEquals(listOf(true, false, false, false, false, false, false), days.map { it.gym })
+        assertEquals(listOf(true, true, false, false, false, false, false), days.map { it.cardio })
         assertEquals(listOf(false, false, false, true, false, false, false), days.map { it.isToday })
     }
 }

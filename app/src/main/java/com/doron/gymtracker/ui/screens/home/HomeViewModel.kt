@@ -6,6 +6,7 @@ import com.doron.gymtracker.data.HealthConnectManager
 import com.doron.gymtracker.data.StepCounterManager
 import com.doron.gymtracker.data.WeatherRepository
 import com.doron.gymtracker.data.prefs.SettingsPrefs
+import com.doron.gymtracker.data.repository.RouteRepository
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.model.Session
@@ -40,8 +41,17 @@ data class WeeklyStats(
     val days: List<WeekDay> = emptyList()
 )
 
-/** One day in the week strip. [mark] is what was trained (workout letter or a cardio icon), or null. */
-data class WeekDay(val date: LocalDate, val mark: String?, val isToday: Boolean)
+/**
+ * One day in the week strip, colored like the history calendar: purple for the gym, green
+ * for runs and walks, half and half for both. [mark] is the gym workout's letter, or null.
+ */
+data class WeekDay(
+    val date: LocalDate,
+    val mark: String?,
+    val isToday: Boolean,
+    val gym: Boolean = false,
+    val cardio: Boolean = false
+)
 
 data class HomeUiState(
     val suggestedWorkout: Workout? = null,
@@ -61,7 +71,8 @@ data class HomeUiState(
     val programStatus: ProgramStatus? = null,
     val weeklyStats: WeeklyStats = WeeklyStats(),
     /** This week's steps by day; null when Health Connect's steps can't be read. */
-    val stepsWeek: StepsWeek? = null
+    val stepsWeek: StepsWeek? = null,
+    val routesCount: Int = 0
 )
 
 @HiltViewModel
@@ -76,7 +87,8 @@ class HomeViewModel @Inject constructor(
     private val closeStaleSessions: CloseStaleSessionsUseCase,
     private val weatherRepo: WeatherRepository,
     private val getProgramStatus: GetProgramStatusUseCase,
-    private val settingsPrefs: SettingsPrefs
+    private val settingsPrefs: SettingsPrefs,
+    private val routeRepo: RouteRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -137,6 +149,7 @@ class HomeViewModel @Inject constructor(
                 _uiState.update { it.copy(todaySteps = hcSteps.toInt()) }
             }
             loadWeeklyStats()
+            _uiState.update { it.copy(routesCount = routeRepo.getAll().size) }
         }
     }
 
@@ -241,8 +254,13 @@ internal fun weekDays(
     return (0L until 7L).map { offset ->
         val date = weekStart.plusDays(offset)
         val daySessions = byDate[date].orEmpty()
-        val mark = daySessions.firstOrNull { it.type == "GYM" }?.let { workoutLabels[it.workoutId] }
-            ?: daySessions.firstOrNull()?.let { if (it.type == "RUNNING") "🏃" else "🚶" }
-        WeekDay(date, mark, isToday = date == today)
+        val gym = daySessions.firstOrNull { it.type == "GYM" }
+        WeekDay(
+            date,
+            mark = gym?.let { workoutLabels[it.workoutId] },
+            isToday = date == today,
+            gym = gym != null,
+            cardio = daySessions.any { it.type != "GYM" }
+        )
     }
 }

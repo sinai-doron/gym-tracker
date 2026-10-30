@@ -56,7 +56,11 @@ class HomeViewModelTest {
         coEvery { getWorkoutPreview(any(), any()) } answers { WorkoutPreview(firstArg(), emptyList(), null, null) }
         viewModel = HomeViewModel(getNextWorkout, startSession, workoutRepo, sessionRepo, stepCounter, healthConnect,
             getWorkoutPreview, mockk(relaxed = true), mockk(relaxed = true), mockk(relaxed = true),
-            mockk(relaxed = true) { every { stepGoal } returns flowOf(10_000) })
+            mockk(relaxed = true) {
+                every { stepGoal } returns flowOf(10_000)
+                every { runTarget } returns flowOf(com.doron.gymtracker.domain.model.RunTarget())
+            },
+            mockk(relaxed = true))
     }
 
     @After

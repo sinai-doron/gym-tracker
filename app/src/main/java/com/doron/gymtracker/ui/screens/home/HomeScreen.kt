@@ -5,11 +5,10 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.relocation.BringIntoViewRequester
-import androidx.compose.foundation.relocation.bringIntoViewRequester
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,11 +23,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -50,6 +55,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -63,15 +72,20 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.doron.gymtracker.R
 import com.doron.gymtracker.data.HealthConnectManager
+import com.doron.gymtracker.domain.model.PersonalRecord
+import com.doron.gymtracker.domain.model.RecordKind
 import com.doron.gymtracker.domain.model.Session
 import com.doron.gymtracker.domain.model.Weather
 import com.doron.gymtracker.domain.model.WeatherCondition
 import com.doron.gymtracker.domain.model.Workout
 import com.doron.gymtracker.domain.model.WorkoutPreview
 import com.doron.gymtracker.domain.usecase.ProgramStatus
+import com.doron.gymtracker.ui.components.Activity
+import com.doron.gymtracker.ui.components.ActivityIcon
 import com.doron.gymtracker.ui.components.BadgesRow
 import com.doron.gymtracker.ui.components.ExercisePreviewList
 import com.doron.gymtracker.ui.components.WorkoutMetaRow
+import com.doron.gymtracker.ui.components.valueText
 import com.doron.gymtracker.ui.theme.Purple
 import com.doron.gymtracker.ui.theme.SuccessGreen
 import kotlinx.coroutines.launch
@@ -86,11 +100,13 @@ fun HomeScreen(
     onHistoryClick: () -> Unit,
     onRoutesClick: () -> Unit,
     onSettingsClick: () -> Unit,
+    onSessionClick: (Long) -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
     badgesViewModel: BadgesViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
     val badges by badgesViewModel.badges.collectAsState()
+    val records by badgesViewModel.records.collectAsState()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     var pendingCardioType by remember { mutableStateOf<String?>(null) }
@@ -198,6 +214,13 @@ fun HomeScreen(
                         )
                     }
                 }
+                IconButton(onClick = onHistoryClick) {
+                    Icon(
+                        Icons.Default.DateRange,
+                        contentDescription = stringResource(R.string.history),
+                        tint = Purple.copy(alpha = 0.6f)
+                    )
+                }
                 IconButton(onClick = onSettingsClick) {
                     Icon(
                         Icons.Default.Settings,
@@ -268,55 +291,14 @@ fun HomeScreen(
                 )
             }
 
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
 
-            OutlinedButton(
-                onClick = onChooseWorkout,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                shape = MaterialTheme.shapes.large
-            ) {
-                Text(
-                    stringResource(R.string.choose_other_workout),
-                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-                    color = Purple
-                )
-            }
-
-            Spacer(Modifier.height(14.dp))
-
-            // Cardio buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                CardioButton("🏃 ריצה", Modifier.weight(1f)) { startCardio("RUNNING") }
-                CardioButton("🚶 הליכה", Modifier.weight(1f)) { startCardio("WALKING") }
-            }
-
-            Spacer(Modifier.height(6.dp))
-
-            Row(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                TextButton(onClick = onHistoryClick) {
-                    Text(
-                        stringResource(R.string.history),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Purple.copy(alpha = 0.7f)
-                    )
-                }
-                Text("·", color = Purple.copy(alpha = 0.4f))
-                TextButton(onClick = onRoutesClick) {
-                    Text(
-                        "מסלולים",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Purple.copy(alpha = 0.7f)
-                    )
-                }
-            }
+            CardioCard(
+                routesCount = state.routesCount,
+                onRun = { startCardio("RUNNING") },
+                onWalk = { startCardio("WALKING") },
+                onRoutes = onRoutesClick
+            )
 
             // Achievements: the distance badges for now, more kinds later
             if (badges.isNotEmpty()) {
@@ -330,6 +312,10 @@ fun HomeScreen(
                     CardTitle("🏅 הישגים", trailing = "${badges.count { it.isEarned }} מתוך ${badges.size}")
                     Spacer(Modifier.height(12.dp))
                     BadgesRow(badges)
+                    if (records.isNotEmpty()) {
+                        Spacer(Modifier.height(16.dp))
+                        PersonalRecords(records, onSessionClick)
+                    }
                 }
             }
 
@@ -438,7 +424,6 @@ private fun WeatherCondition.labelRes(): Int = when (this) {
     WeatherCondition.THUNDERSTORM -> R.string.weather_thunderstorm
 }
 
-private const val HOME_EXERCISES_SHOWN = 3
 private val WEATHER_ROW_HEIGHT = 56.dp
 
 @Composable
@@ -448,17 +433,22 @@ private fun NextWorkoutCard(
     onExerciseClick: (String) -> Unit,
     onStart: () -> Unit
 ) {
+    // The exercise list folds away, so the gym card doesn't crowd out the rest of the screen.
+    // Plain remember: it's folded again whenever home is opened or the next workout changes
+    var showExercises by remember(preview.workout.id) { mutableStateOf(false) }
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(20.dp))
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(24.dp))
             .padding(16.dp)
     ) {
+        CardTitle(stringResource(R.string.next_workout), activity = Activity.LIFT)
+        Spacer(Modifier.height(12.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(44.dp)
                     .background(Purple, CircleShape)
             ) {
                 Text(
@@ -468,68 +458,163 @@ private fun NextWorkoutCard(
                 )
             }
             Spacer(Modifier.width(12.dp))
-            Column {
-                Text(
-                    stringResource(R.string.next_workout),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    preview.workout.label.displayName,
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
-                )
-            }
+            Text(
+                preview.workout.label.displayName,
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
+            )
         }
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(10.dp))
         WorkoutMetaRow(preview)
-        Spacer(Modifier.height(8.dp))
-        ExercisePreviewList(preview.exercises.take(HOME_EXERCISES_SHOWN), onExerciseClick = onExerciseClick)
-        val hidden = preview.exercises.size - HOME_EXERCISES_SHOWN
-        if (hidden > 0) {
-            // The workouts screen opens on the upcoming workout, so this shows the full list
-            TextButton(onClick = onShowAll, contentPadding = PaddingValues(0.dp)) {
-                Text(
-                    stringResource(R.string.more_exercises, hidden),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Purple
-                )
-            }
-        } else {
-            Spacer(Modifier.height(12.dp))
+        TextButton(onClick = { showExercises = !showExercises }, contentPadding = PaddingValues(0.dp)) {
+            Text(
+                if (showExercises) "הסתר תרגילים" else "הצג תרגילים (${preview.exercises.size})",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Purple
+            )
+            Icon(
+                if (showExercises) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                contentDescription = null,
+                tint = Purple
+            )
+        }
+        if (showExercises) {
+            ExercisePreviewList(preview.exercises, onExerciseClick = onExerciseClick)
+            Spacer(Modifier.height(8.dp))
         }
 
-        Button(
-            onClick = onStart,
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(
+                onClick = onStart,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(52.dp),
+                shape = MaterialTheme.shapes.large,
+                colors = ButtonDefaults.buttonColors(containerColor = Purple)
+            ) {
+                Text(
+                    stringResource(R.string.start_session),
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
+                )
+            }
+            // The workouts screen, to pick a different one
+            OutlinedButton(
+                onClick = onShowAll,
+                modifier = Modifier.height(52.dp),
+                shape = MaterialTheme.shapes.large
+            ) {
+                Text("החלף", style = MaterialTheme.typography.titleSmall, color = Purple)
+            }
+        }
+    }
+}
+
+/** Running and walking, in the same green as cardio days in the history calendar, with the way to routes. */
+@Composable
+private fun CardioCard(
+    routesCount: Int,
+    onRun: () -> Unit,
+    onWalk: () -> Unit,
+    onRoutes: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(24.dp))
+            .padding(16.dp)
+    ) {
+        CardTitle("ריצה והליכה")
+        Spacer(Modifier.height(12.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            CardioButton(Activity.RUN, "ריצה", Modifier.weight(1f), onRun)
+            CardioButton(Activity.WALK, "הליכה", Modifier.weight(1f), onWalk)
+        }
+        Spacer(Modifier.height(8.dp))
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp),
-            shape = MaterialTheme.shapes.large,
-            colors = ButtonDefaults.buttonColors(containerColor = Purple)
+                .clip(RoundedCornerShape(12.dp))
+                .clickable(onClick = onRoutes)
+                .padding(vertical = 10.dp, horizontal = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            ActivityIcon(Activity.ROUTES, size = 28.dp)
+            Spacer(Modifier.width(10.dp))
             Text(
-                stringResource(R.string.start_session),
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
+                "מסלולים",
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold)
+            )
+            Text(
+                " · $routesCount שמורים",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f)
+            )
+            Icon(
+                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
 }
 
+/** A soft green button with the activity's tile, so it stands beside the gym's start button without outshouting it. */
 @Composable
-private fun CardioButton(label: String, modifier: Modifier, onClick: () -> Unit) {
-    ElevatedButton(
+private fun CardioButton(activity: Activity, label: String, modifier: Modifier, onClick: () -> Unit) {
+    Button(
         onClick = onClick,
-        modifier = modifier.height(48.dp),
+        modifier = modifier.height(60.dp),
         shape = MaterialTheme.shapes.large,
-        colors = ButtonDefaults.elevatedButtonColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
+        contentPadding = PaddingValues(horizontal = 12.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen.copy(alpha = 0.12f), contentColor = CardioInk)
     ) {
-        Text(
-            label,
-            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-            color = Purple
-        )
+        ActivityIcon(activity, size = 36.dp)
+        Spacer(Modifier.width(10.dp))
+        Text(label, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+    }
+}
+
+/** SuccessGreen darkened enough to read as text on its own light tint. */
+private val CardioInk = Color(0xFF007A62)
+
+/** Every kind of record, best first in the list's order; ones not set yet show a dash. */
+@Composable
+private fun PersonalRecords(records: List<PersonalRecord>, onSessionClick: (Long) -> Unit) {
+    val byKind = records.associateBy { it.kind }
+    val dateFormat = remember { java.text.SimpleDateFormat("d.M.yy", java.util.Locale.getDefault()) }
+    Text(
+        "🏆 שיאים אישיים",
+        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
+    )
+    Spacer(Modifier.height(4.dp))
+    RecordKind.entries.forEach { kind ->
+        val record = byKind[kind]
+        val sessionId = record?.sessionId
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
+                .then(if (sessionId != null) Modifier.clickable { onSessionClick(sessionId) } else Modifier)
+                .padding(vertical = 8.dp, horizontal = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(kind.label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+            if (record != null) {
+                Text(
+                    if (kind == RecordKind.BEST_WEEK) "שבוע " + dateFormat.format(java.util.Date(record.at))
+                    else dateFormat.format(java.util.Date(record.at)),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.width(12.dp))
+            }
+            Text(
+                record?.valueText() ?: "—",
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                color = if (record != null) Purple else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 
@@ -590,10 +675,19 @@ private fun WeekStrip(days: List<WeekDay>) {
                         .size(40.dp)
                         .border(2.dp, if (day.isToday) Purple else Color.Transparent, CircleShape)
                         .padding(4.dp)
-                        .background(
-                            if (day.mark != null) Purple else Purple.copy(alpha = 0.08f),
-                            CircleShape
-                        )
+                        .clip(CircleShape)
+                        .drawBehind {
+                            when {
+                                // Both on one day: gym on the right half, cardio on the left, as in history
+                                day.gym && day.cardio -> {
+                                    drawRect(SuccessGreen, size = Size(size.width / 2, size.height))
+                                    drawRect(Purple, topLeft = Offset(size.width / 2, 0f), size = Size(size.width / 2, size.height))
+                                }
+                                day.gym -> drawRect(Purple)
+                                day.cardio -> drawRect(SuccessGreen)
+                                else -> drawRect(Purple.copy(alpha = 0.08f))
+                            }
+                        }
                 ) {
                     Text(
                         day.mark ?: "",

@@ -54,7 +54,8 @@ fun NavGraph(runToResume: CardioRun? = null) {
                 onExerciseProgress = { id -> navController.navigate("exercise-progress/$id") },
                 onHistoryClick = { navController.navigate("history") },
                 onRoutesClick = { navController.navigate("routes") },
-                onSettingsClick = { navController.navigate("settings") }
+                onSettingsClick = { navController.navigate("settings") },
+                onSessionClick = { id -> navController.navigate("history/session/$id") }
             )
         }
         composable("workouts") {
