@@ -142,7 +142,7 @@ class CardioTrackingService : Service() {
             AudioFeedback.OFF -> Unit
             AudioFeedback.VOICE -> if (voice.unavailable) tone(milestone) else {
                 voice.speak(RunAnnouncements.text(milestone, run, now))
-                if (milestone is RunMilestone.LapDone || milestone == RunMilestone.TargetReached) {
+                if (milestone is RunMilestone.LapDone || milestone == RunMilestone.TargetReached || milestone == RunMilestone.OffRoute) {
                     RestTimerBeepPlayer.vibrate()
                 }
             }
@@ -155,6 +155,8 @@ class CardioTrackingService : Service() {
         RunMilestone.TargetReached -> RestTimerBeepPlayer.playCelebration()
         RunMilestone.Paused -> RestTimerBeepPlayer.playPause()
         RunMilestone.Resumed -> RestTimerBeepPlayer.playResume()
+        RunMilestone.OffRoute -> RestTimerBeepPlayer.playPause()
+        RunMilestone.BackOnRoute -> RestTimerBeepPlayer.playResume()
     }
 
     override fun onDestroy() {

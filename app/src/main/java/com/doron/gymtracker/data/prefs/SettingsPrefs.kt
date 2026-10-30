@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.doron.gymtracker.domain.model.RunTarget
@@ -28,6 +29,7 @@ private val RUN_TARGET_DURATION_MIN = intPreferencesKey("run_target_duration_min
 private val LAP_DISTANCE_M = intPreferencesKey("lap_distance_m")
 private val BODY_WEIGHT_KG = floatPreferencesKey("body_weight_kg")
 private val AUDIO_FEEDBACK = stringPreferencesKey("audio_feedback")
+private val RUN_TARGET_ROUTE_ID = longPreferencesKey("run_target_route_id")
 
 enum class AudioFeedback { VOICE, TONES, OFF }
 
@@ -54,7 +56,8 @@ class SettingsPrefs @Inject constructor(
         RunTarget(
             type = prefs[RUN_TARGET_TYPE]?.let { runCatching { RunTargetType.valueOf(it) }.getOrNull() } ?: RunTargetType.NONE,
             distanceKm = prefs[RUN_TARGET_DISTANCE_KM] ?: RunTarget.DEFAULT_DISTANCE_KM,
-            durationMin = prefs[RUN_TARGET_DURATION_MIN] ?: RunTarget.DEFAULT_DURATION_MIN
+            durationMin = prefs[RUN_TARGET_DURATION_MIN] ?: RunTarget.DEFAULT_DURATION_MIN,
+            routeId = prefs[RUN_TARGET_ROUTE_ID]
         )
     }
 
@@ -63,6 +66,7 @@ class SettingsPrefs @Inject constructor(
             prefs[RUN_TARGET_TYPE] = target.type.name
             prefs[RUN_TARGET_DISTANCE_KM] = target.distanceKm
             prefs[RUN_TARGET_DURATION_MIN] = target.durationMin
+            target.routeId?.let { prefs[RUN_TARGET_ROUTE_ID] = it } ?: prefs.remove(RUN_TARGET_ROUTE_ID)
         }
     }
 

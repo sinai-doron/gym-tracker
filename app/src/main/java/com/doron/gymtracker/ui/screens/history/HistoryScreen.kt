@@ -49,10 +49,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LifecycleEventEffect
 import com.doron.gymtracker.R
-import com.doron.gymtracker.ui.components.BadgesRow
 import com.doron.gymtracker.ui.theme.Purple
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -73,15 +70,11 @@ private val dayHeaders = listOf("א", "ב", "ג", "ד", "ה", "ו", "ש")
 fun HistoryScreen(
     onBack: () -> Unit = {},
     onSessionClick: (Long) -> Unit = {},
-    viewModel: HistoryViewModel = hiltViewModel(),
-    badgesViewModel: BadgesViewModel = hiltViewModel()
+    viewModel: HistoryViewModel = hiltViewModel()
 ) {
     val month by viewModel.currentMonth.collectAsState()
     val sessionDates by viewModel.sessionDates.collectAsState()
     val selectedDay by viewModel.selectedDaySessions.collectAsState()
-    val badges by badgesViewModel.badges.collectAsState()
-    // A run just finished may have earned one
-    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { badgesViewModel.refresh() }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Scaffold(
@@ -97,15 +90,6 @@ fun HistoryScreen(
         }
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp)) {
-            if (badges.isNotEmpty()) {
-                Text(
-                    "הישגים",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                    modifier = Modifier.padding(top = 4.dp, bottom = 8.dp)
-                )
-                BadgesRow(badges)
-                Spacer(Modifier.height(16.dp))
-            }
             MonthHeader(month, onPrev = viewModel::prevMonth, onNext = viewModel::nextMonth)
             Spacer(Modifier.height(12.dp))
             DayHeaders()

@@ -2,14 +2,10 @@ package com.doron.gymtracker.ui.screens.home
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import android.os.Build
-import androidx.compose.runtime.LaunchedEffect
-import androidx.health.connect.client.PermissionController
-import com.doron.gymtracker.data.HealthConnectManager
 import androidx.compose.foundation.background
-import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -42,6 +38,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,22 +47,26 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.health.connect.client.PermissionController
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.doron.gymtracker.R
+import com.doron.gymtracker.data.HealthConnectManager
 import com.doron.gymtracker.domain.model.Session
 import com.doron.gymtracker.domain.model.Weather
-import com.doron.gymtracker.domain.model.Workout
-import com.doron.gymtracker.domain.usecase.ProgramStatus
 import com.doron.gymtracker.domain.model.WeatherCondition
+import com.doron.gymtracker.domain.model.Workout
 import com.doron.gymtracker.domain.model.WorkoutPreview
+import com.doron.gymtracker.domain.usecase.ProgramStatus
+import com.doron.gymtracker.ui.components.BadgesRow
 import com.doron.gymtracker.ui.components.ExercisePreviewList
 import com.doron.gymtracker.ui.components.WorkoutMetaRow
 import com.doron.gymtracker.ui.theme.Purple
@@ -79,10 +80,13 @@ fun HomeScreen(
     onChooseWorkout: () -> Unit,
     onExerciseProgress: (exerciseId: String) -> Unit,
     onHistoryClick: () -> Unit,
+    onRoutesClick: () -> Unit,
     onSettingsClick: () -> Unit,
-    viewModel: HomeViewModel = hiltViewModel()
+    viewModel: HomeViewModel = hiltViewModel(),
+    badgesViewModel: BadgesViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
+    val badges by badgesViewModel.badges.collectAsState()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     var pendingCardioType by remember { mutableStateOf<String?>(null) }
@@ -107,7 +111,10 @@ fun HomeScreen(
     }
 
     // Coming back from a workout changes the next workout and the stats
-    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refresh() }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        viewModel.refresh()
+        badgesViewModel.refresh()
+    }
 
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -274,19 +281,44 @@ fun HomeScreen(
 
             Spacer(Modifier.height(6.dp))
 
-            // History text button
-            TextButton(
-                onClick = onHistoryClick,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+            Row(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                TextButton(onClick = onHistoryClick) {
+                    Text(
+                        stringResource(R.string.history),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Purple.copy(alpha = 0.7f)
+                    )
+                }
+                Text("·", color = Purple.copy(alpha = 0.4f))
+                TextButton(onClick = onRoutesClick) {
+                    Text(
+                        "מסלולים",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Purple.copy(alpha = 0.7f)
+                    )
+                }
+            }
+
+            // Achievements: the distance badges for now, more kinds later
+            if (badges.isNotEmpty()) {
+                Spacer(Modifier.height(12.dp))
                 Text(
-                    stringResource(R.string.history),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Purple.copy(alpha = 0.7f)
+                    "הישגים",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
+                )
+                BadgesRow(
+                    badges,
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(24.dp))
+                        .padding(vertical = 16.dp)
                 )
             }
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(16.dp))
         }
     }
 }

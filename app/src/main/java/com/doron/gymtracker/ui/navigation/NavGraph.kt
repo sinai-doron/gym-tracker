@@ -27,6 +27,7 @@ import com.doron.gymtracker.ui.screens.progress.ExerciseProgressScreen
 import com.doron.gymtracker.ui.screens.session.SessionScreen
 import com.doron.gymtracker.ui.screens.session.SessionViewModel
 import com.doron.gymtracker.ui.screens.settings.SettingsScreen
+import com.doron.gymtracker.ui.screens.routes.RoutesScreen
 import com.doron.gymtracker.ui.screens.workouts.WorkoutsScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -51,6 +52,7 @@ fun NavGraph(runToResume: CardioRun? = null) {
                 onChooseWorkout = { navController.navigate("workouts") },
                 onExerciseProgress = { id -> navController.navigate("exercise-progress/$id") },
                 onHistoryClick = { navController.navigate("history") },
+                onRoutesClick = { navController.navigate("routes") },
                 onSettingsClick = { navController.navigate("settings") }
             )
         }
@@ -110,6 +112,7 @@ fun NavGraph(runToResume: CardioRun? = null) {
                         popUpTo("gps-lock/$type") { inclusive = true }
                     }
                 },
+                onManageRoutes = { navController.navigate("routes") },
                 onBack = { navController.popBackStack() }
             )
         }
@@ -122,6 +125,15 @@ fun NavGraph(runToResume: CardioRun? = null) {
             CardioSessionScreen(
                 viewModel = viewModel,
                 onFinished = { navController.popBackStack() }
+            )
+        }
+        composable("routes") {
+            RoutesScreen(
+                viewModel = hiltViewModel(),
+                onBack = { navController.popBackStack() },
+                onRunRoute = {
+                    navController.navigate("gps-lock/RUNNING") { popUpTo("home") }
+                }
             )
         }
         composable("history") {

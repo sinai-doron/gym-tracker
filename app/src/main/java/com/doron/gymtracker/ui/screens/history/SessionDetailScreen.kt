@@ -38,9 +38,11 @@ import com.doron.gymtracker.data.ActiveClock
 import com.doron.gymtracker.data.Elevation
 import com.doron.gymtracker.data.Laps
 import com.doron.gymtracker.data.RouteDistance
+import com.doron.gymtracker.data.repository.RouteRepository
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.model.RepSetRecord
+import com.doron.gymtracker.domain.model.RoutePoint
 import com.doron.gymtracker.domain.model.RunTarget
 import com.doron.gymtracker.domain.model.Session
 import com.doron.gymtracker.domain.model.TrackLog
@@ -87,8 +89,23 @@ data class ExerciseBreakdownLine(
 @HiltViewModel
 class SessionDetailViewModel @Inject constructor(
     private val sessionRepo: SessionRepository,
-    private val workoutRepo: WorkoutRepository
+    private val workoutRepo: WorkoutRepository,
+    private val routeRepo: RouteRepository
 ) : ViewModel() {
+
+    private val _savedRouteName = MutableStateFlow<String?>(null)
+    /** The name this run was saved under as a route, once saved. */
+    val savedRouteName: StateFlow<String?> = _savedRouteName.asStateFlow()
+
+    /** Keeps this run's route to run again; it's named after where it starts. */
+    fun saveAsRoute() {
+        val route = _state.value?.run?.route ?: return
+        viewModelScope.launch {
+            val id = routeRepo.save(route.map { RoutePoint(it.latitude, it.longitude, it.altitude) })
+            _savedRouteName.value = routeRepo.get(id)?.name
+        }
+    }
+
 
     private val _state = MutableStateFlow<SessionDetailData?>(null)
     val state: StateFlow<SessionDetailData?> = _state.asStateFlow()
@@ -202,6 +219,7 @@ fun SessionDetailScreen(
 ) {
     val data by viewModel.state.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val savedRouteName by viewModel.savedRouteName.collectAsState()
 
     Scaffold(
         topBar = {
@@ -270,7 +288,7 @@ fun SessionDetailScreen(
                     )
                 }
             } else if (d.run != null) {
-                RunReport(d.run)
+                RunReport(d.run, savedRouteName = savedRouteName, onSaveAsRoute = viewModel::saveAsRoute)
             }
 
             if (d.sessionType == "GYM" && d.exerciseBreakdown.isNotEmpty()) {

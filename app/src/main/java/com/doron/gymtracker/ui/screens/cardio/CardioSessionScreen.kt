@@ -30,6 +30,7 @@ import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -70,7 +71,7 @@ fun CardioSessionScreen(
     var showFinishDialog by remember { mutableStateOf(false) }
 
     if (state.isFinished) {
-        CardioSummary(state = state, onDone = onFinished)
+        CardioSummary(state = state, onSaveAsRoute = viewModel::saveAsRoute, onDone = onFinished)
         if (state.newBadges.isNotEmpty()) {
             NewBadgesDialog(state.newBadges, onDismiss = viewModel::badgesSeen)
         }
@@ -96,7 +97,8 @@ fun CardioSessionScreen(
                 .weight(1f)
                 .clip(RoundedCornerShape(24.dp)),
             position = state.route.lastOrNull(),
-            route = state.route
+            route = state.route,
+            plannedRoute = state.plannedRoute
         )
 
         Spacer(Modifier.height(12.dp))
@@ -117,6 +119,17 @@ fun CardioSessionScreen(
         state.targetProgress?.let { progress ->
             Spacer(Modifier.height(8.dp))
             TargetProgress(state, progress)
+        }
+        if (state.isOffRoute) {
+            Text(
+                "↩ יצאת מהמסלול",
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier
+                    .padding(top = 6.dp)
+                    .background(MaterialTheme.colorScheme.errorContainer, RoundedCornerShape(50))
+                    .padding(horizontal = 12.dp, vertical = 4.dp)
+            )
         }
 
         Spacer(Modifier.height(12.dp))
@@ -232,6 +245,7 @@ fun CardioSessionScreen(
 @Composable
 private fun CardioSummary(
     state: CardioUiState,
+    onSaveAsRoute: () -> Unit,
     onDone: () -> Unit
 ) {
     Column(
@@ -258,7 +272,7 @@ private fun CardioSummary(
             color = SuccessGreen
         )
 
-        RunReport(state)
+        RunReport(state, savedRouteName = state.savedRouteName, onSaveAsRoute = onSaveAsRoute)
 
         Spacer(Modifier.height(32.dp))
 
@@ -285,7 +299,13 @@ private fun CardioSummary(
  * when a run ends and again from History.
  */
 @Composable
-fun RunReport(state: CardioUiState, modifier: Modifier = Modifier) {
+fun RunReport(
+    state: CardioUiState,
+    modifier: Modifier = Modifier,
+    /** Name of the route this run was saved as, once it has been. */
+    savedRouteName: String? = null,
+    onSaveAsRoute: (() -> Unit)? = null
+) {
     Column(modifier = modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         state.weather?.let {
             Spacer(Modifier.height(4.dp))
@@ -348,6 +368,17 @@ fun RunReport(state: CardioUiState, modifier: Modifier = Modifier) {
         if (state.route.size >= 2) {
             Spacer(Modifier.height(24.dp))
             RouteMap(route = state.route)
+            if (onSaveAsRoute != null) {
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = onSaveAsRoute,
+                    enabled = savedRouteName == null,
+                    shape = MaterialTheme.shapes.large,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(savedRouteName?.let { "✓ נשמר כמסלול \"$it\"" } ?: "🗺 שמור כמסלול", color = Purple)
+                }
+            }
         }
 
         val profile = remember(state.route) { Elevation.profile(state.route) }
@@ -491,13 +522,19 @@ private fun TargetProgress(state: CardioUiState, progress: Float) {
     val reached = progress >= 1f
     val color = if (reached) SuccessGreen else Purple
     val text = when (state.target.type) {
+        RunTargetType.ROUTE -> "%.2f / %.1f ק״מ".format(state.routeAlongM / 1000.0, state.routeLengthM / 1000.0)
         RunTargetType.DISTANCE -> "%.2f / %s ק״מ".format(state.distanceMeters / 1000.0, formatKm(state.target.distanceKm))
         else -> "${formatTime(state.elapsedSecs)} / ${formatTime(state.target.durationMin * 60L)}"
     }
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
-                if (reached) "🎯 המטרה הושגה!" else "🎯 מטרה",
+                when {
+                    reached && state.routeLengthM > 0 -> "🏁 סיימת את המסלול!"
+                    reached -> "🎯 המטרה הושגה!"
+                    state.routeLengthM > 0 -> "🗺 מסלול"
+                    else -> "🎯 מטרה"
+                },
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                 color = color,
                 modifier = Modifier.weight(1f)

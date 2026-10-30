@@ -21,6 +21,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.doron.gymtracker.data.LocationPoint
+import com.doron.gymtracker.domain.model.RoutePoint
 import com.doron.gymtracker.ui.theme.Purple
 import org.maplibre.android.MapLibre
 import org.maplibre.android.camera.CameraUpdateFactory
@@ -47,16 +48,18 @@ import kotlin.math.sin
 
 /**
  * Map of a run in the app's own style (assets/map_style_run.json, OpenFreeMap vector
- * tiles): the route so far and/or a "you are here" dot with a ring as wide as the fix's
- * accuracy.
+ * tiles): the route so far, a planned route to follow, and/or a "you are here" dot with a
+ * ring as wide as the fix's accuracy.
  *
- * @param follow keep the map centered on [position] (live); otherwise fit the whole [route]
+ * @param follow keep the map centered on [position] (live); otherwise fit [route] and [plannedRoute]
  */
 @Composable
 fun RunMap(
     modifier: Modifier = Modifier,
     position: LocationPoint? = null,
     route: List<LocationPoint> = emptyList(),
+    /** A route to follow, drawn under the one run so far. */
+    plannedRoute: List<RoutePoint> = emptyList(),
     dotColor: Color = Purple,
     follow: Boolean = true,
     interactive: Boolean = false
@@ -120,13 +123,21 @@ fun RunMap(
     }
 
     // Draw the latest route and position whenever they (or the style) change
-    val fitted = remember { booleanArrayOf(false) }
+    // Fit again when a different planned route is shown
+    val fitted = remember(plannedRoute) { booleanArrayOf(false) }
     val centered = remember { booleanArrayOf(false) }
-    LaunchedEffect(style, position, route, dotColor) {
+    LaunchedEffect(style, position, route, plannedRoute, dotColor) {
         val s = style ?: return@LaunchedEffect
         val m = map ?: return@LaunchedEffect
         s.getSourceAs<GeoJsonSource>(ROUTE_SOURCE)?.setGeoJson(
             features(if (route.size >= 2) Feature.fromGeometry(LineString.fromLngLats(route.map { it.toPoint() })) else null)
+        )
+        s.getSourceAs<GeoJsonSource>(PLANNED_SOURCE)?.setGeoJson(
+            features(
+                if (plannedRoute.size >= 2) {
+                    Feature.fromGeometry(LineString.fromLngLats(plannedRoute.map { Point.fromLngLat(it.longitude, it.latitude) }))
+                } else null
+            )
         )
         s.getSourceAs<GeoJsonSource>(DOT_SOURCE)?.setGeoJson(
             features(position?.let { Feature.fromGeometry(it.toPoint()) })
@@ -148,8 +159,9 @@ fun RunMap(
                     m.animateCamera(CameraUpdateFactory.newLatLng(target), CAMERA_ANIMATION_MS)
                 }
             }
-        } else if (route.size >= 2 && !fitted[0]) {
-            val bounds = LatLngBounds.Builder().includes(route.map { LatLng(it.latitude, it.longitude) }).build()
+        } else if ((route.size >= 2 || plannedRoute.size >= 2) && !fitted[0]) {
+            val all = route.map { LatLng(it.latitude, it.longitude) } + plannedRoute.map { LatLng(it.latitude, it.longitude) }
+            val bounds = LatLngBounds.Builder().includes(all).build()
             // Wait for layout, or there's nothing to fit the route into
             mapView.post { m.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, fitPaddingPx)) }
             fitted[0] = true
@@ -160,6 +172,7 @@ fun RunMap(
 }
 
 private const val ROUTE_SOURCE = "run-route"
+private const val PLANNED_SOURCE = "run-planned"
 private const val DOT_SOURCE = "run-position"
 private const val ACCURACY_SOURCE = "run-accuracy"
 private const val DOT_LAYER = "run-position-dot"
@@ -180,6 +193,7 @@ private fun LocationPoint.toPoint(): Point = Point.fromLngLat(longitude, latitud
 
 /** Adds the route line, accuracy ring and position dot on top of the base map. */
 private fun addRunLayers(style: Style) {
+    style.addSource(GeoJsonSource(PLANNED_SOURCE))
     style.addSource(GeoJsonSource(ROUTE_SOURCE))
     style.addSource(GeoJsonSource(ACCURACY_SOURCE))
     style.addSource(GeoJsonSource(DOT_SOURCE))
@@ -188,6 +202,15 @@ private fun addRunLayers(style: Style) {
     fun widthByZoom(atZoom12: Float, atZoom18: Float) = Expression.interpolate(
         Expression.linear(), Expression.zoom(),
         Expression.stop(12, atZoom12), Expression.stop(18, atZoom18)
+    )
+    // The planned route: soft and wide, so the run drawn over it stands out
+    style.addLayer(
+        LineLayer("run-planned", PLANNED_SOURCE).withProperties(
+            PropertyFactory.lineColor(PLANNED_COLOR),
+            PropertyFactory.lineWidth(widthByZoom(5f, 12f)),
+            PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
+            PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND)
+        )
     )
     style.addLayer(
         LineLayer("run-route-casing", ROUTE_SOURCE).withProperties(
@@ -240,3 +263,4 @@ private fun circle(center: LocationPoint, radiusM: Double, steps: Int = 48): Pol
 }
 
 private const val METERS_PER_DEGREE = 111_320.0
+private val PLANNED_COLOR = android.graphics.Color.parseColor("#B8AEEA")

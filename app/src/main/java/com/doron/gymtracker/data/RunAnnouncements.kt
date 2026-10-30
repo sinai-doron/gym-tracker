@@ -15,6 +15,8 @@ object RunAnnouncements {
             RunMilestone.Resumed -> "ממשיכים"
             is RunMilestone.LapDone -> lap(milestone.lap, run, now)
             RunMilestone.TargetReached -> target(run, now)
+            RunMilestone.OffRoute -> "יצאת מהמסלול"
+            RunMilestone.BackOnRoute -> "חזרת למסלול"
         }
     }
 
@@ -33,7 +35,8 @@ object RunAnnouncements {
         val time = duration(movingSecs)
         // "ב-16 דקות" before a number, "בשעה" before a word
         val inTime = if (time.first().isDigit()) "ב-$time" else "ב$time"
-        return "הגעת למטרה! ${km(run.distanceMeters)} $inTime"
+        val done = if (run.routeLengthM > 0) "סיימת את המסלול!" else "הגעת למטרה!"
+        return "$done ${km(run.distanceMeters)} $inTime"
     }
 
     /** "5 דקות ו-20 שניות", "שעה ו-3 דקות", "45 שניות". */

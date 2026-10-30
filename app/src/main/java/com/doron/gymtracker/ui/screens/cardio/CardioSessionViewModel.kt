@@ -6,12 +6,15 @@ import androidx.lifecycle.viewModelScope
 import com.doron.gymtracker.data.ActiveClock
 import com.doron.gymtracker.data.Cadence
 import com.doron.gymtracker.data.CardioRecorder
+import com.doron.gymtracker.data.CardioRun
 import com.doron.gymtracker.data.HealthConnectManager
 import com.doron.gymtracker.data.Lap
 import com.doron.gymtracker.data.LocationPoint
 import com.doron.gymtracker.data.RunRecord
 import com.doron.gymtracker.data.prefs.SettingsPrefs
+import com.doron.gymtracker.data.repository.RouteRepository
 import com.doron.gymtracker.data.repository.SessionRepository
+import com.doron.gymtracker.domain.model.RoutePoint
 import com.doron.gymtracker.domain.model.RunBadge
 import com.doron.gymtracker.domain.model.RunTarget
 import com.doron.gymtracker.domain.usecase.GetRunBadgesUseCase
@@ -51,7 +54,14 @@ data class CardioUiState(
     /** When each fix that moved the run happened, for auto-pause. */
     val moves: List<Long> = emptyList(),
     /** Stopped for long enough that the clock has stopped too. */
-    val isPaused: Boolean = false
+    val isPaused: Boolean = false,
+    /** For a route target: the route, how long it is and how far along it the runner is. */
+    val plannedRoute: List<RoutePoint> = emptyList(),
+    val routeLengthM: Double = 0.0,
+    val routeAlongM: Double = 0.0,
+    val isOffRoute: Boolean = false,
+    /** The name this run was saved under as a route, once saved. */
+    val savedRouteName: String? = null
 ) {
     val clock: ActiveClock? get() = startedAt?.let { ActiveClock(it, moves) }
 
@@ -59,7 +69,9 @@ data class CardioUiState(
 
     /** Target progress (1 = reached), or null with no target. */
     val targetProgress: Float?
-        get() = target.progress(distanceMeters, elapsedSecs)
+        get() = if (routeLengthM > 0) {
+            (routeAlongM / (routeLengthM - CardioRun.ROUTE_FINISH_SLACK_M).coerceAtLeast(1.0)).toFloat()
+        } else target.progress(distanceMeters, elapsedSecs)
 
     /** The lap being run now: its number, meters so far and seconds so far. */
     val currentLapNumber: Int get() = laps.size + 1
@@ -101,6 +113,7 @@ class CardioSessionViewModel @AssistedInject constructor(
     private val app: Application,
     private val healthConnect: HealthConnectManager,
     private val getRunBadges: GetRunBadgesUseCase,
+    private val routeRepo: RouteRepository,
     val settingsPrefs: SettingsPrefs
 ) : ViewModel() {
 
@@ -134,7 +147,11 @@ class CardioSessionViewModel @AssistedInject constructor(
                         elevationGainM = run.elevationGainM,
                         weather = run.weather,
                         calories = run.calories,
-                        moves = run.moves
+                        moves = run.moves,
+                        plannedRoute = run.plannedRoute,
+                        routeLengthM = run.routeLengthM,
+                        routeAlongM = run.routeAlongM,
+                        isOffRoute = run.offRouteSince != null
                     )
                 }
             }
@@ -198,6 +215,15 @@ class CardioSessionViewModel @AssistedInject constructor(
                     )
                 )
             }
+        }
+    }
+
+    /** Keeps this run's route to run again; it's named after where it starts. */
+    fun saveAsRoute() {
+        viewModelScope.launch {
+            val points = _uiState.value.route.map { RoutePoint(it.latitude, it.longitude, it.altitude) }
+            val id = routeRepo.save(points)
+            _uiState.update { it.copy(savedRouteName = routeRepo.get(id)?.name) }
         }
     }
 

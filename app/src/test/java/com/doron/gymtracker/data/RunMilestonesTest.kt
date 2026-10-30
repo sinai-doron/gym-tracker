@@ -79,4 +79,20 @@ class RunMilestonesTest {
         val moving = run(0.0, 0, movingUntil = start + 60_000).let { it.copy(moves = it.moves + (start + 100_000)) }
         assertEquals(listOf(RunMilestone.Resumed), milestones.check(moving, start + 100_000))
     }
+
+    @Test
+    fun `a route is done near its end, and leaving it is reported after a while`() {
+        val route = RunTarget(RunTargetType.ROUTE, routeId = 1)
+        val base = run(0.0, 0, route, movingUntil = start + 120_000).copy(routeLengthM = 5_000.0)
+        val milestones = RunMilestones()
+        milestones.check(base, start)
+        // Off the route for 5 s: not yet; for 12 s: reported once
+        val off = base.copy(offRouteSince = start + 60_000)
+        assertEquals(emptyList<RunMilestone>(), milestones.check(off, start + 65_000))
+        assertEquals(listOf(RunMilestone.OffRoute), milestones.check(off, start + 72_000))
+        assertEquals(emptyList<RunMilestone>(), milestones.check(off, start + 80_000))
+        // Back on, then finishing within the last 30 m
+        val back = base.copy(routeAlongM = 4_980.0, moves = (start..start + 1_500_000 step 2_000).toList())
+        assertEquals(listOf(RunMilestone.BackOnRoute, RunMilestone.TargetReached), milestones.check(back, start + 1_500_000))
+    }
 }

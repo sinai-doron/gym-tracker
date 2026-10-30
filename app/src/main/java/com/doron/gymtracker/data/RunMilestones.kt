@@ -6,6 +6,8 @@ sealed interface RunMilestone {
     data object TargetReached : RunMilestone
     data object Paused : RunMilestone
     data object Resumed : RunMilestone
+    data object OffRoute : RunMilestone
+    data object BackOnRoute : RunMilestone
 }
 
 /**
@@ -18,23 +20,31 @@ class RunMilestones {
     private var lapsSeen = 0
     private var targetReported = false
     private var paused = false
+    private var offRoute = false
 
     fun check(run: CardioRun, now: Long): List<RunMilestone> {
         // Moving time: auto-paused time doesn't count towards a duration target
         val elapsedSecs = run.clock.activeMs(now) / 1000
-        val reached = run.target.isReached(run.distanceMeters, elapsedSecs)
+        val reached = run.routeProgress?.let { it >= 1f } ?: run.target.isReached(run.distanceMeters, elapsedSecs)
         val pausedNow = run.clock.isPaused(now)
+        // Off the route only counts once it has lasted a while: one stray fix isn't a wrong turn
+        val offNow = run.offRouteSince?.let { now - it >= OFF_ROUTE_AFTER_MS } ?: false
         if (run.sessionId != sessionId) {
             sessionId = run.sessionId
             lapsSeen = run.laps.size
             targetReported = reached
             paused = pausedNow
+            offRoute = offNow
             return emptyList()
         }
         val milestones = mutableListOf<RunMilestone>()
         if (pausedNow != paused) {
             paused = pausedNow
             milestones += if (pausedNow) RunMilestone.Paused else RunMilestone.Resumed
+        }
+        if (offNow != offRoute) {
+            offRoute = offNow
+            milestones += if (offNow) RunMilestone.OffRoute else RunMilestone.BackOnRoute
         }
         milestones += run.laps.drop(lapsSeen).map { RunMilestone.LapDone(it) }
         lapsSeen = run.laps.size
@@ -43,5 +53,9 @@ class RunMilestones {
             milestones += RunMilestone.TargetReached
         }
         return milestones
+    }
+
+    private companion object {
+        const val OFF_ROUTE_AFTER_MS = 10_000L
     }
 }

@@ -6,9 +6,15 @@ enum class RunTargetType { NONE, DISTANCE, DURATION, ROUTE }
 data class RunTarget(
     val type: RunTargetType = RunTargetType.NONE,
     val distanceKm: Float = DEFAULT_DISTANCE_KM,
-    val durationMin: Int = DEFAULT_DURATION_MIN
+    val durationMin: Int = DEFAULT_DURATION_MIN,
+    /** The saved route to follow, for a route target. */
+    val routeId: Long? = null
 ) {
-    /** How far along the target is (1 = reached; can pass 1), or null when there's nothing to measure. */
+    /**
+     * How far along the target is (1 = reached; can pass 1), or null when there's nothing to
+     * measure. A route's progress depends on where the runner is on it, so it's worked out
+     * while running instead.
+     */
     fun progress(distanceMeters: Double, elapsedSecs: Long): Float? = when (type) {
         RunTargetType.DISTANCE -> (distanceMeters / 1000.0 / distanceKm).toFloat()
         RunTargetType.DURATION -> elapsedSecs / 60f / durationMin

@@ -2,9 +2,12 @@ package com.doron.gymtracker.data
 
 import android.util.Log
 import com.doron.gymtracker.data.prefs.SettingsPrefs
+import com.doron.gymtracker.data.repository.RouteRepository
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.domain.model.RunDetails
+import com.doron.gymtracker.domain.model.RoutePoint
 import com.doron.gymtracker.domain.model.RunTarget
+import com.doron.gymtracker.domain.model.RunTargetType
 import com.doron.gymtracker.domain.model.TrackLog
 import com.doron.gymtracker.domain.model.Weather
 import com.doron.gymtracker.media.NowPlayingProvider
@@ -43,9 +46,24 @@ data class CardioRun(
     /** For calories; null until set in settings. */
     val bodyWeightKg: Float? = null,
     /** When each fix that moved the run happened: what auto-pause is worked out from. */
-    val moves: List<Long> = emptyList()
+    val moves: List<Long> = emptyList(),
+    /** The route being followed, for a route target. */
+    val plannedRoute: List<RoutePoint> = emptyList(),
+    val routeLengthM: Double = 0.0,
+    /** How far along the planned route the runner has got. */
+    val routeAlongM: Double = 0.0,
+    /** Since when the runner has been off the planned route, or null while on it. */
+    val offRouteSince: Long? = null
 ) {
     val clock: ActiveClock get() = ActiveClock(startedAt, moves)
+
+    /** 1 once the route is done; null without a route. The last few meters don't need running. */
+    val routeProgress: Float?
+        get() = if (routeLengthM > 0) (routeAlongM / (routeLengthM - ROUTE_FINISH_SLACK_M).coerceAtLeast(1.0)).toFloat() else null
+
+    companion object {
+        const val ROUTE_FINISH_SLACK_M = 30.0
+    }
 
     val calories: Int?
         get() = bodyWeightKg?.let { RunCalories.estimate(type, distanceMeters, it) }
@@ -63,7 +81,8 @@ class CardioRecorder @Inject constructor(
     private val sessionRepo: SessionRepository,
     private val settingsPrefs: SettingsPrefs,
     private val stepCounter: StepCounterManager,
-    private val weatherRepo: WeatherRepository
+    private val weatherRepo: WeatherRepository,
+    private val routeRepo: RouteRepository
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val _run = MutableStateFlow<CardioRun?>(null)
@@ -74,6 +93,8 @@ class CardioRecorder @Inject constructor(
     private var anchor: LocationPoint? = null
     // Recent step counter readings, for the current cadence
     private val stepSamples = ArrayDeque<StepSample>()
+    // Follows the runner along the planned route, for a route target
+    private var follower: RouteFollower? = null
 
     fun isRecording(sessionId: Long): Boolean =
         job?.isActive == true && _run.value?.sessionId == sessionId
@@ -92,6 +113,11 @@ class CardioRecorder @Inject constructor(
                 ?: RunDetails(sessionId, settingsPrefs.runTarget.first(), settingsPrefs.lapDistanceM.first())
                     .also { sessionRepo.saveRunDetails(it) }
             val moves = RouteDistance.marks(saved).map { it.timestamp }
+            val planned = details.target.takeIf { it.type == RunTargetType.ROUTE }?.routeId?.let { routeRepo.get(it) }
+            follower = planned?.let { RouteFollower(it.points) }
+            // Picking a run back up: replay it, so the follower knows how far along the route it got
+            val routeAlong = saved.mapNotNull { follower?.locate(it.latitude, it.longitude) }
+                .filter { it.offMeters <= RouteFollower.ON_ROUTE_M }.maxOfOrNull { it.alongMeters } ?: 0.0
             _run.value = CardioRun(
                 sessionId, session.type, session.startedAt,
                 distanceMeters = RouteDistance.total(saved),
@@ -104,7 +130,10 @@ class CardioRecorder @Inject constructor(
                 elevationGainM = Elevation.gain(saved),
                 weather = details.weatherCondition?.let { Weather(details.weatherTempC ?: 0, 0, 0, it) },
                 bodyWeightKg = settingsPrefs.bodyWeightKg.first(),
-                moves = moves
+                moves = moves,
+                plannedRoute = planned?.points ?: emptyList(),
+                routeLengthM = follower?.lengthMeters ?: 0.0,
+                routeAlongM = routeAlong
             )
             if (details.weatherCondition == null) launch { recordWeather(sessionId) }
             launch { countSteps(sessionId) }
@@ -119,6 +148,7 @@ class CardioRecorder @Inject constructor(
         job = null
         anchor = null
         stepSamples.clear()
+        follower = null
         return _run.value.also { _run.value = null }
     }
 
@@ -149,8 +179,18 @@ class CardioRecorder @Inject constructor(
             val route = it.route + point
             val moved = from == null || added > 0
             val moves = if (moved) it.moves + point.timestamp else it.moves
+            val onRoute = follower?.locate(point.latitude, point.longitude)
             it.copy(
                 moves = moves,
+                routeAlongM = onRoute?.takeIf { p -> p.offMeters <= RouteFollower.ON_ROUTE_M }
+                    ?.let { p -> maxOf(it.routeAlongM, p.alongMeters) } ?: it.routeAlongM,
+                // Off once clearly away from the route; back on once clearly close again
+                offRouteSince = when {
+                    onRoute == null -> null
+                    onRoute.offMeters > RouteFollower.ON_ROUTE_M -> it.offRouteSince ?: point.timestamp
+                    onRoute.offMeters < BACK_ON_ROUTE_M -> null
+                    else -> it.offRouteSince
+                },
                 distanceMeters = it.distanceMeters + added,
                 // Pace over the last few seconds of route is steadier than a single fix's speed,
                 // and some fixes report 0 or nothing at all
@@ -213,5 +253,6 @@ class CardioRecorder @Inject constructor(
     private companion object {
         const val TAG = "CardioRecorder"
         const val RESUME_WINDOW_MS = 30 * 60_000L
+        const val BACK_ON_ROUTE_M = 30.0
     }
 }

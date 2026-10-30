@@ -6,6 +6,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.doron.gymtracker.data.db.dao.ExerciseEntryDao
 import com.doron.gymtracker.data.db.dao.LocationLogDao
+import com.doron.gymtracker.data.db.dao.RouteDao
 import com.doron.gymtracker.data.db.dao.RunDetailsDao
 import com.doron.gymtracker.data.db.dao.SessionDao
 import com.doron.gymtracker.data.db.dao.SetRecordDao
@@ -14,6 +15,8 @@ import com.doron.gymtracker.data.db.dao.WorkoutDao
 import com.doron.gymtracker.data.db.entities.ExerciseDefinitionEntity
 import com.doron.gymtracker.data.db.entities.ExerciseEntryEntity
 import com.doron.gymtracker.data.db.entities.LocationLogEntity
+import com.doron.gymtracker.data.db.entities.RouteEntity
+import com.doron.gymtracker.data.db.entities.RoutePointEntity
 import com.doron.gymtracker.data.db.entities.RunDetailsEntity
 import com.doron.gymtracker.data.db.entities.SessionEntity
 import com.doron.gymtracker.data.db.entities.SetRecordEntity
@@ -29,9 +32,11 @@ import com.doron.gymtracker.data.db.entities.WorkoutEntity
         SetRecordEntity::class,
         TrackLogEntity::class,
         LocationLogEntity::class,
-        RunDetailsEntity::class
+        RunDetailsEntity::class,
+        RouteEntity::class,
+        RoutePointEntity::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = false
 )
 abstract class GymDatabase : RoomDatabase() {
@@ -42,6 +47,7 @@ abstract class GymDatabase : RoomDatabase() {
     abstract fun trackLogDao(): TrackLogDao
     abstract fun locationLogDao(): LocationLogDao
     abstract fun runDetailsDao(): RunDetailsDao
+    abstract fun routeDao(): RouteDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -132,6 +138,31 @@ abstract class GymDatabase : RoomDatabase() {
                 """.trimIndent())
                 database.execSQL("ALTER TABLE location_log ADD COLUMN accuracy REAL")
                 database.execSQL("ALTER TABLE location_log ADD COLUMN bearing REAL")
+            }
+        }
+
+        // Routes to run, from past runs or GPX files
+        val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `routes` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `name` TEXT NOT NULL,
+                        `distanceMeters` REAL NOT NULL,
+                        `createdAt` INTEGER NOT NULL
+                    )
+                """.trimIndent())
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `route_points` (
+                        `routeId` INTEGER NOT NULL,
+                        `seq` INTEGER NOT NULL,
+                        `latitude` REAL NOT NULL,
+                        `longitude` REAL NOT NULL,
+                        `elevationM` REAL,
+                        PRIMARY KEY(`routeId`, `seq`)
+                    )
+                """.trimIndent())
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_route_points_routeId` ON `route_points` (`routeId`)")
             }
         }
     }

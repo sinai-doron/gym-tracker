@@ -1,4 +1,4 @@
-package com.doron.gymtracker.ui.screens.history
+package com.doron.gymtracker.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

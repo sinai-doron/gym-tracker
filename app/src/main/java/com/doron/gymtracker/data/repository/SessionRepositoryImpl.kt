@@ -120,7 +120,8 @@ class SessionRepositoryImpl @Inject constructor(
                 target = when (type) {
                     RunTargetType.DISTANCE -> RunTarget(type, distanceKm = it.targetValue?.toFloat() ?: RunTarget.DEFAULT_DISTANCE_KM)
                     RunTargetType.DURATION -> RunTarget(type, durationMin = it.targetValue?.toInt() ?: RunTarget.DEFAULT_DURATION_MIN)
-                    else -> RunTarget(type)
+                    RunTargetType.ROUTE -> RunTarget(type, routeId = it.targetValue?.toLong())
+                    RunTargetType.NONE -> RunTarget(type)
                 },
                 lapMeters = it.lapMeters,
                 stepCounterAtStart = it.stepCounterAtStart,
@@ -141,7 +142,8 @@ class SessionRepositoryImpl @Inject constructor(
                 targetValue = when (target.type) {
                     RunTargetType.DISTANCE -> target.distanceKm.toDouble()
                     RunTargetType.DURATION -> target.durationMin.toDouble()
-                    else -> null
+                    RunTargetType.ROUTE -> target.routeId?.toDouble()
+                    RunTargetType.NONE -> null
                 },
                 lapMeters = details.lapMeters,
                 stepCounterAtStart = details.stepCounterAtStart,
