@@ -89,6 +89,20 @@ class HistoryViewModelTest {
     }
 
     @Test
+    fun `a day with a gym session and a run is marked as both`() = runTest(testDispatcher) {
+        val gym = Session(1L, "workout_a", startedAt = 0L, finishedAt = 1000L)
+        val run = Session(2L, "RUNNING", startedAt = 2000L, finishedAt = 3000L, type = "RUNNING")
+        val walk = Session(3L, "WALKING", startedAt = 2 * 86_400_000L, finishedAt = 2 * 86_400_000L + 1000, type = "WALKING")
+        coEvery { sessionRepo.observeAll() } returns flowOf(listOf(gym, run, walk))
+        coEvery { sessionRepo.getLastCompleted() } returns walk
+        val vm = HistoryViewModel(sessionRepo, workoutRepo)
+        testDispatcher.scheduler.advanceUntilIdle()
+        val days = vm.sessionDates.value.values.toList()
+        assertTrue(setOf(DayKind.GYM, DayKind.CARDIO) in days)
+        assertTrue(setOf(DayKind.CARDIO) in days)
+    }
+
+    @Test
     fun `selectedDaySessions is null initially`() = runTest(testDispatcher) {
         val vm = makeVm()
         assertNull(vm.selectedDaySessions.value)

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -51,6 +52,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.doron.gymtracker.R
 import com.doron.gymtracker.ui.theme.Purple
+import com.doron.gymtracker.ui.theme.SuccessGreen
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -95,6 +101,8 @@ fun HistoryScreen(
             DayHeaders()
             Spacer(Modifier.height(4.dp))
             CalendarGrid(month = month, sessionDates = sessionDates, onDayClick = { viewModel.loadDaySessions(it) })
+            Spacer(Modifier.height(16.dp))
+            Legend()
         }
     }
 
@@ -155,7 +163,7 @@ private fun DayHeaders() {
 @Composable
 private fun CalendarGrid(
     month: YearMonth,
-    sessionDates: Set<LocalDate>,
+    sessionDates: Map<LocalDate, Set<DayKind>>,
     onDayClick: (LocalDate) -> Unit
 ) {
     val today = LocalDate.now()
@@ -175,11 +183,12 @@ private fun CalendarGrid(
                         Box(modifier = Modifier.weight(1f).aspectRatio(1f))
                     } else {
                         val date = month.atDay(dayNum)
-                        val hasSession = date in sessionDates
+                        val kinds = sessionDates[date].orEmpty()
+                        val hasSession = kinds.isNotEmpty()
                         val isToday = date == today
                         DayCell(
                             day = dayNum,
-                            hasSession = hasSession,
+                            kinds = kinds,
                             isToday = isToday,
                             modifier = Modifier.weight(1f),
                             onClick = if (hasSession) ({ onDayClick(date) }) else null
@@ -194,17 +203,15 @@ private fun CalendarGrid(
 @Composable
 private fun DayCell(
     day: Int,
-    hasSession: Boolean,
+    kinds: Set<DayKind>,
     isToday: Boolean,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)?
 ) {
-    val bgColor = when {
-        hasSession -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.surface
-    }
+    val hasSession = kinds.isNotEmpty()
+    val surface = MaterialTheme.colorScheme.surface
     val textColor = when {
-        hasSession -> MaterialTheme.colorScheme.onPrimary
+        hasSession -> Color.White
         else -> MaterialTheme.colorScheme.onSurface
     }
     val borderMod = if (isToday && !hasSession)
@@ -216,7 +223,18 @@ private fun DayCell(
             .aspectRatio(1f)
             .padding(2.dp)
             .clip(CircleShape)
-            .background(bgColor)
+            .drawBehind {
+                when {
+                    kinds.size > 1 -> {
+                        // Both on one day: gym on the right half, cardio on the left
+                        drawRect(CardioColor, size = Size(size.width / 2, size.height))
+                        drawRect(GymColor, topLeft = Offset(size.width / 2, 0f), size = Size(size.width / 2, size.height))
+                    }
+                    DayKind.GYM in kinds -> drawRect(GymColor)
+                    DayKind.CARDIO in kinds -> drawRect(CardioColor)
+                    else -> drawRect(surface)
+                }
+            }
             .then(borderMod)
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
         contentAlignment = Alignment.Center
@@ -229,6 +247,26 @@ private fun DayCell(
         )
     }
 }
+
+/** Which color is which, under the calendar. */
+@Composable
+private fun Legend() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        listOf(GymColor to "אימון כוח", CardioColor to "ריצה / הליכה").forEachIndexed { i, (color, label) ->
+            if (i > 0) Spacer(Modifier.width(24.dp))
+            Box(Modifier.size(12.dp).background(color, CircleShape))
+            Spacer(Modifier.width(6.dp))
+            Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+private val GymColor = Purple
+private val CardioColor = SuccessGreen
 
 @Composable
 private fun DaySessionsSheet(

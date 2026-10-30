@@ -44,6 +44,9 @@ data class DaySessionsUiState(
     val sessions: List<SessionSummaryItem>
 )
 
+/** What a day in the calendar is colored by. */
+enum class DayKind { GYM, CARDIO }
+
 @HiltViewModel
 class HistoryViewModel @Inject constructor(
     private val sessionRepo: SessionRepository,
@@ -53,8 +56,9 @@ class HistoryViewModel @Inject constructor(
     private val _currentMonth = MutableStateFlow(YearMonth.now())
     val currentMonth: StateFlow<YearMonth> = _currentMonth.asStateFlow()
 
-    private val _sessionDates = MutableStateFlow<Set<LocalDate>>(emptySet())
-    val sessionDates: StateFlow<Set<LocalDate>> = _sessionDates.asStateFlow()
+    private val _sessionDates = MutableStateFlow<Map<LocalDate, Set<DayKind>>>(emptyMap())
+    /** The days with a finished session, and which kinds. */
+    val sessionDates: StateFlow<Map<LocalDate, Set<DayKind>>> = _sessionDates.asStateFlow()
 
     private val _selectedDaySessions = MutableStateFlow<DaySessionsUiState?>(null)
     val selectedDaySessions: StateFlow<DaySessionsUiState?> = _selectedDaySessions.asStateFlow()
@@ -69,8 +73,10 @@ class HistoryViewModel @Inject constructor(
             sessionRepo.observeAll().collectLatest { sessions ->
                 _sessionDates.value = sessions
                     .filter { it.finishedAt != null }
-                    .map { Instant.ofEpochMilli(it.startedAt).atZone(zone).toLocalDate() }
-                    .toSet()
+                    .groupBy({ Instant.ofEpochMilli(it.startedAt).atZone(zone).toLocalDate() }) {
+                        if (it.type == "GYM") DayKind.GYM else DayKind.CARDIO
+                    }
+                    .mapValues { it.value.toSet() }
             }
         }
     }
