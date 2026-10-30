@@ -1,7 +1,13 @@
 # ADR-0001: Local-only storage, no backend, no authentication
 
 ## Status
-Accepted
+Accepted, amended 2026-10
+
+> **Amendment (2026-10).** Storage is still local-only, but the app is no longer fully
+> offline. It reads map tiles (OpenFreeMap), weather (Open-Meteo) and street names for
+> routes (Nominatim), and exchanges runs, steps and heart rate with Health Connect on the
+> phone. No workout data is sent to a server. A manual backup to a zip (Settings → Backup)
+> covers the "device is wiped" risk below.
 
 ## Context
 This is a personal-use app for a single user. No sharing, no sync across devices, and no account management are required. Options considered:

@@ -1,73 +1,130 @@
 # Gym Tracker
 
-A personal Android app for logging strength workouts: pick today's workout, log every set,
-rest between sets on a timer, and see how your weights move over time.
+A personal Android app for training: strength workouts in the gym, and runs and walks
+outside. Log every set with a rest timer between them, record runs with GPS, and follow
+how your weights, distances and steps move over time.
 
-It is built for one person and one training programme. Everything is stored on the phone —
-there is no account, no server and no network access — and the UI is Hebrew-first and
-right-to-left, with English available in Settings.
+It is built for one person and one training programme. There is no account and no
+server: workouts are stored on the phone. The UI is Hebrew-first and right-to-left, with
+English available in Settings.
 
 ## Features
 
-**Workouts and sessions**
-- **A → B → C rotation.** The home screen suggests the next workout in the cycle; you can
-  pick a different one before starting.
-- **Session clock.** A session runs from when you start it until you end it. The app never
-  closes one on its own.
-- **Three kinds of exercise**: rep-based (reps × weight), timed (e.g. plank, with a
-  start/stop timer) and distance (e.g. farmer's walk).
-- **Weight carries forward.** Each set is pre-filled from the previous set, and the first
-  set from your last session, so you rarely retype a number.
-- **Edit a logged set** by tapping it.
+### Home
+
+- **Two equal cards: gym and cardio.**
+  - The gym card shows the next workout, with its exercises collapsed.
+  - The cardio card starts a run or a walk and opens saved routes.
+- **Week strip.** The days you trained this week, colored purple for gym and green for
+  cardio.
+- **Steps this week.** A bar per day against your daily step goal, with the part taken
+  on runs and walks in green. Steps come from Health Connect and the phone's step sensor.
+- **Achievements.**
+  - Distance badges: 1K, 5K and 10K.
+  - Personal records: fastest 1K, 5K and 10K, longest run and best week. Tap a record to
+    open its run.
+- **Program status and weather.** Week number, A/B week, weeks to deload, and today's
+  weather.
+
+### Gym workouts
+
+- **A → B → C rotation.** Home suggests the next workout in the cycle; you can pick
+  another before starting.
+- **Session clock.** A session runs from when you start it until you end it. If the app
+  is killed mid-workout, home offers to resume it.
+- **Three kinds of exercise.**
+  - Rep-based: reps × weight.
+  - Timed, such as a plank, with a start/stop timer.
+  - Distance, such as a farmer's walk.
+- **Weight carries forward.** Each set is pre-filled from the previous one, and the
+  first set from your last session.
+- **Edit or delete a logged set**, even during rest.
 - **Workout summary** when you end a session.
+- **Rest timer.**
+  - Starts after each set with the exercise's rest time.
+  - Adjust it with +/- or dismiss it early.
+  - Ends with a 3-2-1 beep countdown and vibration. It only beeps; voice is used only on
+    runs.
+  - Follow it from the lock screen in a foreground notification.
+- **Plan editor** (Workouts → Edit).
+  - Change an exercise's name, sets, target and rest.
+  - Reorder, add and remove exercises.
+  - Removal is soft, so history stays.
+- **Programme logic.**
+  - Weekly exercise variants that alternate on A/B weeks.
+  - A deload week every sixth week: 60% of the last weight, 2 sets.
+  - Progression hints from your last three sessions: *increase*, *stalled* or *on
+    track*.
+- **Exercise progress.** For each exercise: its personal record, a chart of the best set
+  per workout, and every session's sets.
 
-**Rest timer**
-- Starts automatically after each set, using the rest time defined for that exercise.
-- Adjust it with +/- or dismiss it early.
-- A 3-2-1 beep countdown with vibration before it ends.
-- A foreground notification shows the rest countdown, so you can follow it from the lock
-  screen.
+### Runs and walks
 
-**Programme logic**
-- **Weekly exercise variants.** Some exercises alternate between two versions (e.g.
-  dumbbell vs. barbell incline press) on alternate weeks, counted from the programme start
-  date.
-- **Deload week.** Every sixth week the session shows a deload banner (60% of last weight,
-  2 sets).
-- **Progression hints** per exercise, based on your last three sessions:
-  - *Increase*: you hit the target reps three sessions running. Add 2.5 kg (target ≤ 12
-    reps) or 5 kg (higher-rep exercises).
-  - *Stalled*: same weight and same reps three sessions running.
-  - *On track*: anything else.
-- Exercises can be marked **optional** or **per side**.
+- **GPS recording that survives the screen being off.** A foreground service records
+  the run. If the app is killed, the run is picked back up.
+- **Live screen.**
+  - A map with the route so far.
+  - Distance, moving time, current and average pace.
+  - Progress towards a target.
+- **Targets.** None, a distance, a duration, or a saved route to follow. Following a
+  route warns you when you're off it and counts shortcuts.
+- **Laps** of a length set in Settings. A final partial lap is shown when the rest is
+  10 m or more.
+- **Pausing.**
+  - **Auto-pause.** The run pauses after 10 seconds without moving.
+  - A gap in GPS that still covered ground at walking speed or more isn't a pause.
+  - **Manual pause** from the screen or the notification.
+- **Voice feedback** (optional, in Hebrew): laps, the target, pause and resume.
+- **Run report.**
+  - The map colored by slope.
+  - Elevation and pace charts.
+  - Laps, climb and descent, calories and steps/cadence.
+  - New personal records are announced when you finish.
+- **Share.**
+  - A square image of the route colored by pace. You choose which numbers it shows.
+  - A GPX file of the route.
+- **Routes.**
+  - Save a run's route, or import one from GPX.
+  - Name routes automatically from the street.
+  - Each route has a details page you can start or edit it from.
+- **Health Connect.** Finished runs and walks are written with their route, distance,
+  calories and elevation. Steps are read from it.
 
-**History**
-- A monthly calendar marking the days you trained. Tap a day to see that session.
+### History
 
-**Extras**
-- **Now playing bar.** Shows the music playing in any app, with play/pause and skip, so
-  you don't leave the session screen. This needs notification access (see
-  [Permissions](#permissions)).
-- **Daily step counter** on the home screen, from the phone's step sensor.
+- **Monthly calendar.** Gym days are purple and cardio days green; a day with both is
+  half and half.
+- **Session details.** Tap a day to open the gym session or the full run report.
+
+### Settings and extras
+
+- **Settings.**
+  - Language: Hebrew or English.
+  - Body weight, used for calories.
+  - Daily step goal (10,000 by default).
+  - Lap length and voice feedback.
+- **Backup and restore.**
+  - Save the database and settings as one zip, anywhere the system file picker reaches
+    (e.g. Google Drive).
+  - Restore replaces all data and restarts the app.
+- **Now playing bar.** The music playing in any app, with play/pause and skip, so you
+  don't leave the session screen. This needs notification access.
 
 ## The training programme
 
-The programme is hardcoded in
-[`TrainingPlanData.kt`](app/src/main/java/com/doron/gymtracker/data/seed/TrainingPlanData.kt)
-and seeded into the database on first launch. It isn't editable in the app — see
+The programme is seeded into the database on first launch from
+[`TrainingPlanData.kt`](app/src/main/java/com/doron/gymtracker/data/seed/TrainingPlanData.kt).
+After that, edit it in the app's plan editor; see
 [ADR-0002](docs/adr/0002-hardcoded-training-plan.md).
 
-| Workout | Focus | Exercises |
-|---|---|---|
-| A | Chest and back | 7, ending with plank |
-| B | Legs and core | 8 |
-| C | Shoulders and arms | 8, ending with farmer's walk |
+| Workout | Focus |
+|---|---|
+| A | Chest and back |
+| B | Legs and core |
+| C | Shoulders and arms |
 
-The programme start date, which drives the weekly variants and deload weeks, is set in
+The programme start date, which drives the A/B weeks and deload weeks, is set in
 [`ProgramPrefs.kt`](app/src/main/java/com/doron/gymtracker/data/prefs/ProgramPrefs.kt).
-
-To change the programme, edit those files and reinstall. If sessions have already been
-recorded, keep the exercise `id`s stable — history is linked to them.
 
 ## Tech stack
 
@@ -77,7 +134,9 @@ recorded, keep the exercise `id`s stable — history is linked to them.
 | UI | Jetpack Compose, Material 3 |
 | Architecture | MVVM with a use-case layer (`ui` → `domain` → `data`) |
 | Dependency injection | Hilt |
-| Database | Room |
+| Database | Room (schema version 10, with migrations) |
+| Maps | MapLibre, with OpenFreeMap tiles |
+| Health data | Health Connect |
 | Settings | DataStore |
 | Navigation | Navigation Compose |
 | Async | Kotlin coroutines and Flow |
@@ -89,26 +148,33 @@ recorded, keep the exercise `id`s stable — history is linked to them.
 ```
 app/src/main/java/com/doron/gymtracker/
 ├── data/
-│   ├── db/            Room database, entities and DAOs
+│   ├── db/            Room database, entities, DAOs and migrations
 │   ├── di/            Hilt modules
-│   ├── prefs/         DataStore: workout rotation, programme start, settings
-│   ├── repository/    Session and workout repositories
-│   ├── seed/          The hardcoded training programme
-│   └── StepCounterManager.kt
+│   ├── prefs/         DataStore: rotation, programme start, settings
+│   ├── repository/    Session, workout and route repositories
+│   ├── seed/          The initial training programme
+│   ├── CardioRecorder, LocationTracker   Recording a run from GPS fixes
+│   ├── ActiveClock, RouteDistance, Laps  Moving time, distance and laps
+│   ├── RunStats, RouteFollower           Elevation, pace, best efforts, route following
+│   ├── Gpx, RouteNamer                   GPX import/export, street names
+│   ├── HealthConnectManager, StepCounterManager
+│   └── BackupManager, WeatherRepository
 ├── domain/
-│   ├── model/         Workout, ExerciseDefinition, Session, SetRecord, ProgressionHint
-│   └── usecase/       Rotation, session lifecycle, set logging, variants, deload, progression
-├── media/             Now-playing integration and rest-timer beeps
-├── service/           Foreground service for the session and rest timer
+│   ├── model/         Workout, Session, SetRecord, RunDetails, RunTarget, PersonalRecord, …
+│   └── usecase/       Rotation, sessions, sets, variants, deload, progression, records
+├── media/             Now playing, rest-timer beeps, run voice
+├── service/           Foreground services for the gym session and the run, pause receiver
 └── ui/
-    ├── components/    Exercise card, rest timer, now-playing bar, set row
+    ├── components/    Shared pieces: run map, charts, activity icons, rest timer, …
     ├── navigation/
-    ├── screens/       home, session, history, settings
+    ├── screens/       home, session, workouts, plan, progress, cardio, routes,
+    │                  history, settings
     └── theme/
+assets/map_style_run.json   The map style
 docs/
 ├── adr/               Architecture decision records
 └── superpowers/plans/ Implementation plans
-CONTEXT.md             Domain glossary (Session, ExerciseEntry, SetRecord, …)
+CONTEXT.md             Domain glossary
 ```
 
 ## Getting started
@@ -139,6 +205,12 @@ export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"  
 ./gradlew installDebug         # build and install on a connected device
 ```
 
+### Signing
+
+Debug builds are signed with a fixed key named in `local.properties`, so installing a
+new build updates the app in place instead of wiping its data. The key files are
+gitignored and must stay out of this public repository.
+
 ### Running on a phone
 
 1. **Settings → About phone** — tap **Build number** seven times to enable developer
@@ -153,7 +225,7 @@ device with pairing code**, then run `adb pair <ip>:<port>` and `adb connect <ip
 ### Tests
 
 ```sh
-./gradlew testDebugUnitTest          # unit tests: use cases, view models, repository
+./gradlew testDebugUnitTest          # unit tests: use cases, view models, run maths (clock, laps, pace, GPX)
 ./gradlew connectedDebugAndroidTest  # instrumented tests: Room DAOs (needs a device)
 ```
 
@@ -161,17 +233,36 @@ device with pairing code**, then run `adb pair <ip>:<port>` and `adb connect <ip
 
 | Permission | Why |
 |---|---|
-| Notifications | The foreground notification with the session and rest timer |
-| Foreground service | Keeps the timer running while the screen is off or you're in another app |
-| Physical activity | The daily step counter |
+| Notifications | The foreground notification with the session, rest or run timer |
+| Foreground service (special use, location) | Keeps timers and run recording going with the screen off |
+| Location (precise) | Recording runs and walks; today's weather |
+| Physical activity | The step counter, and steps on runs |
 | Vibrate | The end-of-rest countdown |
-| Notification access *(optional)* | Lets the now-playing bar read and control music in other apps. Granted in system settings; the app asks once and remembers if you dismiss it. |
+| Internet | Map tiles, weather and street names |
+| Health Connect | Write runs (exercise, route, distance, calories, elevation); read steps, exercise and heart rate |
+| Notification access *(optional)* | Lets the now-playing bar read and control music in other apps. The app asks once and remembers if you dismiss it. |
 
 ## Data and privacy
 
-All data stays on the device in a local Room database: sessions, sets, weights and
-settings. Nothing is sent anywhere. The flip side is that uninstalling the app or wiping
-the phone deletes your history. See [ADR-0001](docs/adr/0001-local-only-no-backend.md).
+Workouts, runs, routes and settings are stored on the device in a local Room database.
+Back them up from Settings: uninstalling the app or wiping the phone deletes them
+otherwise. See [ADR-0001](docs/adr/0001-local-only-no-backend.md).
+
+The app talks to a few services, and only for these things:
+
+- **OpenFreeMap:** map tiles.
+- **Open-Meteo:** weather for your location.
+- **OpenStreetMap Nominatim:** street names for new routes.
+- **Health Connect,** on the phone itself: runs you finish, steps, and heart rate.
+
+## Known limits
+
+- **Heart rate.** The CMF Watch Pro 2, through Nothing X, writes heart rate to Health
+  Connect only once every 5 minutes, about 15 minutes late. That isn't enough for a
+  heart-rate chart or zones on a run. It is still to be checked whether a workout started
+  on the watch writes more often.
+- **Samsung Health** doesn't share exercise routes through Health Connect, so its runs
+  can't be imported. A run can be added by hand from a GPX export.
 
 ## Design decisions
 
@@ -181,5 +272,6 @@ The reasoning behind the main choices is recorded in [`docs/adr`](docs/adr):
 - [0002 — The training plan is hardcoded, not user-editable](docs/adr/0002-hardcoded-training-plan.md)
 - [0003 — Distinct exercise types (rep-based and timed)](docs/adr/0003-two-exercise-types.md)
 - [0004 — Hebrew UI with right-to-left forced at the app root](docs/adr/0004-hebrew-rtl-single-language.md)
+- [0005 — Runs: moving time, pauses and GPS dropouts](docs/adr/0005-run-moving-time.md)
 
 The domain vocabulary used throughout the code is defined in [`CONTEXT.md`](CONTEXT.md).

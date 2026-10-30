@@ -1,7 +1,12 @@
 # ADR-0004: Hebrew as the sole UI language, RTL forced at app root
 
 ## Status
-Accepted
+Accepted, amended 2026-10
+
+> **Amendment (2026-10).** Hebrew stays the default, but an English translation now
+> exists (`values-iw` and `values-en`), chosen in Settings. Hebrew screens wrap numeric
+> ranges in Unicode isolates (U+2066…U+2069) so they don't read backwards. Canvas
+> drawings such as charts and the week strip mirror themselves for right-to-left.
 
 ## Context
 This is a personal app for a single Hebrew-speaking user. All training content, exercise names, and UI text are in Hebrew. Options considered:

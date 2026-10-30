@@ -1,7 +1,12 @@
 # ADR-0002: Training plan data is hardcoded, not user-editable
 
 ## Status
-Accepted
+Superseded in part (2026-10)
+
+> **Update (2026-10).** The plan is still seeded from `TrainingPlanData` on first launch,
+> but it is now editable in the app: Workouts → Edit changes an exercise's name, sets,
+> target and rest, and adds, removes and reorders exercises. Removing an exercise is soft,
+> so the sessions that used it keep their history.
 
 ## Context
 The app needs a source of truth for the three Workouts (A, B, C) and their ExerciseDefinitions. Options considered:
