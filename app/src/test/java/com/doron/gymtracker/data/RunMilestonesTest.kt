@@ -14,7 +14,7 @@ class RunMilestonesTest {
         distanceMeters = distance, target = target, lapMeters = 1_000,
         laps = (1..laps).map(::lap),
         // A fix that moved the run every 2 s, so auto-pause doesn't stop the clock
-        moves = (start..movingUntil step 2_000).toList()
+        moves = (start..movingUntil step 2_000).map { DistanceMark(it, (it - start) * 3 / 1000.0) }
     )
 
     @Test
@@ -76,7 +76,7 @@ class RunMilestonesTest {
         assertEquals(listOf(RunMilestone.Paused), milestones.check(run(0.0, 0, movingUntil = start + 60_000), start + 75_000))
         assertEquals(emptyList<RunMilestone>(), milestones.check(run(0.0, 0, movingUntil = start + 60_000), start + 90_000))
         // Moving again from 100 s
-        val moving = run(0.0, 0, movingUntil = start + 60_000).let { it.copy(moves = it.moves + (start + 100_000)) }
+        val moving = run(0.0, 0, movingUntil = start + 60_000).let { it.copy(moves = it.moves + DistanceMark(start + 100_000, it.moves.last().meters + 3)) }
         assertEquals(listOf(RunMilestone.Resumed), milestones.check(moving, start + 100_000))
     }
 
@@ -92,7 +92,7 @@ class RunMilestonesTest {
         assertEquals(listOf(RunMilestone.OffRoute), milestones.check(off, start + 72_000))
         assertEquals(emptyList<RunMilestone>(), milestones.check(off, start + 80_000))
         // Back on, then finishing within the last 30 m
-        val back = base.copy(routeAlongM = 4_980.0, moves = (start..start + 1_500_000 step 2_000).toList())
+        val back = base.copy(routeAlongM = 4_980.0, moves = (start..start + 1_500_000 step 2_000).map { DistanceMark(it, (it - start) * 3 / 1000.0) })
         assertEquals(listOf(RunMilestone.BackOnRoute, RunMilestone.TargetReached), milestones.check(back, start + 1_500_000))
     }
 }

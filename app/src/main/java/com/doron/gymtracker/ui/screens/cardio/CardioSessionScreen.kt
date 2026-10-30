@@ -564,7 +564,8 @@ private fun TargetProgress(state: CardioUiState, progress: Float) {
 /** Each lap's time and pace, the fastest in purple. */
 @Composable
 private fun LapTable(laps: List<Lap>) {
-    val fastest = laps.minByOrNull { it.paceSecsPerKm }
+    // A short last stretch isn't a fair race against the full laps
+    val fastest = laps.filterNot { it.partial }.minByOrNull { it.paceSecsPerKm }
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             "הקפות",
@@ -578,12 +579,14 @@ private fun LapTable(laps: List<Lap>) {
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             laps.forEach { lap ->
-                val best = lap == fastest && laps.size > 1
+                val best = lap == fastest && laps.count { !it.partial } > 1
                 val weight = if (best) FontWeight.Bold else FontWeight.Normal
                 val color = if (best) Purple else MaterialTheme.colorScheme.onSurface
                 Row(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
                     Text(
-                        "${lap.number} · %s ק״מ".format(formatKm((lap.distanceMeters / 1000).toFloat())),
+                        "${lap.number} · %s ק״מ".format(
+                            if (lap.partial) "%.2f".format(lap.distanceMeters / 1000) else formatKm((lap.distanceMeters / 1000).toFloat())
+                        ),
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = weight),
                         color = color,
                         modifier = Modifier.weight(1f)

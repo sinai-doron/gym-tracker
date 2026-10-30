@@ -46,7 +46,7 @@ data class CardioRun(
     /** For calories; null until set in settings. */
     val bodyWeightKg: Float? = null,
     /** When each fix that moved the run happened: what auto-pause is worked out from. */
-    val moves: List<Long> = emptyList(),
+    val moves: List<DistanceMark> = emptyList(),
     /** The route being followed, for a route target. */
     val plannedRoute: List<RoutePoint> = emptyList(),
     val routeLengthM: Double = 0.0,
@@ -112,7 +112,7 @@ class CardioRecorder @Inject constructor(
             val details = sessionRepo.getRunDetails(sessionId)
                 ?: RunDetails(sessionId, settingsPrefs.runTarget.first(), settingsPrefs.lapDistanceM.first())
                     .also { sessionRepo.saveRunDetails(it) }
-            val moves = RouteDistance.marks(saved).map { it.timestamp }
+            val moves = RouteDistance.marks(saved)
             val planned = details.target.takeIf { it.type == RunTargetType.ROUTE }?.routeId?.let { routeRepo.get(it) }
             follower = planned?.let { RouteFollower(it.points) }
             // Picking a run back up: replay it, so the follower knows how far along the route it got
@@ -178,7 +178,7 @@ class CardioRecorder @Inject constructor(
             if (it == null) return@update null
             val route = it.route + point
             val moved = from == null || added > 0
-            val moves = if (moved) it.moves + point.timestamp else it.moves
+            val moves = if (moved) it.moves + DistanceMark(point.timestamp, it.distanceMeters + added) else it.moves
             val onRoute = follower?.locate(point.latitude, point.longitude)
             it.copy(
                 moves = moves,

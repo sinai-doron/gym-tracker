@@ -4,6 +4,8 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.doron.gymtracker.data.ActiveClock
+import com.doron.gymtracker.data.DistanceMark
+import com.doron.gymtracker.data.Laps
 import com.doron.gymtracker.data.Cadence
 import com.doron.gymtracker.data.CardioRecorder
 import com.doron.gymtracker.data.CardioRun
@@ -52,7 +54,7 @@ data class CardioUiState(
     /** Badges this run earned for the first time, to celebrate on the finish screen. */
     val newBadges: List<RunBadge> = emptyList(),
     /** When each fix that moved the run happened, for auto-pause. */
-    val moves: List<Long> = emptyList(),
+    val moves: List<DistanceMark> = emptyList(),
     /** Stopped for long enough that the clock has stopped too. */
     val isPaused: Boolean = false,
     /** For a route target: the route, how long it is and how far along it the runner is. */
@@ -176,20 +178,23 @@ class CardioSessionViewModel @AssistedInject constructor(
     fun finish() {
         val run = recorder.stop()
         CardioTrackingService.stop(app)
+        val now = System.currentTimeMillis()
         _uiState.update { state ->
             state.copy(
                 isFinished = true,
                 distanceMeters = run?.distanceMeters ?: state.distanceMeters,
                 route = run?.route ?: state.route,
                 tracks = run?.tracks ?: state.tracks,
-                laps = run?.laps ?: state.laps,
+                // Now with the last stretch after the final full lap
+                laps = run?.let { Laps.split(it.startedAt, it.route, it.lapMeters.toDouble(), it.clock, finishedAt = now) }
+                    ?: state.laps,
                 steps = run?.steps ?: state.steps,
                 elevationGainM = run?.elevationGainM ?: state.elevationGainM,
                 calories = run?.calories ?: state.calories,
                 moves = run?.moves ?: state.moves,
                 isPaused = false,
                 // The final moving time, up to the moment the run was finished
-                elapsedSecs = run?.clock?.activeMs(System.currentTimeMillis())?.div(1000) ?: state.elapsedSecs
+                elapsedSecs = run?.clock?.activeMs(now)?.div(1000) ?: state.elapsedSecs
             )
         }
         viewModelScope.launch {

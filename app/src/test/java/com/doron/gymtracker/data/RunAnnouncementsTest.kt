@@ -9,7 +9,7 @@ class RunAnnouncementsTest {
     // 3 km in 16 minutes, moving the whole time
     private val run = CardioRun(
         sessionId = 1, type = "RUNNING", startedAt = start, distanceMeters = 3_000.0, lapMeters = 1_000,
-        moves = (start..16 * 60_000L step 2_000).toList()
+        moves = (start..16 * 60_000L step 2_000).map { DistanceMark(it, it * 3 / 1000.0) }
     )
 
     @Test

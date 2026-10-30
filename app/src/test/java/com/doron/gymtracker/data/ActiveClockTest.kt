@@ -7,8 +7,12 @@ import org.junit.Test
 
 class ActiveClockTest {
 
+    // Moves at 3 m/s
+    private fun running(times: List<Long>) = times.map { DistanceMark(it, it * 3 / 1000.0) }
     // Moving every 2 s for a minute
-    private val steady = (1..30).map { it * 2_000L }
+    private val steady = running((1..30).map { it * 2_000L })
+    // A step or two on from where the run got to
+    private fun stepAfter(prev: DistanceMark, at: Long) = DistanceMark(at, prev.meters + 3)
 
     @Test
     fun `moving all along counts every second`() {
@@ -20,7 +24,8 @@ class ActiveClockTest {
     @Test
     fun `a stop pauses after 10 s and resumes with the next move`() {
         // Stopped from 60 s to 100 s (traffic light), then moving again
-        val clock = ActiveClock(0, steady + listOf(100_000L, 102_000L))
+        val resumed = stepAfter(steady.last(), 100_000L)
+        val clock = ActiveClock(0, steady + resumed + stepAfter(resumed, 102_000L))
         assertTrue(clock.isPaused(80_000))
         assertEquals(70_000, clock.activeMs(80_000))   // paused at 70 s
         assertEquals(70_000, clock.activeMs(100_000))  // still paused until the move at 100 s
@@ -30,13 +35,22 @@ class ActiveClockTest {
 
     @Test
     fun `standing still at the start pauses too`() {
-        val clock = ActiveClock(0, listOf(30_000L, 32_000L))
+        val clock = ActiveClock(0, listOf(DistanceMark(30_000L, 3.0), DistanceMark(32_000L, 6.0)))
         assertEquals(12_000, clock.activeMs(32_000))
     }
 
     @Test
     fun `a short stop doesn't pause`() {
-        val clock = ActiveClock(0, listOf(2_000L, 10_000L, 12_000L))
+        val clock = ActiveClock(0, running(listOf(2_000L, 10_000L, 12_000L)))
         assertEquals(12_000, clock.activeMs(12_000))
+    }
+
+    @Test
+    fun `lost GPS while running isn't a stop`() {
+        // No fixes from 60 s to 100 s, but 120 m further on when they come back
+        val back = DistanceMark(100_000L, steady.last().meters + 120)
+        val clock = ActiveClock(0, steady + back)
+        assertEquals(100_000, clock.activeMs(100_000))
+        assertEquals(emptyList<Pair<Long, Long>>(), clock.pauses)
     }
 }

@@ -201,7 +201,7 @@ class SessionDetailViewModel @Inject constructor(
             tracks = tracks,
             target = details?.target ?: RunTarget(),
             lapMeters = lapMeters,
-            laps = Laps.split(session.startedAt, route, lapMeters.toDouble(), clock),
+            laps = Laps.split(session.startedAt, route, lapMeters.toDouble(), clock, finishedAt),
             steps = details?.steps,
             elevationGainM = details?.elevationGainM ?: Elevation.gain(route),
             weather = details?.weatherCondition?.let { Weather(details.weatherTempC ?: 0, 0, 0, it) },
