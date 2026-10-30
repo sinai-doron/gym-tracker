@@ -27,6 +27,7 @@ import com.doron.gymtracker.ui.screens.progress.ExerciseProgressScreen
 import com.doron.gymtracker.ui.screens.session.SessionScreen
 import com.doron.gymtracker.ui.screens.session.SessionViewModel
 import com.doron.gymtracker.ui.screens.settings.SettingsScreen
+import com.doron.gymtracker.ui.screens.routes.RouteDetailScreen
 import com.doron.gymtracker.ui.screens.routes.RoutesScreen
 import com.doron.gymtracker.ui.screens.workouts.WorkoutsScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -129,6 +130,13 @@ fun NavGraph(runToResume: CardioRun? = null) {
         }
         composable("routes") {
             RoutesScreen(
+                viewModel = hiltViewModel(),
+                onBack = { navController.popBackStack() },
+                onOpenRoute = { id -> navController.navigate("routes/$id") }
+            )
+        }
+        composable("routes/{routeId}") {
+            RouteDetailScreen(
                 viewModel = hiltViewModel(),
                 onBack = { navController.popBackStack() },
                 onRunRoute = {

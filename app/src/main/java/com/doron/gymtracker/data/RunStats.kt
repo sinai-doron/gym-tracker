@@ -1,5 +1,6 @@
 package com.doron.gymtracker.data
 
+import com.doron.gymtracker.domain.model.RoutePoint
 import kotlin.math.roundToInt
 
 /** Altitude at a distance along the route, for the elevation chart. */
@@ -14,8 +15,11 @@ object Elevation {
     const val CLIMB_THRESHOLD_M = 3.0
     private const val SMOOTHING_WINDOW = 3
 
-    fun gain(route: List<LocationPoint>): Double {
-        val altitudes = smooth(route.mapNotNull { it.altitude })
+    fun gain(route: List<LocationPoint>): Double = climb(route.mapNotNull { it.altitude })
+
+    /** Total climb over a series of altitudes, in order. */
+    fun climb(rawAltitudes: List<Double>): Double {
+        val altitudes = smooth(rawAltitudes)
         if (altitudes.isEmpty()) return 0.0
         // Each climb counts in full, low point to top, once it's over (a drop of the threshold
         // from the top) or the route ends; wobbles smaller than the threshold never count
@@ -47,12 +51,58 @@ object Elevation {
         }
     }
 
+    /** Total descent: the climb of the same altitudes walked backwards. */
+    fun descent(rawAltitudes: List<Double>): Double = climb(rawAltitudes.reversed())
+
+    /** A planned route's altitude against distance along it, or empty if it has no altitudes. */
+    fun routeProfile(points: List<RoutePoint>): List<ElevationPoint> {
+        if (points.size < 2 || points.any { it.elevationM == null }) return emptyList()
+        val smoothed = smooth(points.map { it.elevationM!! })
+        return alongRoute(points).zip(smoothed) { m, a -> ElevationPoint(m, a) }
+    }
+
+    /**
+     * Each segment of a planned route marked as uphill, downhill or flat, consecutive alike
+     * segments joined. The grade is taken over [GRADE_SPAN_M] either side, since GPS altitude
+     * between two points 10 m apart is mostly noise. Empty if the route has no altitudes.
+     */
+    fun slopes(points: List<RoutePoint>): List<Pair<Slope, List<RoutePoint>>> {
+        val profile = routeProfile(points)
+        if (profile.isEmpty()) return emptyList()
+        val d = profile.map { it.meters }
+        val slopeOf = (0 until points.lastIndex).map { i ->
+            val from = d.indexOfLast { it <= d[i] - GRADE_SPAN_M }.coerceAtLeast(0)
+            val to = d.indexOfFirst { it >= d[i + 1] + GRADE_SPAN_M }.let { if (it < 0) d.lastIndex else it }
+            val grade = (profile[to].altitudeM - profile[from].altitudeM) / (d[to] - d[from]).coerceAtLeast(1.0)
+            when {
+                grade >= SLOPE_GRADE -> Slope.UP
+                grade <= -SLOPE_GRADE -> Slope.DOWN
+                else -> Slope.FLAT
+            }
+        }
+        val runs = mutableListOf<Pair<Slope, MutableList<RoutePoint>>>()
+        slopeOf.forEachIndexed { i, slope ->
+            if (runs.lastOrNull()?.first == slope) runs.last().second += points[i + 1]
+            else runs += slope to mutableListOf(points[i], points[i + 1])
+        }
+        return runs
+    }
+
+    private fun alongRoute(points: List<RoutePoint>): List<Double> =
+        points.runningFoldIndexed(0.0) { i, acc, p -> if (i == 0) acc else acc + RouteFollower.meters(points[i - 1], p) }
+            .drop(1)
+
+    private const val GRADE_SPAN_M = 30.0
+    private const val SLOPE_GRADE = 0.03
+
     private fun smooth(values: List<Double>): List<Double> = values.indices.map { i ->
         val from = (i - SMOOTHING_WINDOW / 2).coerceAtLeast(0)
         val to = (i + SMOOTHING_WINDOW / 2).coerceAtMost(values.lastIndex)
         values.subList(from, to + 1).average()
     }
 }
+
+enum class Slope { UP, DOWN, FLAT }
 
 /** Calories from distance and body weight: the energy cost per kg per km barely depends on pace. */
 object RunCalories {

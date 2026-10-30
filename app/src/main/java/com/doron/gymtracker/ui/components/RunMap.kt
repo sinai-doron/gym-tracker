@@ -20,7 +20,10 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.doron.gymtracker.data.Elevation
 import com.doron.gymtracker.data.LocationPoint
+import com.doron.gymtracker.data.RouteFollower
+import com.doron.gymtracker.data.Slope
 import com.doron.gymtracker.domain.model.RoutePoint
 import com.doron.gymtracker.ui.theme.Purple
 import org.maplibre.android.MapLibre
@@ -62,7 +65,11 @@ fun RunMap(
     plannedRoute: List<RoutePoint> = emptyList(),
     dotColor: Color = Purple,
     follow: Boolean = true,
-    interactive: Boolean = false
+    interactive: Boolean = false,
+    /** Color [plannedRoute] by slope, where it has altitudes; see [SlopeColors]. */
+    slopeColors: Boolean = false,
+    /** Mark where [plannedRoute] starts and finishes. */
+    showEnds: Boolean = false
 ) {
     val context = LocalContext.current
     val mapView = remember {
@@ -139,6 +146,16 @@ fun RunMap(
                 } else null
             )
         )
+        val slopes = if (slopeColors) Elevation.slopes(plannedRoute) else emptyList()
+        s.getSourceAs<GeoJsonSource>(SLOPES_SOURCE)?.setGeoJson(
+            FeatureCollection.fromFeatures(slopes.map { (slope, points) ->
+                Feature.fromGeometry(LineString.fromLngLats(points.map { Point.fromLngLat(it.longitude, it.latitude) }))
+                    .apply { addStringProperty("slope", slope.name) }
+            })
+        )
+        s.getSourceAs<GeoJsonSource>(ENDS_SOURCE)?.setGeoJson(
+            FeatureCollection.fromFeatures(if (showEnds && plannedRoute.size >= 2) routeEnds(plannedRoute) else emptyList())
+        )
         s.getSourceAs<GeoJsonSource>(DOT_SOURCE)?.setGeoJson(
             features(position?.let { Feature.fromGeometry(it.toPoint()) })
         )
@@ -171,6 +188,26 @@ fun RunMap(
     AndroidView(factory = { mapView }, modifier = modifier)
 }
 
+/** The colors a slope-colored route is drawn in, for a legend next to the map. */
+object SlopeColors {
+    val up = Color(0xFFF08C00)
+    val down = Color(0xFF12B886)
+    val flat = Purple
+    val start = Color(0xFF2F9E44)
+    val finish = Color(0xFF343A40)
+}
+
+/** Start and finish dots; a loop that ends where it began gets just the start. */
+private fun routeEnds(route: List<RoutePoint>): List<Feature> {
+    fun dot(p: RoutePoint, end: String) =
+        Feature.fromGeometry(Point.fromLngLat(p.longitude, p.latitude)).apply { addStringProperty("end", end) }
+    val loop = RouteFollower.meters(route.first(), route.last()) < LOOP_M
+    return listOfNotNull(if (loop) null else dot(route.last(), "finish"), dot(route.first(), "start"))
+}
+
+private const val LOOP_M = 50.0
+private const val SLOPES_SOURCE = "run-slopes"
+private const val ENDS_SOURCE = "run-ends"
 private const val ROUTE_SOURCE = "run-route"
 private const val PLANNED_SOURCE = "run-planned"
 private const val DOT_SOURCE = "run-position"
@@ -194,6 +231,8 @@ private fun LocationPoint.toPoint(): Point = Point.fromLngLat(longitude, latitud
 /** Adds the route line, accuracy ring and position dot on top of the base map. */
 private fun addRunLayers(style: Style) {
     style.addSource(GeoJsonSource(PLANNED_SOURCE))
+    style.addSource(GeoJsonSource(SLOPES_SOURCE))
+    style.addSource(GeoJsonSource(ENDS_SOURCE))
     style.addSource(GeoJsonSource(ROUTE_SOURCE))
     style.addSource(GeoJsonSource(ACCURACY_SOURCE))
     style.addSource(GeoJsonSource(DOT_SOURCE))
@@ -210,6 +249,34 @@ private fun addRunLayers(style: Style) {
             PropertyFactory.lineWidth(widthByZoom(5f, 12f)),
             PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
             PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND)
+        )
+    )
+    // The planned route again, by slope, over the plain one (drawn only when asked for)
+    style.addLayer(
+        LineLayer("run-slopes", SLOPES_SOURCE).withProperties(
+            PropertyFactory.lineColor(
+                Expression.match(
+                    Expression.get("slope"), Expression.color(SlopeColors.flat.toArgb()),
+                    Expression.stop(Slope.UP.name, Expression.color(SlopeColors.up.toArgb())),
+                    Expression.stop(Slope.DOWN.name, Expression.color(SlopeColors.down.toArgb()))
+                )
+            ),
+            PropertyFactory.lineWidth(widthByZoom(4f, 9f)),
+            PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
+            PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND)
+        )
+    )
+    style.addLayer(
+        CircleLayer("run-ends", ENDS_SOURCE).withProperties(
+            PropertyFactory.circleColor(
+                Expression.match(
+                    Expression.get("end"), Expression.color(SlopeColors.start.toArgb()),
+                    Expression.stop("finish", Expression.color(SlopeColors.finish.toArgb()))
+                )
+            ),
+            PropertyFactory.circleRadius(7f),
+            PropertyFactory.circleStrokeColor(android.graphics.Color.WHITE),
+            PropertyFactory.circleStrokeWidth(3f)
         )
     )
     style.addLayer(

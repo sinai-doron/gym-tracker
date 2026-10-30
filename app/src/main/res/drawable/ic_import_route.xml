@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A route file: a page with a folded corner and a route drawn on it, start dot to finish dot -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Page -->
+    <path
+        android:pathData="M14,2.5H6.5A2,2 0,0 0,4.5 4.5V19.5A2,2 0,0 0,6.5 21.5H17.5A2,2 0,0 0,19.5 19.5V8Z"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="1.8"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000" />
+    <!-- Folded corner -->
+    <path
+        android:pathData="M14,2.5V8H19.5"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="1.8"
+        android:strokeLineJoin="round"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+    <!-- Route -->
+    <path
+        android:pathData="M8.5,17.5C8.5,14.5 12,15.5 12,13S15.5,11.5 15.5,11"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+    <!-- Start and finish -->
+    <path
+        android:pathData="M8.5,17.5m-1.6,0a1.6,1.6 0,1 1,3.2 0a1.6,1.6 0,1 1,-3.2 0"
+        android:fillColor="#FF000000" />
+    <path
+        android:pathData="M15.5,11m-1.6,0a1.6,1.6 0,1 1,3.2 0a1.6,1.6 0,1 1,-3.2 0"
+        android:fillColor="#FF000000" />
+</vector>

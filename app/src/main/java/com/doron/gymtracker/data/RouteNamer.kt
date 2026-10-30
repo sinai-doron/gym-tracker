@@ -34,6 +34,33 @@ class RouteNamer @Inject constructor(
             ?: geocoderName(start)
 
     /**
+     * The street at [p] ("Berners Street", "הרצל"), or null offline. Remembered for the app's
+     * lifetime, so opening a route again doesn't ask OpenStreetMap again.
+     */
+    suspend fun streetName(p: RoutePoint): String? {
+        val key = "%.4f,%.4f".format(Locale.US, p.latitude, p.longitude)
+        streets[key]?.let { return it }
+        val name = withContext(Dispatchers.IO) {
+            runCatching {
+                // Spread back-to-back lookups (start then finish) to OpenStreetMap's one a second
+                synchronized(this@RouteNamer) {
+                    val wait = lastRequestAt + NOMINATIM_GAP_MS - System.currentTimeMillis()
+                    if (wait > 0) Thread.sleep(wait)
+                    lastRequestAt = System.currentTimeMillis()
+                }
+                val address = reverse(p, ZOOM_STREET, decimals = 4) ?: return@runCatching null
+                listOf("road", "pedestrian", "footway", "path", "neighbourhood", "suburb")
+                    .firstNotNullOfOrNull { key -> address.optString(key).takeIf { it.isNotBlank() } }
+            }.onFailure { Log.w(TAG, "Street lookup failed", it) }.getOrNull()
+        }
+        name?.let { streets[key] = it }
+        return name
+    }
+
+    private val streets = java.util.concurrent.ConcurrentHashMap<String, String>()
+    @Volatile private var lastRequestAt = 0L
+
+    /**
      * A big city's name if the start is in one (a route in Westminster is "לונדון"), else the
      * town or village (Zichron Ya'akov rather than its district).
      */
@@ -47,10 +74,10 @@ class RouteNamer @Inject constructor(
             .firstNotNullOfOrNull { key -> address.optString(key).takeIf { it.isNotBlank() } }
     }
 
-    private fun reverse(p: RoutePoint, zoom: Int): JSONObject? {
-        // ~100 m is plenty to name a place
-        val lat = "%.3f".format(Locale.US, p.latitude)
-        val lon = "%.3f".format(Locale.US, p.longitude)
+    private fun reverse(p: RoutePoint, zoom: Int, decimals: Int = 3): JSONObject? {
+        // ~100 m is plenty to name a place (a street needs ~10 m)
+        val lat = "%.${decimals}f".format(Locale.US, p.latitude)
+        val lon = "%.${decimals}f".format(Locale.US, p.longitude)
         val url = URL("https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=$lat&lon=$lon&zoom=$zoom&accept-language=he")
         val connection = url.openConnection() as HttpURLConnection
         return try {
@@ -95,6 +122,7 @@ class RouteNamer @Inject constructor(
         const val MAX_RESULTS = 5
         const val ZOOM_CITY = 8
         const val ZOOM_TOWN = 10
+        const val ZOOM_STREET = 17
         const val NOMINATIM_GAP_MS = 1_100L
         const val HTTP_TIMEOUT_MS = 8_000
     }

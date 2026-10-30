@@ -3,6 +3,15 @@ package com.doron.gymtracker.ui.screens.routes
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
+import com.doron.gymtracker.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,9 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -31,10 +38,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -61,20 +66,18 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/** Saved routes: each with a little map, renamed, deleted or run from here; GPX files are imported here. */
+/** Saved routes, each with a little map, opening its details; GPX files are imported here. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RoutesScreen(
     viewModel: RoutesViewModel,
     onBack: () -> Unit,
-    onRunRoute: () -> Unit
+    onOpenRoute: (Long) -> Unit
 ) {
     val routes by viewModel.routes.collectAsState()
     val busy by viewModel.busy.collectAsState()
     val event by viewModel.event.collectAsState()
     val context = LocalContext.current
-    var renaming by remember { mutableStateOf<SavedRoute?>(null) }
-    var deleting by remember { mutableStateOf<SavedRoute?>(null) }
     var importing by remember { mutableStateOf(false) }
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.load() }
@@ -101,13 +104,19 @@ fun RoutesScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "חזרה")
                     }
-                },
-                actions = {
-                    TextButton(onClick = { importing = true }, enabled = !busy) {
-                        Text("ייבוא GPX", color = Purple)
-                    }
                 }
             )
+        },
+        floatingActionButton = {
+            if (!busy && routes != null) {
+                ExtendedFloatingActionButton(
+                    onClick = { importing = true },
+                    containerColor = Purple,
+                    contentColor = Color.White,
+                    icon = { Icon(painterResource(R.drawable.ic_import_route), contentDescription = null) },
+                    text = { Text("ייבוא מסלול", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)) }
+                )
+            }
         }
     ) { padding ->
         val list = routes
@@ -115,7 +124,13 @@ fun RoutesScreen(
             list == null || busy -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = Purple)
             }
-            list.isEmpty() -> Box(Modifier.fillMaxSize().padding(padding).padding(32.dp), contentAlignment = Alignment.Center) {
+            list.isEmpty() -> Column(
+                Modifier.fillMaxSize().padding(padding).padding(32.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                ImportBadge(size = 96.dp)
+                Spacer(Modifier.height(20.dp))
                 Text(
                     "אין עדיין מסלולים.\nשמרו ריצה כמסלול מההיסטוריה, או ייבאו קובץ GPX.",
                     textAlign = TextAlign.Center,
@@ -133,33 +148,12 @@ fun RoutesScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 list.forEach { route ->
-                    RouteCard(
-                        route,
-                        onRename = { renaming = route },
-                        onDelete = { deleting = route },
-                        onRun = { viewModel.runRoute(route.id, onRunRoute) }
-                    )
+                    RouteCard(route, onClick = { onOpenRoute(route.id) })
                 }
-                Spacer(Modifier.height(8.dp))
+                // Room for the import button over the last card
+                Spacer(Modifier.height(80.dp))
             }
         }
-    }
-
-    renaming?.let { route ->
-        var name by remember(route.id) { mutableStateOf(route.name) }
-        AlertDialog(
-            onDismissRequest = { renaming = null },
-            title = { Text("שם המסלול") },
-            text = {
-                OutlinedTextField(value = name, onValueChange = { name = it.take(40) }, singleLine = true)
-            },
-            confirmButton = {
-                TextButton(onClick = { viewModel.rename(route.id, name); renaming = null }, enabled = name.isNotBlank()) {
-                    Text("שמור", color = Purple)
-                }
-            },
-            dismissButton = { TextButton(onClick = { renaming = null }) { Text("ביטול") } }
-        )
     }
 
     // A step of our own before the system file picker, which has no cancel button
@@ -169,6 +163,8 @@ fun RoutesScreen(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                ImportBadge(size = 72.dp)
+                Spacer(Modifier.height(16.dp))
                 Text("ייבוא מסלול", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold))
                 Spacer(Modifier.height(8.dp))
                 Text(
@@ -187,7 +183,9 @@ fun RoutesScreen(
                     shape = MaterialTheme.shapes.large,
                     modifier = Modifier.fillMaxWidth().height(52.dp)
                 ) {
-                    Text("📂 בחירת קובץ", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold))
+                    Icon(painterResource(R.drawable.ic_import_route), contentDescription = null, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("בחירת קובץ GPX", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold))
                 }
                 Spacer(Modifier.height(8.dp))
                 OutlinedButton(
@@ -207,27 +205,30 @@ fun RoutesScreen(
             }
         }
     }
+}
 
-    deleting?.let { route ->
-        AlertDialog(
-            onDismissRequest = { deleting = null },
-            title = { Text("למחוק את \"${route.name}\"?") },
-            text = { Text("הריצות שנעשו במסלול נשארות בהיסטוריה.") },
-            confirmButton = {
-                TextButton(onClick = { viewModel.delete(route.id); deleting = null }) {
-                    Text("מחק", color = MaterialTheme.colorScheme.error)
-                }
-            },
-            dismissButton = { TextButton(onClick = { deleting = null }) { Text("ביטול") } }
+/** The import icon in a soft purple circle. */
+@Composable
+private fun ImportBadge(size: Dp) {
+    Box(
+        modifier = Modifier.size(size).background(Purple.copy(alpha = 0.12f), CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            painterResource(R.drawable.ic_import_route),
+            contentDescription = null,
+            tint = Purple,
+            modifier = Modifier.size(size * 0.5f)
         )
     }
 }
 
 @Composable
-private fun RouteCard(route: SavedRoute, onRename: () -> Unit, onDelete: () -> Unit, onRun: () -> Unit) {
+private fun RouteCard(route: SavedRoute, onClick: () -> Unit) {
     val dateFormat = remember { SimpleDateFormat("d.M.yy", Locale.getDefault()) }
     val asRun = remember(route.id) { route.points.map { LocationPoint(it.latitude, it.longitude, null, null, null, 0) } }
     Card(
+        onClick = onClick,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(24.dp),
@@ -242,7 +243,7 @@ private fun RouteCard(route: SavedRoute, onRename: () -> Unit, onDelete: () -> U
             follow = false
         )
         Row(
-            modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp, top = 8.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
@@ -258,18 +259,11 @@ private fun RouteCard(route: SavedRoute, onRename: () -> Unit, onDelete: () -> U
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            IconButton(onClick = onRename) { Icon(Icons.Default.Edit, contentDescription = "שינוי שם") }
-            IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, contentDescription = "מחיקה", tint = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-        Button(
-            onClick = onRun,
-            colors = ButtonDefaults.buttonColors(containerColor = Purple),
-            shape = MaterialTheme.shapes.large,
-            modifier = Modifier.fillMaxWidth().padding(16.dp).height(48.dp)
-        ) {
-            Text("🏃 רוץ במסלול", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold))
+            Icon(
+                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

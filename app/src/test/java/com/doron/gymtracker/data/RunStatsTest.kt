@@ -31,6 +31,41 @@ class RunStatsTest {
         assertEquals(0.0, Elevation.gain(route(noisy)), 0.0)
     }
 
+    // Planned-route points 10 m apart heading north
+    private fun planned(altitudes: List<Double?>) = altitudes.mapIndexed { i, alt ->
+        com.doron.gymtracker.domain.model.RoutePoint(32.0 + i * 10 / 111_195.0, 34.8, alt)
+    }
+
+    @Test
+    fun `descent mirrors the climb`() {
+        val upThenDown = (0..30).map { it.toDouble() } + (29 downTo 10).map { it.toDouble() }
+        assertEquals(30.0, Elevation.climb(upThenDown), 2.5)
+        assertEquals(20.0, Elevation.descent(upThenDown), 2.5)
+    }
+
+    @Test
+    fun `route profile needs every altitude`() {
+        assertTrue(Elevation.routeProfile(planned(listOf(10.0, null, 12.0))).isEmpty())
+        val profile = Elevation.routeProfile(planned(listOf(10.0, 10.0, 10.0)))
+        assertEquals(listOf(0.0, 10.0, 20.0), profile.map { Math.round(it.meters).toDouble() })
+    }
+
+    @Test
+    fun `slopes split a hill into up, flat and down`() {
+        // 300 m up at 10%, 300 m flat, 300 m down at 10%
+        val alts = (0..30).map { it.toDouble() } + List(30) { 30.0 } + (29 downTo 0).map { it.toDouble() }
+        val slopes = Elevation.slopes(planned(alts)).map { it.first }
+        assertEquals(listOf(Slope.UP, Slope.FLAT, Slope.DOWN), slopes)
+        // Joined runs share their end points, so the line has no gaps
+        val runs = Elevation.slopes(planned(alts))
+        runs.zipWithNext().forEach { (a, b) -> assertEquals(a.second.last(), b.second.first()) }
+    }
+
+    @Test
+    fun `no slopes without altitudes`() {
+        assertTrue(Elevation.slopes(planned(listOf(null, null, null))).isEmpty())
+    }
+
     @Test
     fun `profile follows the distance`() {
         val profile = Elevation.profile(route((0..10).map { it.toDouble() }))

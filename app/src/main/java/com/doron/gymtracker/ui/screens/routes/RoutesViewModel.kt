@@ -6,16 +6,13 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.doron.gymtracker.data.Gpx
-import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.data.repository.RouteRepository
-import com.doron.gymtracker.domain.model.RunTargetType
 import com.doron.gymtracker.domain.model.SavedRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -23,7 +20,6 @@ import javax.inject.Inject
 @HiltViewModel
 class RoutesViewModel @Inject constructor(
     private val routeRepo: RouteRepository,
-    private val settingsPrefs: SettingsPrefs,
     private val app: Application
 ) : ViewModel() {
 
@@ -63,32 +59,6 @@ class RoutesViewModel @Inject constructor(
                 load()
             }
             _busy.value = false
-        }
-    }
-
-    fun rename(id: Long, name: String) {
-        if (name.isBlank()) return
-        viewModelScope.launch {
-            routeRepo.rename(id, name)
-            load()
-        }
-    }
-
-    fun delete(id: Long) {
-        viewModelScope.launch {
-            routeRepo.delete(id)
-            // Don't leave the next run aimed at a route that's gone
-            val target = settingsPrefs.runTarget.first()
-            if (target.routeId == id) settingsPrefs.setRunTarget(target.copy(type = RunTargetType.NONE, routeId = null))
-            load()
-        }
-    }
-
-    /** Makes [id] the next run's target. */
-    fun runRoute(id: Long, onReady: () -> Unit) {
-        viewModelScope.launch {
-            settingsPrefs.setRunTarget(settingsPrefs.runTarget.first().copy(type = RunTargetType.ROUTE, routeId = id))
-            onReady()
         }
     }
 
