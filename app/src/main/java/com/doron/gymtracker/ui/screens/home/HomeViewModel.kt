@@ -197,9 +197,15 @@ class HomeViewModel @Inject constructor(
             .mapNotNull { s -> sessionRepo.getRunDetails(s.id)?.steps?.let { s to it.toLong() } }
             .groupBy({ (s, _) -> java.time.Instant.ofEpochMilli(s.startedAt).atZone(zone).toLocalDate() }) { it.second }
             .mapValues { it.value.sum() }
+        // Nothing on the phone writes steps to Health Connect: an empty chart says nothing
+        val todaySteps = _uiState.value.todaySteps.toLong()
+        if (daily.values.all { it == 0L } && workout.isEmpty() && todaySteps == 0L) {
+            _uiState.update { it.copy(stepsWeek = null) }
+            return
+        }
         val week = StepsWeek.build(
             weekStart, today, daily, workout,
-            todaySteps = _uiState.value.todaySteps.toLong(),
+            todaySteps = todaySteps,
             goal = settingsPrefs.stepGoal.first()
         )
         _uiState.update { it.copy(stepsWeek = week) }

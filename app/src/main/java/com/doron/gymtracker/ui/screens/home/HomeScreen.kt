@@ -321,17 +321,16 @@ fun HomeScreen(
             // Achievements: the distance badges for now, more kinds later
             if (badges.isNotEmpty()) {
                 Spacer(Modifier.height(12.dp))
-                Text(
-                    "הישגים",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
-                )
-                BadgesRow(
-                    badges,
+                Column(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(24.dp))
-                        .padding(vertical = 16.dp)
-                )
+                        .padding(16.dp)
+                ) {
+                    CardTitle("🏅 הישגים", trailing = "${badges.count { it.isEarned }} מתוך ${badges.size}")
+                    Spacer(Modifier.height(12.dp))
+                    BadgesRow(badges)
+                }
             }
 
             Spacer(Modifier.height(16.dp))
@@ -539,9 +538,11 @@ private fun WeeklyStatsRow(stats: WeeklyStats) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
-            .padding(vertical = 14.dp, horizontal = 8.dp)
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(24.dp))
+            .padding(vertical = 16.dp, horizontal = 8.dp)
     ) {
+        CardTitle("📅 השבוע", Modifier.padding(horizontal = 8.dp), trailing = weekRange(stats.days))
+        Spacer(Modifier.height(12.dp))
         if (stats.days.isNotEmpty()) {
             WeekStrip(stats.days)
             Spacer(Modifier.height(14.dp))
@@ -555,6 +556,19 @@ private fun WeeklyStatsRow(stats: WeeklyStats) {
             WeeklyStatItem("רצף", "${stats.streakDays}", highlight = stats.streakDays >= 3)
         }
     }
+}
+
+/** "25–31 באוקטובר", or across months "29.11–5.12". */
+private fun weekRange(days: List<WeekDay>): String? {
+    val first = days.firstOrNull()?.date ?: return null
+    val last = days.last().date
+    // Isolated left to right, or Hebrew text around it turns "25–31" into "31–25"
+    val range = if (first.month == last.month) "${first.dayOfMonth}–${last.dayOfMonth}"
+    else "${first.dayOfMonth}.${first.monthValue}–${last.dayOfMonth}.${last.monthValue}"
+    val month = if (first.month == last.month) {
+        " ב" + first.month.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale("he"))
+    } else ""
+    return "\u2066$range\u2069$month"
 }
 
 /** Sunday to Saturday (right to left in Hebrew): trained days filled with the workout, today outlined. */

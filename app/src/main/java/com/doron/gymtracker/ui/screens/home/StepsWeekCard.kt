@@ -70,23 +70,15 @@ fun StepsWeekCard(week: StepsWeek, modifier: Modifier = Modifier) {
             .background(surface, RoundedCornerShape(24.dp))
             .padding(16.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                "👣 צעדים השבוע",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                modifier = Modifier.weight(1f)
-            )
-            val day = selected?.let { week.days[it] }
-            Text(
-                if (day != null) {
-                    val name = day.date.dayOfWeek.getDisplayName(DateTextStyle.FULL, Locale("he"))
-                    val ofWorkout = if (day.workoutSteps > 0) " (%,d באימון)".format(day.workoutSteps) else ""
-                    "$name · %,d$ofWorkout".format(day.steps)
-                } else "ממוצע %,d".format(week.average),
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
+        val day = selected?.let { week.days[it] }
+        CardTitle(
+            "👣 צעדים השבוע",
+            trailing = if (day != null) {
+                val name = day.date.dayOfWeek.getDisplayName(DateTextStyle.FULL, Locale("he"))
+                val ofWorkout = if (day.workoutSteps > 0) " (%,d באימון)".format(day.workoutSteps) else ""
+                "$name · %,d$ofWorkout".format(day.steps)
+            } else "ממוצע %,d".format(week.average)
+        )
         Spacer(Modifier.height(12.dp))
 
         Canvas(
@@ -173,6 +165,25 @@ fun StepsWeekCard(week: StepsWeek, modifier: Modifier = Modifier) {
             LegendDot(Purple, "ביעד")
             LegendDot(belowGoal, "מתחת ליעד")
             if (hasWorkouts) LegendDot(SuccessGreen, "ריצה / הליכה")
+        }
+    }
+}
+
+/** The title every home card with one shares: bold at the start, an optional summary at the end. */
+@Composable
+fun CardTitle(title: String, modifier: Modifier = Modifier, trailing: String? = null) {
+    Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            title,
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+            modifier = Modifier.weight(1f)
+        )
+        trailing?.let {
+            Text(
+                it,
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onSurface
+            )
         }
     }
 }
