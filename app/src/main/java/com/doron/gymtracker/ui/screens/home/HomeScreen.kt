@@ -7,6 +7,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -73,6 +76,7 @@ import com.doron.gymtracker.ui.theme.Purple
 import com.doron.gymtracker.ui.theme.SuccessGreen
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(
     onSessionStart: (sessionId: Long, workoutId: String) -> Unit,
@@ -90,6 +94,7 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     var pendingCardioType by remember { mutableStateOf<String?>(null) }
+    val stepsCard = remember { BringIntoViewRequester() }
 
     // Step counting needs ACTIVITY_RECOGNITION (sensor) or Health Connect (full-day steps)
     val activityPermissionLauncher = rememberLauncherForActivityResult(
@@ -181,11 +186,17 @@ fun HomeScreen(
                         )
                     }
                 } else if (state.stepsAvailable) {
-                    Text(
-                        "👣 %,d".format(state.todaySteps),
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                        color = Purple
-                    )
+                    // Opens the week's steps, further down
+                    TextButton(
+                        onClick = { scope.launch { stepsCard.bringIntoView() } },
+                        enabled = state.stepsWeek != null
+                    ) {
+                        Text(
+                            "👣 %,d".format(state.todaySteps),
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                            color = Purple
+                        )
+                    }
                 }
                 IconButton(onClick = onSettingsClick) {
                     Icon(
@@ -235,6 +246,11 @@ fun HomeScreen(
 
             // Weekly stats
             WeeklyStatsRow(state.weeklyStats)
+
+            state.stepsWeek?.let { week ->
+                Spacer(Modifier.height(12.dp))
+                StepsWeekCard(week, Modifier.bringIntoViewRequester(stepsCard))
+            }
 
             Spacer(Modifier.height(12.dp))
 

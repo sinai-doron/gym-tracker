@@ -22,6 +22,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
 import org.junit.Test
 
@@ -54,7 +55,8 @@ class HomeViewModelTest {
         val getWorkoutPreview = mockk<GetWorkoutPreviewUseCase>()
         coEvery { getWorkoutPreview(any(), any()) } answers { WorkoutPreview(firstArg(), emptyList(), null, null) }
         viewModel = HomeViewModel(getNextWorkout, startSession, workoutRepo, sessionRepo, stepCounter, healthConnect,
-            getWorkoutPreview, mockk(relaxed = true), mockk(relaxed = true), mockk(relaxed = true))
+            getWorkoutPreview, mockk(relaxed = true), mockk(relaxed = true), mockk(relaxed = true),
+            mockk(relaxed = true) { every { stepGoal } returns flowOf(10_000) })
     }
 
     @After

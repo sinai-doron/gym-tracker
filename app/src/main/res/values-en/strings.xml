@@ -95,6 +95,9 @@
     <string name="move_up">Move up</string>
     <string name="move_down">Move down</string>
     <string name="edit_plan">Edit</string>
+    <string name="steps_settings">Steps</string>
+    <string name="step_goal">Daily step goal</string>
+    <string name="step_goal_hint">Days you reach it are filled in the weekly steps chart</string>
     <string name="running_settings">Running</string>
     <string name="lap_length">Lap length</string>
     <string name="laps_off">Off</string>

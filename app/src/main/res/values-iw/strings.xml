@@ -95,6 +95,9 @@
     <string name="move_up">הזז למעלה</string>
     <string name="move_down">הזז למטה</string>
     <string name="edit_plan">ערוך</string>
+    <string name="steps_settings">צעדים</string>
+    <string name="step_goal">יעד צעדים יומי</string>
+    <string name="step_goal_hint">הימים שבהם הגעת ליעד מסומנים בגרף הצעדים השבועי</string>
     <string name="running_settings">ריצה</string>
     <string name="lap_length">אורך הקפה</string>
     <string name="laps_off">כבוי</string>

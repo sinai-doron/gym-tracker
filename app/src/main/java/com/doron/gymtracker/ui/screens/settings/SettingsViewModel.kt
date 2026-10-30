@@ -83,6 +83,13 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { prefs.setLapDistanceM(meters) }
     }
 
+    val stepGoal: StateFlow<Int> = prefs.stepGoal
+        .stateIn(viewModelScope, SharingStarted.Eagerly, SettingsPrefs.DEFAULT_STEP_GOAL)
+
+    fun setStepGoal(steps: Int) {
+        viewModelScope.launch { prefs.setStepGoal(steps) }
+    }
+
     fun setLanguage(code: String) {
         viewModelScope.launch { prefs.setLanguageCode(code) }
     }

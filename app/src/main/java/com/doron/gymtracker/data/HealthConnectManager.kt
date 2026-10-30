@@ -14,6 +14,7 @@ import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.metadata.Device
 import androidx.health.connect.client.records.metadata.Metadata
+import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.health.connect.client.units.Energy
@@ -21,6 +22,7 @@ import androidx.health.connect.client.units.Length
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.Instant
 import java.time.LocalDate
+import java.time.Period
 import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -161,6 +163,27 @@ class HealthConnectManager @Inject constructor(
         } catch (e: Exception) {
             Log.w("HealthConnect", "Failed to read steps", e)
             0
+        }
+    }
+
+    /**
+     * Steps on each of [days] days from [from], de-duplicated across apps like today's count.
+     * Days without any data are missing; null when steps can't be read at all.
+     */
+    suspend fun readDailySteps(from: LocalDate, days: Int): Map<LocalDate, Long>? {
+        val c = client ?: return null
+        if (HealthPermission.getReadPermission(StepsRecord::class) !in granted()) return null
+        return try {
+            c.aggregateGroupByPeriod(
+                AggregateGroupByPeriodRequest(
+                    metrics = setOf(StepsRecord.COUNT_TOTAL),
+                    timeRangeFilter = TimeRangeFilter.between(from.atStartOfDay(), from.plusDays(days.toLong()).atStartOfDay()),
+                    timeRangeSlicer = Period.ofDays(1)
+                )
+            ).associate { it.startTime.toLocalDate() to (it.result[StepsRecord.COUNT_TOTAL] ?: 0L) }
+        } catch (e: Exception) {
+            Log.w("HealthConnect", "Failed to read daily steps", e)
+            null
         }
     }
 }

@@ -80,6 +80,7 @@ fun SettingsScreen(
     val currentLanguage by viewModel.languageCode.collectAsState()
     val healthConnectGranted by viewModel.healthConnectGranted.collectAsState()
     val lapDistanceM by viewModel.lapDistanceM.collectAsState()
+    val stepGoal by viewModel.stepGoal.collectAsState()
     val bodyWeightKg by viewModel.bodyWeightKg.collectAsState()
     val audioFeedback by viewModel.audioFeedback.collectAsState()
     val context = LocalContext.current
@@ -201,6 +202,25 @@ fun SettingsScreen(
                                 )
                             }
                         }
+                    }
+                }
+
+                Spacer(Modifier.height(24.dp))
+                Text(stringResource(R.string.steps_settings), style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(12.dp))
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        StepGoalDropdown(selected = stepGoal, onSelect = viewModel::setStepGoal)
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            stringResource(R.string.step_goal_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
 
@@ -340,6 +360,37 @@ private fun LapLengthDropdown(selectedM: Int, onSelect: (Int) -> Unit) {
                     text = { Text(lapLengthLabel(meters)) },
                     onClick = {
                         onSelect(meters)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun StepGoalDropdown(selected: Int, onSelect: (Int) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        OutlinedTextField(
+            value = "%,d".format(selected),
+            onValueChange = {},
+            readOnly = true,
+            singleLine = true,
+            label = { Text(stringResource(R.string.step_goal)) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            shape = MaterialTheme.shapes.large,
+            modifier = Modifier
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                .fillMaxWidth()
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            SettingsPrefs.STEP_GOAL_OPTIONS.forEach { steps ->
+                DropdownMenuItem(
+                    text = { Text("%,d".format(steps)) },
+                    onClick = {
+                        onSelect(steps)
                         expanded = false
                     }
                 )

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.doron.gymtracker.data.HealthConnectManager
 import com.doron.gymtracker.data.StepCounterManager
 import com.doron.gymtracker.data.WeatherRepository
+import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.model.Session
@@ -14,20 +15,21 @@ import com.doron.gymtracker.domain.model.WorkoutPreview
 import com.doron.gymtracker.domain.usecase.CloseStaleSessionsUseCase
 import com.doron.gymtracker.domain.usecase.GetNextWorkoutUseCase
 import com.doron.gymtracker.domain.usecase.GetProgramStatusUseCase
-import com.doron.gymtracker.domain.usecase.ProgramStatus
 import com.doron.gymtracker.domain.usecase.GetWorkoutPreviewUseCase
+import com.doron.gymtracker.domain.usecase.ProgramStatus
 import com.doron.gymtracker.domain.usecase.StartSessionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.TemporalAdjusters
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 data class WeeklyStats(
     val sessionsCount: Int = 0,
@@ -57,7 +59,9 @@ data class HomeUiState(
     val openSession: Session? = null,
     val openSessionWorkout: Workout? = null,
     val programStatus: ProgramStatus? = null,
-    val weeklyStats: WeeklyStats = WeeklyStats()
+    val weeklyStats: WeeklyStats = WeeklyStats(),
+    /** This week's steps by day; null when Health Connect's steps can't be read. */
+    val stepsWeek: StepsWeek? = null
 )
 
 @HiltViewModel
@@ -71,7 +75,8 @@ class HomeViewModel @Inject constructor(
     private val getWorkoutPreview: GetWorkoutPreviewUseCase,
     private val closeStaleSessions: CloseStaleSessionsUseCase,
     private val weatherRepo: WeatherRepository,
-    private val getProgramStatus: GetProgramStatusUseCase
+    private val getProgramStatus: GetProgramStatusUseCase,
+    private val settingsPrefs: SettingsPrefs
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -181,6 +186,23 @@ class HomeViewModel @Inject constructor(
                 days = days
             ))
         }
+        loadStepsWeek(weekStart, today, sessions)
+    }
+
+    private suspend fun loadStepsWeek(weekStart: LocalDate, today: LocalDate, weekSessions: List<Session>) {
+        // Last week too, to compare with
+        val daily = healthConnect.readDailySteps(weekStart.minusDays(7), 14) ?: return
+        val zone = ZoneId.systemDefault()
+        val workout = weekSessions.filter { it.type != "GYM" }
+            .mapNotNull { s -> sessionRepo.getRunDetails(s.id)?.steps?.let { s to it.toLong() } }
+            .groupBy({ (s, _) -> java.time.Instant.ofEpochMilli(s.startedAt).atZone(zone).toLocalDate() }) { it.second }
+            .mapValues { it.value.sum() }
+        val week = StepsWeek.build(
+            weekStart, today, daily, workout,
+            todaySteps = _uiState.value.todaySteps.toLong(),
+            goal = settingsPrefs.stepGoal.first()
+        )
+        _uiState.update { it.copy(stepsWeek = week) }
     }
 }
 
