@@ -18,6 +18,7 @@ import com.doron.gymtracker.data.db.entities.LocationLogEntity
 import com.doron.gymtracker.data.db.entities.RouteEntity
 import com.doron.gymtracker.data.db.entities.RoutePointEntity
 import com.doron.gymtracker.data.db.entities.RunDetailsEntity
+import com.doron.gymtracker.data.db.entities.RunPauseEntity
 import com.doron.gymtracker.data.db.entities.SessionEntity
 import com.doron.gymtracker.data.db.entities.SetRecordEntity
 import com.doron.gymtracker.data.db.entities.TrackLogEntity
@@ -34,9 +35,10 @@ import com.doron.gymtracker.data.db.entities.WorkoutEntity
         LocationLogEntity::class,
         RunDetailsEntity::class,
         RouteEntity::class,
-        RoutePointEntity::class
+        RoutePointEntity::class,
+        RunPauseEntity::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = false
 )
 abstract class GymDatabase : RoomDatabase() {
@@ -163,6 +165,19 @@ abstract class GymDatabase : RoomDatabase() {
                     )
                 """.trimIndent())
                 database.execSQL("CREATE INDEX IF NOT EXISTS `index_route_points_routeId` ON `route_points` (`routeId`)")
+            }
+        }
+
+        val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `run_pauses` (
+                        `sessionId` INTEGER NOT NULL,
+                        `startedAt` INTEGER NOT NULL,
+                        `endedAt` INTEGER,
+                        PRIMARY KEY(`sessionId`, `startedAt`)
+                    )
+                """.trimIndent())
             }
         }
     }

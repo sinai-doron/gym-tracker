@@ -42,11 +42,11 @@ object Elevation {
     }
 
     /** Smoothed altitude against distance covered, at each fix that counted towards the distance. */
-    fun profile(route: List<LocationPoint>): List<ElevationPoint> {
+    fun profile(route: List<LocationPoint>, pauses: List<Pause> = emptyList()): List<ElevationPoint> {
         val withAltitude = route.filter { it.altitude != null }
         val smoothed = smooth(withAltitude.map { it.altitude!! })
         val altitudeAt = withAltitude.map { it.timestamp }.zip(smoothed).toMap()
-        return RouteDistance.marks(route).mapNotNull { mark ->
+        return RouteDistance.marks(route, pauses).mapNotNull { mark ->
             altitudeAt[mark.timestamp]?.let { ElevationPoint(mark.meters, it) }
         }
     }
@@ -103,6 +103,66 @@ object Elevation {
 }
 
 enum class Slope { UP, DOWN, FLAT }
+
+/** The fastest stretch of a given distance within a run, e.g. the best 5 km inside a 10 km run. */
+object BestEffort {
+    /**
+     * Seconds of moving time for the fastest [meters] anywhere in the run, or null if the run
+     * is shorter. [active] is the moving time (ms) at each of [marks]; the stretch's start is
+     * interpolated between fixes, so it's exactly [meters] long.
+     */
+    fun fastestSecs(marks: List<DistanceMark>, active: List<Long>, meters: Double): Double? {
+        if (marks.size < 2 || marks.last().meters - marks.first().meters < meters) return null
+        var best = Double.MAX_VALUE
+        var from = 0
+        for (to in 1 until marks.size) {
+            val startAt = marks[to].meters - meters
+            if (startAt < marks.first().meters) continue
+            // The fix before or at where the stretch starts
+            while (from + 1 < to && marks[from + 1].meters <= startAt) from++
+            val a = marks[from]
+            val b = marks[from + 1]
+            val f = if (b.meters > a.meters) ((startAt - a.meters) / (b.meters - a.meters)).coerceIn(0.0, 1.0) else 0.0
+            val startMs = active[from] + (active[from + 1] - active[from]) * f
+            best = minOf(best, (active[to] - startMs) / 1000.0)
+        }
+        return best.takeIf { it < Double.MAX_VALUE }
+    }
+}
+
+/** Pace at a distance along a run, for the pace chart. */
+data class PacePoint(val meters: Double, val secsPerKm: Double)
+
+object Pace {
+    private const val WINDOW_M = 300.0
+    private const val STEP_M = 50.0
+    // Slower than this is standing about, and would flatten the rest of the chart
+    private const val SLOWEST_SECS_PER_KM = 20 * 60.0
+
+    /**
+     * Pace over each [WINDOW_M] stretch of the run, every [STEP_M] or so, placed at the
+     * stretch's middle. Timed by [clock], so auto-paused and paused time doesn't count.
+     */
+    fun profile(route: List<LocationPoint>, clock: ActiveClock, pauses: List<Pause> = emptyList()): List<PacePoint> {
+        val marks = RouteDistance.marks(route, pauses)
+        if (marks.size < 2 || marks.last().meters < WINDOW_M) return emptyList()
+        val active = marks.map { clock.activeMs(it.timestamp) }
+        val points = mutableListOf<PacePoint>()
+        var from = 0
+        var lastAt = Double.NEGATIVE_INFINITY
+        for (to in marks.indices) {
+            // The shortest stretch ending here that's still a whole window
+            while (from + 1 < to && marks[to].meters - marks[from + 1].meters >= WINDOW_M) from++
+            val meters = marks[to].meters - marks[from].meters
+            val at = (marks[from].meters + marks[to].meters) / 2
+            if (meters < WINDOW_M || at - lastAt < STEP_M) continue
+            val secs = (active[to] - active[from]) / 1000.0
+            points += PacePoint(at, (secs * 1000 / meters).coerceAtMost(SLOWEST_SECS_PER_KM))
+            lastAt = at
+        }
+        return points
+    }
+}
 
 /** Calories from distance and body weight: the energy cost per kg per km barely depends on pace. */
 object RunCalories {

@@ -53,9 +53,14 @@ data class CardioRun(
     /** How far along the planned route the runner has got. */
     val routeAlongM: Double = 0.0,
     /** Since when the runner has been off the planned route, or null while on it. */
-    val offRouteSince: Long? = null
+    val offRouteSince: Long? = null,
+    /** Pauses the runner asked for; the last is open while paused. */
+    val pauses: List<Pause> = emptyList()
 ) {
-    val clock: ActiveClock get() = ActiveClock(startedAt, moves)
+    val clock: ActiveClock get() = ActiveClock(startedAt, moves, pauses)
+
+    /** Paused by hand: nothing is recorded until resumed. */
+    val isManuallyPaused: Boolean get() = pauses.lastOrNull()?.let { it.endedAt == null } == true
 
     /** 1 once the route is done; null without a route. The last few meters don't need running. */
     val routeProgress: Float?
@@ -112,7 +117,8 @@ class CardioRecorder @Inject constructor(
             val details = sessionRepo.getRunDetails(sessionId)
                 ?: RunDetails(sessionId, settingsPrefs.runTarget.first(), settingsPrefs.lapDistanceM.first())
                     .also { sessionRepo.saveRunDetails(it) }
-            val moves = RouteDistance.marks(saved)
+            val pauses = sessionRepo.getPauses(sessionId)
+            val moves = RouteDistance.marks(saved, pauses)
             val planned = details.target.takeIf { it.type == RunTargetType.ROUTE }?.routeId?.let { routeRepo.get(it) }
             follower = planned?.let { RouteFollower(it.points) }
             // Picking a run back up: replay it, so the follower knows how far along the route it got
@@ -120,12 +126,15 @@ class CardioRecorder @Inject constructor(
                 .filter { it.offMeters <= RouteFollower.ON_ROUTE_M }.maxOfOrNull { it.alongMeters } ?: 0.0
             _run.value = CardioRun(
                 sessionId, session.type, session.startedAt,
-                distanceMeters = RouteDistance.total(saved),
+                distanceMeters = moves.lastOrNull()?.meters ?: 0.0,
                 route = saved,
                 tracks = sessionRepo.getTracksForSession(sessionId),
                 target = details.target,
                 lapMeters = details.lapMeters,
-                laps = Laps.split(session.startedAt, saved, details.lapMeters.toDouble(), ActiveClock(session.startedAt, moves)),
+                laps = Laps.split(
+                    session.startedAt, saved, details.lapMeters.toDouble(),
+                    ActiveClock(session.startedAt, moves, pauses), pauses = pauses
+                ),
                 steps = details.steps,
                 elevationGainM = Elevation.gain(saved),
                 weather = details.weatherCondition?.let { Weather(details.weatherTempC ?: 0, 0, 0, it) },
@@ -133,13 +142,36 @@ class CardioRecorder @Inject constructor(
                 moves = moves,
                 plannedRoute = planned?.points ?: emptyList(),
                 routeLengthM = follower?.lengthMeters ?: 0.0,
-                routeAlongM = routeAlong
+                routeAlongM = routeAlong,
+                pauses = pauses
             )
+            // Paused when the app was killed: pick up measuring afresh on resume
+            if (pauses.lastOrNull()?.let { it.endedAt == null } == true) anchor = null
             if (details.weatherCondition == null) launch { recordWeather(sessionId) }
             launch { countSteps(sessionId) }
             launch { locationTracker.locationUpdates().collect(::onFix) }
             launch { logTracks(sessionId) }
         }
+    }
+
+    /** Pauses the run by hand: the clock stops and fixes are ignored until [resume]. */
+    fun pause() {
+        val run = _run.value ?: return
+        if (run.isManuallyPaused) return
+        val pause = Pause(System.currentTimeMillis())
+        _run.update { it?.copy(pauses = it.pauses + pause) }
+        scope.launch { sessionRepo.savePause(run.sessionId, pause) }
+    }
+
+    /** Carries on after [pause], measuring from wherever the runner now is. */
+    fun resume() {
+        val run = _run.value ?: return
+        val open = run.pauses.lastOrNull()?.takeIf { it.endedAt == null } ?: return
+        val closed = open.copy(endedAt = System.currentTimeMillis())
+        // The way walked while paused isn't distance run: the next fix starts afresh
+        anchor = null
+        _run.update { it?.copy(pauses = it.pauses.dropLast(1) + closed) }
+        scope.launch { sessionRepo.savePause(run.sessionId, closed) }
     }
 
     /** Stops recording and returns the run as it stood. */
@@ -163,13 +195,13 @@ class CardioRecorder @Inject constructor(
         val lastActivity = route.lastOrNull()?.timestamp ?: open.startedAt
         if (now - lastActivity < RESUME_WINDOW_MS) return CardioRun(open.id, open.type, open.startedAt)
         Log.i(TAG, "Closing abandoned run ${open.id}")
-        sessionRepo.finishCardioSession(open.id, RouteDistance.total(route), finishedAt = lastActivity)
+        sessionRepo.finishCardioSession(open.id, RouteDistance.total(route, sessionRepo.getPauses(open.id)), finishedAt = lastActivity)
         return null
     }
 
     private suspend fun onFix(point: LocationPoint) {
         val run = _run.value ?: return
-        if (!RouteDistance.isUsable(point)) return
+        if (!RouteDistance.isUsable(point) || run.isManuallyPaused) return
         sessionRepo.logLocation(run.sessionId, point)
         val from = anchor
         val added = if (from == null) 0.0 else RouteDistance.step(from, point)
@@ -199,7 +231,7 @@ class CardioRecorder @Inject constructor(
                 elevationGainM = if (point.altitude != null) Elevation.gain(route) else it.elevationGainM,
                 // Only recut the laps when this fix could have finished one
                 laps = if (added > 0 && it.lapMeters > 0) {
-                    Laps.split(it.startedAt, route, it.lapMeters.toDouble(), ActiveClock(it.startedAt, moves))
+                    Laps.split(it.startedAt, route, it.lapMeters.toDouble(), ActiveClock(it.startedAt, moves, it.pauses), pauses = it.pauses)
                 } else it.laps
             )
         }

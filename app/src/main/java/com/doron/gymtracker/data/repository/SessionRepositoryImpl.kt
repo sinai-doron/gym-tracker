@@ -1,6 +1,7 @@
 package com.doron.gymtracker.data.repository
 
 import com.doron.gymtracker.data.LocationPoint
+import com.doron.gymtracker.data.Pause
 import com.doron.gymtracker.data.db.dao.ExerciseEntryDao
 import com.doron.gymtracker.data.db.dao.LocationLogDao
 import com.doron.gymtracker.data.db.dao.RunDetailsDao
@@ -10,6 +11,7 @@ import com.doron.gymtracker.data.db.dao.TrackLogDao
 import com.doron.gymtracker.data.db.entities.ExerciseEntryEntity
 import com.doron.gymtracker.data.db.entities.LocationLogEntity
 import com.doron.gymtracker.data.db.entities.RunDetailsEntity
+import com.doron.gymtracker.data.db.entities.RunPauseEntity
 import com.doron.gymtracker.data.db.entities.SessionEntity
 import com.doron.gymtracker.data.db.entities.SetRecordEntity
 import com.doron.gymtracker.data.db.entities.TrackLogEntity
@@ -194,8 +196,15 @@ class SessionRepositoryImpl @Inject constructor(
         trackLogDao.deleteForSession(sessionId)
         locationLogDao.deleteForSession(sessionId)
         runDetailsDao.deleteForSession(sessionId)
+        runDetailsDao.deletePauses(sessionId)
         sessionDao.deleteById(sessionId)
     }
+
+    override suspend fun getPauses(sessionId: Long): List<Pause> =
+        runDetailsDao.getPauses(sessionId).map { Pause(it.startedAt, it.endedAt) }
+
+    override suspend fun savePause(sessionId: Long, pause: Pause) =
+        runDetailsDao.upsertPause(RunPauseEntity(sessionId, pause.startedAt, pause.endedAt))
 
     override suspend fun getCompletedSince(sinceMillis: Long): List<Session> =
         sessionDao.getCompletedSince(sinceMillis).map { it.toDomain() }

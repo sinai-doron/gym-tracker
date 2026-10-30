@@ -52,6 +52,7 @@ class CardioTrackingService : Service() {
         private const val NOTIFY_EVERY_M = 10
         private const val MILESTONE_CHECK_MS = 1_000L
 
+
         fun start(context: Context, sessionId: Long) {
             context.startForegroundService(
                 Intent(context, CardioTrackingService::class.java).putExtra(EXTRA_SESSION_ID, sessionId)
@@ -117,13 +118,14 @@ class CardioTrackingService : Service() {
             }
             // Polled rather than event-driven: a duration target is reached by the clock, not a fix
             milestonesJob = scope.launch {
-                var wasPaused = false
+                var wasPaused = false to false
                 while (true) {
                     recorder.run.value?.let { run ->
                         val now = System.currentTimeMillis()
                         milestones.check(run, now).forEach { announce(it, run, now) }
-                        // Auto-pause stops and restarts the notification's clock
-                        val paused = run.clock.isPaused(now)
+                        // Pausing stops and restarts the notification's clock, and a pause by hand
+                        // turns its button into resume
+                        val paused = run.clock.isPaused(now) to run.isManuallyPaused
                         if (paused != wasPaused) {
                             wasPaused = paused
                             getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, buildNotification(run))
@@ -208,6 +210,18 @@ class CardioTrackingService : Service() {
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setCategory(NotificationCompat.CATEGORY_WORKOUT)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+            .apply {
+                if (run != null) {
+                    val manual = run.isManuallyPaused
+                    val action = PendingIntent.getBroadcast(
+                        this@CardioTrackingService, 1,
+                        Intent(this@CardioTrackingService, RunPauseReceiver::class.java)
+                            .setAction(if (manual) RunPauseReceiver.ACTION_RESUME else RunPauseReceiver.ACTION_PAUSE),
+                        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+                    )
+                    addAction(if (manual) R.drawable.ic_play else R.drawable.ic_pause, if (manual) "המשך" else "השהה", action)
+                }
+            }
             .setSilent(true)
             .build()
     }

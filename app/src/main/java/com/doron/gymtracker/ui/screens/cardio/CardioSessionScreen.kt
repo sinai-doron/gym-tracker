@@ -44,20 +44,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.doron.gymtracker.R
 import com.doron.gymtracker.data.Elevation
 import com.doron.gymtracker.data.Lap
 import com.doron.gymtracker.data.LocationPoint
+import com.doron.gymtracker.data.Pace
+import com.doron.gymtracker.domain.model.PersonalRecord
 import com.doron.gymtracker.domain.model.RunBadge
 import com.doron.gymtracker.domain.model.RunTargetType
 import com.doron.gymtracker.ui.components.BadgeImage
 import com.doron.gymtracker.ui.components.ElevationChart
 import com.doron.gymtracker.ui.components.MusicControls
+import com.doron.gymtracker.ui.components.PaceChart
 import com.doron.gymtracker.ui.components.RunMap
+import com.doron.gymtracker.ui.components.valueText
 import com.doron.gymtracker.ui.theme.Purple
 import com.doron.gymtracker.ui.theme.SuccessGreen
 import kotlin.math.roundToInt
@@ -74,6 +81,8 @@ fun CardioSessionScreen(
         CardioSummary(state = state, onSaveAsRoute = viewModel::saveAsRoute, onDone = onFinished)
         if (state.newBadges.isNotEmpty()) {
             NewBadgesDialog(state.newBadges, onDismiss = viewModel::badgesSeen)
+        } else if (state.newRecords.isNotEmpty()) {
+            NewRecordsDialog(state.newRecords, onDismiss = viewModel::recordsSeen)
         }
         return
     }
@@ -108,9 +117,9 @@ fun CardioSessionScreen(
             style = MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.Bold),
             color = if (state.isPaused) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f) else Purple
         )
-        if (state.isPaused) {
+        if (state.isPaused || state.isManuallyPaused) {
             Text(
-                "⏸ מושהה – ימשיך כשתזוז",
+                if (state.isManuallyPaused) "⏸ מושהה – לחץ ▶ כדי להמשיך" else "⏸ מושהה – ימשיך כשתזוז",
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -187,21 +196,36 @@ fun CardioSessionScreen(
 
         Spacer(Modifier.height(12.dp))
 
-        // Stop button
-        ElevatedButton(
-            onClick = { showFinishDialog = true },
-            modifier = Modifier.size(64.dp),
-            contentPadding = PaddingValues(0.dp),
-            colors = ButtonDefaults.elevatedButtonColors(
-                containerColor = MaterialTheme.colorScheme.errorContainer
-            )
-        ) {
-            Icon(
-                Icons.Default.Close,
-                contentDescription = "סיום",
-                tint = MaterialTheme.colorScheme.error,
-                modifier = Modifier.size(30.dp)
-            )
+        Row(horizontalArrangement = Arrangement.spacedBy(24.dp), verticalAlignment = Alignment.CenterVertically) {
+            // Pause by hand, e.g. for a long stop; auto-pause covers the short ones
+            ElevatedButton(
+                onClick = { if (state.isManuallyPaused) viewModel.resume() else viewModel.pause() },
+                modifier = Modifier.size(64.dp),
+                contentPadding = PaddingValues(0.dp),
+                colors = ButtonDefaults.elevatedButtonColors(containerColor = Purple)
+            ) {
+                Icon(
+                    painterResource(if (state.isManuallyPaused) R.drawable.ic_play else R.drawable.ic_pause),
+                    contentDescription = if (state.isManuallyPaused) "המשך" else "השהה",
+                    tint = Color.White,
+                    modifier = Modifier.size(30.dp)
+                )
+            }
+            ElevatedButton(
+                onClick = { showFinishDialog = true },
+                modifier = Modifier.size(64.dp),
+                contentPadding = PaddingValues(0.dp),
+                colors = ButtonDefaults.elevatedButtonColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer
+                )
+            ) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "סיום",
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(30.dp)
+                )
+            }
         }
     }
 
@@ -380,8 +404,31 @@ fun RunReport(
                 }
             }
         }
+        if (state.isFinished) {
+            Spacer(Modifier.height(8.dp))
+            ShareRunButton(state, state.heldRecords)
+        }
 
-        val profile = remember(state.route) { Elevation.profile(state.route) }
+        val pace = remember(state.route, state.pauses) {
+            state.clock?.let { Pace.profile(state.route, it, state.pauses) }.orEmpty()
+        }
+        if (pace.size >= 2) {
+            Spacer(Modifier.height(24.dp))
+            Text(
+                "קצב",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+            )
+            PaceChart(
+                points = pace,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface, MaterialTheme.shapes.medium)
+                    .padding(12.dp)
+            )
+        }
+
+        val profile = remember(state.route) { Elevation.profile(state.route, state.pauses) }
         if (profile.size >= 2) {
             Spacer(Modifier.height(24.dp))
             Text(
@@ -485,6 +532,39 @@ private fun NewBadgesDialog(badges: List<RunBadge>, onDismiss: () -> Unit) {
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                     textAlign = TextAlign.Center
                 )
+            }
+        }
+    )
+}
+
+@Composable
+private fun NewRecordsDialog(records: List<PersonalRecord>, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = { TextButton(onClick = onDismiss) { Text("יש!", color = Purple) } },
+        title = {
+            Text(
+                if (records.size > 1) "🏆 ${records.size} שיאים אישיים!" else "🏆 שיא אישי חדש!",
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+        },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                records.forEach { record ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            record.kind.label,
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            record.valueText(),
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            color = Purple
+                        )
+                    }
+                }
             }
         }
     )

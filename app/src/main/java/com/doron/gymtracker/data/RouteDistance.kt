@@ -29,21 +29,25 @@ object RouteDistance {
     }
 
     /** Distance of a whole recorded route, using the same rules as live recording. */
-    fun total(points: List<LocationPoint>): Double = marks(points).lastOrNull()?.meters ?: 0.0
+    fun total(points: List<LocationPoint>, pauses: List<Pause> = emptyList()): Double =
+        marks(points, pauses).lastOrNull()?.meters ?: 0.0
 
     /**
      * Distance covered so far at each fix that counted, using the same rules as live
-     * recording: what laps are cut from.
+     * recording: what laps are cut from. Fixes during [pauses] don't count, and the way
+     * between where a pause began and where the run was picked up isn't distance run.
      */
-    fun marks(points: List<LocationPoint>): List<DistanceMark> {
+    fun marks(points: List<LocationPoint>, pauses: List<Pause> = emptyList()): List<DistanceMark> {
         var anchor: LocationPoint? = null
         var sum = 0.0
         val marks = mutableListOf<DistanceMark>()
         points.filter(::isUsable).forEach { p ->
+            if (pauses.any { it.contains(p.timestamp) }) return@forEach
             val a = anchor
-            if (a == null) {
+            if (a == null || pauses.any { it.startedAt > a.timestamp && it.startedAt <= p.timestamp }) {
+                // The start, or picking up after a pause: measure on from here
                 anchor = p
-                marks += DistanceMark(p.timestamp, 0.0)
+                marks += DistanceMark(p.timestamp, sum)
             } else {
                 val d = step(a, p)
                 // Only move the anchor once the step counts, so slow walking still adds up

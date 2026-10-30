@@ -28,13 +28,14 @@ object Laps {
         route: List<LocationPoint>,
         lapMeters: Double,
         clock: ActiveClock? = null,
-        finishedAt: Long? = null
+        finishedAt: Long? = null,
+        pauses: List<Pause> = emptyList()
     ): List<Lap> {
         if (lapMeters <= 0) return emptyList()
         val laps = mutableListOf<Lap>()
         var lapStart = startedAt
         var previous: DistanceMark? = null
-        val marks = RouteDistance.marks(route)
+        val marks = RouteDistance.marks(route, pauses)
         for (mark in marks) {
             val prev = previous
             previous = mark

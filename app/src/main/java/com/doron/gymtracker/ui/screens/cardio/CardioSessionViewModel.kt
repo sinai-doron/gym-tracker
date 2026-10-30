@@ -4,24 +4,27 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.doron.gymtracker.data.ActiveClock
-import com.doron.gymtracker.data.DistanceMark
-import com.doron.gymtracker.data.Laps
 import com.doron.gymtracker.data.Cadence
 import com.doron.gymtracker.data.CardioRecorder
 import com.doron.gymtracker.data.CardioRun
+import com.doron.gymtracker.data.DistanceMark
 import com.doron.gymtracker.data.HealthConnectManager
 import com.doron.gymtracker.data.Lap
+import com.doron.gymtracker.data.Laps
 import com.doron.gymtracker.data.LocationPoint
+import com.doron.gymtracker.data.Pause
 import com.doron.gymtracker.data.RunRecord
 import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.data.repository.RouteRepository
 import com.doron.gymtracker.data.repository.SessionRepository
+import com.doron.gymtracker.domain.model.PersonalRecord
 import com.doron.gymtracker.domain.model.RoutePoint
 import com.doron.gymtracker.domain.model.RunBadge
 import com.doron.gymtracker.domain.model.RunTarget
-import com.doron.gymtracker.domain.usecase.GetRunBadgesUseCase
 import com.doron.gymtracker.domain.model.TrackLog
 import com.doron.gymtracker.domain.model.Weather
+import com.doron.gymtracker.domain.usecase.GetPersonalRecordsUseCase
+import com.doron.gymtracker.domain.usecase.GetRunBadgesUseCase
 import com.doron.gymtracker.service.CardioTrackingService
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -53,10 +56,16 @@ data class CardioUiState(
     val isFinished: Boolean = false,
     /** Badges this run earned for the first time, to celebrate on the finish screen. */
     val newBadges: List<RunBadge> = emptyList(),
+    /** Personal records this run broke, celebrated after the badges. */
+    val newRecords: List<PersonalRecord> = emptyList(),
+    /** The records this run holds now, for the shared picture. */
+    val heldRecords: List<PersonalRecord> = emptyList(),
     /** When each fix that moved the run happened, for auto-pause. */
     val moves: List<DistanceMark> = emptyList(),
     /** Stopped for long enough that the clock has stopped too. */
     val isPaused: Boolean = false,
+    /** Pauses the runner asked for; the last is open while paused by hand. */
+    val pauses: List<Pause> = emptyList(),
     /** For a route target: the route, how long it is and how far along it the runner is. */
     val plannedRoute: List<RoutePoint> = emptyList(),
     val routeLengthM: Double = 0.0,
@@ -65,7 +74,9 @@ data class CardioUiState(
     /** The name this run was saved under as a route, once saved. */
     val savedRouteName: String? = null
 ) {
-    val clock: ActiveClock? get() = startedAt?.let { ActiveClock(it, moves) }
+    val clock: ActiveClock? get() = startedAt?.let { ActiveClock(it, moves, pauses) }
+
+    val isManuallyPaused: Boolean get() = pauses.lastOrNull()?.let { it.endedAt == null } == true
 
     val avgCadence: Int? get() = steps?.let { Cadence.average(it, elapsedSecs) }
 
@@ -115,6 +126,7 @@ class CardioSessionViewModel @AssistedInject constructor(
     private val app: Application,
     private val healthConnect: HealthConnectManager,
     private val getRunBadges: GetRunBadgesUseCase,
+    private val getPersonalRecords: GetPersonalRecordsUseCase,
     private val routeRepo: RouteRepository,
     val settingsPrefs: SettingsPrefs
 ) : ViewModel() {
@@ -150,6 +162,7 @@ class CardioSessionViewModel @AssistedInject constructor(
                         weather = run.weather,
                         calories = run.calories,
                         moves = run.moves,
+                        pauses = run.pauses,
                         plannedRoute = run.plannedRoute,
                         routeLengthM = run.routeLengthM,
                         routeAlongM = run.routeAlongM,
@@ -166,7 +179,7 @@ class CardioSessionViewModel @AssistedInject constructor(
                     // Moving time: the clock stops while auto-paused
                     val now = System.currentTimeMillis()
                     _uiState.update { state ->
-                        val clock = ActiveClock(start, state.moves)
+                        val clock = ActiveClock(start, state.moves, state.pauses)
                         state.copy(elapsedSecs = clock.activeMs(now) / 1000, isPaused = clock.isPaused(now))
                     }
                 }
@@ -174,6 +187,10 @@ class CardioSessionViewModel @AssistedInject constructor(
             }
         }
     }
+
+    fun pause() = recorder.pause()
+
+    fun resume() = recorder.resume()
 
     fun finish() {
         val run = recorder.stop()
@@ -186,12 +203,13 @@ class CardioSessionViewModel @AssistedInject constructor(
                 route = run?.route ?: state.route,
                 tracks = run?.tracks ?: state.tracks,
                 // Now with the last stretch after the final full lap
-                laps = run?.let { Laps.split(it.startedAt, it.route, it.lapMeters.toDouble(), it.clock, finishedAt = now) }
+                laps = run?.let { Laps.split(it.startedAt, it.route, it.lapMeters.toDouble(), it.clock, finishedAt = now, pauses = it.pauses) }
                     ?: state.laps,
                 steps = run?.steps ?: state.steps,
                 elevationGainM = run?.elevationGainM ?: state.elevationGainM,
                 calories = run?.calories ?: state.calories,
                 moves = run?.moves ?: state.moves,
+                pauses = run?.pauses ?: state.pauses,
                 isPaused = false,
                 // The final moving time, up to the moment the run was finished
                 elapsedSecs = run?.clock?.activeMs(now)?.div(1000) ?: state.elapsedSecs
@@ -201,6 +219,10 @@ class CardioSessionViewModel @AssistedInject constructor(
             val final = _uiState.value
             sessionRepo.finishCardioSession(sessionId, final.distanceMeters)
             _uiState.update { it.copy(newBadges = getRunBadges.earnedBy(sessionId)) }
+            if (sessionType == "RUNNING") {
+                _uiState.update { it.copy(newRecords = getPersonalRecords.newBy(sessionId)) }
+                _uiState.update { it.copy(heldRecords = getPersonalRecords().filter { r -> r.sessionId == sessionId }) }
+            }
             sessionRepo.getRunDetails(sessionId)?.let {
                 sessionRepo.saveRunDetails(
                     it.copy(steps = final.steps, elevationGainM = final.elevationGainM, calories = final.calories)
@@ -230,6 +252,10 @@ class CardioSessionViewModel @AssistedInject constructor(
             val id = routeRepo.save(points)
             _uiState.update { it.copy(savedRouteName = routeRepo.get(id)?.name) }
         }
+    }
+
+    fun recordsSeen() {
+        _uiState.update { it.copy(newRecords = emptyList()) }
     }
 
     fun badgesSeen() {

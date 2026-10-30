@@ -19,3 +19,11 @@ data class RunDetailsEntity(
     val weatherTempC: Int?,
     val weatherCondition: String?
 )
+
+/** A pause the runner asked for during a run; [endedAt] is null while it lasts. */
+@Entity(tableName = "run_pauses", primaryKeys = ["sessionId", "startedAt"])
+data class RunPauseEntity(
+    val sessionId: Long,
+    val startedAt: Long,
+    val endedAt: Long?
+)

@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Upsert
 import com.doron.gymtracker.data.db.entities.RunDetailsEntity
+import com.doron.gymtracker.data.db.entities.RunPauseEntity
 
 @Dao
 interface RunDetailsDao {
@@ -15,4 +16,13 @@ interface RunDetailsDao {
 
     @Query("DELETE FROM run_details WHERE sessionId = :sessionId")
     suspend fun deleteForSession(sessionId: Long)
+
+    @Upsert
+    suspend fun upsertPause(entity: RunPauseEntity)
+
+    @Query("SELECT * FROM run_pauses WHERE sessionId = :sessionId ORDER BY startedAt")
+    suspend fun getPauses(sessionId: Long): List<RunPauseEntity>
+
+    @Query("DELETE FROM run_pauses WHERE sessionId = :sessionId")
+    suspend fun deletePauses(sessionId: Long)
 }

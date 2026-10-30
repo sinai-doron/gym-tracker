@@ -44,4 +44,16 @@ class RouteDistanceTest {
         val route = (0..30).map { point(it * 0.0000333).copy(timestamp = it * 1000L) }
         assertEquals(3.7f, RouteDistance.recentSpeed(route.dropLast(1), route.last()), 0.1f)
     }
+
+    @Test
+    fun `the way walked during a pause isn't distance`() {
+        // 100 m north, a pause from 100 s to 400 s, then 100 m more from 300 m further on
+        fun at(meters: Double, t: Long) =
+            LocationPoint(32.0 + meters / 111_195.0, 34.8, null, null, 5f, t)
+        val route = (0..10).map { at(it * 10.0, it * 10_000L) } +
+            (0..10).map { at(400 + it * 10.0, 400_000L + it * 10_000L) }
+        val pause = Pause(100_001L, 400_000L)
+        assertEquals(500.0, RouteDistance.total(route), 1.0)
+        assertEquals(200.0, RouteDistance.total(route, listOf(pause)), 1.0)
+    }
 }

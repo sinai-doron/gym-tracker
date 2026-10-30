@@ -47,6 +47,7 @@ import com.doron.gymtracker.domain.model.RunTarget
 import com.doron.gymtracker.domain.model.Session
 import com.doron.gymtracker.domain.model.TrackLog
 import com.doron.gymtracker.domain.model.Weather
+import com.doron.gymtracker.domain.usecase.GetPersonalRecordsUseCase
 import com.doron.gymtracker.ui.screens.cardio.CardioUiState
 import com.doron.gymtracker.ui.screens.cardio.RunReport
 import com.doron.gymtracker.ui.theme.Purple
@@ -90,7 +91,8 @@ data class ExerciseBreakdownLine(
 class SessionDetailViewModel @Inject constructor(
     private val sessionRepo: SessionRepository,
     private val workoutRepo: WorkoutRepository,
-    private val routeRepo: RouteRepository
+    private val routeRepo: RouteRepository,
+    private val getPersonalRecords: GetPersonalRecordsUseCase
 ) : ViewModel() {
 
     private val _savedRouteName = MutableStateFlow<String?>(null)
@@ -190,22 +192,27 @@ class SessionDetailViewModel @Inject constructor(
         val details = sessionRepo.getRunDetails(session.id)
         val lapMeters = details?.lapMeters ?: 0
         // Moving time, as during the run: auto-paused stretches don't count
-        val clock = ActiveClock.forRoute(session.startedAt, route)
+        val pauses = sessionRepo.getPauses(session.id)
+        val clock = ActiveClock.forRoute(session.startedAt, route, pauses)
         val finishedAt = session.finishedAt ?: (session.startedAt + durationSecs * 1000)
         return CardioUiState(
             type = session.type,
             startedAt = session.startedAt,
             elapsedSecs = clock.activeMs(finishedAt) / 1000,
-            distanceMeters = session.distanceMeters ?: RouteDistance.total(route),
+            distanceMeters = session.distanceMeters ?: RouteDistance.total(route, pauses),
             route = route,
             tracks = tracks,
             target = details?.target ?: RunTarget(),
             lapMeters = lapMeters,
-            laps = Laps.split(session.startedAt, route, lapMeters.toDouble(), clock, finishedAt),
+            laps = Laps.split(session.startedAt, route, lapMeters.toDouble(), clock, finishedAt, pauses),
+            pauses = pauses,
+            // What the report's clock (and so the pace chart) is worked out from
+            moves = RouteDistance.marks(route, pauses),
             steps = details?.steps,
             elevationGainM = details?.elevationGainM ?: Elevation.gain(route),
             weather = details?.weatherCondition?.let { Weather(details.weatherTempC ?: 0, 0, 0, it) },
             calories = details?.calories,
+            heldRecords = if (session.type == "RUNNING") getPersonalRecords().filter { it.sessionId == session.id } else emptyList(),
             isFinished = true
         )
     }

@@ -53,4 +53,34 @@ class ActiveClockTest {
         assertEquals(100_000, clock.activeMs(100_000))
         assertEquals(emptyList<Pair<Long, Long>>(), clock.pauses)
     }
+
+    @Test
+    fun `a pause by hand stops the clock even while moving`() {
+        val clock = ActiveClock(0, steady, listOf(Pause(20_000L, 30_000L)))
+        assertEquals(50_000, clock.activeMs(60_000))
+        assertTrue(clock.isPaused(25_000))
+        assertFalse(clock.isPaused(31_000))
+    }
+
+    @Test
+    fun `an open pause lasts until resumed`() {
+        val clock = ActiveClock(0, steady, listOf(Pause(40_000L)))
+        assertTrue(clock.isManuallyPaused(500_000))
+        assertEquals(40_000, clock.activeMs(500_000))
+    }
+
+    @Test
+    fun `paused by hand and by standing still counts once`() {
+        // Stood still from 60 s to 100 s (auto-pause from 70 s) and paused by hand from 65 s to 90 s
+        val resumed = stepAfter(steady.last(), 100_000L)
+        val clock = ActiveClock(0, steady + resumed, listOf(Pause(65_000L, 90_000L)))
+        assertEquals(65_000, clock.activeMs(100_000))
+        assertEquals(listOf(65_000L to 100_000L), clock.pauses)
+    }
+
+    @Test
+    fun `no time before the run started`() {
+        val clock = ActiveClock(10_000, running(listOf(12_000L, 14_000L)))
+        assertEquals(0, clock.activeMs(9_300))
+    }
 }

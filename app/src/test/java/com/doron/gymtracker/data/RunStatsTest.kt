@@ -88,4 +88,27 @@ class RunStatsTest {
         assertNull(Cadence.current(samples.take(1), now = 1_000))
         assertEquals(170, Cadence.average(steps = 1_700, elapsedSecs = 600))
     }
+
+    @Test
+    fun `pace follows the speed along the run`() {
+        // 500 m at 6:00/km (10 m every 3.6 s), then 500 m at 4:00/km (10 m every 2.4 s)
+        val slow = (0..50).map { i -> LocationPoint(32.0 + i * 10 / 111_195.0, 34.8, null, null, 5f, i * 3_600L) }
+        val fast = (1..50).map { i -> LocationPoint(32.0 + (500 + i * 10) / 111_195.0, 34.8, null, null, 5f, 180_000L + i * 2_400L) }
+        val route = slow + fast
+        val pace = Pace.profile(route, ActiveClock.forRoute(0, route))
+        assertEquals(360.0, pace.first().secsPerKm, 5.0)
+        assertEquals(240.0, pace.last().secsPerKm, 5.0)
+        assertTrue(pace.zipWithNext().all { (a, b) -> b.meters > a.meters })
+    }
+
+    @Test
+    fun `a pause doesn't show as a slow stretch`() {
+        // Steady 5:00/km with a 2-minute pause by hand in the middle
+        val before = (0..30).map { i -> LocationPoint(32.0 + i * 10 / 111_195.0, 34.8, null, null, 5f, i * 3_000L) }
+        val after = (1..30).map { i -> LocationPoint(32.0 + (300 + i * 10) / 111_195.0, 34.8, null, null, 5f, 210_000L + i * 3_000L) }
+        val route = before + after
+        val pauses = listOf(Pause(90_001L, 210_000L))
+        val pace = Pace.profile(route, ActiveClock.forRoute(0, route, pauses), pauses)
+        assertTrue(pace.all { kotlin.math.abs(it.secsPerKm - 300.0) < 15 })
+    }
 }

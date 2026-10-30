@@ -1,6 +1,7 @@
 package com.doron.gymtracker.data.repository
 
 import com.doron.gymtracker.data.LocationPoint
+import com.doron.gymtracker.data.Pause
 import com.doron.gymtracker.domain.model.ExerciseEntry
 import com.doron.gymtracker.domain.model.ExerciseSessionSets
 import com.doron.gymtracker.domain.model.RunDetails
@@ -27,6 +28,10 @@ interface SessionRepository {
     suspend fun getRouteForSession(sessionId: Long): List<LocationPoint>
     suspend fun getRunDetails(sessionId: Long): RunDetails?
     suspend fun saveRunDetails(details: RunDetails)
+    /** The pauses the runner asked for, in order. */
+    suspend fun getPauses(sessionId: Long): List<Pause>
+    /** Saves a pause, new or now ended (pauses are keyed by when they began). */
+    suspend fun savePause(sessionId: Long, pause: Pause)
     suspend fun deleteExerciseFromSession(sessionId: Long, exerciseId: String)
     suspend fun deleteSession(sessionId: Long)
     suspend fun getUnfinishedStartedBefore(beforeMillis: Long): List<Session>

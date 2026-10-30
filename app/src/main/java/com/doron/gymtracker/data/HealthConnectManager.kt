@@ -10,6 +10,7 @@ import androidx.health.connect.client.records.ElevationGainedRecord
 import androidx.health.connect.client.records.ExerciseLap
 import androidx.health.connect.client.records.ExerciseRoute
 import androidx.health.connect.client.records.ExerciseSessionRecord
+import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.metadata.Device
@@ -44,7 +45,9 @@ class HealthConnectManager @Inject constructor(
             HealthPermission.PERMISSION_WRITE_EXERCISE_ROUTE,
             HealthPermission.getWritePermission(DistanceRecord::class),
             HealthPermission.getWritePermission(ActiveCaloriesBurnedRecord::class),
-            HealthPermission.getWritePermission(ElevationGainedRecord::class)
+            HealthPermission.getWritePermission(ElevationGainedRecord::class),
+            // A watch's heart rate during runs
+            HealthPermission.getReadPermission(HeartRateRecord::class)
         )
 
         val ALL_PERMISSIONS = PERMISSIONS + RUN_PERMISSIONS
