@@ -68,6 +68,8 @@ class SyncRepository @Inject constructor(
     suspend fun sync(): Outcome = lock.withLock {
         if (auth.currentUser() == null) return@withLock Outcome.NotSignedIn
         val agreed = consent.current() ?: return@withLock Outcome.NoConsent
+        // Belt and braces with the check at sign-in: never sync one person's data into another's account.
+        if (!account.mayReadAndWriteThisPhonesData()) return@withLock Outcome.Failed("another account owns this phone's data")
         val outcome = try {
             // The backend refuses every push until it has the consent.
             if (!account.uploadConsent()) Outcome.Retry("consent not uploaded")

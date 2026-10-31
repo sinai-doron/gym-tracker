@@ -178,4 +178,5 @@
     <string name="account_delete_confirm_text">כל מה שסונכרן יימחק מהשרת, ואז תתבצע התנתקות. האימונים בטלפון נשארים.</string>
     <string name="account_delete_confirm">מחיקה</string>
     <string name="account_delete_failed">המחיקה לא הצליחה, לא נמחק כלום. כדאי לבדוק את החיבור ולנסות שוב.</string>
+    <string name="account_other_owner">האימונים בטלפון הזה שייכים לחשבון %1$s. אפשר להתחבר רק עם החשבון הזה. כדי להשתמש בחשבון אחר, צריך קודם למחוק את נתוני האפליקציה בטלפון.</string>
 </resources>

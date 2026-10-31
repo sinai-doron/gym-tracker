@@ -18,6 +18,7 @@ class Account @Inject constructor(
     private val auth: AuthRepository,
     private val consent: SyncConsent,
     private val api: BackendApi,
+    private val owner: DataOwner,
 ) {
     val user = auth.user
     val consentState = consent.consent
@@ -34,6 +35,13 @@ class Account @Inject constructor(
             consent.clear()
             throw e
         }
+        // Another person's account: out again before anything syncs, and nothing else changes.
+        val holder = owner.current()
+        if (!DataOwner.allows(holder, user)) {
+            signOut()
+            throw DifferentAccount(holder!!.email)
+        }
+        owner.claim(user)
         uploadConsent()
         return user
     }
@@ -64,6 +72,16 @@ class Account @Inject constructor(
             }
             consent.markUploaded(current.acceptedAt)
         }.isSuccess
+    }
+
+    /**
+     * Whether the signed-in user may sync this phone's data, claiming it if nobody has yet (the
+     * first version with this check, on a phone already signed in, claims it for that account).
+     */
+    suspend fun mayReadAndWriteThisPhonesData(): Boolean {
+        val user = auth.currentUser() ?: return false
+        val holder = owner.current() ?: return owner.claim(user).userId == user.id
+        return DataOwner.allows(holder, user)
     }
 
     /** Ends the session and forgets the consent. The workouts on this phone stay. */

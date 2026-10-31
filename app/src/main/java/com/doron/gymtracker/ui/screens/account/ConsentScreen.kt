@@ -117,9 +117,11 @@ fun ConsentScreen(onDone: () -> Unit, viewModel: ConsentViewModel = hiltViewMode
             Spacer(Modifier.height(24.dp))
             (state as? ConsentViewModel.State.Failed)?.let { failed ->
                 Text(
-                    stringResource(
-                        if (failed.notAllowed) R.string.account_not_allowed else R.string.account_sign_in_failed
-                    ),
+                    when {
+                        failed.ownerEmail != null -> stringResource(R.string.account_other_owner, failed.ownerEmail)
+                        failed.notAllowed -> stringResource(R.string.account_not_allowed)
+                        else -> stringResource(R.string.account_sign_in_failed)
+                    },
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyMedium
                 )

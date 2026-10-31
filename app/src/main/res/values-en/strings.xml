@@ -178,4 +178,5 @@
     <string name="account_delete_confirm_text">Everything synced is deleted from the server, then you are signed out. The workouts on this phone stay.</string>
     <string name="account_delete_confirm">Delete</string>
     <string name="account_delete_failed">Couldn\'t delete; nothing was deleted. Check your connection and try again.</string>
+    <string name="account_other_owner">The workouts on this phone belong to %1$s. Only that account can sign in here. To use another account, clear the app\'s data on this phone first.</string>
 </resources>
