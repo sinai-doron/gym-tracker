@@ -4,11 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.WorkoutRepository
+import com.doron.gymtracker.domain.model.AchievementStatus
 import com.doron.gymtracker.domain.model.ExerciseEntry
 import com.doron.gymtracker.domain.model.SetRecord
 import com.doron.gymtracker.domain.model.Workout
 import com.doron.gymtracker.domain.model.TrackLog
 import com.doron.gymtracker.domain.usecase.FinishSessionUseCase
+import com.doron.gymtracker.domain.usecase.GetAchievementsUseCase
 import com.doron.gymtracker.domain.usecase.IsDeloadWeekUseCase
 import com.doron.gymtracker.domain.usecase.ResolveExerciseVariantUseCase
 import com.doron.gymtracker.media.NowPlayingProvider
@@ -27,6 +29,8 @@ data class SessionUiState(
     val elapsedSecs: Long = 0L,
     val entries: Map<String, ExerciseEntry> = emptyMap(),
     val isFinished: Boolean = false,
+    /** What finishing this workout earned, shown once over the summary. */
+    val newAchievements: List<AchievementStatus> = emptyList(),
     val isDeloadWeek: Boolean = false,
     val tracks: List<TrackLog> = emptyList(),
     val startedAt: Long = 0L,
@@ -41,7 +45,8 @@ class SessionViewModel @AssistedInject constructor(
     private val workoutRepo: WorkoutRepository,
     private val finishSessionUseCase: FinishSessionUseCase,
     private val resolveVariant: ResolveExerciseVariantUseCase,
-    private val isDeloadWeek: IsDeloadWeekUseCase
+    private val isDeloadWeek: IsDeloadWeekUseCase,
+    private val getAchievements: GetAchievementsUseCase
 ) : ViewModel() {
 
     @AssistedFactory
@@ -94,7 +99,12 @@ class SessionViewModel @AssistedInject constructor(
             restTimer.dismiss()
             finishSessionUseCase(sessionId)
             _uiState.update { it.copy(isFinished = true) }
+            _uiState.update { it.copy(newAchievements = getAchievements.earnedBy(sessionId)) }
         }
+    }
+
+    fun achievementsSeen() {
+        _uiState.update { it.copy(newAchievements = emptyList()) }
     }
 
     /** Deletes a session started by mistake, with everything logged in it. */

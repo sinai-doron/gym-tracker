@@ -1,5 +1,6 @@
 package com.doron.gymtracker.ui.screens.session
 
+import com.doron.gymtracker.ui.components.NewAchievementsDialog
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -146,6 +147,9 @@ fun SessionScreen(
             },
             onGoHome = onFinished
         )
+        if (state.newAchievements.isNotEmpty()) {
+            NewAchievementsDialog(state.newAchievements, onDismiss = viewModel::achievementsSeen)
+        }
         return
     }
 

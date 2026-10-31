@@ -65,6 +65,7 @@ import com.doron.gymtracker.ui.components.MusicControls
 import com.doron.gymtracker.ui.components.PaceChart
 import com.doron.gymtracker.ui.components.RunMap
 import com.doron.gymtracker.ui.components.valueText
+import com.doron.gymtracker.ui.components.NewAchievementsDialog
 import com.doron.gymtracker.ui.theme.Purple
 import com.doron.gymtracker.ui.theme.SuccessGreen
 import kotlin.math.roundToInt
@@ -81,6 +82,8 @@ fun CardioSessionScreen(
         CardioSummary(state = state, onSaveAsRoute = viewModel::saveAsRoute, onDone = onFinished)
         if (state.newBadges.isNotEmpty()) {
             NewBadgesDialog(state.newBadges, onDismiss = viewModel::badgesSeen)
+        } else if (state.newAchievements.isNotEmpty()) {
+            NewAchievementsDialog(state.newAchievements, onDismiss = viewModel::achievementsSeen)
         } else if (state.newRecords.isNotEmpty()) {
             NewRecordsDialog(state.newRecords, onDismiss = viewModel::recordsSeen)
         }

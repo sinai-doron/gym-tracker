@@ -179,4 +179,39 @@
     <string name="account_delete_confirm">מחיקה</string>
     <string name="account_delete_failed">המחיקה לא הצליחה, לא נמחק כלום. כדאי לבדוק את החיבור ולנסות שוב.</string>
     <string name="account_other_owner">האימונים בטלפון הזה שייכים לחשבון %1$s. אפשר להתחבר רק עם החשבון הזה. כדי להשתמש בחשבון אחר, צריך קודם למחוק את נתוני האפליקציה בטלפון.</string>
+
+    <!-- Achievements -->
+    <string name="achievement_family_climber">מטפס</string>
+    <string name="achievement_family_climber_explain">טיפוס בריצה או הליכה אחת</string>
+    <string name="achievement_family_mileage">קילומטראז׳</string>
+    <string name="achievement_family_mileage_explain">כל הריצות וההליכות יחד</string>
+    <string name="achievement_family_iron">ברזל</string>
+    <string name="achievement_family_iron_explain">משקל כולל שהורם (משקל × חזרות)</string>
+    <string name="achievement_family_regular">קביעות</string>
+    <string name="achievement_family_regular_explain">שבועות ברצף עם 3 אימונים לפחות</string>
+    <string name="achievement_family_special">מיוחדים</string>
+    <string name="achievement_family_special_explain">רגעים שכדאי לחגוג</string>
+    <string name="achievement_climb_50">טיפוס של 50 מ׳</string>
+    <string name="achievement_climb_150">טיפוס של 150 מ׳</string>
+    <string name="achievement_climb_300">טיפוס של 300 מ׳</string>
+    <string name="achievement_miles_25">25 ק״מ בסך הכל</string>
+    <string name="achievement_miles_100">100 ק״מ בסך הכל</string>
+    <string name="achievement_miles_500">500 ק״מ בסך הכל</string>
+    <string name="achievement_iron_10">10 טון הורמו</string>
+    <string name="achievement_iron_50">50 טון הורמו</string>
+    <string name="achievement_iron_100">100 טון הורמו</string>
+    <string name="achievement_regular_2">שבועיים ברצף</string>
+    <string name="achievement_regular_4">4 שבועות ברצף</string>
+    <string name="achievement_regular_8">8 שבועות ברצף</string>
+    <string name="achievement_rotation">סבב מלא: A, B ו-C באותו שבוע</string>
+    <string name="achievement_night_owl">ינשוף לילה: יציאה מ-21:00</string>
+    <string name="achievement_early_bird">ציפור מוקדמת: יציאה לפני 06:00</string>
+    <string name="achievements_title">הישגים</string>
+    <string name="achievements_all">כל ההישגים</string>
+    <string name="achievement_not_yet">טרם הושג</string>
+    <string name="achievements_new">הישג חדש!</string>
+    <string name="achievement_progress_m">%1$s מתוך %2$s מ׳</string>
+    <string name="achievement_progress_km">%1$s מתוך %2$s ק״מ</string>
+    <string name="achievement_progress_t">%1$s מתוך %2$s טון</string>
+    <string name="achievement_progress_weeks">%1$s מתוך %2$s שבועות</string>
 </resources>

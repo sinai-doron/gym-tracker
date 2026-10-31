@@ -28,6 +28,7 @@ import com.doron.gymtracker.ui.screens.progress.ExerciseProgressScreen
 import com.doron.gymtracker.ui.screens.session.SessionScreen
 import com.doron.gymtracker.ui.screens.session.SessionViewModel
 import com.doron.gymtracker.ui.screens.settings.SettingsScreen
+import com.doron.gymtracker.ui.screens.achievements.AchievementsScreen
 import com.doron.gymtracker.ui.screens.account.ConsentScreen
 import com.doron.gymtracker.ui.screens.routes.RouteDetailScreen
 import com.doron.gymtracker.ui.screens.routes.RoutesScreen
@@ -70,8 +71,12 @@ fun NavGraph(runToResume: CardioRun? = null, showOnboarding: Boolean = false) {
                 onHistoryClick = { navController.navigate("history") },
                 onRoutesClick = { navController.navigate("routes") },
                 onSettingsClick = { navController.navigate("settings") },
-                onSessionClick = { id -> navController.navigate("history/session/$id") }
+                onSessionClick = { id -> navController.navigate("history/session/$id") },
+                onAchievementsClick = { navController.navigate("achievements") }
             )
+        }
+        composable("achievements") {
+            AchievementsScreen(onBack = { navController.popBackStack() })
         }
         composable("workouts") {
             WorkoutsScreen(

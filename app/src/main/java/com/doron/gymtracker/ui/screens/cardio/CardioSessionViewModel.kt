@@ -17,6 +17,7 @@ import com.doron.gymtracker.data.RunRecord
 import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.data.repository.RouteRepository
 import com.doron.gymtracker.data.repository.SessionRepository
+import com.doron.gymtracker.domain.model.AchievementStatus
 import com.doron.gymtracker.domain.model.PersonalRecord
 import com.doron.gymtracker.domain.model.RoutePoint
 import com.doron.gymtracker.domain.model.RunBadge
@@ -24,6 +25,7 @@ import com.doron.gymtracker.domain.model.RunTarget
 import com.doron.gymtracker.domain.model.TrackLog
 import com.doron.gymtracker.domain.model.Weather
 import com.doron.gymtracker.domain.usecase.GetPersonalRecordsUseCase
+import com.doron.gymtracker.domain.usecase.GetAchievementsUseCase
 import com.doron.gymtracker.domain.usecase.GetRunBadgesUseCase
 import com.doron.gymtracker.service.CardioTrackingService
 import dagger.assisted.Assisted
@@ -56,6 +58,7 @@ data class CardioUiState(
     val isFinished: Boolean = false,
     /** Badges this run earned for the first time, to celebrate on the finish screen. */
     val newBadges: List<RunBadge> = emptyList(),
+    val newAchievements: List<AchievementStatus> = emptyList(),
     /** Personal records this run broke, celebrated after the badges. */
     val newRecords: List<PersonalRecord> = emptyList(),
     /** The records this run holds now, for the shared picture. */
@@ -126,6 +129,7 @@ class CardioSessionViewModel @AssistedInject constructor(
     private val app: Application,
     private val healthConnect: HealthConnectManager,
     private val getRunBadges: GetRunBadgesUseCase,
+    private val getAchievements: GetAchievementsUseCase,
     private val getPersonalRecords: GetPersonalRecordsUseCase,
     private val routeRepo: RouteRepository,
     val settingsPrefs: SettingsPrefs
@@ -219,6 +223,7 @@ class CardioSessionViewModel @AssistedInject constructor(
             val final = _uiState.value
             sessionRepo.finishCardioSession(sessionId, final.distanceMeters)
             _uiState.update { it.copy(newBadges = getRunBadges.earnedBy(sessionId)) }
+            _uiState.update { it.copy(newAchievements = getAchievements.earnedBy(sessionId)) }
             if (sessionType == "RUNNING") {
                 _uiState.update { it.copy(newRecords = getPersonalRecords.newBy(sessionId)) }
                 _uiState.update { it.copy(heldRecords = getPersonalRecords().filter { r -> r.sessionId == sessionId }) }
@@ -256,6 +261,10 @@ class CardioSessionViewModel @AssistedInject constructor(
 
     fun recordsSeen() {
         _uiState.update { it.copy(newRecords = emptyList()) }
+    }
+
+    fun achievementsSeen() {
+        _uiState.update { it.copy(newAchievements = emptyList()) }
     }
 
     fun badgesSeen() {

@@ -82,6 +82,7 @@ import com.doron.gymtracker.domain.model.WorkoutPreview
 import com.doron.gymtracker.domain.usecase.ProgramStatus
 import com.doron.gymtracker.ui.components.Activity
 import com.doron.gymtracker.ui.components.ActivityIcon
+import com.doron.gymtracker.ui.components.AchievementsStrip
 import com.doron.gymtracker.ui.components.BadgesRow
 import com.doron.gymtracker.ui.components.ExercisePreviewList
 import com.doron.gymtracker.ui.components.WorkoutMetaRow
@@ -101,12 +102,14 @@ fun HomeScreen(
     onRoutesClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onSessionClick: (Long) -> Unit,
+    onAchievementsClick: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
     badgesViewModel: BadgesViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
     val badges by badgesViewModel.badges.collectAsState()
     val records by badgesViewModel.records.collectAsState()
+    val achievements by badgesViewModel.achievements.collectAsState()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     var pendingCardioType by remember { mutableStateOf<String?>(null) }
@@ -288,7 +291,8 @@ fun HomeScreen(
                 onRoutes = onRoutesClick
             )
 
-            // Achievements: the distance badges for now, more kinds later
+            // Achievements: the distance badges, then the rest (climb, mileage, iron, regular,
+            // specials) in a strip, newest first, then the nearest to earn; all of them a tap away.
             if (badges.isNotEmpty()) {
                 Spacer(Modifier.height(12.dp))
                 Column(
@@ -297,9 +301,17 @@ fun HomeScreen(
                         .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(24.dp))
                         .padding(16.dp)
                 ) {
-                    CardTitle("🏅 הישגים", trailing = "${badges.count { it.isEarned }} מתוך ${badges.size}")
+                    val earned = badges.count { it.isEarned } + achievements.count { it.isEarned }
+                    CardTitle("🏅 הישגים", trailing = "$earned מתוך ${badges.size + achievements.size}")
                     Spacer(Modifier.height(12.dp))
                     BadgesRow(badges)
+                    if (achievements.isNotEmpty()) {
+                        Spacer(Modifier.height(16.dp))
+                        AchievementsStrip(achievements)
+                    }
+                    TextButton(onClick = onAchievementsClick, modifier = Modifier.align(Alignment.End)) {
+                        Text(stringResource(R.string.achievements_all) + " ›", color = Purple)
+                    }
                     if (records.isNotEmpty()) {
                         Spacer(Modifier.height(16.dp))
                         PersonalRecords(records, onSessionClick)

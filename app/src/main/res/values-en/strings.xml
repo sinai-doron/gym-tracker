@@ -179,4 +179,39 @@
     <string name="account_delete_confirm">Delete</string>
     <string name="account_delete_failed">Couldn\'t delete; nothing was deleted. Check your connection and try again.</string>
     <string name="account_other_owner">The workouts on this phone belong to %1$s. Only that account can sign in here. To use another account, clear the app\'s data on this phone first.</string>
+
+    <!-- Achievements -->
+    <string name="achievement_family_climber">Climber</string>
+    <string name="achievement_family_climber_explain">Climb in one run or walk</string>
+    <string name="achievement_family_mileage">Mileage</string>
+    <string name="achievement_family_mileage_explain">All runs and walks together</string>
+    <string name="achievement_family_iron">Iron</string>
+    <string name="achievement_family_iron_explain">Total weight lifted (weight × reps)</string>
+    <string name="achievement_family_regular">Regular</string>
+    <string name="achievement_family_regular_explain">Weeks in a row with 3+ workouts</string>
+    <string name="achievement_family_special">Specials</string>
+    <string name="achievement_family_special_explain">Moments worth celebrating</string>
+    <string name="achievement_climb_50">Climbed 50 m</string>
+    <string name="achievement_climb_150">Climbed 150 m</string>
+    <string name="achievement_climb_300">Climbed 300 m</string>
+    <string name="achievement_miles_25">25 km in all</string>
+    <string name="achievement_miles_100">100 km in all</string>
+    <string name="achievement_miles_500">500 km in all</string>
+    <string name="achievement_iron_10">10 tonnes lifted</string>
+    <string name="achievement_iron_50">50 tonnes lifted</string>
+    <string name="achievement_iron_100">100 tonnes lifted</string>
+    <string name="achievement_regular_2">2 weeks in a row</string>
+    <string name="achievement_regular_4">4 weeks in a row</string>
+    <string name="achievement_regular_8">8 weeks in a row</string>
+    <string name="achievement_rotation">Full rotation: A, B and C in one week</string>
+    <string name="achievement_night_owl">Night owl: out from 21:00</string>
+    <string name="achievement_early_bird">Early bird: out before 06:00</string>
+    <string name="achievements_title">Achievements</string>
+    <string name="achievements_all">All achievements</string>
+    <string name="achievement_not_yet">Not yet</string>
+    <string name="achievements_new">New achievement!</string>
+    <string name="achievement_progress_m">%1$s of %2$s m</string>
+    <string name="achievement_progress_km">%1$s of %2$s km</string>
+    <string name="achievement_progress_t">%1$s of %2$s t</string>
+    <string name="achievement_progress_weeks">%1$s of %2$s weeks</string>
 </resources>

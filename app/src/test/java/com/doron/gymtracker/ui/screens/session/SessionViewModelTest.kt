@@ -4,6 +4,7 @@ import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.data.seed.TrainingPlanData
 import com.doron.gymtracker.domain.usecase.FinishSessionUseCase
+import com.doron.gymtracker.domain.usecase.GetAchievementsUseCase
 import com.doron.gymtracker.domain.usecase.IsDeloadWeekUseCase
 import com.doron.gymtracker.domain.usecase.ResolveExerciseVariantUseCase
 import io.mockk.coEvery
@@ -18,6 +19,8 @@ import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import com.doron.gymtracker.domain.model.AchievementKind
+import com.doron.gymtracker.domain.model.AchievementStatus
 import com.doron.gymtracker.domain.model.Session
 import com.doron.gymtracker.domain.model.ExerciseEntry
 import com.doron.gymtracker.domain.model.RepSetRecord
@@ -36,6 +39,7 @@ class SessionViewModelTest {
     private lateinit var finishSession: FinishSessionUseCase
     private lateinit var resolveVariant: ResolveExerciseVariantUseCase
     private lateinit var isDeloadWeek: IsDeloadWeekUseCase
+    private lateinit var getAchievements: GetAchievementsUseCase
 
     @Before
     fun setup() {
@@ -45,6 +49,8 @@ class SessionViewModelTest {
         finishSession = mockk()
         resolveVariant = mockk()
         isDeloadWeek = mockk()
+        getAchievements = mockk()
+        coEvery { getAchievements.earnedBy(any()) } returns emptyList()
         every { resolveVariant(any(), any()) } answers { firstArg() }
         every { isDeloadWeek(any()) } returns false // identity — return exercise as-is
         coEvery { workoutRepo.getById("workout_a") } returns TrainingPlanData.workoutA
@@ -60,7 +66,20 @@ class SessionViewModelTest {
     }
 
     private fun makeViewModel() =
-        SessionViewModel(1L, "workout_a", sessionRepo, workoutRepo, finishSession, resolveVariant, isDeloadWeek)
+        SessionViewModel(1L, "workout_a", sessionRepo, workoutRepo, finishSession, resolveVariant, isDeloadWeek, getAchievements)
+
+    @Test
+    fun `finishing shows what the workout earned, once`() = runTest(testDispatcher) {
+        val iron = AchievementStatus(AchievementKind.IRON_10T, earnedAt = 1L, sessionId = 1L, progress = 10.2)
+        coEvery { getAchievements.earnedBy(1L) } returns listOf(iron)
+        val viewModel = makeViewModel()
+        advanceTimeBy(100)
+        viewModel.finishSession()
+        advanceTimeBy(100)
+        assertEquals(listOf(iron), viewModel.uiState.value.newAchievements)
+        viewModel.achievementsSeen()
+        assertTrue(viewModel.uiState.value.newAchievements.isEmpty())
+    }
 
     @Test
     fun `elapsedSecs counts from the session's start, so a resumed session keeps its time`() = runTest(testDispatcher) {
