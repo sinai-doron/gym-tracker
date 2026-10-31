@@ -11,6 +11,7 @@ import com.doron.gymtracker.account.BackendApi
 import com.doron.gymtracker.account.BackendException
 import com.doron.gymtracker.account.SyncConsent
 import com.doron.gymtracker.data.db.GymDatabase
+import com.doron.gymtracker.data.db.SyncMigration
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -54,19 +55,26 @@ class SyncRepository @Inject constructor(
     sealed interface Outcome {
         data object NotSignedIn : Outcome
         data object NoConsent : Outcome
-        data class Pushed(val changes: Int) : Outcome
+        data class Synced(val pulled: Int, val pushed: Int) : Outcome
         /** Worth trying again later: offline, rate limited, the server unavailable. */
         data class Retry(val reason: String) : Outcome
         data class Failed(val reason: String) : Outcome
     }
 
-    suspend fun push(): Outcome = lock.withLock {
+    /**
+     * Download first, then upload: a fresh install takes the server's ids for its plan before it
+     * uploads anything, and a local change newer than the server's survives the download.
+     */
+    suspend fun sync(): Outcome = lock.withLock {
         if (auth.currentUser() == null) return@withLock Outcome.NotSignedIn
         val agreed = consent.current() ?: return@withLock Outcome.NoConsent
         val outcome = try {
             // The backend refuses every push until it has the consent.
             if (!account.uploadConsent()) Outcome.Retry("consent not uploaded")
-            else Outcome.Pushed(pushAll(agreed.routes, agreed.music))
+            else {
+                val pulled = pullAll()
+                Outcome.Synced(pulled, pushAll(agreed.routes, agreed.music))
+            }
         } catch (e: BackendException.Unauthorized) {
             Outcome.NotSignedIn
         } catch (e: BackendException.Network) {
@@ -80,6 +88,25 @@ class SyncRepository @Inject constructor(
         }
         record(outcome)
         outcome
+    }
+
+    /** Every page after the cursor, each applied with its cursor in one transaction. */
+    private suspend fun pullAll(): Int = withContext(Dispatchers.IO) {
+        val puller = SyncPull(database.openHelper.writableDatabase)
+        puller.ensureTables()
+        var pulled = 0
+        while (true) {
+            val since = puller.cursor()
+            val page = auth.withAccessToken { token ->
+                api.get<PullPage>("/api/gym/sync/pull?since=$since&limit=$PULL_PAGE", token)
+            }
+            puller.applyPage(page.changes.map { IncomingChange(it.entity, it.id, it.updatedAt, it.deleted, it.data) }, page.next)
+            pulled += page.changes.size
+            if (!page.more || page.next == since) break
+        }
+        // Written underneath Room: tell its observers, so open screens show what arrived.
+        if (pulled > 0) database.invalidationTracker.refreshVersionsAsync()
+        pulled
     }
 
     private suspend fun pushAll(routesAllowed: Boolean, musicAllowed: Boolean): Int = withContext(Dispatchers.IO) {
@@ -209,6 +236,31 @@ class SyncRepository @Inject constructor(
         db.execSQL("DELETE FROM sync_track_chunks")
     }
 
+    /**
+     * Erases everything this user synced from the server (DELETE /api/gym/data), then signs out.
+     * The phone keeps its data. Its sync bookkeeping restarts, so a later sign-in uploads it all
+     * again rather than only what changed since.
+     */
+    suspend fun deleteServerDataAndSignOut() = lock.withLock {
+        auth.withAccessToken { token -> api.delete("/api/gym/data", token) }
+        account.signOut()
+        withContext(Dispatchers.IO) {
+            val db = database.openHelper.writableDatabase
+            SyncPull(db).ensureTables()
+            db.execSQL("DELETE FROM sync_cursor")
+            db.execSQL("DELETE FROM sync_track_chunks")
+            db.execSQL("DELETE FROM sync_track_parts")
+            db.execSQL("DELETE FROM sync_inbox")
+            val now = System.currentTimeMillis()
+            SyncMigration.TABLES.forEach { (table, kind) ->
+                db.execSQL("INSERT OR REPLACE INTO sync_changes SELECT '$kind', uuid, ?, 0 FROM `$table` WHERE uuid IS NOT NULL", arrayOf(now))
+            }
+            db.execSQL("INSERT OR REPLACE INTO sync_changes SELECT 'song', uuid, ?, 0 FROM track_log WHERE uuid IS NOT NULL", arrayOf(now))
+        }
+        requeueRouteData()
+        context.syncStatusStore.edit { it.clear() }
+    }
+
     /** Turning music back on: the server deleted the songs when it was turned off. */
     suspend fun requeueMusic() = withContext(Dispatchers.IO) {
         database.openHelper.writableDatabase.execSQL(
@@ -220,7 +272,7 @@ class SyncRepository @Inject constructor(
     private suspend fun record(outcome: Outcome) {
         context.syncStatusStore.edit {
             when (outcome) {
-                is Outcome.Pushed -> { it[LAST_SUCCESS] = System.currentTimeMillis(); it.remove(LAST_ERROR) }
+                is Outcome.Synced -> { it[LAST_SUCCESS] = System.currentTimeMillis(); it.remove(LAST_ERROR) }
                 is Outcome.Retry -> it[LAST_ERROR] = outcome.reason
                 is Outcome.Failed -> it[LAST_ERROR] = outcome.reason
                 else -> Unit
@@ -238,6 +290,9 @@ class SyncRepository @Inject constructor(
         val deleted: Boolean,
         val data: JsonObject? = null,
     )
+
+    @Serializable
+    private data class PullPage(val changes: List<WireChange>, val next: Long, val more: Boolean)
 
     @Serializable
     private data class PushBody(val changes: List<WireChange>)
@@ -258,5 +313,6 @@ class SyncRepository @Inject constructor(
         const val MAX_BATCH_BYTES = 80_000
         const val MAX_BATCH_CHANGES = 200
         const val PAGE = 400
+        const val PULL_PAGE = 200
     }
 }

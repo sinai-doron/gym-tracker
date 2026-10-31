@@ -55,7 +55,34 @@ object SyncMigration {
     val MIGRATION_11_12 = object : Migration(11, 12) {
         override fun migrate(db: SupportSQLiteDatabase) {
             tableStatements("track_log", "song").forEach(db::execSQL)
+            // The plan went up once without its keys (workout_a, an exercise's id); send it again
+            // with them, so a fresh install restoring from the server can match it.
+            db.execSQL("INSERT OR REPLACE INTO sync_changes SELECT 'workout', uuid, $NOW_MS, 0 FROM workouts WHERE uuid IS NOT NULL")
+            db.execSQL("INSERT OR REPLACE INTO sync_changes SELECT 'exercise', uuid, $NOW_MS, 0 FROM exercise_definitions WHERE uuid IS NOT NULL")
         }
+    }
+
+    /**
+     * A database created fresh at the current version never runs the migrations above: Room makes
+     * the tables (with their uuid columns) from the entities, and this adds the rest, the change
+     * log and every trigger, with nothing to backfill. Without it a fresh install would never
+     * record a change, nor have the tables a download writes. Idempotent.
+     */
+    fun installFresh(db: SupportSQLiteDatabase) {
+        freshStatements().forEach(db::execSQL)
+    }
+
+    fun freshStatements(): List<String> = buildList {
+        add(
+            "CREATE TABLE IF NOT EXISTS sync_changes (entity TEXT NOT NULL, uuid TEXT NOT NULL, " +
+                "changed_at INTEGER NOT NULL, deleted INTEGER NOT NULL, PRIMARY KEY (entity, uuid))"
+        )
+        add("CREATE TABLE IF NOT EXISTS sync_control (id INTEGER PRIMARY KEY CHECK (id = 1), applying INTEGER NOT NULL)")
+        add("INSERT OR IGNORE INTO sync_control (id, applying) VALUES (1, 0)")
+        (TABLES + ("track_log" to "song")).forEach { (table, kind) -> addAll(itemTriggers(table, kind)) }
+        addAll(groupTriggers("route_points", "routeId", "routes", "route_points"))
+        addAll(groupTriggers("location_log", "sessionId", "sessions", "track"))
+        addAll(goneTriggers())
     }
 
     fun statements(): List<String> = buildList {
@@ -79,18 +106,18 @@ object SyncMigration {
             "INSERT OR REPLACE INTO sync_changes SELECT 'track', s.uuid, $NOW_MS, 0 FROM sessions s " +
                 "WHERE EXISTS (SELECT 1 FROM location_log l WHERE l.sessionId = s.id)"
         )
-        // Deleting a route or a session deletes its points with it, on the server too.
-        add(
-            "CREATE TRIGGER IF NOT EXISTS sync_routes_points_gone AFTER DELETE ON routes " +
-                "WHEN OLD.uuid IS NOT NULL AND $NOT_APPLYING BEGIN " +
-                "INSERT OR REPLACE INTO sync_changes VALUES ('route_points', OLD.uuid, $NOW_MS, 1); END"
-        )
-        add(
-            "CREATE TRIGGER IF NOT EXISTS sync_sessions_track_gone AFTER DELETE ON sessions " +
-                "WHEN OLD.uuid IS NOT NULL AND $NOT_APPLYING BEGIN " +
-                "INSERT OR REPLACE INTO sync_changes VALUES ('track', OLD.uuid, $NOW_MS, 1); END"
-        )
+        addAll(goneTriggers())
     }
+
+    // Deleting a route or a session deletes its points with it, on the server too.
+    private fun goneTriggers() = listOf(
+        "CREATE TRIGGER IF NOT EXISTS sync_routes_points_gone AFTER DELETE ON routes " +
+            "WHEN OLD.uuid IS NOT NULL AND $NOT_APPLYING BEGIN " +
+            "INSERT OR REPLACE INTO sync_changes VALUES ('route_points', OLD.uuid, $NOW_MS, 1); END",
+        "CREATE TRIGGER IF NOT EXISTS sync_sessions_track_gone AFTER DELETE ON sessions " +
+            "WHEN OLD.uuid IS NOT NULL AND $NOT_APPLYING BEGIN " +
+            "INSERT OR REPLACE INTO sync_changes VALUES ('track', OLD.uuid, $NOW_MS, 1); END",
+    )
 
     private fun tableStatements(table: String, kind: String) = buildList {
         add("ALTER TABLE `$table` ADD COLUMN `uuid` TEXT")

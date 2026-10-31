@@ -62,6 +62,16 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    /** False when the server couldn't be reached: nothing was deleted, and the user stays signed in. */
+    private val _deleteFailed = MutableStateFlow(false)
+    val deleteFailed: StateFlow<Boolean> = _deleteFailed.asStateFlow()
+
+    fun deleteServerData() {
+        viewModelScope.launch {
+            _deleteFailed.value = runCatching { sync.deleteServerDataAndSignOut() }.isFailure
+        }
+    }
+
     fun signOut() {
         viewModelScope.launch { account.signOut() }
     }

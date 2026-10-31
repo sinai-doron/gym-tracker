@@ -83,6 +83,7 @@ fun SettingsScreen(
     val user by viewModel.user.collectAsState()
     val consent by viewModel.consent.collectAsState()
     val syncStatus by viewModel.syncStatus.collectAsState()
+    val deleteFailed by viewModel.deleteFailed.collectAsState()
     val currentLanguage by viewModel.languageCode.collectAsState()
     val healthConnectGranted by viewModel.healthConnectGranted.collectAsState()
     val lapDistanceM by viewModel.lapDistanceM.collectAsState()
@@ -184,7 +185,9 @@ fun SettingsScreen(
                     onSignIn = onSignIn,
                     onRoutesChange = viewModel::setSyncRoutes,
                     onMusicChange = viewModel::setSyncMusic,
-                    onSignOut = viewModel::signOut
+                    onSignOut = viewModel::signOut,
+                    onDeleteServerData = viewModel::deleteServerData,
+                    deleteFailed = deleteFailed
                 )
 
                 Spacer(Modifier.height(24.dp))

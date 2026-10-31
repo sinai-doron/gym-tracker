@@ -16,7 +16,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit
 
-/** Runs the upload when there is a network. Signed out or without consent, it does nothing. */
+/** Runs a sync (download, then upload) when there is a network. Signed out or without consent, it does nothing. */
 @HiltWorker
 class SyncWorker @AssistedInject constructor(
     @Assisted context: Context,
@@ -24,7 +24,7 @@ class SyncWorker @AssistedInject constructor(
     private val sync: SyncRepository,
 ) : CoroutineWorker(context, params) {
 
-    override suspend fun doWork(): Result = when (sync.push()) {
+    override suspend fun doWork(): Result = when (sync.sync()) {
         is SyncRepository.Outcome.Retry -> Result.retry()
         is SyncRepository.Outcome.Failed -> Result.failure()
         else -> Result.success()

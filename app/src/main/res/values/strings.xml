@@ -174,4 +174,8 @@
     <string name="consent_music_title">גם רשימת השירים</string>
     <string name="consent_music_text">אילו שירים התנגנו בכל אימון ומתי, מסרגל הניגון. בלעדיה האימונים מסונכרנים בלי השירים. אפשר לשנות בהגדרות.</string>
     <string name="account_music_hint">כיבוי מוחק את רשימת השירים מהשרת. היא נשארת בטלפון.</string>
+    <string name="account_delete_server_data">מחיקת הנתונים מהשרת</string>
+    <string name="account_delete_confirm_text">כל מה שסונכרן יימחק מהשרת, ואז תתבצע התנתקות. האימונים בטלפון נשארים.</string>
+    <string name="account_delete_confirm">מחיקה</string>
+    <string name="account_delete_failed">המחיקה לא הצליחה, לא נמחק כלום. כדאי לבדוק את החיבור ולנסות שוב.</string>
 </resources>

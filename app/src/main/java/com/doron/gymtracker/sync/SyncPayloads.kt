@@ -38,8 +38,8 @@ class SyncPayloads(private val db: SupportSQLiteDatabase) {
     }
 
     private fun data(entity: String, uuid: String): JsonObject? = when (entity) {
-        "workout" -> row("SELECT label FROM workouts WHERE uuid = ?", uuid) { c ->
-            buildJsonObject { put("label", c.str("label")) }
+        "workout" -> row("SELECT id, label FROM workouts WHERE uuid = ?", uuid) { c ->
+            buildJsonObject { put("key", c.str("id")); put("label", c.str("label")) }
         }
         "exercise" -> row(
             """SELECT e.*, w.uuid AS workout_uuid, v.uuid AS variant_uuid FROM exercise_definitions e
@@ -48,6 +48,7 @@ class SyncPayloads(private val db: SupportSQLiteDatabase) {
             uuid,
         ) { c ->
             buildJsonObject {
+                put("key", c.str("id"))
                 put("workoutId", c.str("workout_uuid"))
                 put("name", c.str("name"))
                 put("type", c.str("type"))

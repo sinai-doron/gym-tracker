@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -21,6 +22,10 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,6 +54,8 @@ fun AccountCard(
     onRoutesChange: (Boolean) -> Unit,
     onMusicChange: (Boolean) -> Unit,
     onSignOut: () -> Unit,
+    onDeleteServerData: () -> Unit,
+    deleteFailed: Boolean,
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -132,6 +139,32 @@ fun AccountCard(
             Spacer(Modifier.height(8.dp))
             OutlinedButton(onClick = onSignOut, modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(R.string.account_sign_out))
+            }
+            var confirmDelete by remember { mutableStateOf(false) }
+            TextButton(onClick = { confirmDelete = true }, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.account_delete_server_data), color = MaterialTheme.colorScheme.error)
+            }
+            if (deleteFailed) {
+                Text(
+                    stringResource(R.string.account_delete_failed),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+            if (confirmDelete) {
+                AlertDialog(
+                    onDismissRequest = { confirmDelete = false },
+                    title = { Text(stringResource(R.string.account_delete_server_data)) },
+                    text = { Text(stringResource(R.string.account_delete_confirm_text)) },
+                    confirmButton = {
+                        TextButton(onClick = { confirmDelete = false; onDeleteServerData() }) {
+                            Text(stringResource(R.string.account_delete_confirm), color = MaterialTheme.colorScheme.error)
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.cancel)) }
+                    }
+                )
             }
         }
     }

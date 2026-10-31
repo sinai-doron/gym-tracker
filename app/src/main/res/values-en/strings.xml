@@ -174,4 +174,8 @@
     <string name="consent_music_title">Your music too</string>
     <string name="consent_music_text">Which songs played during each workout, and when, from the now-playing bar. Without it, workouts sync without their songs. You can change this in Settings.</string>
     <string name="account_music_hint">Turning this off deletes your music list from the server. It stays on this phone.</string>
+    <string name="account_delete_server_data">Delete my data from the server</string>
+    <string name="account_delete_confirm_text">Everything synced is deleted from the server, then you are signed out. The workouts on this phone stay.</string>
+    <string name="account_delete_confirm">Delete</string>
+    <string name="account_delete_failed">Couldn\'t delete; nothing was deleted. Check your connection and try again.</string>
 </resources>
