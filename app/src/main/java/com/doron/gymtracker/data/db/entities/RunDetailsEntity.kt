@@ -1,10 +1,11 @@
 package com.doron.gymtracker.data.db.entities
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /** What a run or walk was set up with and the stats recorded for it, one row per cardio session. */
-@Entity(tableName = "run_details")
+@Entity(tableName = "run_details", indices = [Index(value = ["uuid"], unique = true)])
 data class RunDetailsEntity(
     @PrimaryKey val sessionId: Long,
     val targetType: String,
@@ -17,13 +18,17 @@ data class RunDetailsEntity(
     val elevationGainM: Double?,
     val calories: Int?,
     val weatherTempC: Int?,
-    val weatherCondition: String?
+    val weatherCondition: String?,
+    /** The id the server knows this row by (sync). Set by the database when left null. */
+    val uuid: String? = null
 )
 
 /** A pause the runner asked for during a run; [endedAt] is null while it lasts. */
-@Entity(tableName = "run_pauses", primaryKeys = ["sessionId", "startedAt"])
+@Entity(tableName = "run_pauses", primaryKeys = ["sessionId", "startedAt"], indices = [Index(value = ["uuid"], unique = true)])
 data class RunPauseEntity(
     val sessionId: Long,
     val startedAt: Long,
-    val endedAt: Long?
+    val endedAt: Long?,
+    /** The id the server knows this row by (sync). Set by the database when left null. */
+    val uuid: String? = null
 )

@@ -1,9 +1,10 @@
 package com.doron.gymtracker.data.db.entities
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "exercise_definitions")
+@Entity(tableName = "exercise_definitions", indices = [Index(value = ["uuid"], unique = true)])
 data class ExerciseDefinitionEntity(
     @PrimaryKey val id: String,
     val workoutId: String,
@@ -21,5 +22,7 @@ data class ExerciseDefinitionEntity(
     /** Position within the workout; the user can reorder exercises. */
     val sortOrder: Int = 0,
     /** Removed by the user. Kept (not deleted) so history stays and the plan sync won't re-add it. */
-    val isRemoved: Boolean = false
+    val isRemoved: Boolean = false,
+    /** The id the server knows this row by (sync). Set by the database when left null. */
+    val uuid: String? = null
 )

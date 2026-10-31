@@ -3,6 +3,7 @@ package com.doron.gymtracker.data.di
 import android.content.Context
 import androidx.room.Room
 import com.doron.gymtracker.data.db.GymDatabase
+import com.doron.gymtracker.data.db.SyncMigration
 import com.doron.gymtracker.data.db.dao.ExerciseEntryDao
 import com.doron.gymtracker.data.db.dao.LocationLogDao
 import com.doron.gymtracker.data.db.dao.RouteDao
@@ -26,7 +27,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): GymDatabase =
         Room.databaseBuilder(context, GymDatabase::class.java, "gym_tracker.db")
-            .addMigrations(GymDatabase.MIGRATION_1_2, GymDatabase.MIGRATION_2_3, GymDatabase.MIGRATION_3_4, GymDatabase.MIGRATION_4_5, GymDatabase.MIGRATION_5_6, GymDatabase.MIGRATION_6_7, GymDatabase.MIGRATION_7_8, GymDatabase.MIGRATION_8_9, GymDatabase.MIGRATION_9_10)
+            .addMigrations(GymDatabase.MIGRATION_1_2, GymDatabase.MIGRATION_2_3, GymDatabase.MIGRATION_3_4, GymDatabase.MIGRATION_4_5, GymDatabase.MIGRATION_5_6, GymDatabase.MIGRATION_6_7, GymDatabase.MIGRATION_7_8, GymDatabase.MIGRATION_8_9, GymDatabase.MIGRATION_9_10, SyncMigration.MIGRATION_10_11)
             .build()
 
     @Provides fun provideWorkoutDao(db: GymDatabase): WorkoutDao = db.workoutDao()
