@@ -1,6 +1,9 @@
 package com.doron.gymtracker
 
+import android.app.LocaleManager
+import android.os.Build
 import android.os.Bundle
+import android.os.LocaleList
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -26,6 +29,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (applyDefaultLocale()) return  // recreated in Hebrew straight away
         enableEdgeToEdge()
         lifecycleScope.launch { workoutRepository.ensureSeeded() }
         if (savedInstanceState == null) {
@@ -36,5 +40,20 @@ class MainActivity : ComponentActivity() {
                 NavGraph(runToResume = runToResume.value)
             }
         }
+    }
+
+    /**
+     * Hebrew is the default, but Android starts a fresh install in the system language.
+     * Set from the activity, not the Application: a change made before the first activity
+     * exists only half lands (right-to-left layout with English strings until a restart).
+     * Returns true when the activity is about to be recreated with the new locale.
+     */
+    private fun applyDefaultLocale(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return false
+        val localeManager = getSystemService(LocaleManager::class.java) ?: return false
+        if (!localeManager.applicationLocales.isEmpty) return false
+        localeManager.applicationLocales = LocaleList.forLanguageTags("iw")
+        recreate()
+        return true
     }
 }
