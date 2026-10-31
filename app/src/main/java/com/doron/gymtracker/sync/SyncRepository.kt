@@ -97,7 +97,16 @@ class SyncRepository @Inject constructor(
                 val changes = payloads.changes(entry.entity, entry.uuid, entry.changedAt, entry.deleted)
                 val size = changes.sumOf { estimate(it) }
                 if (size > MAX_BATCH_BYTES) {
-                    // Too big for one request (a very long imported route): left for a later version.
+                    // A long run's track: its chunks go in requests of their own, and the entry is
+                    // cleared only once every one of them is in. A single item too big on its own
+                    // (only a very long imported route could be) is left for a later version.
+                    if (changes.size > 1 && changes.all { estimate(it) <= MAX_BATCH_BYTES }) {
+                        if (batch.isEmpty()) {
+                            sent += pushInParts(db, payloads, entry, changes)
+                            continue
+                        }
+                        break
+                    }
                     skip(entry)
                     continue
                 }
@@ -125,6 +134,36 @@ class SyncRepository @Inject constructor(
             sent += body.changes.size
         }
         sent
+    }
+
+    /** One entry's changes over several requests, each under the size limit; then clears it. */
+    private suspend fun pushInParts(
+        db: androidx.sqlite.db.SupportSQLiteDatabase,
+        payloads: SyncPayloads,
+        entry: Pending,
+        changes: List<OutgoingChange>,
+    ): Int {
+        val parts = mutableListOf<MutableList<OutgoingChange>>()
+        var bytes = 0
+        for (change in changes) {
+            val size = estimate(change)
+            if (parts.isEmpty() || bytes + size > MAX_BATCH_BYTES || parts.last().size >= MAX_BATCH_CHANGES) {
+                parts += mutableListOf<OutgoingChange>()
+                bytes = 0
+            }
+            parts.last() += change
+            bytes += size
+        }
+        for (part in parts) {
+            val body = PushBody(part.map { it.toWire() })
+            auth.withAccessToken { token -> api.post<PushBody, PushResult>("/api/gym/sync/push", body, token) }
+        }
+        if (entry.entity == SyncPayloads.TRACK) payloads.recordSentChunks(entry.uuid, changes.count { !it.deleted })
+        db.execSQL(
+            "DELETE FROM sync_changes WHERE entity = ? AND uuid = ? AND changed_at = ?",
+            arrayOf(entry.entity, entry.uuid, entry.changedAt),
+        )
+        return changes.size
     }
 
     private data class Pending(val entity: String, val uuid: String, val changedAt: Long, val deleted: Boolean)
