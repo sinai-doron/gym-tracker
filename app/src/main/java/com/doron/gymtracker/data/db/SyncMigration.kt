@@ -63,6 +63,27 @@ object SyncMigration {
     }
 
     /**
+     * Version 13: every sync trigger again, in the form that can't conflict (see [log]). The
+     * version 11 and 12 ones crashed the app on a second change to the same item, or on any new
+     * row. Data and the change log are untouched.
+     */
+    val MIGRATION_12_13 = object : Migration(12, 13) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.query("SELECT name FROM sqlite_master WHERE type = 'trigger' AND name LIKE 'sync_%'").use { c ->
+                buildList { while (c.moveToNext()) add(c.getString(0)) }
+            }.forEach { db.execSQL("DROP TRIGGER IF EXISTS `$it`") }
+            triggerStatements().forEach(db::execSQL)
+        }
+    }
+
+    private fun triggerStatements(): List<String> = buildList {
+        (TABLES + ("track_log" to "song")).forEach { (table, kind) -> addAll(itemTriggers(table, kind)) }
+        addAll(groupTriggers("route_points", "routeId", "routes", "route_points"))
+        addAll(groupTriggers("location_log", "sessionId", "sessions", "track"))
+        addAll(goneTriggers())
+    }
+
+    /**
      * A database created fresh at the current version never runs the migrations above: Room makes
      * the tables (with their uuid columns) from the entities, and this adds the rest, the change
      * log and every trigger, with nothing to backfill. Without it a fresh install would never
@@ -79,10 +100,7 @@ object SyncMigration {
         )
         add("CREATE TABLE IF NOT EXISTS sync_control (id INTEGER PRIMARY KEY CHECK (id = 1), applying INTEGER NOT NULL)")
         add("INSERT OR IGNORE INTO sync_control (id, applying) VALUES (1, 0)")
-        (TABLES + ("track_log" to "song")).forEach { (table, kind) -> addAll(itemTriggers(table, kind)) }
-        addAll(groupTriggers("route_points", "routeId", "routes", "route_points"))
-        addAll(groupTriggers("location_log", "sessionId", "sessions", "track"))
-        addAll(goneTriggers())
+        addAll(triggerStatements())
     }
 
     fun statements(): List<String> = buildList {
@@ -111,12 +129,10 @@ object SyncMigration {
 
     // Deleting a route or a session deletes its points with it, on the server too.
     private fun goneTriggers() = listOf(
-        "CREATE TRIGGER IF NOT EXISTS sync_routes_points_gone AFTER DELETE ON routes " +
-            "WHEN OLD.uuid IS NOT NULL AND $NOT_APPLYING BEGIN " +
-            "INSERT OR REPLACE INTO sync_changes VALUES ('route_points', OLD.uuid, $NOW_MS, 1); END",
-        "CREATE TRIGGER IF NOT EXISTS sync_sessions_track_gone AFTER DELETE ON sessions " +
-            "WHEN OLD.uuid IS NOT NULL AND $NOT_APPLYING BEGIN " +
-            "INSERT OR REPLACE INTO sync_changes VALUES ('track', OLD.uuid, $NOW_MS, 1); END",
+        "CREATE TRIGGER IF NOT EXISTS sync_routes_points_gone AFTER DELETE ON routes BEGIN " +
+            log("route_points", "OLD.uuid", 1, NOT_APPLYING) + " END",
+        "CREATE TRIGGER IF NOT EXISTS sync_sessions_track_gone AFTER DELETE ON sessions BEGIN " +
+            log("track", "OLD.uuid", 1, NOT_APPLYING) + " END",
     )
 
     private fun tableStatements(table: String, kind: String) = buildList {
@@ -127,32 +143,42 @@ object SyncMigration {
         add("INSERT OR REPLACE INTO sync_changes SELECT '$kind', uuid, $NOW_MS, 0 FROM `$table`")
     }
 
-    private fun itemTriggers(table: String, kind: String) = listOf(
-        // A new row gets its uuid here when the code that made it didn't set one.
-        "CREATE TRIGGER IF NOT EXISTS sync_${table}_insert AFTER INSERT ON `$table` BEGIN " +
-            "UPDATE `$table` SET uuid = $NEW_UUID WHERE rowid = NEW.rowid AND NEW.uuid IS NULL; " +
-            "INSERT OR REPLACE INTO sync_changes SELECT '$kind', uuid, $NOW_MS, 0 FROM `$table` " +
-            "WHERE rowid = NEW.rowid AND $NOT_APPLYING; END",
-        // An update from an entity built without its uuid would clear it; keep the old one.
-        "CREATE TRIGGER IF NOT EXISTS sync_${table}_update AFTER UPDATE ON `$table` BEGIN " +
-            "UPDATE `$table` SET uuid = OLD.uuid WHERE rowid = NEW.rowid AND NEW.uuid IS NULL; " +
-            "INSERT OR REPLACE INTO sync_changes SELECT '$kind', coalesce(NEW.uuid, OLD.uuid), $NOW_MS, 0 " +
-            "WHERE coalesce(NEW.uuid, OLD.uuid) IS NOT NULL AND $NOT_APPLYING; END",
-        "CREATE TRIGGER IF NOT EXISTS sync_${table}_delete AFTER DELETE ON `$table` " +
-            "WHEN OLD.uuid IS NOT NULL AND $NOT_APPLYING BEGIN " +
-            "INSERT OR REPLACE INTO sync_changes VALUES ('$kind', OLD.uuid, $NOW_MS, 1); END",
-    )
+    /**
+     * Records one change: drops the item's previous entry, then adds the new one. Never
+     * INSERT OR REPLACE inside a trigger: SQLite lets the outer statement's conflict clause win,
+     * and Room writes with INSERT OR ABORT / UPDATE OR ABORT, so a second change to an item (or a
+     * new row, whose uuid-filling UPDATE logs it once already) aborted the app's own write. Found
+     * on the owner's phone on 2026-10-31: starting a run crashed.
+     */
+    private fun log(kind: String, uuid: String, deleted: Int, condition: String) =
+        "DELETE FROM sync_changes WHERE entity = '$kind' AND uuid = $uuid AND $condition; " +
+            "INSERT INTO sync_changes SELECT '$kind', $uuid, $NOW_MS, $deleted WHERE $uuid IS NOT NULL AND $condition;"
+
+    private fun itemTriggers(table: String, kind: String): List<String> {
+        val rowUuid = "(SELECT uuid FROM `$table` WHERE rowid = NEW.rowid)"
+        return listOf(
+            // A new row gets its uuid here when the code that made it didn't set one.
+            "CREATE TRIGGER IF NOT EXISTS sync_${table}_insert AFTER INSERT ON `$table` BEGIN " +
+                "UPDATE `$table` SET uuid = $NEW_UUID WHERE rowid = NEW.rowid AND NEW.uuid IS NULL; " +
+                log(kind, rowUuid, 0, NOT_APPLYING) + " END",
+            // An update from an entity built without its uuid would clear it; keep the old one.
+            "CREATE TRIGGER IF NOT EXISTS sync_${table}_update AFTER UPDATE ON `$table` BEGIN " +
+                "UPDATE `$table` SET uuid = OLD.uuid WHERE rowid = NEW.rowid AND NEW.uuid IS NULL; " +
+                log(kind, "coalesce(NEW.uuid, OLD.uuid)", 0, NOT_APPLYING) + " END",
+            "CREATE TRIGGER IF NOT EXISTS sync_${table}_delete AFTER DELETE ON `$table` BEGIN " +
+                log(kind, "OLD.uuid", 1, NOT_APPLYING) + " END",
+        )
+    }
 
     private fun groupTriggers(table: String, parentColumn: String, parentTable: String, kind: String): List<String> {
-        val log = "INSERT OR REPLACE INTO sync_changes SELECT '$kind', p.uuid, $NOW_MS, 0 FROM `$parentTable` p " +
-            "WHERE p.id = %s AND p.uuid IS NOT NULL AND $NOT_APPLYING;"
+        fun parentUuid(ref: String) = "(SELECT uuid FROM `$parentTable` WHERE id = $ref)"
         return listOf(
             "CREATE TRIGGER IF NOT EXISTS sync_${table}_insert AFTER INSERT ON `$table` BEGIN " +
-                log.format("NEW.$parentColumn") + " END",
+                log(kind, parentUuid("NEW.$parentColumn"), 0, NOT_APPLYING) + " END",
             "CREATE TRIGGER IF NOT EXISTS sync_${table}_update AFTER UPDATE ON `$table` BEGIN " +
-                log.format("NEW.$parentColumn") + " END",
+                log(kind, parentUuid("NEW.$parentColumn"), 0, NOT_APPLYING) + " END",
             "CREATE TRIGGER IF NOT EXISTS sync_${table}_delete AFTER DELETE ON `$table` BEGIN " +
-                log.format("OLD.$parentColumn") + " END",
+                log(kind, parentUuid("OLD.$parentColumn"), 0, NOT_APPLYING) + " END",
         )
     }
 }
