@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+. Everything the app backed up before still is; only the signed-in session never
+     leaves the phone (doron-backend auth design §6.5): a restored or new phone starts signed out. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="session.enc" />
+        <exclude domain="sharedpref" path="session_keyset_prefs.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="session.enc" />
+        <exclude domain="sharedpref" path="session_keyset_prefs.xml" />
+    </device-transfer>
+</data-extraction-rules>

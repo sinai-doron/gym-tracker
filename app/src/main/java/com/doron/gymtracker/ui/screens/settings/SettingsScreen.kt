@@ -63,6 +63,7 @@ import com.doron.gymtracker.data.BackupManager
 import com.doron.gymtracker.data.HealthConnectManager
 import com.doron.gymtracker.data.prefs.AudioFeedback
 import com.doron.gymtracker.data.prefs.SettingsPrefs
+import com.doron.gymtracker.ui.screens.account.AccountCard
 
 data class LanguageOption(val code: String, val displayName: String)
 
@@ -76,8 +77,11 @@ private val languages = listOf(
 fun SettingsScreen(
     onBack: () -> Unit,
     onReviewPermissions: () -> Unit,
+    onSignIn: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
+    val user by viewModel.user.collectAsState()
+    val consent by viewModel.consent.collectAsState()
     val currentLanguage by viewModel.languageCode.collectAsState()
     val healthConnectGranted by viewModel.healthConnectGranted.collectAsState()
     val lapDistanceM by viewModel.lapDistanceM.collectAsState()
@@ -169,6 +173,17 @@ fun SettingsScreen(
             modifier = Modifier.fillMaxSize().padding(padding)
         ) {
             Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(16.dp)) {
+                Text(stringResource(R.string.account_title), style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(12.dp))
+                AccountCard(
+                    user = user,
+                    consent = consent,
+                    onSignIn = onSignIn,
+                    onRoutesChange = viewModel::setSyncRoutes,
+                    onSignOut = viewModel::signOut
+                )
+
+                Spacer(Modifier.height(24.dp))
                 Text(
                     stringResource(R.string.language),
                     style = MaterialTheme.typography.titleLarge

@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 val localProps = Properties().apply {
@@ -32,6 +33,18 @@ android {
 
         // MapLibre ships native code per CPU type; keep phones (arm64) and the emulator (x86_64)
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
+
+        // doron-backend: optional sign-in and sync. Staging is apps.neonsheep.dev; for a backend on
+        // this computer set backend.url=http://localhost:7300 in local.properties and run
+        // `adb reverse tcp:7300 tcp:7300`.
+        val backendUrl = localProps.getProperty("backend.url", "https://apps.neonsheep.dev")
+        buildConfigField("String", "BACKEND_URL", "\"${backendUrl.trimEnd('/')}\"")
+        // The backend's web OAuth client: the audience of every Google ID token. Not a secret.
+        buildConfigField(
+            "String",
+            "GOOGLE_WEB_CLIENT_ID",
+            "\"381579861019-jdv1n9tsqhlh40iius7liep7p6co8cun.apps.googleusercontent.com\""
+        )
     }
 
     // One fixed key, so an install from any computer updates the app in place instead of
@@ -67,6 +80,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -112,11 +126,23 @@ dependencies {
     // Image loading
     implementation(libs.coil.compose)
 
+    // Sign-in and sync with doron-backend
+    implementation(libs.credentials)
+    implementation(libs.credentials.play.services.auth)
+    implementation(libs.googleid)
+    implementation(libs.tink.android)
+    implementation(libs.okhttp)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.work.runtime.ktx)
+    implementation(libs.hilt.work)
+    ksp(libs.hilt.androidx.compiler)
+
     // Unit tests
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.turbine)
     testImplementation(libs.mockk)
+    testImplementation(libs.mockwebserver)
 
     // Instrumented tests
     androidTestImplementation(libs.androidx.junit)

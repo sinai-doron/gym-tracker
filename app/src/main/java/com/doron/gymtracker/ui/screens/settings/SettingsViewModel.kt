@@ -3,6 +3,9 @@ package com.doron.gymtracker.ui.screens.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import android.net.Uri
+import com.doron.gymtracker.account.Account
+import com.doron.gymtracker.account.Consent
+import com.doron.gymtracker.account.SignedInUser
 import com.doron.gymtracker.data.BackupManager
 import com.doron.gymtracker.data.HealthConnectManager
 import com.doron.gymtracker.data.prefs.AudioFeedback
@@ -20,8 +23,23 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val prefs: SettingsPrefs,
     val healthConnect: HealthConnectManager,
-    private val backupManager: BackupManager
+    private val backupManager: BackupManager,
+    private val account: Account
 ) : ViewModel() {
+
+    val user: StateFlow<SignedInUser?> = account.user
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    val consent: StateFlow<Consent?> = account.consentState
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    fun setSyncRoutes(routes: Boolean) {
+        viewModelScope.launch { account.setRoutes(routes) }
+    }
+
+    fun signOut() {
+        viewModelScope.launch { account.signOut() }
+    }
 
     sealed interface BackupEvent {
         data object Saved : BackupEvent

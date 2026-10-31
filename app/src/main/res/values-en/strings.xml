@@ -139,4 +139,29 @@
     <string name="onboarding_enabled">Enabled ✓</string>
     <string name="permissions">Permissions</string>
     <string name="permissions_review">Review permissions</string>
+
+    <!-- Account and sync -->
+    <string name="account_title">Account</string>
+    <string name="account_signed_out_text">Signing in is optional. Without it the app works as usual and everything stays on this phone. Signed in, you can back up and sync your workouts to the server.</string>
+    <string name="account_sign_in">Sign in with Google</string>
+    <string name="account_sign_out">Sign out</string>
+    <string name="account_routes_hint">Turning this off deletes your routes from the server. They stay on this phone.</string>
+    <string name="account_sign_in_failed">Sign-in didn\'t work. Check your internet connection and try again.</string>
+    <string name="account_not_allowed">This account isn\'t allowed to sign in yet.</string>
+    <string name="consent_title">Before you sign in</string>
+    <string name="consent_intro">Once you sign in, the app keeps a copy of your data on the server, as a backup and so you can use it on another phone.</string>
+    <string name="consent_synced_title">What syncs</string>
+    <string name="consent_synced">Your training plan, workouts and sets, and runs and walks: distance, time, pace, laps, climb and calories.</string>
+    <string name="consent_never_title">What never syncs</string>
+    <string name="consent_never">Data from Health Connect (steps and heart rate) and the songs you listened to.</string>
+    <string name="consent_why_title">Why</string>
+    <string name="consent_why">A backup, and the same data on a new or second phone.</string>
+    <string name="consent_who_title">Who sees it</string>
+    <string name="consent_who">Only you. It is kept on neonsheep\'s server, apart from every other user\'s data.</string>
+    <string name="consent_stop_title">How to stop</string>
+    <string name="consent_stop">Signing out stops syncing. You can also delete everything from the server; it stays on this phone.</string>
+    <string name="consent_routes_title">Run routes too (GPS)</string>
+    <string name="consent_routes_text">A route shows where and when you ran or walked. Without it, runs sync without their route. You can change this in Settings.</string>
+    <string name="consent_agree">I agree, sign in</string>
+    <string name="consent_not_now">Not now</string>
 </resources>
