@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,6 +32,8 @@ import coil.compose.AsyncImage
 import com.doron.gymtracker.R
 import com.doron.gymtracker.account.Consent
 import com.doron.gymtracker.account.SignedInUser
+import com.doron.gymtracker.sync.SyncStatus
+import android.text.format.DateUtils
 
 /**
  * Settings' account section. Signed out: what signing in is for, and that it is optional.
@@ -40,6 +43,8 @@ import com.doron.gymtracker.account.SignedInUser
 fun AccountCard(
     user: SignedInUser?,
     consent: Consent?,
+    syncStatus: SyncStatus,
+    onSyncNow: () -> Unit,
     onSignIn: () -> Unit,
     onRoutesChange: (Boolean) -> Unit,
     onSignOut: () -> Unit,
@@ -97,11 +102,37 @@ fun AccountCard(
                 Spacer(Modifier.width(12.dp))
                 Switch(checked = consent?.routes == true, onCheckedChange = onRoutesChange)
             }
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(8.dp))
+            HorizontalDivider()
+            Spacer(Modifier.height(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    syncStatusText(syncStatus),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (syncStatus.lastError != null) MaterialTheme.colorScheme.error
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
+                )
+                TextButton(onClick = onSyncNow) { Text(stringResource(R.string.account_sync_now)) }
+            }
+            Spacer(Modifier.height(8.dp))
             OutlinedButton(onClick = onSignOut, modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(R.string.account_sign_out))
             }
         }
+    }
+}
+
+@Composable
+private fun syncStatusText(status: SyncStatus): String {
+    val last = status.lastSuccess?.let {
+        DateUtils.getRelativeTimeSpanString(it, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS).toString()
+    }
+    return when {
+        status.lastError != null && last != null -> stringResource(R.string.account_sync_pending_since, last)
+        status.lastError != null -> stringResource(R.string.account_sync_pending)
+        last != null -> stringResource(R.string.account_synced_at, last)
+        else -> stringResource(R.string.account_sync_never)
     }
 }
 

@@ -141,6 +141,8 @@
     <string name="permissions_review">עבור שוב על ההרשאות</string>
 
     <!-- Account and sync -->
+    <string name="onboarding_account_title">גיבוי בשרת (רשות)</string>
+    <string name="onboarding_account_text">התחברות עם Google שומרת עותק של האימונים בשרת, לגיבוי ולטלפון נוסף. אפשר לדלג ולהתחבר אחר כך בהגדרות.</string>
     <string name="account_title">חשבון</string>
     <string name="account_signed_out_text">ההתחברות היא רשות. בלעדיה האפליקציה עובדת כרגיל והכל נשאר בטלפון. אחרי התחברות אפשר לגבות ולסנכרן את האימונים לשרת.</string>
     <string name="account_sign_in">התחברות עם Google</string>
@@ -164,4 +166,9 @@
     <string name="consent_routes_text">מסלול מראה איפה רצת או הלכת ומתי. בלעדיו ריצות מסונכרנות בלי המסלול. אפשר לשנות בהגדרות.</string>
     <string name="consent_agree">מסכים/ה, להתחברות</string>
     <string name="consent_not_now">לא עכשיו</string>
+    <string name="account_sync_now">סנכרון עכשיו</string>
+    <string name="account_synced_at">סונכרן %1$s</string>
+    <string name="account_sync_never">עוד לא סונכרן</string>
+    <string name="account_sync_pending">הסנכרון ממתין (אין חיבור?)</string>
+    <string name="account_sync_pending_since">סונכרן %1$s · הסנכרון האחרון ממתין</string>
 </resources>

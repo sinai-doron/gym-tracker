@@ -3,7 +3,12 @@ package com.doron.gymtracker.ui.screens.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import android.net.Uri
+import android.content.Context
 import com.doron.gymtracker.account.Account
+import com.doron.gymtracker.sync.SyncRepository
+import com.doron.gymtracker.sync.SyncStatus
+import com.doron.gymtracker.sync.SyncWorker
+import dagger.hilt.android.qualifiers.ApplicationContext
 import com.doron.gymtracker.account.Consent
 import com.doron.gymtracker.account.SignedInUser
 import com.doron.gymtracker.data.BackupManager
@@ -24,8 +29,15 @@ class SettingsViewModel @Inject constructor(
     private val prefs: SettingsPrefs,
     val healthConnect: HealthConnectManager,
     private val backupManager: BackupManager,
-    private val account: Account
+    private val account: Account,
+    private val sync: SyncRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
+
+    val syncStatus: StateFlow<SyncStatus> = sync.status
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SyncStatus(null, null))
+
+    fun syncNow() = SyncWorker.syncSoon(context)
 
     val user: StateFlow<SignedInUser?> = account.user
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
@@ -34,7 +46,12 @@ class SettingsViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     fun setSyncRoutes(routes: Boolean) {
-        viewModelScope.launch { account.setRoutes(routes) }
+        viewModelScope.launch {
+            account.setRoutes(routes)
+            // Turned off, the server deleted the route data; turned back on, it all goes up again.
+            if (routes) sync.requeueRouteData()
+            SyncWorker.syncSoon(context)
+        }
     }
 
     fun signOut() {

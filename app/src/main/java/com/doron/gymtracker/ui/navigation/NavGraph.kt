@@ -53,7 +53,8 @@ fun NavGraph(runToResume: CardioRun? = null, showOnboarding: Boolean = false) {
                     } else {
                         navController.navigate("home") { popUpTo("onboarding") { inclusive = true } }
                     }
-                }
+                },
+                onSignIn = { navController.navigate("sync-consent") }
             )
         }
         composable("home") {

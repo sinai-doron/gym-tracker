@@ -3,6 +3,7 @@ package com.doron.gymtracker
 import android.app.LocaleManager
 import android.os.Build
 import android.os.Bundle
+import com.doron.gymtracker.sync.SyncWorker
 import android.os.LocaleList
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -63,6 +64,13 @@ class MainActivity : ComponentActivity() {
      * exists only half lands (right-to-left layout with English strings until a restart).
      * Returns true when the activity is about to be recreated with the new locale.
      */
+    // A workout or run just ended, or the app is put away: upload what changed (only when signed in
+    // and consented; otherwise the job does nothing).
+    override fun onStop() {
+        super.onStop()
+        SyncWorker.syncSoon(this)
+    }
+
     private fun applyDefaultLocale(): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return false
         val localeManager = getSystemService(LocaleManager::class.java) ?: return false

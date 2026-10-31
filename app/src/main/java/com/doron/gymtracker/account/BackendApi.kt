@@ -121,7 +121,9 @@ class BackendApi(
         private const val PLATFORM = "android"
         internal val JSON = "application/json".toMediaType()
         private val EMPTY_BODY = ByteArray(0).toRequestBody(null)
-        internal val json = Json { ignoreUnknownKeys = true; explicitNulls = true; encodeDefaults = true }
+        // No null properties on the wire: a sync deletion must carry no `data` at all, and the backend
+        // refuses one that does. Nulls inside a payload (JsonNull) are kept.
+        internal val json = Json { ignoreUnknownKeys = true; explicitNulls = false; encodeDefaults = true }
 
         fun defaultClient(): OkHttpClient = OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)

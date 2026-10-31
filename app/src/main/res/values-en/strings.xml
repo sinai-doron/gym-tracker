@@ -141,6 +141,8 @@
     <string name="permissions_review">Review permissions</string>
 
     <!-- Account and sync -->
+    <string name="onboarding_account_title">Back up to the server (optional)</string>
+    <string name="onboarding_account_text">Signing in with Google keeps a copy of your workouts on the server, as a backup and for another phone. You can skip this and sign in later in Settings.</string>
     <string name="account_title">Account</string>
     <string name="account_signed_out_text">Signing in is optional. Without it the app works as usual and everything stays on this phone. Signed in, you can back up and sync your workouts to the server.</string>
     <string name="account_sign_in">Sign in with Google</string>
@@ -164,4 +166,9 @@
     <string name="consent_routes_text">A route shows where and when you ran or walked. Without it, runs sync without their route. You can change this in Settings.</string>
     <string name="consent_agree">I agree, sign in</string>
     <string name="consent_not_now">Not now</string>
+    <string name="account_sync_now">Sync now</string>
+    <string name="account_synced_at">Synced %1$s</string>
+    <string name="account_sync_never">Not synced yet</string>
+    <string name="account_sync_pending">Sync is waiting (offline?)</string>
+    <string name="account_sync_pending_since">Synced %1$s · the latest sync is waiting</string>
 </resources>

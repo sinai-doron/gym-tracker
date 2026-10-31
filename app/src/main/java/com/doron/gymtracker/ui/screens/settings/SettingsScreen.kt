@@ -82,6 +82,7 @@ fun SettingsScreen(
 ) {
     val user by viewModel.user.collectAsState()
     val consent by viewModel.consent.collectAsState()
+    val syncStatus by viewModel.syncStatus.collectAsState()
     val currentLanguage by viewModel.languageCode.collectAsState()
     val healthConnectGranted by viewModel.healthConnectGranted.collectAsState()
     val lapDistanceM by viewModel.lapDistanceM.collectAsState()
@@ -178,6 +179,8 @@ fun SettingsScreen(
                 AccountCard(
                     user = user,
                     consent = consent,
+                    syncStatus = syncStatus,
+                    onSyncNow = viewModel::syncNow,
                     onSignIn = onSignIn,
                     onRoutesChange = viewModel::setSyncRoutes,
                     onSignOut = viewModel::signOut

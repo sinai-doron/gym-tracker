@@ -61,12 +61,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.viewModelScope
 import com.doron.gymtracker.R
+import com.doron.gymtracker.account.Account
 import com.doron.gymtracker.data.HealthConnectManager
 import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.media.MediaPermissionHelper
 import com.doron.gymtracker.ui.theme.Purple
 import com.doron.gymtracker.ui.theme.SuccessGreen
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -83,6 +85,8 @@ enum class OnboardingStep(
     LOCATION(R.drawable.onboarding_location, R.string.onboarding_location_title, R.string.onboarding_location_text, R.string.onboarding_location_button),
     HEALTH(R.drawable.onboarding_health, R.string.onboarding_health_title, R.string.onboarding_health_text, R.string.onboarding_health_button),
     MUSIC(R.drawable.onboarding_music, R.string.onboarding_music_title, R.string.onboarding_music_text, R.string.onboarding_music_button),
+    // Optional sign-in: opens the same consent screen as Settings, so nothing signs in without it.
+    ACCOUNT(R.drawable.onboarding_account, R.string.onboarding_account_title, R.string.onboarding_account_text, R.string.account_sign_in),
     READY(R.drawable.onboarding_ready, R.string.onboarding_ready_title, R.string.onboarding_ready_text, R.string.onboarding_start);
 
     val asksPermission: Boolean get() = this != WELCOME && this != READY
@@ -91,8 +95,11 @@ enum class OnboardingStep(
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
     private val settingsPrefs: SettingsPrefs,
-    val healthConnect: HealthConnectManager
+    val healthConnect: HealthConnectManager,
+    private val account: Account
 ) : ViewModel() {
+
+    suspend fun signedIn(): Boolean = account.user.first() != null
 
     /** The pages that apply to this phone: older Androids grant some permissions at install. */
     val steps: List<OnboardingStep> = OnboardingStep.entries.filter { step ->
@@ -118,6 +125,7 @@ private fun Context.granted(permission: String) =
 @Composable
 fun OnboardingScreen(
     onFinished: () -> Unit,
+    onSignIn: () -> Unit,
     viewModel: OnboardingViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -146,10 +154,15 @@ fun OnboardingScreen(
         granted[OnboardingStep.LOCATION] = context.granted(Manifest.permission.ACCESS_FINE_LOCATION)
         granted[OnboardingStep.MUSIC] = MediaPermissionHelper.isNotificationListenerEnabled(context)
         granted[OnboardingStep.HEALTH] = viewModel.healthConnect.hasAllPermissions()
+        granted[OnboardingStep.ACCOUNT] = viewModel.signedIn()
     }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         val wasMusic = granted[OnboardingStep.MUSIC] == true
         checks++
+        // Back from the consent screen, signed in: move along
+        if (steps.getOrNull(pagerState.currentPage) == OnboardingStep.ACCOUNT && granted[OnboardingStep.ACCOUNT] != true) {
+            scope.launch { if (viewModel.signedIn()) { granted[OnboardingStep.ACCOUNT] = true; advance() } }
+        }
         // Coming back from the listener settings with it switched on: move along
         if (!wasMusic && steps.getOrNull(pagerState.currentPage) == OnboardingStep.MUSIC &&
             MediaPermissionHelper.isNotificationListenerEnabled(context)
@@ -177,6 +190,7 @@ fun OnboardingScreen(
             )
             OnboardingStep.HEALTH -> healthPermission.launch(HealthConnectManager.ALL_PERMISSIONS)
             OnboardingStep.MUSIC -> MediaPermissionHelper.openNotificationListenerSettings(context)
+            OnboardingStep.ACCOUNT -> onSignIn()
             OnboardingStep.READY -> finish()
         }
     }
