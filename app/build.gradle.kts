@@ -18,7 +18,11 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.doron.gymtracker"
+        // The published identity, fixed forever at the first Play upload: dev.neonsheep.<app>
+        // for every app (decided 2026-10-31). The Kotlin namespace above is internal and
+        // stays as it is. A new applicationId is a different app to Android, so moving
+        // from com.doron.gymtracker means Settings → Backup there, Restore here.
+        applicationId = "dev.neonsheep.gymtracker"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
