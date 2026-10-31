@@ -22,6 +22,7 @@ import com.doron.gymtracker.ui.screens.cardio.GpsLockViewModel
 import com.doron.gymtracker.ui.screens.history.SessionDetailScreen
 import com.doron.gymtracker.ui.screens.history.SessionDetailViewModel
 import com.doron.gymtracker.ui.screens.home.HomeScreen
+import com.doron.gymtracker.ui.screens.onboarding.OnboardingScreen
 import com.doron.gymtracker.ui.screens.plan.PlanEditorScreen
 import com.doron.gymtracker.ui.screens.progress.ExerciseProgressScreen
 import com.doron.gymtracker.ui.screens.session.SessionScreen
@@ -34,14 +35,26 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @Composable
-fun NavGraph(runToResume: CardioRun? = null) {
+fun NavGraph(runToResume: CardioRun? = null, showOnboarding: Boolean = false) {
     val navController = rememberNavController()
     LaunchedEffect(runToResume) {
         runToResume?.let { run ->
             navController.navigate("cardio/${run.sessionId}/${run.type}") { launchSingleTop = true }
         }
     }
-    NavHost(navController = navController, startDestination = "home") {
+    NavHost(navController = navController, startDestination = if (showOnboarding) "onboarding" else "home") {
+        composable("onboarding") {
+            OnboardingScreen(
+                onFinished = {
+                    // From Settings, go back there; on first launch, replace the wizard with home
+                    if (navController.previousBackStackEntry != null) {
+                        navController.popBackStack()
+                    } else {
+                        navController.navigate("home") { popUpTo("onboarding") { inclusive = true } }
+                    }
+                }
+            )
+        }
         composable("home") {
             HomeScreen(
                 onSessionStart = { sessionId, workoutId ->
@@ -78,7 +91,10 @@ fun NavGraph(runToResume: CardioRun? = null) {
             ExerciseProgressScreen(onBack = { navController.popBackStack() })
         }
         composable("settings") {
-            SettingsScreen(onBack = { navController.popBackStack() })
+            SettingsScreen(
+                onBack = { navController.popBackStack() },
+                onReviewPermissions = { navController.navigate("onboarding") }
+            )
         }
         composable("session/{sessionId}/{workoutId}") { backStackEntry ->
             val sessionId = backStackEntry.arguments?.getString("sessionId")?.toLongOrNull() ?: return@composable

@@ -75,6 +75,7 @@ private val languages = listOf(
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onReviewPermissions: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val currentLanguage by viewModel.languageCode.collectAsState()
@@ -282,6 +283,13 @@ fun SettingsScreen(
                             Text(stringResource(R.string.restore_backup))
                         }
                     }
+                }
+
+                Spacer(Modifier.height(24.dp))
+                Text(stringResource(R.string.permissions), style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(12.dp))
+                OutlinedButton(onClick = onReviewPermissions, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.permissions_review))
                 }
 
                 if (viewModel.healthConnect.isAvailable) {

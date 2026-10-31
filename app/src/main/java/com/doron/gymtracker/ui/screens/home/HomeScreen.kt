@@ -112,24 +112,12 @@ fun HomeScreen(
     var pendingCardioType by remember { mutableStateOf<String?>(null) }
     val stepsCard = remember { BringIntoViewRequester() }
 
-    // Step counting needs ACTIVITY_RECOGNITION (sensor) or Health Connect (full-day steps)
-    val activityPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { viewModel.refresh() }
     val weatherLocationLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { viewModel.refresh() }
     val healthConnectPermissionLauncher = rememberLauncherForActivityResult(
         PermissionController.createRequestPermissionResultContract()
     ) { viewModel.refresh() }
-    LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
-            ContextCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION)
-                != PackageManager.PERMISSION_GRANTED
-        ) {
-            activityPermissionLauncher.launch(Manifest.permission.ACTIVITY_RECOGNITION)
-        }
-    }
 
     // Coming back from a workout changes the next workout and the stats
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {

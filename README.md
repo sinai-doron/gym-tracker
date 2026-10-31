@@ -10,6 +10,14 @@ English available in Settings.
 
 ## Features
 
+### First launch
+
+- **Permissions wizard.** A fresh install opens on a welcome page and then one page per
+  permission: notifications, step counting, location, Health Connect and music controls.
+  Each has an illustration, a short reason, an enable button and Skip; dots at the bottom
+  show where you are. Pages that don't apply to the phone are left out.
+- **Run it again** from Settings → Permissions.
+
 ### Home
 
 - **Two equal cards: gym and cardio.**

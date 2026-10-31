@@ -111,4 +111,32 @@
     <string name="audio_feedback_tones">Tones</string>
     <string name="audio_feedback_off">Off</string>
     <string name="audio_feedback_hint">Laps, target and auto-pause — through headphones when connected</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_welcome_title">Hey there! 👋</string>
+    <string name="onboarding_welcome_text">Glad you\'re here! I\'ll count your sets, runs and steps. A few quick permissions and we\'re off.</string>
+    <string name="onboarding_lets_go">Let\'s go</string>
+    <string name="onboarding_notifications_title">Ding! Next set</string>
+    <string name="onboarding_notifications_text">Notifications let me show your rest timer and your run on the lock screen, so you don\'t have to unlock your phone mid-workout.</string>
+    <string name="onboarding_notifications_button">Turn on notifications</string>
+    <string name="onboarding_activity_title">Every step counts</string>
+    <string name="onboarding_activity_text">Physical activity access lets me count your steps with the phone\'s sensor and show how close you are to your daily goal.</string>
+    <string name="onboarding_activity_button">Allow step counting</string>
+    <string name="onboarding_location_title">Where are we running?</string>
+    <string name="onboarding_location_text">Precise location lets me draw your route, measure distance and pace, and show today\'s weather.</string>
+    <string name="onboarding_location_button">Allow location</string>
+    <string name="onboarding_health_title">Heart of a champion</string>
+    <string name="onboarding_health_text">Connecting Health Connect saves your workouts and runs, reads all-day steps and your watch\'s heart rate.</string>
+    <string name="onboarding_health_button">Connect Health Connect</string>
+    <string name="onboarding_music_title">Music is half the workout</string>
+    <string name="onboarding_music_text">Notification access lets me show what\'s playing and skip or pause without leaving the app. In the screen that opens, turn on Workout Tracker.</string>
+    <string name="onboarding_music_button">Open settings</string>
+    <string name="onboarding_ready_title">Ready to move!</string>
+    <string name="onboarding_ready_text">All set. You can change permissions any time from Settings.</string>
+    <string name="onboarding_start">Let\'s train</string>
+    <string name="onboarding_skip">Skip</string>
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_enabled">Enabled ✓</string>
+    <string name="permissions">Permissions</string>
+    <string name="permissions_review">Review permissions</string>
 </resources>

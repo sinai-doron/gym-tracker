@@ -111,4 +111,32 @@
     <string name="audio_feedback_tones">צלילים</string>
     <string name="audio_feedback_off">כבוי</string>
     <string name="audio_feedback_hint">הקפות, מטרה והשהיה אוטומטית — באוזניות כשמחוברות</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_welcome_title">ברוכים הבאים! 👋</string>
+    <string name="onboarding_welcome_text">שמחים שהגעת! האפליקציה תספור את הסטים, הריצות והצעדים שלך. רק כמה הרשאות קטנות ויוצאים לדרך.</string>
+    <string name="onboarding_lets_go">יאללה, מתחילים</string>
+    <string name="onboarding_notifications_title">דינג! זמן לסט הבא</string>
+    <string name="onboarding_notifications_text">התראות מאפשרות לי להציג את טיימר המנוחה ואת הריצה במסך הנעילה, כדי שלא תצטרך לפתוח את הטלפון באמצע האימון.</string>
+    <string name="onboarding_notifications_button">הפעל התראות</string>
+    <string name="onboarding_activity_title">כל צעד נחשב</string>
+    <string name="onboarding_activity_text">גישה לפעילות גופנית מאפשרת לי לספור את הצעדים שלך מחיישן הטלפון ולהראות כמה התקרבת ליעד היומי.</string>
+    <string name="onboarding_activity_button">אפשר ספירת צעדים</string>
+    <string name="onboarding_location_title">לאן רצים היום?</string>
+    <string name="onboarding_location_text">מיקום מדויק נדרש כדי לשרטט את מסלול הריצה, למדוד מרחק וקצב, ולהראות את מזג האוויר להיום.</string>
+    <string name="onboarding_location_button">אפשר מיקום</string>
+    <string name="onboarding_health_title">לב של אלוף</string>
+    <string name="onboarding_health_text">חיבור ל-Health Connect שומר את האימונים והריצות שלך, קורא צעדים מכל היום ודופק מהשעון.</string>
+    <string name="onboarding_health_button">חבר את Health Connect</string>
+    <string name="onboarding_music_title">מוזיקה זה חצי אימון</string>
+    <string name="onboarding_music_text">גישה להתראות מאפשרת לי להציג את השיר שמתנגן ולתת לך לדלג או לעצור בלי לצאת מהאפליקציה. בחלון שייפתח, הפעל את \"מעקב אימונים\".</string>
+    <string name="onboarding_music_button">פתח הגדרות</string>
+    <string name="onboarding_ready_title">מוכנים לזוז!</string>
+    <string name="onboarding_ready_text">הכל מוכן. אפשר תמיד לשנות הרשאות דרך ההגדרות.</string>
+    <string name="onboarding_start">בוא נתאמן</string>
+    <string name="onboarding_skip">דלג</string>
+    <string name="onboarding_next">הבא</string>
+    <string name="onboarding_enabled">מופעל ✓</string>
+    <string name="permissions">הרשאות</string>
+    <string name="permissions_review">עבור שוב על ההרשאות</string>
 </resources>

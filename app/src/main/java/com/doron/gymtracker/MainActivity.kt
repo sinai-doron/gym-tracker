@@ -11,10 +11,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.lifecycleScope
 import com.doron.gymtracker.data.CardioRecorder
 import com.doron.gymtracker.data.CardioRun
+import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.ui.navigation.NavGraph
 import com.doron.gymtracker.ui.theme.GymTrackerTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,21 +25,34 @@ class MainActivity : ComponentActivity() {
 
     @Inject lateinit var workoutRepository: WorkoutRepository
     @Inject lateinit var cardioRecorder: CardioRecorder
+    @Inject lateinit var settingsPrefs: SettingsPrefs
 
     // A run still going (or cut off by the system) to reopen, found at launch
     private val runToResume = mutableStateOf<CardioRun?>(null)
+
+    // Null until read, so neither home nor the wizard flashes up first
+    private val showOnboarding = mutableStateOf<Boolean?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (applyDefaultLocale()) return  // recreated in Hebrew straight away
         enableEdgeToEdge()
         lifecycleScope.launch { workoutRepository.ensureSeeded() }
+        lifecycleScope.launch {
+            if (!settingsPrefs.onboardingDone.first() && isUpdate()) {
+                // Upgraded from a version without the wizard: permissions were already asked for
+                settingsPrefs.setOnboardingDone()
+            }
+            showOnboarding.value = !settingsPrefs.onboardingDone.first()
+        }
         if (savedInstanceState == null) {
             lifecycleScope.launch { runToResume.value = cardioRecorder.recoverOpenRun() }
         }
         setContent {
             GymTrackerTheme {
-                NavGraph(runToResume = runToResume.value)
+                showOnboarding.value?.let { onboarding ->
+                    NavGraph(runToResume = runToResume.value, showOnboarding = onboarding)
+                }
             }
         }
     }
@@ -55,5 +70,10 @@ class MainActivity : ComponentActivity() {
         localeManager.applicationLocales = LocaleList.forLanguageTags("iw")
         recreate()
         return true
+    }
+
+    private fun isUpdate(): Boolean {
+        val info = packageManager.getPackageInfo(packageName, 0)
+        return info.firstInstallTime != info.lastUpdateTime
     }
 }

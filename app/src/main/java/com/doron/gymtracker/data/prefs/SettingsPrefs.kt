@@ -31,6 +31,7 @@ private val STEP_GOAL = intPreferencesKey("step_goal")
 private val BODY_WEIGHT_KG = floatPreferencesKey("body_weight_kg")
 private val AUDIO_FEEDBACK = stringPreferencesKey("audio_feedback")
 private val RUN_TARGET_ROUTE_ID = longPreferencesKey("run_target_route_id")
+private val ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
 
 enum class AudioFeedback { VOICE, TONES, OFF }
 
@@ -50,6 +51,14 @@ class SettingsPrefs @Inject constructor(
 
     suspend fun dismissMediaPermission() {
         context.settingsDataStore.edit { prefs -> prefs[MEDIA_PERMISSION_DISMISSED] = true }
+    }
+
+    /** Whether the first-launch permissions wizard was finished or skipped. */
+    val onboardingDone: Flow<Boolean> = context.settingsDataStore.data
+        .map { prefs -> prefs[ONBOARDING_DONE] ?: false }
+
+    suspend fun setOnboardingDone() {
+        context.settingsDataStore.edit { prefs -> prefs[ONBOARDING_DONE] = true }
     }
 
     /** The last run target chosen, so the next run starts with it. */
