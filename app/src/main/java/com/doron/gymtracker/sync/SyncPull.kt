@@ -63,7 +63,7 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
             changes.sortedBy { ORDER.indexOf(it.entity).let { i -> if (i < 0) ORDER.size else i } }
                 .forEach { change -> if (!apply(change)) defer(change) }
             retryInbox()
-            db.execSQL("INSERT OR REPLACE INTO sync_cursor (id, seq) VALUES (1, ?)", arrayOf(next))
+            db.execSQL("INSERT OR REPLACE INTO sync_cursor (id, seq) VALUES (1, ?)", arrayOf<Any?>(next))
             db.execSQL("UPDATE sync_control SET applying = 0 WHERE id = 1")
             db.setTransactionSuccessful()
         } finally {
@@ -85,7 +85,7 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
                 }
             }
             val done = waiting.filter { apply(it) }
-            done.forEach { db.execSQL("DELETE FROM sync_inbox WHERE entity = ? AND id = ?", arrayOf(it.entity, it.id)) }
+            done.forEach { db.execSQL("DELETE FROM sync_inbox WHERE entity = ? AND id = ?", arrayOf<Any?>(it.entity, it.id)) }
             if (done.isEmpty()) return
         }
     }
@@ -93,7 +93,7 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
     private fun defer(change: IncomingChange) {
         db.execSQL(
             "INSERT OR REPLACE INTO sync_inbox VALUES (?, ?, ?, ?, ?)",
-            arrayOf(change.entity, change.id, change.updatedAt, if (change.deleted) 1 else 0, change.data?.toString()),
+            arrayOf<Any?>(change.entity, change.id, change.updatedAt, if (change.deleted) 1 else 0, change.data?.toString()),
         )
     }
 
@@ -162,7 +162,7 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
             "run" -> {
                 val sessionId = numericIdOf("sessions", data.str("sessionId")) ?: return false
                 // Keyed by its session locally: the run of a session is one row whatever its uuid.
-                db.execSQL("DELETE FROM run_details WHERE sessionId = ? AND uuid != ?", arrayOf(sessionId, change.id))
+                db.execSQL("DELETE FROM run_details WHERE sessionId = ? AND uuid != ?", arrayOf<Any?>(sessionId, change.id))
                 upsert("run_details", change.id, ContentValues().apply {
                     put("sessionId", sessionId)
                     put("targetType", data.str("targetType"))
@@ -190,7 +190,7 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
             })
             "route_points" -> {
                 val routeId = numericIdOf("routes", data.str("routeId")) ?: return false
-                db.execSQL("DELETE FROM route_points WHERE routeId = ?", arrayOf(routeId))
+                db.execSQL("DELETE FROM route_points WHERE routeId = ?", arrayOf<Any?>(routeId))
                 data.getValue("points").jsonArray.forEachIndexed { seq, p ->
                     val point = p.jsonArray
                     db.insert("route_points", SQLiteDatabase.CONFLICT_REPLACE, ContentValues().apply {
@@ -208,7 +208,7 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
                 numericIdOf("sessions", sessionUuid) ?: return false
                 db.execSQL(
                     "INSERT OR REPLACE INTO sync_track_parts VALUES (?, ?, ?, ?)",
-                    arrayOf(change.id, sessionUuid, data.int("chunk"), data.getValue("points").toString()),
+                    arrayOf<Any?>(change.id, sessionUuid, data.int("chunk"), data.getValue("points").toString()),
                 )
                 rebuildTrack(sessionUuid)
                 true
@@ -229,26 +229,26 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
     /** A local change not uploaded yet, made after this one, wins; otherwise it is dropped. */
     private fun localIsNewer(change: IncomingChange): Boolean {
         val local = db.query(
-            "SELECT changed_at FROM sync_changes WHERE entity = ? AND uuid = ?", arrayOf(change.entity, change.id)
+            "SELECT changed_at FROM sync_changes WHERE entity = ? AND uuid = ?", arrayOf<Any?>(change.entity, change.id)
         ).use { if (it.moveToFirst()) it.getLong(0) else null } ?: return false
         if (local > change.updatedAt) return true
-        db.execSQL("DELETE FROM sync_changes WHERE entity = ? AND uuid = ?", arrayOf(change.entity, change.id))
+        db.execSQL("DELETE FROM sync_changes WHERE entity = ? AND uuid = ?", arrayOf<Any?>(change.entity, change.id))
         return false
     }
 
     private fun deleteLocal(change: IncomingChange) {
         when (change.entity) {
             "route_points" -> db.execSQL(
-                "DELETE FROM route_points WHERE routeId IN (SELECT id FROM routes WHERE uuid = ?)", arrayOf(change.id)
+                "DELETE FROM route_points WHERE routeId IN (SELECT id FROM routes WHERE uuid = ?)", arrayOf<Any?>(change.id)
             )
             SyncPayloads.TRACK -> {
-                val session = db.query("SELECT session_uuid FROM sync_track_parts WHERE id = ?", arrayOf(change.id))
+                val session = db.query("SELECT session_uuid FROM sync_track_parts WHERE id = ?", arrayOf<Any?>(change.id))
                     .use { if (it.moveToFirst()) it.getString(0) else null } ?: return
-                db.execSQL("DELETE FROM sync_track_parts WHERE id = ?", arrayOf(change.id))
+                db.execSQL("DELETE FROM sync_track_parts WHERE id = ?", arrayOf<Any?>(change.id))
                 rebuildTrack(session)
             }
             else -> TABLE_OF[change.entity]?.let { table ->
-                db.execSQL("DELETE FROM `$table` WHERE uuid = ?", arrayOf(change.id))
+                db.execSQL("DELETE FROM `$table` WHERE uuid = ?", arrayOf<Any?>(change.id))
             }
         }
     }
@@ -257,9 +257,9 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
     private fun rebuildTrack(sessionUuid: String) {
         val sessionId = numericIdOf("sessions", sessionUuid) ?: return
         val parts = db.query(
-            "SELECT points FROM sync_track_parts WHERE session_uuid = ? ORDER BY chunk", arrayOf(sessionUuid)
+            "SELECT points FROM sync_track_parts WHERE session_uuid = ? ORDER BY chunk", arrayOf<Any?>(sessionUuid)
         ).use { c -> buildList { while (c.moveToNext()) add(SyncJson.parseToJsonElement(c.getString(0)).jsonArray) } }
-        db.execSQL("DELETE FROM location_log WHERE sessionId = ?", arrayOf(sessionId))
+        db.execSQL("DELETE FROM location_log WHERE sessionId = ?", arrayOf<Any?>(sessionId))
         parts.forEach { points ->
             points.forEach { p ->
                 val point = p.jsonArray
@@ -276,21 +276,21 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
             }
         }
         // What the server holds for this session's track: kept in step for uploads.
-        db.execSQL("INSERT OR REPLACE INTO sync_track_chunks VALUES (?, ?)", arrayOf(sessionUuid, parts.size))
+        db.execSQL("INSERT OR REPLACE INTO sync_track_chunks VALUES (?, ?)", arrayOf<Any?>(sessionUuid, parts.size))
     }
 
     /** By uuid, else by the plan's own key; a new item takes its key as its local id. */
     private fun upsertPlanItem(table: String, uuid: String, key: String?, values: ContentValues): Boolean {
         values.put("uuid", uuid)
-        if (db.update(table, SQLiteDatabase.CONFLICT_ABORT, values, "uuid = ?", arrayOf(uuid)) > 0) return true
+        if (db.update(table, SQLiteDatabase.CONFLICT_ABORT, values, "uuid = ?", arrayOf<Any?>(uuid)) > 0) return true
         if (key != null) {
-            val oldUuid = db.query("SELECT uuid FROM `$table` WHERE id = ?", arrayOf(key))
+            val oldUuid = db.query("SELECT uuid FROM `$table` WHERE id = ?", arrayOf<Any?>(key))
                 .use { if (it.moveToFirst()) it.getString(0) else null }
-            if (db.update(table, SQLiteDatabase.CONFLICT_ABORT, values, "id = ?", arrayOf(key)) > 0) {
+            if (db.update(table, SQLiteDatabase.CONFLICT_ABORT, values, "id = ?", arrayOf<Any?>(key)) > 0) {
                 // A fresh install's own copy of the plan takes the server's uuid; the upload its
                 // old uuid was waiting for is no longer wanted.
                 if (oldUuid != null && oldUuid != uuid) {
-                    db.execSQL("DELETE FROM sync_changes WHERE uuid = ?", arrayOf(oldUuid))
+                    db.execSQL("DELETE FROM sync_changes WHERE uuid = ?", arrayOf<Any?>(oldUuid))
                 }
                 return true
             }
@@ -302,17 +302,17 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
 
     private fun upsert(table: String, uuid: String, values: ContentValues): Boolean {
         values.put("uuid", uuid)
-        if (db.update(table, SQLiteDatabase.CONFLICT_ABORT, values, "uuid = ?", arrayOf(uuid)) == 0) {
+        if (db.update(table, SQLiteDatabase.CONFLICT_ABORT, values, "uuid = ?", arrayOf<Any?>(uuid)) == 0) {
             db.insert(table, SQLiteDatabase.CONFLICT_ABORT, values)
         }
         return true
     }
 
     private fun idOf(table: String, uuid: String): String? =
-        db.query("SELECT id FROM `$table` WHERE uuid = ?", arrayOf(uuid)).use { if (it.moveToFirst()) it.getString(0) else null }
+        db.query("SELECT id FROM `$table` WHERE uuid = ?", arrayOf<Any?>(uuid)).use { if (it.moveToFirst()) it.getString(0) else null }
 
     private fun numericIdOf(table: String, uuid: String): Long? =
-        db.query("SELECT id FROM `$table` WHERE uuid = ?", arrayOf(uuid)).use { if (it.moveToFirst()) it.getLong(0) else null }
+        db.query("SELECT id FROM `$table` WHERE uuid = ?", arrayOf<Any?>(uuid)).use { if (it.moveToFirst()) it.getLong(0) else null }
 
     companion object {
         /** Parents before children, so most items go in on the first try. */

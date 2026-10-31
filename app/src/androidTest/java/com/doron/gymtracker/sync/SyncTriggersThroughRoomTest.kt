@@ -50,7 +50,7 @@ class SyncTriggersThroughRoomTest {
     fun tearDown() = db.close()
 
     private fun pending(kind: String): Long =
-        sql.query("SELECT count(*) FROM sync_changes WHERE entity = ?", arrayOf(kind)).use { it.moveToFirst(); it.getLong(0) }
+        sql.query("SELECT count(*) FROM sync_changes WHERE entity = ?", arrayOf<Any?>(kind)).use { it.moveToFirst(); it.getLong(0) }
 
     @Test
     fun startingARunAndRecordingItWorks() = runTest {

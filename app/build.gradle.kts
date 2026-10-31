@@ -2,7 +2,6 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
@@ -16,7 +15,7 @@ val localProps = Properties().apply {
 
 android {
     namespace = "com.doron.gymtracker"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         // The published identity, fixed forever at the first Play upload: dev.neonsheep.<app>
@@ -25,7 +24,9 @@ android {
         // from com.doron.gymtracker means Settings → Backup there, Restore here.
         applicationId = "dev.neonsheep.gymtracker"
         minSdk = 26
-        targetSdk = 35
+        // Play requires API 36 for new apps and updates since 2026-08-31. Not 37 yet: that would
+        // take on Android 17's behaviour changes untested.
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -74,9 +75,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions {
-        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
@@ -154,4 +152,11 @@ dependencies {
 
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
+
+// AGP 9 compiles Kotlin itself (no kotlin-android plugin); the JVM target follows compileOptions.
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
 }

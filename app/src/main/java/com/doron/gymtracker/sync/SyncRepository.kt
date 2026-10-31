@@ -157,7 +157,7 @@ class SyncRepository @Inject constructor(
                 }
                 db.execSQL(
                     "DELETE FROM sync_changes WHERE entity = ? AND uuid = ? AND changed_at = ?",
-                    arrayOf(entry.entity, entry.uuid, entry.changedAt),
+                    arrayOf<Any?>(entry.entity, entry.uuid, entry.changedAt),
                 )
             }
             sent += body.changes.size
@@ -190,7 +190,7 @@ class SyncRepository @Inject constructor(
         if (entry.entity == SyncPayloads.TRACK) payloads.recordSentChunks(entry.uuid, changes.count { !it.deleted })
         db.execSQL(
             "DELETE FROM sync_changes WHERE entity = ? AND uuid = ? AND changed_at = ?",
-            arrayOf(entry.entity, entry.uuid, entry.changedAt),
+            arrayOf<Any?>(entry.entity, entry.uuid, entry.changedAt),
         )
         return changes.size
     }
@@ -223,16 +223,16 @@ class SyncRepository @Inject constructor(
     suspend fun requeueRouteData() = withContext(Dispatchers.IO) {
         val db = database.openHelper.writableDatabase
         val now = System.currentTimeMillis()
-        db.execSQL("INSERT OR REPLACE INTO sync_changes SELECT 'route', uuid, ?, 0 FROM routes WHERE uuid IS NOT NULL", arrayOf(now))
+        db.execSQL("INSERT OR REPLACE INTO sync_changes SELECT 'route', uuid, ?, 0 FROM routes WHERE uuid IS NOT NULL", arrayOf<Any?>(now))
         db.execSQL(
             "INSERT OR REPLACE INTO sync_changes SELECT 'route_points', r.uuid, ?, 0 FROM routes r " +
                 "WHERE r.uuid IS NOT NULL AND EXISTS (SELECT 1 FROM route_points p WHERE p.routeId = r.id)",
-            arrayOf(now),
+            arrayOf<Any?>(now),
         )
         db.execSQL(
             "INSERT OR REPLACE INTO sync_changes SELECT 'track', s.uuid, ?, 0 FROM sessions s " +
                 "WHERE s.uuid IS NOT NULL AND EXISTS (SELECT 1 FROM location_log l WHERE l.sessionId = s.id)",
-            arrayOf(now),
+            arrayOf<Any?>(now),
         )
         db.execSQL("CREATE TABLE IF NOT EXISTS sync_track_chunks (session_uuid TEXT PRIMARY KEY, chunks INTEGER NOT NULL)")
         db.execSQL("DELETE FROM sync_track_chunks")
@@ -255,9 +255,9 @@ class SyncRepository @Inject constructor(
             db.execSQL("DELETE FROM sync_inbox")
             val now = System.currentTimeMillis()
             SyncMigration.TABLES.forEach { (table, kind) ->
-                db.execSQL("INSERT OR REPLACE INTO sync_changes SELECT '$kind', uuid, ?, 0 FROM `$table` WHERE uuid IS NOT NULL", arrayOf(now))
+                db.execSQL("INSERT OR REPLACE INTO sync_changes SELECT '$kind', uuid, ?, 0 FROM `$table` WHERE uuid IS NOT NULL", arrayOf<Any?>(now))
             }
-            db.execSQL("INSERT OR REPLACE INTO sync_changes SELECT 'song', uuid, ?, 0 FROM track_log WHERE uuid IS NOT NULL", arrayOf(now))
+            db.execSQL("INSERT OR REPLACE INTO sync_changes SELECT 'song', uuid, ?, 0 FROM track_log WHERE uuid IS NOT NULL", arrayOf<Any?>(now))
         }
         requeueRouteData()
         context.syncStatusStore.edit { it.clear() }
@@ -267,7 +267,7 @@ class SyncRepository @Inject constructor(
     suspend fun requeueMusic() = withContext(Dispatchers.IO) {
         database.openHelper.writableDatabase.execSQL(
             "INSERT OR REPLACE INTO sync_changes SELECT 'song', uuid, ?, 0 FROM track_log WHERE uuid IS NOT NULL",
-            arrayOf(System.currentTimeMillis()),
+            arrayOf<Any?>(System.currentTimeMillis()),
         )
     }
 

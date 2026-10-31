@@ -1,7 +1,7 @@
 [versions]
-agp = "8.7.3"
-kotlin = "2.1.0"
-ksp = "2.1.0-1.0.29"
+agp = "9.5.0"
+kotlin = "2.4.21"
+ksp = "2.3.13"
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitExt = "1.2.1"
@@ -9,9 +9,9 @@ espresso = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.9.3"
 composeBom = "2025.03.00"
-hilt = "2.54"
-hiltNavigationCompose = "1.2.0"
-room = "2.6.1"
+hilt = "2.60.1"
+hiltNavigationCompose = "1.4.0"
+room = "2.8.5"
 navigationCompose = "2.8.5"
 datastore = "1.1.2"
 coroutines = "1.9.0"
@@ -78,7 +78,6 @@ hilt-androidx-compiler = { group = "androidx.hilt", name = "hilt-compiler", vers
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

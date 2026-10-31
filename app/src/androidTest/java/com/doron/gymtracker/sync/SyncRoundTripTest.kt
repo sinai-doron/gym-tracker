@@ -79,12 +79,12 @@ class SyncRoundTripTest {
         for (i in 0 until 1300) {
             a.execSQL(
                 "INSERT INTO location_log (sessionId, timestamp, latitude, longitude, speed) VALUES (2, ?, ?, 34.78, 3.1)",
-                arrayOf(10000L + i, 32.08 + i * 1e-5),
+                arrayOf<Any?>(10000L + i, 32.08 + i * 1e-5),
             )
         }
         a.execSQL("INSERT INTO routes (name, distanceMeters, createdAt) VALUES ('Park loop', 3000, 1)")
         for (i in 0 until 5) {
-            a.execSQL("INSERT INTO route_points (routeId, seq, latitude, longitude, elevationM) VALUES (1, ?, 32.1, 34.8, NULL)", arrayOf(i))
+            a.execSQL("INSERT INTO route_points (routeId, seq, latitude, longitude, elevationM) VALUES (1, ?, 32.1, 34.8, NULL)", arrayOf<Any?>(i))
         }
     }
 

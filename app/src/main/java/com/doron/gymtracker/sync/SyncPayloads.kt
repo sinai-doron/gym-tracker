@@ -137,7 +137,7 @@ class SyncPayloads(private val db: SupportSQLiteDatabase) {
                 db.query(
                     "SELECT p.latitude, p.longitude, p.elevationM FROM route_points p JOIN routes r ON r.id = p.routeId " +
                         "WHERE r.uuid = ? ORDER BY p.seq",
-                    arrayOf(uuid),
+                    arrayOf<Any?>(uuid),
                 ).use { c ->
                     while (c.moveToNext()) add(
                         JsonArray(listOf(JsonPrimitive(c.getDouble(0)), JsonPrimitive(c.getDouble(1)), c.jsonDouble(2)))
@@ -187,7 +187,7 @@ class SyncPayloads(private val db: SupportSQLiteDatabase) {
         db.query(
             "SELECT l.timestamp, l.latitude, l.longitude, l.speed, l.altitude, l.accuracy, l.bearing " +
                 "FROM location_log l JOIN sessions s ON s.id = l.sessionId WHERE s.uuid = ? ORDER BY l.timestamp, l.id",
-            arrayOf(sessionUuid),
+            arrayOf<Any?>(sessionUuid),
         ).use { c ->
             while (c.moveToNext()) add(
                 JsonArray(
@@ -202,16 +202,16 @@ class SyncPayloads(private val db: SupportSQLiteDatabase) {
 
     /** How many chunks of this session's track the server holds, so extra ones can be deleted. */
     fun sentChunks(sessionUuid: String): Int =
-        db.query("SELECT chunks FROM sync_track_chunks WHERE session_uuid = ?", arrayOf(sessionUuid))
+        db.query("SELECT chunks FROM sync_track_chunks WHERE session_uuid = ?", arrayOf<Any?>(sessionUuid))
             .use { if (it.moveToFirst()) it.getInt(0) else 0 }
 
     fun recordSentChunks(sessionUuid: String, chunks: Int) {
-        if (chunks == 0) db.execSQL("DELETE FROM sync_track_chunks WHERE session_uuid = ?", arrayOf(sessionUuid))
-        else db.execSQL("INSERT OR REPLACE INTO sync_track_chunks VALUES (?, ?)", arrayOf(sessionUuid, chunks))
+        if (chunks == 0) db.execSQL("DELETE FROM sync_track_chunks WHERE session_uuid = ?", arrayOf<Any?>(sessionUuid))
+        else db.execSQL("INSERT OR REPLACE INTO sync_track_chunks VALUES (?, ?)", arrayOf<Any?>(sessionUuid, chunks))
     }
 
     private fun <T> row(sql: String, uuid: String, read: (Cursor) -> T): T? =
-        db.query(sql, arrayOf(uuid)).use { if (it.moveToFirst()) read(it) else null }
+        db.query(sql, arrayOf<Any?>(uuid)).use { if (it.moveToFirst()) read(it) else null }
 
     companion object {
         const val TRACK = "track"
