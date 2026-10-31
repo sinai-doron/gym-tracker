@@ -155,7 +155,7 @@
     <string name="consent_synced_title">מה יסונכרן</string>
     <string name="consent_synced">תוכנית האימונים, אימונים וסטים, וריצות והליכות: מרחק, זמן, קצב, הקפות, טיפוס וקלוריות.</string>
     <string name="consent_never_title">מה לא יסונכרן אף פעם</string>
-    <string name="consent_never">נתונים מ-Health Connect (צעדים ודופק) ורשימת השירים ששמעת.</string>
+    <string name="consent_never">נתונים מ-Health Connect (צעדים ודופק).</string>
     <string name="consent_why_title">למה</string>
     <string name="consent_why">גיבוי, ושימוש באותם נתונים בטלפון חדש או נוסף.</string>
     <string name="consent_who_title">מי רואה</string>
@@ -171,4 +171,7 @@
     <string name="account_sync_never">עוד לא סונכרן</string>
     <string name="account_sync_pending">הסנכרון ממתין (אין חיבור?)</string>
     <string name="account_sync_pending_since">סונכרן %1$s · הסנכרון האחרון ממתין</string>
+    <string name="consent_music_title">גם רשימת השירים</string>
+    <string name="consent_music_text">אילו שירים התנגנו בכל אימון ומתי, מסרגל הניגון. בלעדיה האימונים מסונכרנים בלי השירים. אפשר לשנות בהגדרות.</string>
+    <string name="account_music_hint">כיבוי מוחק את רשימת השירים מהשרת. היא נשארת בטלפון.</string>
 </resources>

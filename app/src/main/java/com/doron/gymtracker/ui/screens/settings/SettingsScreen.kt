@@ -183,6 +183,7 @@ fun SettingsScreen(
                     onSyncNow = viewModel::syncNow,
                     onSignIn = onSignIn,
                     onRoutesChange = viewModel::setSyncRoutes,
+                    onMusicChange = viewModel::setSyncMusic,
                     onSignOut = viewModel::signOut
                 )
 

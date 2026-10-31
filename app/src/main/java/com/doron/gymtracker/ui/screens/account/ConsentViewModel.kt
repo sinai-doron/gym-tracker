@@ -32,12 +32,12 @@ class ConsentViewModel @Inject constructor(
     private val _state = MutableStateFlow<State>(State.Idle)
     val state: StateFlow<State> = _state.asStateFlow()
 
-    fun agreeAndSignIn(activity: Activity, routes: Boolean) {
+    fun agreeAndSignIn(activity: Activity, routes: Boolean, music: Boolean) {
         if (_state.value == State.Busy) return
         _state.value = State.Busy
         viewModelScope.launch {
             _state.value = try {
-                account.signIn(activity, routes)
+                account.signIn(activity, routes, music)
                 SyncWorker.syncSoon(context)
                 State.Done
             } catch (e: SignInCancelled) {

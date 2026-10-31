@@ -17,7 +17,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * - Everything already on the phone is logged once, so the first sync uploads it all.
  *
  * Route points and GPS points are synced per route and per session (`route_points`, `track`),
- * keyed by the route's or session's uuid. The music log (track_log) is not synced, and so not here.
+ * keyed by the route's or session's uuid. The music log (track_log) joined in version 12.
  */
 object SyncMigration {
 
@@ -47,6 +47,17 @@ object SyncMigration {
         }
     }
 
+    /**
+     * Version 12: the music log (track_log) syncs too, with a consent of its own (decided
+     * 2026-10-31). Same as the tables in version 11: a uuid, the triggers, and every existing row
+     * logged once. Nothing uploads without the music consent; the sync filters it.
+     */
+    val MIGRATION_11_12 = object : Migration(11, 12) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            tableStatements("track_log", "song").forEach(db::execSQL)
+        }
+    }
+
     fun statements(): List<String> = buildList {
         add(
             "CREATE TABLE IF NOT EXISTS sync_changes (entity TEXT NOT NULL, uuid TEXT NOT NULL, " +
@@ -55,13 +66,7 @@ object SyncMigration {
         add("CREATE TABLE IF NOT EXISTS sync_control (id INTEGER PRIMARY KEY CHECK (id = 1), applying INTEGER NOT NULL)")
         add("INSERT OR IGNORE INTO sync_control (id, applying) VALUES (1, 0)")
 
-        TABLES.forEach { (table, kind) ->
-            add("ALTER TABLE `$table` ADD COLUMN `uuid` TEXT")
-            add("UPDATE `$table` SET uuid = $NEW_UUID WHERE uuid IS NULL")
-            add("CREATE UNIQUE INDEX IF NOT EXISTS `index_${table}_uuid` ON `$table` (`uuid`)")
-            addAll(itemTriggers(table, kind))
-            add("INSERT OR REPLACE INTO sync_changes SELECT '$kind', uuid, $NOW_MS, 0 FROM `$table`")
-        }
+        TABLES.forEach { (table, kind) -> addAll(tableStatements(table, kind)) }
 
         // A route's points, and a session's GPS points, sync as one item each.
         addAll(groupTriggers("route_points", "routeId", "routes", "route_points"))
@@ -85,6 +90,14 @@ object SyncMigration {
                 "WHEN OLD.uuid IS NOT NULL AND $NOT_APPLYING BEGIN " +
                 "INSERT OR REPLACE INTO sync_changes VALUES ('track', OLD.uuid, $NOW_MS, 1); END"
         )
+    }
+
+    private fun tableStatements(table: String, kind: String) = buildList {
+        add("ALTER TABLE `$table` ADD COLUMN `uuid` TEXT")
+        add("UPDATE `$table` SET uuid = $NEW_UUID WHERE uuid IS NULL")
+        add("CREATE UNIQUE INDEX IF NOT EXISTS `index_${table}_uuid` ON `$table` (`uuid`)")
+        addAll(itemTriggers(table, kind))
+        add("INSERT OR REPLACE INTO sync_changes SELECT '$kind', uuid, $NOW_MS, 0 FROM `$table`")
     }
 
     private fun itemTriggers(table: String, kind: String) = listOf(

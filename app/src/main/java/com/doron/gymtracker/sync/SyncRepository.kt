@@ -66,7 +66,7 @@ class SyncRepository @Inject constructor(
         val outcome = try {
             // The backend refuses every push until it has the consent.
             if (!account.uploadConsent()) Outcome.Retry("consent not uploaded")
-            else Outcome.Pushed(pushAll(agreed.routes))
+            else Outcome.Pushed(pushAll(agreed.routes, agreed.music))
         } catch (e: BackendException.Unauthorized) {
             Outcome.NotSignedIn
         } catch (e: BackendException.Network) {
@@ -82,13 +82,13 @@ class SyncRepository @Inject constructor(
         outcome
     }
 
-    private suspend fun pushAll(routesAllowed: Boolean): Int = withContext(Dispatchers.IO) {
+    private suspend fun pushAll(routesAllowed: Boolean, musicAllowed: Boolean): Int = withContext(Dispatchers.IO) {
         val db = database.openHelper.writableDatabase
         db.execSQL("CREATE TABLE IF NOT EXISTS sync_track_chunks (session_uuid TEXT PRIMARY KEY, chunks INTEGER NOT NULL)")
         val payloads = SyncPayloads(db)
         var sent = 0
         while (true) {
-            val pending = pending(routesAllowed)
+            val pending = pending(routesAllowed, musicAllowed)
             if (pending.isEmpty()) break
             val batch = mutableListOf<Pair<Pending, List<OutgoingChange>>>()
             var bytes = 0
@@ -168,11 +168,13 @@ class SyncRepository @Inject constructor(
 
     private data class Pending(val entity: String, val uuid: String, val changedAt: Long, val deleted: Boolean)
 
-    /** Oldest first. Without the routes consent, route data waits, except its deletions. */
-    private fun pending(routesAllowed: Boolean): List<Pending> {
+    /** Oldest first. Without its consent, route or music data waits, except its deletions. */
+    private fun pending(routesAllowed: Boolean, musicAllowed: Boolean): List<Pending> {
         val db = database.openHelper.writableDatabase
-        val routeFilter = if (routesAllowed) "" else
-            "WHERE deleted = 1 OR entity NOT IN (${SyncPayloads.ROUTE_KINDS.joinToString { "'$it'" }})"
+        val waiting = (if (routesAllowed) emptySet() else SyncPayloads.ROUTE_KINDS) +
+            (if (musicAllowed) emptySet() else SyncPayloads.MUSIC_KINDS)
+        val routeFilter = if (waiting.isEmpty()) "" else
+            "WHERE deleted = 1 OR entity NOT IN (${waiting.joinToString { "'$it'" }})"
         return db.query(
             "SELECT entity, uuid, changed_at, deleted FROM sync_changes $routeFilter ORDER BY changed_at LIMIT $PAGE"
         ).use { c ->
@@ -205,6 +207,14 @@ class SyncRepository @Inject constructor(
         )
         db.execSQL("CREATE TABLE IF NOT EXISTS sync_track_chunks (session_uuid TEXT PRIMARY KEY, chunks INTEGER NOT NULL)")
         db.execSQL("DELETE FROM sync_track_chunks")
+    }
+
+    /** Turning music back on: the server deleted the songs when it was turned off. */
+    suspend fun requeueMusic() = withContext(Dispatchers.IO) {
+        database.openHelper.writableDatabase.execSQL(
+            "INSERT OR REPLACE INTO sync_changes SELECT 'song', uuid, ?, 0 FROM track_log WHERE uuid IS NOT NULL",
+            arrayOf(System.currentTimeMillis()),
+        )
     }
 
     private suspend fun record(outcome: Outcome) {

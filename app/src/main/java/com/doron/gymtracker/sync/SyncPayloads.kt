@@ -145,6 +145,18 @@ class SyncPayloads(private val db: SupportSQLiteDatabase) {
             }
             if (points.isEmpty()) null else buildJsonObject { put("routeId", uuid); put("points", points) }
         }
+        // The music log: what played during a session (the now-playing bar).
+        "song" -> row(
+            "SELECT t.*, s.uuid AS session_uuid FROM track_log t JOIN sessions s ON s.id = t.sessionId WHERE t.uuid = ?",
+            uuid,
+        ) { c ->
+            buildJsonObject {
+                put("sessionId", c.str("session_uuid"))
+                put("startedAt", c.long("startedAt"))
+                put("title", c.str("title").take(500))
+                put("artist", c.str("artist").take(500))
+            }
+        }
         else -> null
     }
 
@@ -204,6 +216,7 @@ class SyncPayloads(private val db: SupportSQLiteDatabase) {
         const val TRACK = "track"
         const val TRACK_CHUNK_POINTS = 600
         val ROUTE_KINDS = setOf("route", "route_points", TRACK)
+        val MUSIC_KINDS = setOf("song")
 
         /** The same chunk of the same session always gets the same id. */
         fun trackChunkId(sessionUuid: String, chunk: Int): String =

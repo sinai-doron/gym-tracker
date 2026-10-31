@@ -38,7 +38,7 @@ import com.doron.gymtracker.data.db.entities.WorkoutEntity
         RoutePointEntity::class,
         RunPauseEntity::class
     ],
-    version = 11,
+    version = 12,
     exportSchema = false
 )
 abstract class GymDatabase : RoomDatabase() {

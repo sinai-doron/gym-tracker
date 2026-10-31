@@ -47,6 +47,7 @@ fun AccountCard(
     onSyncNow: () -> Unit,
     onSignIn: () -> Unit,
     onRoutesChange: (Boolean) -> Unit,
+    onMusicChange: (Boolean) -> Unit,
     onSignOut: () -> Unit,
 ) {
     Card(
@@ -101,6 +102,19 @@ fun AccountCard(
                 }
                 Spacer(Modifier.width(12.dp))
                 Switch(checked = consent?.routes == true, onCheckedChange = onRoutesChange)
+            }
+            Spacer(Modifier.height(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(R.string.consent_music_title), style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        stringResource(R.string.account_music_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Spacer(Modifier.width(12.dp))
+                Switch(checked = consent?.music == true, onCheckedChange = onMusicChange)
             }
             Spacer(Modifier.height(8.dp))
             HorizontalDivider()

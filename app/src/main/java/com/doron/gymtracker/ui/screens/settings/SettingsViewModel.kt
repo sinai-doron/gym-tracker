@@ -54,6 +54,14 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun setSyncMusic(music: Boolean) {
+        viewModelScope.launch {
+            account.setMusic(music)
+            if (music) sync.requeueMusic()
+            SyncWorker.syncSoon(context)
+        }
+    }
+
     fun signOut() {
         viewModelScope.launch { account.signOut() }
     }

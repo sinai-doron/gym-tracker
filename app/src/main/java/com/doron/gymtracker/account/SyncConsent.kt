@@ -19,31 +19,39 @@ private val Context.syncConsentStore: DataStore<Preferences> by preferencesDataS
 
 private val VERSION = stringPreferencesKey("version")
 private val ROUTES = booleanPreferencesKey("routes")
+private val MUSIC = booleanPreferencesKey("music")
 private val ACCEPTED_AT = longPreferencesKey("accepted_at")
 private val UPLOADED = booleanPreferencesKey("uploaded")
 
 /**
  * What the signed-in user agreed to on the consent screen: the version of its text, when, and
- * whether run routes (GPS) may sync too. Signing in alone is not consent; nothing syncs without
+ * whether run routes (GPS) and the music log may sync too, each its own choice. Signing in alone is not consent; nothing syncs without
  * this. The backend keeps its own copy (PUT /api/gym/consent) and enforces it there as well.
  */
-data class Consent(val version: String, val routes: Boolean, val acceptedAt: Long, val uploaded: Boolean)
+data class Consent(
+    val version: String,
+    val routes: Boolean,
+    val music: Boolean,
+    val acceptedAt: Long,
+    val uploaded: Boolean,
+)
 
 @Singleton
 class SyncConsent @Inject constructor(@ApplicationContext private val context: Context) {
 
     val consent: Flow<Consent?> = context.syncConsentStore.data.map { p ->
         val version = p[VERSION] ?: return@map null
-        Consent(version, p[ROUTES] ?: false, p[ACCEPTED_AT] ?: 0, p[UPLOADED] ?: false)
+        Consent(version, p[ROUTES] ?: false, p[MUSIC] ?: false, p[ACCEPTED_AT] ?: 0, p[UPLOADED] ?: false)
     }
 
     suspend fun current(): Consent? = consent.first()
 
     /** The user agreed to the current text. Not yet on the backend until [markUploaded]. */
-    suspend fun accept(routes: Boolean, now: Long = System.currentTimeMillis()) {
+    suspend fun accept(routes: Boolean, music: Boolean, now: Long = System.currentTimeMillis()) {
         context.syncConsentStore.edit {
             it[VERSION] = CURRENT_VERSION
             it[ROUTES] = routes
+            it[MUSIC] = music
             it[ACCEPTED_AT] = now
             it[UPLOADED] = false
         }
@@ -59,6 +67,16 @@ class SyncConsent @Inject constructor(@ApplicationContext private val context: C
         }
     }
 
+    /** The music switch, changed later in Settings: a new consent for the backend. */
+    suspend fun setMusic(music: Boolean) {
+        context.syncConsentStore.edit {
+            if (it[VERSION] == null) return@edit
+            it[MUSIC] = music
+            it[ACCEPTED_AT] = System.currentTimeMillis()
+            it[UPLOADED] = false
+        }
+    }
+
     suspend fun markUploaded(acceptedAt: Long) {
         context.syncConsentStore.edit { if (it[ACCEPTED_AT] == acceptedAt) it[UPLOADED] = true }
     }
@@ -69,6 +87,8 @@ class SyncConsent @Inject constructor(@ApplicationContext private val context: C
 
     companion object {
         /** Bump when the consent screen's text changes in substance; users are then asked again. */
-        const val CURRENT_VERSION = "2026-10-31"
+        // .2: the music log became its own choice. A consent to the first text stays valid, with
+        // music off, since that text did not offer it.
+        const val CURRENT_VERSION = "2026-10-31.2"
     }
 }

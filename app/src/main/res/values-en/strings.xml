@@ -155,7 +155,7 @@
     <string name="consent_synced_title">What syncs</string>
     <string name="consent_synced">Your training plan, workouts and sets, and runs and walks: distance, time, pace, laps, climb and calories.</string>
     <string name="consent_never_title">What never syncs</string>
-    <string name="consent_never">Data from Health Connect (steps and heart rate) and the songs you listened to.</string>
+    <string name="consent_never">Data from Health Connect (steps and heart rate).</string>
     <string name="consent_why_title">Why</string>
     <string name="consent_why">A backup, and the same data on a new or second phone.</string>
     <string name="consent_who_title">Who sees it</string>
@@ -171,4 +171,7 @@
     <string name="account_sync_never">Not synced yet</string>
     <string name="account_sync_pending">Sync is waiting (offline?)</string>
     <string name="account_sync_pending_since">Synced %1$s · the latest sync is waiting</string>
+    <string name="consent_music_title">Your music too</string>
+    <string name="consent_music_text">Which songs played during each workout, and when, from the now-playing bar. Without it, workouts sync without their songs. You can change this in Settings.</string>
+    <string name="account_music_hint">Turning this off deletes your music list from the server. It stays on this phone.</string>
 </resources>

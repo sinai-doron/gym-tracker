@@ -55,6 +55,7 @@ import com.doron.gymtracker.R
 fun ConsentScreen(onDone: () -> Unit, viewModel: ConsentViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsState()
     var routes by rememberSaveable { mutableStateOf(false) }
+    var music by rememberSaveable { mutableStateOf(false) }
     val activity = LocalContext.current.findActivity()
 
     LaunchedEffect(state) { if (state is ConsentViewModel.State.Done) onDone() }
@@ -110,6 +111,9 @@ fun ConsentScreen(onDone: () -> Unit, viewModel: ConsentViewModel = hiltViewMode
                 }
             }
 
+            Spacer(Modifier.height(12.dp))
+            Choice(R.string.consent_music_title, R.string.consent_music_text, music) { music = it }
+
             Spacer(Modifier.height(24.dp))
             (state as? ConsentViewModel.State.Failed)?.let { failed ->
                 Text(
@@ -123,7 +127,7 @@ fun ConsentScreen(onDone: () -> Unit, viewModel: ConsentViewModel = hiltViewMode
             }
             val busy = state is ConsentViewModel.State.Busy
             Button(
-                onClick = { activity?.let { viewModel.agreeAndSignIn(it, routes) } },
+                onClick = { activity?.let { viewModel.agreeAndSignIn(it, routes, music) } },
                 enabled = !busy && activity != null,
                 modifier = Modifier.fillMaxWidth().height(52.dp)
             ) {
@@ -134,6 +138,29 @@ fun ConsentScreen(onDone: () -> Unit, viewModel: ConsentViewModel = hiltViewMode
             TextButton(onClick = onDone, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(R.string.consent_not_now))
             }
+        }
+    }
+}
+
+@Composable
+private fun Choice(title: Int, text: Int, checked: Boolean, onChange: (Boolean) -> Unit) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(16.dp)) {
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(title), style = MaterialTheme.typography.titleMedium)
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    stringResource(text),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            Switch(checked = checked, onCheckedChange = onChange)
         }
     }
 }

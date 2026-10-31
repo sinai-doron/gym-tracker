@@ -26,8 +26,8 @@ class Account @Inject constructor(
      * Called from the consent screen after the user agreed. The consent is recorded first, so a
      * session never exists here without it; if sign-in then fails or is cancelled, it is cleared.
      */
-    suspend fun signIn(activity: Activity, routes: Boolean): SignedInUser {
-        consent.accept(routes)
+    suspend fun signIn(activity: Activity, routes: Boolean, music: Boolean): SignedInUser {
+        consent.accept(routes, music)
         val user = try {
             auth.signIn(deviceLabel()) { nonce -> GoogleIdTokens(activity).account(nonce) }
         } catch (e: Exception) {
@@ -43,6 +43,11 @@ class Account @Inject constructor(
         uploadConsent()
     }
 
+    suspend fun setMusic(music: Boolean) {
+        consent.setMusic(music)
+        uploadConsent()
+    }
+
     /**
      * Sends the consent to the backend when it hasn't seen it yet. Failure is fine: sync tries
      * again before every push, and the backend refuses to store anything until it has it.
@@ -54,7 +59,7 @@ class Account @Inject constructor(
         return runCatching {
             auth.withAccessToken { token ->
                 api.put<ConsentBody, ConsentResponse>(
-                    "/api/gym/consent", ConsentBody(current.version, current.routes), token,
+                    "/api/gym/consent", ConsentBody(current.version, current.routes, current.music.takeIf { it }), token,
                 )
             }
             consent.markUploaded(current.acceptedAt)
@@ -71,7 +76,8 @@ class Account @Inject constructor(
     private fun deviceLabel(): String = "${Build.MANUFACTURER} ${Build.MODEL}".trim().take(100)
 
     @Serializable
-    private data class ConsentBody(val version: String, val routes: Boolean)
+    // `music` only when on: a backend from before it refuses the field, and absent means no.
+    private data class ConsentBody(val version: String, val routes: Boolean, val music: Boolean? = null)
 
     @Serializable
     private data class ConsentResponse(val consent: Map<String, kotlinx.serialization.json.JsonElement>)
