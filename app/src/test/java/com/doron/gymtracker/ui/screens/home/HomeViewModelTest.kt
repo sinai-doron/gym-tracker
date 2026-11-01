@@ -58,6 +58,7 @@ class HomeViewModelTest {
             getWorkoutPreview, mockk(relaxed = true), mockk(relaxed = true), mockk(relaxed = true),
             mockk(relaxed = true) {
                 every { stepGoal } returns flowOf(10_000)
+                every { weekMode } returns flowOf(com.doron.gymtracker.data.prefs.WeekMode.CALENDAR)
                 every { runTarget } returns flowOf(com.doron.gymtracker.domain.model.RunTarget())
             },
             mockk(relaxed = true))

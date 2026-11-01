@@ -37,6 +37,18 @@ class StepsWeekTest {
     }
 
     @Test
+    fun `a rolling week has no days ahead and compares with the seven days before`() {
+        val start = wednesday.minusDays(6)
+        val before = (1L..7L).associate { start.minusDays(it) to 5_000L }
+        val week = (0L..6L).associate { start.plusDays(it) to 6_000L }
+        val w = StepsWeek.build(start, wednesday, before + week, emptyMap(), 0, goal = 10_000)
+        assertTrue(w.days.none { it.isFuture })
+        assertTrue(w.days.last().isToday)
+        assertEquals(42_000, w.total)
+        assertEquals(20, w.changePercent)
+    }
+
+    @Test
     fun `no change without last week`() {
         assertNull(week(mapOf(sunday to 8_000L)).changePercent)
     }

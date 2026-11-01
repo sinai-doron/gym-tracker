@@ -32,8 +32,12 @@ private val BODY_WEIGHT_KG = floatPreferencesKey("body_weight_kg")
 private val AUDIO_FEEDBACK = stringPreferencesKey("audio_feedback")
 private val RUN_TARGET_ROUTE_ID = longPreferencesKey("run_target_route_id")
 private val ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
+private val WEEK_MODE = stringPreferencesKey("week_mode")
 
 enum class AudioFeedback { VOICE, TONES, OFF }
+
+/** What the home screen calls "this week": Sunday to Saturday, or the last seven days up to today. */
+enum class WeekMode { CALENDAR, ROLLING }
 
 @Singleton
 class SettingsPrefs @Inject constructor(
@@ -94,6 +98,15 @@ class SettingsPrefs @Inject constructor(
 
     suspend fun setStepGoal(steps: Int) {
         context.settingsDataStore.edit { prefs -> prefs[STEP_GOAL] = steps }
+    }
+
+    /** How the home screen's week cards count the week; records and achievements always go Sunday to Saturday. */
+    val weekMode: Flow<WeekMode> = context.settingsDataStore.data.map { prefs ->
+        prefs[WEEK_MODE]?.let { runCatching { WeekMode.valueOf(it) }.getOrNull() } ?: WeekMode.CALENDAR
+    }
+
+    suspend fun setWeekMode(mode: WeekMode) {
+        context.settingsDataStore.edit { prefs -> prefs[WEEK_MODE] = mode.name }
     }
 
     /** For calories; null until set. */

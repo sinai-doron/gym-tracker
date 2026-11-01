@@ -1,5 +1,6 @@
 package com.doron.gymtracker.ui.screens.home
 
+import com.doron.gymtracker.data.prefs.WeekMode
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.time.LocalDate
@@ -8,6 +9,19 @@ class StreakDaysTest {
 
     private val today = LocalDate.of(2026, 10, 28)
     private fun daysAgo(vararg n: Long) = n.map { today.minusDays(it) }.toSet()
+
+    @Test
+    fun `the calendar week starts on the last Sunday, today if it is Sunday`() {
+        assertEquals(LocalDate.of(2026, 10, 25), weekStart(today, WeekMode.CALENDAR))
+        assertEquals(LocalDate.of(2026, 10, 25), weekStart(LocalDate.of(2026, 10, 25), WeekMode.CALENDAR))
+        assertEquals(LocalDate.of(2026, 10, 25), weekStart(LocalDate.of(2026, 10, 31), WeekMode.CALENDAR))
+    }
+
+    @Test
+    fun `the rolling week is the last seven days, ending today`() {
+        assertEquals(LocalDate.of(2026, 10, 22), weekStart(today, WeekMode.ROLLING))
+        assertEquals(LocalDate.of(2026, 10, 26), weekStart(LocalDate.of(2026, 11, 1), WeekMode.ROLLING))
+    }
 
     @Test
     fun `no sessions is no streak`() = assertEquals(0, streakDays(emptySet(), today))

@@ -62,6 +62,7 @@ import com.doron.gymtracker.R
 import com.doron.gymtracker.data.BackupManager
 import com.doron.gymtracker.data.HealthConnectManager
 import com.doron.gymtracker.data.prefs.AudioFeedback
+import com.doron.gymtracker.data.prefs.WeekMode
 import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.ui.screens.account.AccountCard
 
@@ -88,6 +89,7 @@ fun SettingsScreen(
     val healthConnectGranted by viewModel.healthConnectGranted.collectAsState()
     val lapDistanceM by viewModel.lapDistanceM.collectAsState()
     val stepGoal by viewModel.stepGoal.collectAsState()
+    val weekMode by viewModel.weekMode.collectAsState()
     val bodyWeightKg by viewModel.bodyWeightKg.collectAsState()
     val audioFeedback by viewModel.audioFeedback.collectAsState()
     val context = LocalContext.current
@@ -225,6 +227,40 @@ fun SettingsScreen(
                                 )
                             }
                         }
+                    }
+                }
+
+                Spacer(Modifier.height(24.dp))
+                Text(stringResource(R.string.week_settings), style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(12.dp))
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(8.dp)) {
+                        listOf(
+                            WeekMode.CALENDAR to R.string.week_mode_calendar,
+                            WeekMode.ROLLING to R.string.week_mode_rolling
+                        ).forEach { (mode, label) ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                            ) {
+                                RadioButton(selected = weekMode == mode, onClick = { viewModel.setWeekMode(mode) })
+                                Text(
+                                    stringResource(label),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.padding(start = 8.dp)
+                                )
+                            }
+                        }
+                        Text(
+                            stringResource(R.string.week_mode_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
                     }
                 }
 

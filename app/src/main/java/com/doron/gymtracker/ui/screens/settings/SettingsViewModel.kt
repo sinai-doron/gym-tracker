@@ -14,6 +14,7 @@ import com.doron.gymtracker.account.SignedInUser
 import com.doron.gymtracker.data.BackupManager
 import com.doron.gymtracker.data.HealthConnectManager
 import com.doron.gymtracker.data.prefs.AudioFeedback
+import com.doron.gymtracker.data.prefs.WeekMode
 import com.doron.gymtracker.data.prefs.SettingsPrefs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -134,6 +135,13 @@ class SettingsViewModel @Inject constructor(
 
     fun setLapDistanceM(meters: Int) {
         viewModelScope.launch { prefs.setLapDistanceM(meters) }
+    }
+
+    val weekMode: StateFlow<WeekMode> = prefs.weekMode
+        .stateIn(viewModelScope, SharingStarted.Eagerly, WeekMode.CALENDAR)
+
+    fun setWeekMode(mode: WeekMode) {
+        viewModelScope.launch { prefs.setWeekMode(mode) }
     }
 
     val stepGoal: StateFlow<Int> = prefs.stepGoal

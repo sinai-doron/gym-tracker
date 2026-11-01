@@ -95,6 +95,10 @@
     <string name="move_up">הזז למעלה</string>
     <string name="move_down">הזז למטה</string>
     <string name="edit_plan">ערוך</string>
+    <string name="week_settings">שבוע</string>
+    <string name="week_mode_calendar">ראשון עד שבת</string>
+    <string name="week_mode_rolling">7 הימים האחרונים</string>
+    <string name="week_mode_hint">איך נספר "השבוע" בכרטיסי השבוע והצעדים בדף הבית. שיאים והישגים נספרים תמיד מראשון עד שבת.</string>
     <string name="steps_settings">צעדים</string>
     <string name="step_goal">יעד צעדים יומי</string>
     <string name="step_goal_hint">הימים שבהם הגעת ליעד מסומנים בגרף הצעדים השבועי</string>

@@ -6,6 +6,7 @@ import com.doron.gymtracker.data.HealthConnectManager
 import com.doron.gymtracker.data.StepCounterManager
 import com.doron.gymtracker.data.WeatherRepository
 import com.doron.gymtracker.data.prefs.SettingsPrefs
+import com.doron.gymtracker.data.prefs.WeekMode
 import com.doron.gymtracker.data.repository.RouteRepository
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.WorkoutRepository
@@ -37,6 +38,8 @@ data class WeeklyStats(
     val totalMinutes: Int = 0,
     val totalVolumeKg: Float = 0f,
     val streakDays: Int = 0,
+    /** The last seven days rather than Sunday to Saturday. */
+    val rolling: Boolean = false,
     /** Sunday to Saturday of the current week. */
     val days: List<WeekDay> = emptyList()
 )
@@ -169,8 +172,8 @@ class HomeViewModel @Inject constructor(
 
     private suspend fun loadWeeklyStats() {
         val today = LocalDate.now()
-        // previousOrSame: with(SUNDAY) uses Monday-based ISO weeks and jumps to the coming Sunday
-        val weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
+        val mode = settingsPrefs.weekMode.first()
+        val weekStart = weekStart(today, mode)
         val weekStartMillis = weekStart.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
         val sessions = sessionRepo.getCompletedSince(weekStartMillis)
@@ -196,13 +199,14 @@ class HomeViewModel @Inject constructor(
                 totalMinutes = totalMinutes,
                 totalVolumeKg = volume,
                 streakDays = streak,
+                rolling = mode == WeekMode.ROLLING,
                 days = days
             ))
         }
-        loadStepsWeek(weekStart, today, sessions)
+        loadStepsWeek(weekStart, today, sessions, mode == WeekMode.ROLLING)
     }
 
-    private suspend fun loadStepsWeek(weekStart: LocalDate, today: LocalDate, weekSessions: List<Session>) {
+    private suspend fun loadStepsWeek(weekStart: LocalDate, today: LocalDate, weekSessions: List<Session>, rolling: Boolean) {
         // Last week too, to compare with
         val daily = healthConnect.readDailySteps(weekStart.minusDays(7), 14) ?: return
         val zone = ZoneId.systemDefault()
@@ -220,9 +224,19 @@ class HomeViewModel @Inject constructor(
             weekStart, today, daily, workout,
             todaySteps = todaySteps,
             goal = settingsPrefs.stepGoal.first()
-        )
+        ).copy(rolling = rolling)
         _uiState.update { it.copy(stepsWeek = week) }
     }
+}
+
+/**
+ * The first of the seven days the home screen calls this week: the last Sunday (today if it is
+ * Sunday), or six days ago so the week ends today.
+ */
+internal fun weekStart(today: LocalDate, mode: WeekMode): LocalDate = when (mode) {
+    // previousOrSame: with(SUNDAY) uses Monday-based ISO weeks and jumps to the coming Sunday
+    WeekMode.CALENDAR -> today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
+    WeekMode.ROLLING -> today.minusDays(6)
 }
 
 /**

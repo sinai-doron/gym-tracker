@@ -16,8 +16,13 @@ data class StepsDay(
 data class StepsWeek(
     val days: List<StepsDay>,
     val goal: Int,
-    /** Change from last week over the same days (Sunday to today), in percent; null without last week's steps. */
-    val changePercent: Int?
+    /**
+     * Change from the week before over the same days (Sunday to today, or all seven when
+     * [rolling]), in percent; null without that week's steps.
+     */
+    val changePercent: Int?,
+    /** The last seven days rather than Sunday to Saturday. */
+    val rolling: Boolean = false
 ) {
     private val sofar get() = days.filterNot { it.isFuture }
     val total: Long get() = sofar.sumOf { it.steps }

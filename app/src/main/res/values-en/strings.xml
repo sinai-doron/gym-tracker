@@ -95,6 +95,10 @@
     <string name="move_up">Move up</string>
     <string name="move_down">Move down</string>
     <string name="edit_plan">Edit</string>
+    <string name="week_settings">Week</string>
+    <string name="week_mode_calendar">Sunday to Saturday</string>
+    <string name="week_mode_rolling">The last 7 days</string>
+    <string name="week_mode_hint">How "this week" is counted in the week and steps cards on the home screen. Records and achievements always go Sunday to Saturday.</string>
     <string name="steps_settings">Steps</string>
     <string name="step_goal">Daily step goal</string>
     <string name="step_goal_hint">Days you reach it are filled in the weekly steps chart</string>

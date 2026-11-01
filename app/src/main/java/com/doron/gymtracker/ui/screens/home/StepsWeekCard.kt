@@ -74,7 +74,7 @@ fun StepsWeekCard(week: StepsWeek, modifier: Modifier = Modifier) {
     ) {
         val day = selected?.let { week.days[it] }
         CardTitle(
-            "👣 צעדים השבוע",
+            if (week.rolling) "👣 צעדים ב-7 ימים" else "👣 צעדים השבוע",
             trailing = if (day != null) {
                 val name = day.date.dayOfWeek.getDisplayName(DateTextStyle.FULL, Locale("he"))
                 val ofWorkout = if (day.workoutSteps > 0) " (%,d באימון)".format(day.workoutSteps) else ""
@@ -102,7 +102,7 @@ fun StepsWeekCard(week: StepsWeek, modifier: Modifier = Modifier) {
             val barW = colW * 0.46f
             val max = maxOf(week.days.maxOf { it.steps }, week.goal.toLong()) * 1.1f
             fun y(steps: Long) = bottom - (steps / max) * (bottom - top)
-            // Sunday sits at the start of the row, as in the calendar: the right in Hebrew
+            // The first day (Sunday, or six days ago) sits at the start of the row: the right in Hebrew
             fun centerX(i: Int) = colW * ((if (rtl) 6 - i else i) + 0.5f)
 
             week.days.forEachIndexed { i, day ->
@@ -150,11 +150,12 @@ fun StepsWeekCard(week: StepsWeek, modifier: Modifier = Modifier) {
         }
 
         Spacer(Modifier.height(8.dp))
+        val fromBefore = if (week.rolling) "מ-7 הימים שלפני" else "משבוע שעבר"
         val change = week.changePercent?.let {
             when {
-                it > 0 -> " · ↑$it% משבוע שעבר"
-                it < 0 -> " · ↓${abs(it)}% משבוע שעבר"
-                else -> " · כמו בשבוע שעבר"
+                it > 0 -> " · ↑$it% $fromBefore"
+                it < 0 -> " · ↓${abs(it)}% $fromBefore"
+                else -> if (week.rolling) " · כמו ב-7 הימים שלפני" else " · כמו בשבוע שעבר"
             }
         } ?: ""
         Text(

@@ -626,7 +626,7 @@ private fun WeeklyStatsRow(stats: WeeklyStats) {
             .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(24.dp))
             .padding(vertical = 16.dp, horizontal = 8.dp)
     ) {
-        CardTitle("📅 השבוע", Modifier.padding(horizontal = 8.dp), trailing = weekRange(stats.days))
+        CardTitle(if (stats.rolling) "📅 7 ימים אחרונים" else "📅 השבוע", Modifier.padding(horizontal = 8.dp), trailing = weekRange(stats.days))
         Spacer(Modifier.height(12.dp))
         if (stats.days.isNotEmpty()) {
             WeekStrip(stats.days)
@@ -656,7 +656,7 @@ private fun weekRange(days: List<WeekDay>): String? {
     return "\u2066$range\u2069$month"
 }
 
-/** Sunday to Saturday (right to left in Hebrew): trained days filled with the workout, today outlined. */
+/** Sunday to Saturday, or the last seven days ending today (right to left in Hebrew): trained days filled with the workout, today outlined. */
 @Composable
 private fun WeekStrip(days: List<WeekDay>) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
