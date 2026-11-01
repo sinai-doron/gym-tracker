@@ -5,14 +5,19 @@ import androidx.lifecycle.viewModelScope
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.model.AchievementStatus
+import com.doron.gymtracker.domain.model.ExerciseDefinition
 import com.doron.gymtracker.domain.model.ExerciseEntry
 import com.doron.gymtracker.domain.model.SetRecord
 import com.doron.gymtracker.domain.model.Workout
 import com.doron.gymtracker.domain.model.TrackLog
 import com.doron.gymtracker.domain.usecase.FinishSessionUseCase
 import com.doron.gymtracker.domain.usecase.GetAchievementsUseCase
+import com.doron.gymtracker.domain.usecase.GetLastWeightUseCase
 import com.doron.gymtracker.domain.usecase.IsDeloadWeekUseCase
+import com.doron.gymtracker.domain.usecase.LogSetUseCase
+import com.doron.gymtracker.domain.usecase.ProgressionHintUseCase
 import com.doron.gymtracker.domain.usecase.ResolveExerciseVariantUseCase
+import com.doron.gymtracker.domain.usecase.UpdateSetUseCase
 import com.doron.gymtracker.media.NowPlayingProvider
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -23,6 +28,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class SessionUiState(
     val workout: Workout? = null,
@@ -35,7 +41,17 @@ data class SessionUiState(
     val tracks: List<TrackLog> = emptyList(),
     val startedAt: Long = 0L,
     /** Sets already logged in this session (non-empty when resuming), by exercise id. */
-    val loggedSets: Map<String, List<SetRecord>> = emptyMap()
+    val loggedSets: Map<String, List<SetRecord>> = emptyMap(),
+    /** The exercise whose sheet is open; kept here so it reopens after a trip to progress. */
+    val selectedExerciseId: String? = null
+)
+
+/** What each exercise sheet needs, injected once for the whole session. */
+class ExerciseDetailDeps @Inject constructor(
+    val logSet: LogSetUseCase,
+    val updateSet: UpdateSetUseCase,
+    val progressionHint: ProgressionHintUseCase,
+    val getLastWeight: GetLastWeightUseCase
 )
 
 class SessionViewModel @AssistedInject constructor(
@@ -46,7 +62,8 @@ class SessionViewModel @AssistedInject constructor(
     private val finishSessionUseCase: FinishSessionUseCase,
     private val resolveVariant: ResolveExerciseVariantUseCase,
     private val isDeloadWeek: IsDeloadWeekUseCase,
-    private val getAchievements: GetAchievementsUseCase
+    private val getAchievements: GetAchievementsUseCase,
+    private val detailDeps: ExerciseDetailDeps
 ) : ViewModel() {
 
     @AssistedFactory
@@ -56,6 +73,30 @@ class SessionViewModel @AssistedInject constructor(
 
 
     val restTimer = RestTimer(viewModelScope)
+
+    // One sheet per exercise, owned by the session rather than the screen. The screen leaves
+    // composition while progress is open; sheets kept there were rebuilt from the sets loaded
+    // when the session opened, so sets logged since then disappeared from the screen.
+    private val detailViewModels = mutableMapOf<String, ExerciseDetailViewModel>()
+
+    fun detailFor(exercise: ExerciseDefinition): ExerciseDetailViewModel =
+        detailViewModels.getOrPut(exercise.id) {
+            ExerciseDetailViewModel(
+                sessionId, exercise, detailDeps.logSet,
+                updateSet = detailDeps.updateSet,
+                progressionHint = detailDeps.progressionHint,
+                getLastWeight = detailDeps.getLastWeight,
+                restTimer = restTimer,
+                onTargetSetsChanged = ::updateTargetSets,
+                onSetDeleted = ::deleteSet,
+                loggedSets = _uiState.value.loggedSets[exercise.id].orEmpty(),
+                parentScope = viewModelScope
+            )
+        }
+
+    fun selectExercise(exerciseId: String?) {
+        _uiState.update { it.copy(selectedExerciseId = exerciseId) }
+    }
 
     private val _uiState = MutableStateFlow(SessionUiState())
     val uiState: StateFlow<SessionUiState> = _uiState.asStateFlow()

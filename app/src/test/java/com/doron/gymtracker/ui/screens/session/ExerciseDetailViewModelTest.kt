@@ -4,6 +4,9 @@ import com.doron.gymtracker.data.seed.TrainingPlanData
 import com.doron.gymtracker.domain.model.RepSetRecord
 import com.doron.gymtracker.domain.model.TimedSetRecord
 import com.doron.gymtracker.domain.usecase.LogSetUseCase
+import com.doron.gymtracker.domain.usecase.GetLastWeightUseCase
+import com.doron.gymtracker.domain.usecase.ProgressionHintUseCase
+import com.doron.gymtracker.domain.model.ProgressionHint
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
@@ -163,5 +166,23 @@ class ExerciseDetailViewModelTest {
         assertEquals(85f, set.weightKg)
         assertNotNull(vm.uiState.value.restCountdownSecs)
         vm.dismissRestTimer()
+    }
+
+    @Test
+    fun `a resumed session pre-fills the weight from its own last set, not an older session`() = runTest(testDispatcher) {
+        val getLastWeight = mockk<GetLastWeightUseCase>()
+        coEvery { getLastWeight(any()) } returns 30f
+        val progressionHint = mockk<ProgressionHintUseCase>()
+        coEvery { progressionHint(any(), any()) } returns ProgressionHint.OnTrack
+        val logged = listOf(
+            RepSetRecord(1L, 1L, 0L, reps = 10, weightKg = 40f),
+            RepSetRecord(2L, 1L, 0L, reps = 10, weightKg = 42.5f)
+        )
+        val vm = ExerciseDetailViewModel(
+            1L, repExercise, logSet,
+            progressionHint = progressionHint, getLastWeight = getLastWeight, loggedSets = logged
+        )
+        advanceTimeBy(100)
+        assertEquals(42.5f, vm.uiState.value.lastWeight)
     }
 }

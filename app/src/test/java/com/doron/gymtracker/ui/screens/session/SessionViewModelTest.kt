@@ -25,6 +25,7 @@ import com.doron.gymtracker.domain.model.Session
 import com.doron.gymtracker.domain.model.ExerciseEntry
 import com.doron.gymtracker.domain.model.RepSetRecord
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertSame
 import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -66,7 +67,7 @@ class SessionViewModelTest {
     }
 
     private fun makeViewModel() =
-        SessionViewModel(1L, "workout_a", sessionRepo, workoutRepo, finishSession, resolveVariant, isDeloadWeek, getAchievements)
+        SessionViewModel(1L, "workout_a", sessionRepo, workoutRepo, finishSession, resolveVariant, isDeloadWeek, getAchievements, mockk(relaxed = true))
 
     @Test
     fun `finishing shows what the workout earned, once`() = runTest(testDispatcher) {
@@ -120,5 +121,39 @@ class SessionViewModelTest {
         viewModel.finishSession()
         advanceTimeBy(100)
         assertTrue(viewModel.uiState.value.isFinished)
+    }
+
+    @Test
+    fun `an exercise sheet survives the screen leaving, with sets logged since the session opened`() = runTest(testDispatcher) {
+        val viewModel = makeViewModel()
+        advanceTimeBy(100)
+        val exercise = TrainingPlanData.workoutA.exercises.first()
+        val sheet = viewModel.detailFor(exercise)
+        sheet.logRepSet(reps = 10, weightKg = 40f)
+        advanceTimeBy(100)
+        viewModel.restTimer.dismiss()
+
+        // The session screen comes back from progress and asks for the sheet again
+        val again = viewModel.detailFor(exercise)
+
+        assertSame(sheet, again)
+        assertEquals(1, again.uiState.value.completedSets.size)
+
+        // finish so the ticker loop exits and runTest can complete
+        viewModel.finishSession()
+        advanceTimeBy(100)
+    }
+
+    @Test
+    fun `the open sheet is remembered, so it reopens after progress`() = runTest(testDispatcher) {
+        val viewModel = makeViewModel()
+        viewModel.selectExercise("d1_e1")
+        assertEquals("d1_e1", viewModel.uiState.value.selectedExerciseId)
+        viewModel.selectExercise(null)
+        assertEquals(null, viewModel.uiState.value.selectedExerciseId)
+
+        // finish so the ticker loop exits and runTest can complete
+        viewModel.finishSession()
+        advanceTimeBy(100)
     }
 }

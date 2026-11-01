@@ -26,6 +26,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -230,10 +231,11 @@ private fun RepSetInput(
     val initialWeight = if (lastWeight != null && lastWeight > 0f)
         lastWeight.let { if (it == it.toLong().toFloat()) it.toLong().toString() else it.toString() }
     else ""
-    var repsText by remember(editingSet) {
+    // Saveable, so a half-typed set survives a trip to progress or a rotation
+    var repsText by rememberSaveable(editingSet) {
         mutableStateOf(editingSet?.reps?.toString() ?: DEFAULT_REPS.toString())
     }
-    var weightText by remember(editingSet, lastWeight) {
+    var weightText by rememberSaveable(editingSet, lastWeight) {
         mutableStateOf(
             editingSet?.weightKg?.let { if (it == it.toLong().toFloat()) it.toLong().toString() else it.toString() }
                 ?: initialWeight
@@ -314,7 +316,7 @@ private fun DistanceSetInput(
     onLog: (Int) -> Unit,
     onCancelEdit: (() -> Unit)? = null
 ) {
-    var distanceText by remember(editingSet) {
+    var distanceText by rememberSaveable(editingSet) {
         mutableStateOf(editingSet?.distanceM?.toString() ?: "")
     }
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {

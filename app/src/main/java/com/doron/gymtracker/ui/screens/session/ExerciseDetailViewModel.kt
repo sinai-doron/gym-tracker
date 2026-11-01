@@ -15,6 +15,7 @@ import com.doron.gymtracker.domain.usecase.GetLastWeightUseCase
 import com.doron.gymtracker.domain.usecase.LogSetUseCase
 import com.doron.gymtracker.domain.usecase.ProgressionHintUseCase
 import com.doron.gymtracker.domain.usecase.UpdateSetUseCase
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,18 +46,32 @@ class ExerciseDetailViewModel(
     restTimer: RestTimer? = null,
     private val onTargetSetsChanged: (exerciseId: String, sets: Int) -> Unit = { _, _ -> },
     private val onSetDeleted: (setId: Long) -> Unit = {},
-    loggedSets: List<SetRecord> = emptyList()
+    loggedSets: List<SetRecord> = emptyList(),
+    /**
+     * The session's scope, when the session owns this sheet. Then the sheet lives as long as
+     * the session does (across progress round trips and rotation) and stops with it.
+     */
+    parentScope: CoroutineScope? = null
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(ExerciseDetailUiState(exercise, completedSets = loggedSets))
+    private val scope: CoroutineScope = parentScope ?: viewModelScope
+
+    // A resumed session pre-fills from its own last set, like the next set always does
+    private val _uiState = MutableStateFlow(
+        ExerciseDetailUiState(
+            exercise,
+            completedSets = loggedSets,
+            lastWeight = loggedSets.filterIsInstance<RepSetRecord>().lastOrNull()?.weightKg
+        )
+    )
     val uiState: StateFlow<ExerciseDetailUiState> = _uiState.asStateFlow()
 
-    private val restTimer = restTimer ?: RestTimer(viewModelScope)
+    private val restTimer = restTimer ?: RestTimer(scope)
     private var setTimerJob: Job? = null
 
     init {
         // Mirror the session-wide rest timer so every exercise sheet shows the same countdown
-        viewModelScope.launch {
+        scope.launch {
             this@ExerciseDetailViewModel.restTimer.state.collect { rest ->
                 _uiState.update {
                     it.copy(restCountdownSecs = rest?.remainingSecs, restTotalSecs = rest?.totalSecs ?: 0)
@@ -65,16 +80,17 @@ class ExerciseDetailViewModel(
         }
         val ex = _uiState.value.exercise
         if (ex is RepExerciseDefinition && !ex.isBodyweight) {
-            viewModelScope.launch {
+            scope.launch {
                 val hint = progressionHint?.invoke(ex.id, ex.targetReps) ?: ProgressionHint.OnTrack
-                val lastWeight = getLastWeight?.invoke(ex.id)
-                _uiState.update { it.copy(progressionHint = hint, lastWeight = lastWeight) }
+                val previousSession = getLastWeight?.invoke(ex.id)
+                // Only past sessions: a weight from this session (resumed or just logged) wins
+                _uiState.update { it.copy(progressionHint = hint, lastWeight = it.lastWeight ?: previousSession) }
             }
         }
     }
 
     fun logRepSet(reps: Int, weightKg: Float) {
-        viewModelScope.launch {
+        scope.launch {
             val exercise = _uiState.value.exercise
             val record = RepSetRecord(
                 id = 0L, entryId = 0L,
@@ -91,7 +107,7 @@ class ExerciseDetailViewModel(
     fun startTimedSet() {
         if (_uiState.value.timerRunning) return
         _uiState.update { it.copy(timerRunning = true, timerElapsedSecs = 0) }
-        setTimerJob = viewModelScope.launch {
+        setTimerJob = scope.launch {
             while (_uiState.value.timerRunning) {
                 delay(1_000)
                 _uiState.update { it.copy(timerElapsedSecs = it.timerElapsedSecs + 1) }
@@ -111,7 +127,7 @@ class ExerciseDetailViewModel(
             durationSecs = elapsed
         )
         _uiState.update { it.copy(timerRunning = false, timerElapsedSecs = 0) }
-        viewModelScope.launch {
+        scope.launch {
             val dbId = logSet(sessionId, exercise.id, record)
             val saved = record.copy(id = dbId)
             _uiState.update { it.copy(completedSets = it.completedSets + saved) }
@@ -126,7 +142,7 @@ class ExerciseDetailViewModel(
             completedAt = System.currentTimeMillis(),
             distanceM = distanceM
         )
-        viewModelScope.launch {
+        scope.launch {
             val dbId = logSet(sessionId, exercise.id, record)
             val saved = record.copy(id = dbId)
             _uiState.update { it.copy(completedSets = it.completedSets + saved) }
@@ -143,7 +159,7 @@ class ExerciseDetailViewModel(
     }
 
     fun updateRepSet(index: Int, reps: Int, weightKg: Float) {
-        viewModelScope.launch {
+        scope.launch {
             val sets = _uiState.value.completedSets.toMutableList()
             val old = sets[index] as? RepSetRecord ?: return@launch
             val updated = old.copy(reps = reps, weightKg = weightKg)
@@ -154,7 +170,7 @@ class ExerciseDetailViewModel(
     }
 
     fun updateDistanceSet(index: Int, distanceM: Int) {
-        viewModelScope.launch {
+        scope.launch {
             val sets = _uiState.value.completedSets.toMutableList()
             val old = sets[index] as? DistanceSetRecord ?: return@launch
             val updated = old.copy(distanceM = distanceM)

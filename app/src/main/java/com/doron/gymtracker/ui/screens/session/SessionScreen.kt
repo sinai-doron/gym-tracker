@@ -35,9 +35,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -52,11 +52,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import kotlinx.coroutines.launch
 import com.doron.gymtracker.R
-import com.doron.gymtracker.domain.model.ExerciseDefinition
-import com.doron.gymtracker.domain.usecase.GetLastWeightUseCase
-import com.doron.gymtracker.domain.usecase.LogSetUseCase
-import com.doron.gymtracker.domain.usecase.ProgressionHintUseCase
-import com.doron.gymtracker.domain.usecase.UpdateSetUseCase
 import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.media.MediaPermissionHelper
 import com.doron.gymtracker.media.NowPlayingProvider
@@ -70,32 +65,15 @@ import com.doron.gymtracker.ui.theme.WarningAmber
 @Composable
 fun SessionScreen(
     viewModel: SessionViewModel,
-    logSetUseCase: LogSetUseCase,
-    updateSetUseCase: UpdateSetUseCase? = null,
-    progressionHintUseCase: ProgressionHintUseCase? = null,
-    getLastWeightUseCase: GetLastWeightUseCase? = null,
     settingsPrefs: SettingsPrefs? = null,
     onShowProgress: (exerciseId: String) -> Unit = {},
     onFinished: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
-    var selectedExercise by remember { mutableStateOf<ExerciseDefinition?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val detailViewModels = remember { mutableStateMapOf<String, ExerciseDetailViewModel>() }
-
-    fun detailViewModelFor(exercise: ExerciseDefinition) = detailViewModels.getOrPut(exercise.id) {
-        ExerciseDetailViewModel(viewModel.sessionId, exercise, logSetUseCase,
-            updateSet = updateSetUseCase,
-            progressionHint = progressionHintUseCase,
-            getLastWeight = getLastWeightUseCase,
-            restTimer = viewModel.restTimer,
-            onTargetSetsChanged = viewModel::updateTargetSets,
-            onSetDeleted = viewModel::deleteSet,
-            loggedSets = state.loggedSets[exercise.id].orEmpty())
-    }
 
     val detailStates = state.workout?.exercises?.associate { exercise ->
-        exercise.id to detailViewModelFor(exercise).uiState.collectAsState().value
+        exercise.id to viewModel.detailFor(exercise).uiState.collectAsState().value
     } ?: emptyMap()
 
     val activeRestSecs = viewModel.restTimer.state.collectAsState().value?.remainingSecs
@@ -154,7 +132,7 @@ fun SessionScreen(
     }
 
     // Leaving with BACK used to leave the session open forever; make the user choose
-    var showExitDialog by remember { mutableStateOf(false) }
+    var showExitDialog by rememberSaveable { mutableStateOf(false) }
     BackHandler { showExitDialog = true }
     if (showExitDialog) {
         AlertDialog(
@@ -278,7 +256,7 @@ fun SessionScreen(
                 ExerciseCard(
                     exercise = detailState?.exercise ?: exercise,
                     completedSets = detailState?.completedSets ?: emptyList(),
-                    onClick = { selectedExercise = exercise }
+                    onClick = { viewModel.selectExercise(exercise.id) }
                 )
             }
             item { Spacer(Modifier.height(16.dp)) }
@@ -287,16 +265,13 @@ fun SessionScreen(
         MusicControls(settingsPrefs = settingsPrefs)
     }
 
-    val exercise = selectedExercise
+    val exercise = state.workout?.exercises?.firstOrNull { it.id == state.selectedExerciseId }
     if (exercise != null) {
-        val detailVm = detailViewModelFor(exercise)
-        ModalBottomSheet(onDismissRequest = { selectedExercise = null }, sheetState = sheetState) {
+        ModalBottomSheet(onDismissRequest = { viewModel.selectExercise(null) }, sheetState = sheetState) {
             ExerciseDetailSheet(
-                viewModel = detailVm,
-                onShowProgress = {
-                    selectedExercise = null
-                    onShowProgress(exercise.id)
-                }
+                viewModel = viewModel.detailFor(exercise),
+                // The selection stays, so coming back from progress reopens this sheet
+                onShowProgress = { onShowProgress(exercise.id) }
             )
         }
     }
