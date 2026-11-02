@@ -10,7 +10,7 @@ import com.doron.gymtracker.data.db.dao.LocationLogDao
 import com.doron.gymtracker.data.db.dao.RouteDao
 import com.doron.gymtracker.data.db.dao.RunDetailsDao
 import com.doron.gymtracker.data.db.dao.SessionDao
-import com.doron.gymtracker.data.db.dao.SetRecordDao
+import com.doron.gymtracker.data.db.dao.SetDao
 import com.doron.gymtracker.data.db.dao.TrackLogDao
 import com.doron.gymtracker.data.db.dao.WorkoutDao
 import com.doron.gymtracker.data.db.entities.ExerciseDefinitionEntity
@@ -24,7 +24,8 @@ import com.doron.gymtracker.data.db.entities.RoutePointEntity
 import com.doron.gymtracker.data.db.entities.RunDetailsEntity
 import com.doron.gymtracker.data.db.entities.RunPauseEntity
 import com.doron.gymtracker.data.db.entities.SessionEntity
-import com.doron.gymtracker.data.db.entities.SetRecordEntity
+import com.doron.gymtracker.data.db.entities.SetEntity
+import com.doron.gymtracker.data.db.entities.SetPartEntity
 import com.doron.gymtracker.data.db.entities.TrackLogEntity
 import com.doron.gymtracker.data.db.entities.WorkoutEntity
 
@@ -34,7 +35,8 @@ import com.doron.gymtracker.data.db.entities.WorkoutEntity
         ExerciseDefinitionEntity::class,
         SessionEntity::class,
         ExerciseEntryEntity::class,
-        SetRecordEntity::class,
+        SetEntity::class,
+        SetPartEntity::class,
         TrackLogEntity::class,
         LocationLogEntity::class,
         RunDetailsEntity::class,
@@ -45,7 +47,7 @@ import com.doron.gymtracker.data.db.entities.WorkoutEntity
         ExerciseNameEntity::class,
         ExerciseMuscleEntity::class
     ],
-    version = 14,
+    version = 15,
     // Each version's schema is written to app/schemas/ (see app/build.gradle.kts) for the migration tests
     exportSchema = true
 )
@@ -53,7 +55,7 @@ abstract class GymDatabase : RoomDatabase() {
     abstract fun workoutDao(): WorkoutDao
     abstract fun sessionDao(): SessionDao
     abstract fun exerciseEntryDao(): ExerciseEntryDao
-    abstract fun setRecordDao(): SetRecordDao
+    abstract fun setDao(): SetDao
     abstract fun trackLogDao(): TrackLogDao
     abstract fun locationLogDao(): LocationLogDao
     abstract fun runDetailsDao(): RunDetailsDao
@@ -194,7 +196,8 @@ abstract class GymDatabase : RoomDatabase() {
         val MIGRATIONS: Array<Migration> = arrayOf(
             MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
             MIGRATION_8_9, MIGRATION_9_10, SyncMigration.MIGRATION_10_11, SyncMigration.MIGRATION_11_12,
-            SyncMigration.MIGRATION_12_13, LibraryMigration.MIGRATION_13_14
+            SyncMigration.MIGRATION_12_13, LibraryMigration.MIGRATION_13_14,
+            SetsMigration.MIGRATION_14_15
         )
     }
 }

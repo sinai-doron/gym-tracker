@@ -77,6 +77,9 @@ class BackupMigrationTest {
                 LibraryMigration.PLAN_TO_BUILTIN.keys.joinToString(", ", "(", ")") { "'$it'" }
         ).use { c -> buildList { while (c.moveToNext()) add(c.getString(0)) } }
         assertEquals(emptyList<String>(), unlinked)
+
+        // Version 15: every set is queued, so the server gets them in the new shape
+        assertEquals(SyncChecks.expectedChanges(sql)["set"], SyncChecks.loggedChanges(sql)["set"])
     }
 
     /** The `backupZip` instrumentation argument, or gym-backup.zip in the app's external files folder. */

@@ -9,6 +9,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
 
@@ -149,15 +150,32 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
             }
             "set" -> {
                 val entryId = numericIdOf("exercise_entries", data.str("entryId")) ?: return false
-                upsert("set_records", change.id, ContentValues().apply {
-                    put("entryId", entryId)
-                    put("completedAt", data.long("completedAt"))
-                    put("type", data.str("type"))
-                    putIntOrNull("reps", data.intOrNull("reps"))
-                    putDoubleOrNull("weightKg", data.doubleOrNull("weightKg"))
-                    putIntOrNull("durationSecs", data.intOrNull("durationSecs"))
-                    putIntOrNull("distanceM", data.intOrNull("distanceM"))
-                })
+                val parts = data["parts"]?.jsonArray
+                if (parts != null) {
+                    upsert("sets", change.id, ContentValues().apply {
+                        put("entryId", entryId)
+                        put("seq", data.int("seq"))
+                        put("kind", data.str("kind"))
+                        putDoubleOrNull("rpe", data.doubleOrNull("rpe"))
+                        put("note", data.strOrNull("note"))
+                        put("completedAt", data.long("completedAt"))
+                    })
+                    replaceParts(change.id, parts.map { part ->
+                        val p = part.jsonObject
+                        ContentValues().apply {
+                            put("side", p.strOrNull("side"))
+                            putIntOrNull("reps", p.intOrNull("reps"))
+                            putDoubleOrNull("loadKg", p.doubleOrNull("loadKg"))
+                            putIntOrNull("durationS", p.intOrNull("durationS"))
+                            putIntOrNull("distanceM", p.intOrNull("distanceM"))
+                            putIntOrNull("calories", p.intOrNull("calories"))
+                            put("extra", p["extra"]?.takeUnless { it is JsonNull }?.toString())
+                        }
+                    })
+                } else {
+                    applyOldSet(change.id, entryId, data)
+                }
+                true
             }
             "run" -> {
                 val sessionId = numericIdOf("sessions", data.str("sessionId")) ?: return false
@@ -247,6 +265,10 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
                 db.execSQL("DELETE FROM sync_track_parts WHERE id = ?", arrayOf<Any?>(change.id))
                 rebuildTrack(session)
             }
+            "set" -> {
+                db.execSQL("DELETE FROM set_parts WHERE setId IN (SELECT id FROM sets WHERE uuid = ?)", arrayOf<Any?>(change.id))
+                db.execSQL("DELETE FROM sets WHERE uuid = ?", arrayOf<Any?>(change.id))
+            }
             else -> TABLE_OF[change.entity]?.let { table ->
                 db.execSQL("DELETE FROM `$table` WHERE uuid = ?", arrayOf<Any?>(change.id))
             }
@@ -300,6 +322,45 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
         return true
     }
 
+    /**
+     * A set in the shape apps before version 15 sent (one row: type, reps, weightKg…), turned into
+     * a set with one part the way SetsMigration turned the phone's own: no load for a bodyweight
+     * exercise or 0 kg.
+     */
+    private fun applyOldSet(uuid: String, entryId: Long, data: JsonObject) {
+        val completedAt = data.long("completedAt")
+        val bodyweight = db.query(
+            "SELECT d.isBodyweight FROM exercise_entries e JOIN exercise_definitions d ON d.id = e.exerciseId WHERE e.id = ?",
+            arrayOf<Any?>(entryId),
+        ).use { it.moveToFirst() && it.getInt(0) != 0 }
+        val seq = db.query(
+            "SELECT count(*) + 1 FROM sets WHERE entryId = ? AND completedAt < ? AND uuid != ?",
+            arrayOf<Any?>(entryId, completedAt, uuid),
+        ).use { it.moveToFirst(); it.getInt(0) }
+        upsert("sets", uuid, ContentValues().apply {
+            put("entryId", entryId)
+            put("seq", seq)
+            put("kind", "WORKING")
+            put("completedAt", completedAt)
+        })
+        replaceParts(uuid, listOf(ContentValues().apply {
+            putIntOrNull("reps", data.intOrNull("reps"))
+            putDoubleOrNull("loadKg", data.doubleOrNull("weightKg")?.takeUnless { bodyweight || it == 0.0 })
+            putIntOrNull("durationS", data.intOrNull("durationSecs"))
+            putIntOrNull("distanceM", data.intOrNull("distanceM"))
+        }))
+    }
+
+    private fun replaceParts(setUuid: String, parts: List<ContentValues>) {
+        val setId = numericIdOf("sets", setUuid) ?: return
+        db.execSQL("DELETE FROM set_parts WHERE setId = ?", arrayOf<Any?>(setId))
+        parts.forEachIndexed { i, values ->
+            values.put("setId", setId)
+            values.put("seq", i + 1)
+            db.insert("set_parts", SQLiteDatabase.CONFLICT_ABORT, values)
+        }
+    }
+
     private fun upsert(table: String, uuid: String, values: ContentValues): Boolean {
         values.put("uuid", uuid)
         if (db.update(table, SQLiteDatabase.CONFLICT_ABORT, values, "uuid = ?", arrayOf<Any?>(uuid)) == 0) {
@@ -322,7 +383,7 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
         private val DERIVED = setOf("route_points", SyncPayloads.TRACK)
         private val TABLE_OF = mapOf(
             "workout" to "workouts", "exercise" to "exercise_definitions", "session" to "sessions",
-            "entry" to "exercise_entries", "set" to "set_records", "run" to "run_details",
+            "entry" to "exercise_entries", "set" to "sets", "run" to "run_details",
             "pause" to "run_pauses", "route" to "routes", "song" to "track_log",
         )
 
