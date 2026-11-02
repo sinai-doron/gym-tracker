@@ -1,5 +1,8 @@
 package com.doron.gymtracker.ui.screens.cardio
 
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import android.annotation.SuppressLint
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.LinearEasing
@@ -420,16 +423,18 @@ private fun RunTargetPicker(
 
 @Composable
 private fun ValueStepper(text: String, onMinus: () -> Unit, onPlus: () -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        // In RTL the first child sits on the right, so "+" reads first
-        FilledTonalIconButton(onClick = onPlus) { Text("+", style = MaterialTheme.typography.titleLarge) }
-        Text(
-            text,
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-            textAlign = TextAlign.Center,
-            modifier = Modifier.widthIn(min = 72.dp)
-        )
-        FilledTonalIconButton(onClick = onMinus) { Text("−", style = MaterialTheme.typography.titleLarge) }
+    // "− value +" in every language, like a number line
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            FilledTonalIconButton(onClick = onMinus) { Text("−", style = MaterialTheme.typography.titleLarge) }
+            Text(
+                text,
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.widthIn(min = 72.dp)
+            )
+            FilledTonalIconButton(onClick = onPlus) { Text("+", style = MaterialTheme.typography.titleLarge) }
+        }
     }
 }
 
