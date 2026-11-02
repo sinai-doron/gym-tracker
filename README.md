@@ -281,5 +281,6 @@ The reasoning behind the main choices is recorded in [`docs/adr`](docs/adr):
 - [0003 — Distinct exercise types (rep-based and timed)](docs/adr/0003-two-exercise-types.md)
 - [0004 — Hebrew UI with right-to-left forced at the app root](docs/adr/0004-hebrew-rtl-single-language.md)
 - [0005 — Runs: moving time, pauses and GPS dropouts](docs/adr/0005-run-moving-time.md)
+- [0006 — Exercises declare their metrics; a set is made of parts](docs/adr/0006-exercise-model.md)
 
 The domain vocabulary used throughout the code is defined in [`CONTEXT.md`](CONTEXT.md).
