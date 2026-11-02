@@ -1,8 +1,6 @@
 package com.doron.gymtracker.data.di
 
 import com.doron.gymtracker.data.HealthConnectManager
-import com.doron.gymtracker.data.prefs.ProgramPrefs
-import com.doron.gymtracker.data.prefs.RotationPrefs
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.usecase.CloseStaleSessionsUseCase
@@ -25,8 +23,8 @@ import dagger.hilt.components.SingletonComponent
 object UseCaseModule {
 
     @Provides
-    fun provideGetNextWorkoutUseCase(prefs: RotationPrefs, repo: WorkoutRepository) =
-        GetNextWorkoutUseCase(prefs, repo)
+    fun provideGetNextWorkoutUseCase(sessionRepo: SessionRepository, repo: WorkoutRepository) =
+        GetNextWorkoutUseCase(sessionRepo, repo)
 
     @Provides
     fun provideCloseStaleSessionsUseCase(repo: SessionRepository) =
@@ -41,12 +39,12 @@ object UseCaseModule {
         LogSetUseCase(repo)
 
     @Provides
-    fun provideResolveExerciseVariantUseCase(prefs: ProgramPrefs) =
-        ResolveExerciseVariantUseCase(prefs)
+    fun provideResolveExerciseVariantUseCase(repo: WorkoutRepository) =
+        ResolveExerciseVariantUseCase(repo)
 
     @Provides
-    fun provideIsDeloadWeekUseCase(prefs: ProgramPrefs) =
-        IsDeloadWeekUseCase(prefs)
+    fun provideIsDeloadWeekUseCase(repo: WorkoutRepository) =
+        IsDeloadWeekUseCase(repo)
 
     @Provides
     fun provideProgressionHintUseCase(repo: SessionRepository) =
@@ -67,7 +65,6 @@ object UseCaseModule {
     fun provideFinishSessionUseCase(
         sessionRepo: SessionRepository,
         workoutRepo: WorkoutRepository,
-        prefs: RotationPrefs,
         healthConnect: HealthConnectManager
-    ) = FinishSessionUseCase(sessionRepo, workoutRepo, prefs, healthConnect)
+    ) = FinishSessionUseCase(sessionRepo, workoutRepo, healthConnect)
 }

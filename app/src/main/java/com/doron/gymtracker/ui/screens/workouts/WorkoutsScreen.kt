@@ -111,8 +111,8 @@ fun WorkoutsScreen(
             ) {
                 state.previews.forEachIndexed { i, p ->
                     WorkoutChoiceCard(
-                        letter = p.workout.label.name,
-                        name = p.workout.label.localizedName(),
+                        letter = p.workout.code,
+                        name = p.workout.localizedName(),
                         isSelected = i == state.selectedIndex,
                         isNext = p.workout.id == state.nextWorkoutId,
                         onClick = { viewModel.select(i) },

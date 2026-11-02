@@ -1,7 +1,7 @@
 # ADR-0002: Training plan data is hardcoded, not user-editable
 
 ## Status
-Superseded in part (2026-10)
+Superseded in part (2026-10); the start date, deloads and rotation became a programme row in v16 (ADR-0006)
 
 > **Update (2026-10).** The plan is still seeded from `TrainingPlanData` on first launch,
 > but it is now editable in the app: Workouts → Edit changes an exercise's name, sets,

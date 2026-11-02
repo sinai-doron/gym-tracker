@@ -140,6 +140,31 @@ class MigrationFrom10Test {
         assertEquals(6L, sql.query("SELECT seq FROM sqlite_sequence WHERE name = 'sets'").use { it.moveToFirst(); it.getLong(0) })
     }
 
+    /**
+     * Version 16: the plan becomes one programme with the rules the app had, its workouts in
+     * rotation order, and history points at the library.
+     */
+    @Test
+    fun thePlanBecomesAProgramme() {
+        migrate()
+        fun text(q: String) = sql.query(q).use { c -> buildList { while (c.moveToNext()) add(c.getString(0)) } }
+        assertEquals(
+            listOf("program_abc|${java.time.LocalDate.of(2026, 10, 26).toEpochDay()}|6|ALTERNATE_WEEKLY|1"),
+            text("SELECT id || '|' || startEpochDay || '|' || deloadEveryWeeks || '|' || variantRule || '|' || isActive FROM programs"),
+        )
+        assertEquals(
+            listOf("workout_a|program_abc|1", "workout_b|program_abc|2", "workout_c|program_abc|3"),
+            text("SELECT id || '|' || programId || '|' || sortOrder FROM workouts ORDER BY sortOrder"),
+        )
+        assertEquals(
+            listOf("1|barbell-bench-press", "2|plank", "3|farmers-walk", "4|crunch").map {
+                val (id, slug) = it.split('|')
+                "$id|${ExerciseCatalogue.builtinId(slug)}"
+            },
+            text("SELECT id || '|' || libraryExerciseId FROM exercise_entries ORDER BY id"),
+        )
+    }
+
     /** The v11/v12 triggers broke exactly this: the app's own writes, through Room, after the migration. */
     @Test
     fun theAppCanWriteAfterwards() = runTest {

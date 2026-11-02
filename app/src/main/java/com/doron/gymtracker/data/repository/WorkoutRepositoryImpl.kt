@@ -1,21 +1,26 @@
 package com.doron.gymtracker.data.repository
 
+import com.doron.gymtracker.data.db.dao.ProgramDao
 import com.doron.gymtracker.data.db.dao.WorkoutDao
+import com.doron.gymtracker.data.db.entities.ProgramEntity
 import com.doron.gymtracker.data.db.entities.ExerciseDefinitionEntity
 import com.doron.gymtracker.data.db.entities.WorkoutEntity
 import com.doron.gymtracker.data.seed.TrainingPlanData
 import com.doron.gymtracker.domain.model.DistanceExerciseDefinition
 import com.doron.gymtracker.domain.model.ExerciseDefinition
+import com.doron.gymtracker.domain.model.Program
 import com.doron.gymtracker.domain.model.RepExerciseDefinition
 import com.doron.gymtracker.domain.model.TimedExerciseDefinition
+import com.doron.gymtracker.domain.model.VariantRule
 import com.doron.gymtracker.domain.model.Workout
-import com.doron.gymtracker.domain.model.WorkoutLabel
+import java.time.LocalDate
 import javax.inject.Inject
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 class WorkoutRepositoryImpl @Inject constructor(
-    private val dao: WorkoutDao
+    private val dao: WorkoutDao,
+    private val programDao: ProgramDao
 ) : WorkoutRepository {
 
     private val seedLock = Mutex()
@@ -23,12 +28,16 @@ class WorkoutRepositoryImpl @Inject constructor(
 
     // Inserts whatever part of the plan is missing, in one transaction (IGNORE keeps existing
     // rows, so edited set counts survive). Covers a fresh install, an install a crash left
-    // half-seeded, and exercises added to the plan later, like the week-B variant rows.
+    // half-seeded, and exercises added to the plan later, like the week-B variant rows. A fresh
+    // install's programme starts today; an existing one keeps its own start (the v16 migration).
     override suspend fun ensureSeeded() {
         if (seeded) return
         seedLock.withLock {
             if (seeded) return
-            val workoutEntities = TrainingPlanData.all.map { WorkoutEntity(it.id, it.label.name) }
+            programDao.insert(TrainingPlanData.program(LocalDate.now()).toEntity())
+            val workoutEntities = TrainingPlanData.all.mapIndexed { i, w ->
+                WorkoutEntity(w.id, w.code, programId = TrainingPlanData.PROGRAM_ID, sortOrder = i + 1)
+            }
             val exerciseEntities = TrainingPlanData.all.flatMap { workout ->
                 workout.exercises.mapIndexed { i, ex -> ex.toEntity(workout.id, sortOrder = i + 1) } +
                     workout.exercises.mapNotNull { base ->
@@ -40,16 +49,21 @@ class WorkoutRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getAll(): List<Workout> {
+    override suspend fun getActiveProgram(): Program {
         ensureSeeded()
-        val workoutEntities = dao.getAll()
+        return checkNotNull(programDao.getActive()) { "no active programme after seeding" }.toDomain()
+    }
+
+    override suspend fun getAll(): List<Workout> {
+        val program = getActiveProgram()
+        val workoutEntities = dao.getForProgram(program.id)
         return workoutEntities.map { entity ->
             val rows = dao.getExercisesForWorkout(entity.id)
             val variantsByBase = rows.filter { it.variantOfId != null }.associateBy { it.variantOfId }
             val exercises = rows.filter { it.variantOfId == null }.map { base ->
                 base.toDomain(variantB = variantsByBase[base.id]?.toDomain())
             }
-            Workout(entity.id, WorkoutLabel.valueOf(entity.label), exercises)
+            Workout(entity.id, entity.label, exercises, name = entity.name, sortOrder = entity.sortOrder)
         }
     }
 
@@ -80,6 +94,14 @@ class WorkoutRepositoryImpl @Inject constructor(
         val reordered = bases.toMutableList().apply { add(to, removeAt(from)) }
         reordered.forEachIndexed { i, row -> dao.setSortOrder(row.id, i + 1) }
     }
+
+    private fun Program.toEntity() =
+        ProgramEntity(id, name, startDate.toEpochDay(), deloadEveryWeeks, variantRule.name, isActive = true)
+
+    private fun ProgramEntity.toDomain() = Program(
+        id, name, LocalDate.ofEpochDay(startEpochDay), deloadEveryWeeks,
+        runCatching { VariantRule.valueOf(variantRule) }.getOrDefault(VariantRule.NONE)
+    )
 
     private fun ExerciseDefinition.toEntity(workoutId: String, variantOfId: String? = null, sortOrder: Int = 0) = when (this) {
         is RepExerciseDefinition -> ExerciseDefinitionEntity(

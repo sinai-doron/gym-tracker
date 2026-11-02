@@ -1,23 +1,23 @@
 package com.doron.gymtracker.domain.usecase
 
-import com.doron.gymtracker.data.prefs.RotationPrefs
+import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.model.Workout
-import com.doron.gymtracker.domain.model.WorkoutLabel
 import javax.inject.Inject
 
+/**
+ * The workout after the last one finished, in the active programme's order; the first when none
+ * of its workouts has been done. Read from history, so a deleted session moves it back.
+ */
 class GetNextWorkoutUseCase @Inject constructor(
-    private val prefs: RotationPrefs,
+    private val sessionRepo: SessionRepository,
     private val repo: WorkoutRepository
 ) {
     suspend operator fun invoke(): Workout {
-        val last = prefs.getLastLabel()
-        val nextLabel = when (last) {
-            null -> WorkoutLabel.A
-            WorkoutLabel.A -> WorkoutLabel.B
-            WorkoutLabel.B -> WorkoutLabel.C
-            WorkoutLabel.C -> WorkoutLabel.A
-        }
-        return repo.getAll().first { it.label == nextLabel }
+        val workouts = repo.getAll()
+        val ids = workouts.map { it.id }
+        val last = sessionRepo.getCompletedSince(0).firstOrNull { it.type == "GYM" && it.workoutId in ids }
+            ?: return workouts.first()
+        return workouts[(ids.indexOf(last.workoutId) + 1) % workouts.size]
     }
 }

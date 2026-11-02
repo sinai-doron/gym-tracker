@@ -190,7 +190,7 @@ class HomeViewModel @Inject constructor(
             }
         }.toSet()
         val streak = streakDays(datesWithSessions, today)
-        val labels = _uiState.value.allWorkouts.associate { it.id to it.label.name }
+        val labels = _uiState.value.allWorkouts.associate { it.id to it.code }
         val days = weekDays(weekStart, today, sessions, labels, ZoneId.systemDefault())
 
         _uiState.update {

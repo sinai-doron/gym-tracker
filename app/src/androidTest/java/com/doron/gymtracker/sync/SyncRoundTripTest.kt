@@ -59,7 +59,11 @@ class SyncRoundTripTest {
 
     /** A gym session with one set, a run with its GPS points, a pause and a song, and a route. */
     private fun fillPhoneA() {
-        a.execSQL("INSERT INTO workouts (id, label) VALUES ('workout_a', 'Chest and back')")
+        a.execSQL(
+            "INSERT INTO programs (id, name, startEpochDay, deloadEveryWeeks, variantRule, isActive) " +
+                "VALUES ('program_abc', NULL, 20752, 6, 'ALTERNATE_WEEKLY', 1)"
+        )
+        a.execSQL("INSERT INTO workouts (id, label, programId, sortOrder) VALUES ('workout_a', 'Chest and back', 'program_abc', 1)")
         a.execSQL(
             "INSERT INTO exercise_definitions (id, workoutId, name, type, targetSets, restDurationSecs, targetReps, " +
                 "targetDistanceM, isOptional, isPerSide, isBodyweight, sortOrder, isRemoved) " +
@@ -104,7 +108,7 @@ class SyncRoundTripTest {
 
     @Test
     fun aFreshDatabaseRecordsChangesFromTheStart() {
-        a.execSQL("INSERT INTO workouts (id, label) VALUES ('workout_x', 'X')")
+        a.execSQL("INSERT INTO workouts (id, label, programId, sortOrder) VALUES ('workout_x', 'X', 'program_abc', 1)")
         val uuid = a.text("SELECT uuid FROM workouts WHERE id = 'workout_x'")
         assertNotNull("a new row gets a uuid", uuid)
         assertEquals(1L, a.count("SELECT count(*) FROM sync_changes WHERE entity = 'workout' AND uuid = ?", uuid!!))
@@ -121,13 +125,17 @@ class SyncRoundTripTest {
         assertEquals(0L, b.count("SELECT count(*) FROM sync_inbox"))
         assertEquals("downloads are not logged back as local changes", 0L, b.count("SELECT count(*) FROM sync_changes"))
         assertEquals(pages.size.toLong(), SyncPull(b).cursor())
-        for (table in listOf("workouts", "exercise_definitions", "sessions", "exercise_entries", "sets", "set_parts",
+        for (table in listOf("programs", "workouts", "exercise_definitions", "sessions", "exercise_entries", "sets", "set_parts",
             "run_details", "run_pauses", "track_log", "routes", "route_points", "location_log")) {
             assertEquals(table, a.count("SELECT count(*) FROM `$table`"), b.count("SELECT count(*) FROM `$table`"))
         }
         assertEquals("62.5", b.text("SELECT loadKg FROM set_parts"))
         assertEquals("RUNNING", b.text("SELECT workoutId FROM sessions WHERE type = 'RUNNING'"))
         assertEquals("bench", b.text("SELECT id FROM exercise_definitions"))
+        assertEquals("program_abc|20752|6|ALTERNATE_WEEKLY|1", b.text(
+            "SELECT id || '|' || startEpochDay || '|' || deloadEveryWeeks || '|' || variantRule || '|' || isActive FROM programs"
+        ))
+        assertEquals("program_abc|1", b.text("SELECT programId || '|' || sortOrder FROM workouts"))
         assertEquals("Park loop", b.text("SELECT name FROM routes"))
         // Every GPS point back, in order.
         assertEquals(
@@ -145,7 +153,7 @@ class SyncRoundTripTest {
     fun aFreshInstallsOwnPlanTakesTheServersIdsInsteadOfDoublingUp() {
         fillPhoneA()
         // Phone B created the plan itself on first launch, under its own uuids, waiting to upload.
-        b.execSQL("INSERT INTO workouts (id, label) VALUES ('workout_a', 'Chest and back')")
+        b.execSQL("INSERT INTO workouts (id, label, programId, sortOrder) VALUES ('workout_a', 'Chest and back', 'program_abc', 1)")
         val ownUuid = b.text("SELECT uuid FROM workouts")!!
         SyncPull(b).applyPage(serverItemsFromA(), 1)
 
@@ -217,5 +225,16 @@ class SyncRoundTripTest {
         SyncPull(b).applyPage(listOf(set.copy(updatedAt = set.updatedAt + 1, data = old(12, 0.0))), 2)
         assertEquals(1L, b.count("SELECT count(*) FROM set_parts"))
         assertEquals("12|", b.text("SELECT p.reps || '|' || coalesce(p.loadKg, '') FROM set_parts p"))
+    }
+
+    /** A workout uploaded before version 16 names no programme: it joins the seeded one, in its letter's place. */
+    @Test
+    fun aWorkoutInTheOldShapeJoinsTheSeededProgramme() {
+        val old = IncomingChange(
+            "workout", java.util.UUID.randomUUID().toString(), 1_000, false,
+            buildJsonObject { put("key", "workout_b"); put("label", "B") },
+        )
+        SyncPull(b).applyPage(listOf(old), 1)
+        assertEquals("program_abc|2", b.text("SELECT programId || '|' || sortOrder FROM workouts WHERE id = 'workout_b'"))
     }
 }

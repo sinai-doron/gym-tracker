@@ -51,7 +51,7 @@ import com.doron.gymtracker.domain.model.Session
 import com.doron.gymtracker.domain.model.TrackLog
 import com.doron.gymtracker.domain.model.Weather
 import com.doron.gymtracker.domain.usecase.GetPersonalRecordsUseCase
-import com.doron.gymtracker.ui.components.nameRes
+import com.doron.gymtracker.ui.components.defaultNameRes
 import com.doron.gymtracker.ui.screens.cardio.CardioUiState
 import com.doron.gymtracker.ui.screens.cardio.RunReport
 import com.doron.gymtracker.ui.theme.Purple
@@ -169,9 +169,9 @@ class SessionDetailViewModel @Inject constructor(
             val workoutNameRes = when (session.type) {
                 "RUNNING" -> R.string.history_run
                 "WALKING" -> R.string.history_walk
-                else -> workout?.label?.nameRes()
+                else -> workout?.takeIf { it.name == null }?.defaultNameRes()
             }
-            val workoutName = session.workoutId
+            val workoutName = workout?.name ?: session.workoutId
 
             _state.value = SessionDetailData(
                 sessionType = session.type,

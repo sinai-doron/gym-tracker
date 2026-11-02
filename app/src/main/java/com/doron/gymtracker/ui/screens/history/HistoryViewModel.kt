@@ -8,8 +8,7 @@ import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.model.RepSetRecord
 import com.doron.gymtracker.domain.model.SetRecord
-import com.doron.gymtracker.domain.model.WorkoutLabel
-import com.doron.gymtracker.ui.components.nameRes
+import com.doron.gymtracker.ui.components.defaultNameRes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,7 +31,8 @@ data class ExerciseSummary(val exerciseName: String, val sets: List<SetRecord>)
 data class SessionSummaryItem(
     val sessionId: Long,
     val sessionType: String,
-    val workoutLabel: WorkoutLabel?,
+    /** The workout's code (A, B…); null for a run or walk. */
+    val workoutLabel: String?,
     val workoutName: String,
     /** Shown in place of [workoutName] for a run, a walk or a known workout. */
     @StringRes val workoutNameRes: Int? = null,
@@ -132,14 +132,14 @@ class HistoryViewModel @Inject constructor(
                 val workoutNameRes = when (session.type) {
                     "RUNNING" -> R.string.history_run
                     "WALKING" -> R.string.history_walk
-                    else -> workout?.label?.nameRes()
+                    else -> workout?.takeIf { it.name == null }?.defaultNameRes()
                 }
-                val workoutName = session.workoutId
+                val workoutName = workout?.name ?: session.workoutId
 
                 SessionSummaryItem(
                     sessionId = session.id,
                     sessionType = session.type,
-                    workoutLabel = workout?.label,
+                    workoutLabel = workout?.code,
                     workoutName = workoutName,
                     workoutNameRes = workoutNameRes,
                     timeRange = "$startTime – $endTime",

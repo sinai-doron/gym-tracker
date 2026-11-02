@@ -55,8 +55,7 @@ class DomainModelTest {
     }
 
     @Test
-    fun `Workout label enum has A B C`() {
-        assertEquals(3, WorkoutLabel.entries.size)
-        assertTrue(WorkoutLabel.entries.containsAll(listOf(WorkoutLabel.A, WorkoutLabel.B, WorkoutLabel.C)))
+    fun `the seeded plan rotates A, B, C`() {
+        assertEquals(listOf("A", "B", "C"), com.doron.gymtracker.data.seed.TrainingPlanData.all.map { it.code })
     }
 }

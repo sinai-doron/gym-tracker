@@ -328,10 +328,11 @@ fun HomeScreen(
 
 @Composable
 private fun ProgramStatusLine(status: ProgramStatus) {
-    val parts = listOf(
+    val parts = listOfNotNull(
         stringResource(R.string.program_week, status.weekNumber),
         stringResource(if (status.isWeekB) R.string.week_b else R.string.week_a),
         when (status.weeksUntilDeload) {
+            null -> null
             0 -> stringResource(R.string.deload_now)
             1 -> stringResource(R.string.deload_next_week)
             else -> stringResource(R.string.deload_in_weeks, status.weeksUntilDeload)
@@ -363,7 +364,7 @@ private fun ResumeWorkoutCard(session: Session, workout: Workout, onResume: () -
                 color = Purple
             )
             Text(
-                workout.label.localizedName(),
+                workout.localizedName(),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
             )
             Text(
@@ -454,14 +455,14 @@ private fun NextWorkoutCard(
                     .background(Purple, CircleShape)
             ) {
                 Text(
-                    preview.workout.label.name,
+                    preview.workout.code,
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             }
             Spacer(Modifier.width(12.dp))
             Text(
-                preview.workout.label.localizedName(),
+                preview.workout.localizedName(),
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
             )
         }

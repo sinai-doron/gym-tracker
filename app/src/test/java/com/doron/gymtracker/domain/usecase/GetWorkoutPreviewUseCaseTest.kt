@@ -24,7 +24,7 @@ class GetWorkoutPreviewUseCaseTest {
         sessionRepo = mockk()
         getLastWeight = mockk()
         val resolveVariant = mockk<ResolveExerciseVariantUseCase>()
-        every { resolveVariant(any(), any()) } answers { firstArg() }
+        coEvery { resolveVariant(any(), any()) } answers { firstArg() }
         coEvery { getLastWeight(any()) } returns null
         useCase = GetWorkoutPreviewUseCase(sessionRepo, getLastWeight, resolveVariant)
     }

@@ -80,6 +80,19 @@ class BackupMigrationTest {
 
         // Version 15: every set is queued, so the server gets them in the new shape
         assertEquals(SyncChecks.expectedChanges(sql)["set"], SyncChecks.loggedChanges(sql)["set"])
+
+        // Version 16: one programme; the workouts rotate A, B, C; every entry of a linked exercise points at the library
+        assertEquals(1L, sql.query("SELECT count(*) FROM programs WHERE isActive = 1").use { it.moveToFirst(); it.getLong(0) })
+        val order = sql.query("SELECT label FROM workouts WHERE programId = 'program_abc' ORDER BY sortOrder").use { c ->
+            buildList { while (c.moveToNext()) add(c.getString(0)) }
+        }
+        assertEquals(listOf("A", "B", "C"), order)
+        val unlinkedEntries = sql.query(
+            "SELECT count(*) FROM exercise_entries e JOIN exercise_definitions d ON d.id = e.exerciseId " +
+                "WHERE d.libraryExerciseId IS NOT NULL AND (e.libraryExerciseId IS NULL OR e.libraryExerciseId != d.libraryExerciseId)"
+        ).use { it.moveToFirst(); it.getLong(0) }
+        assertEquals(0L, unlinkedEntries)
+        assertEquals(SyncChecks.expectedChanges(sql)["entry"], SyncChecks.loggedChanges(sql)["entry"])
     }
 
     /** The `backupZip` instrumentation argument, or gym-backup.zip in the app's external files folder. */

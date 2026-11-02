@@ -102,8 +102,8 @@ class SessionViewModel @AssistedInject constructor(
     val uiState: StateFlow<SessionUiState> = _uiState.asStateFlow()
 
     init {
-        _uiState.update { it.copy(isDeloadWeek = isDeloadWeek()) }
         viewModelScope.launch {
+            _uiState.update { it.copy(isDeloadWeek = isDeloadWeek()) }
             // A resumed session keeps its original start time and the sets already logged
             val startedAt = sessionRepo.getById(sessionId)?.startedAt ?: System.currentTimeMillis()
             val loggedSets = sessionRepo.getEntriesForSession(sessionId).associate { it.exerciseId to it.sets }

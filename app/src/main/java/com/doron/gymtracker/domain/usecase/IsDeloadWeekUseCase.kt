@@ -1,16 +1,11 @@
 package com.doron.gymtracker.domain.usecase
 
-import com.doron.gymtracker.data.prefs.ProgramPrefs
+import com.doron.gymtracker.data.repository.WorkoutRepository
 import javax.inject.Inject
 
 class IsDeloadWeekUseCase @Inject constructor(
-    private val prefs: ProgramPrefs
+    private val repo: WorkoutRepository
 ) {
-    operator fun invoke(sessionDateMs: Long = System.currentTimeMillis()): Boolean {
-        return prefs.weekNumber(sessionDateMs) % DELOAD_EVERY_WEEKS == 0
-    }
-
-    companion object {
-        const val DELOAD_EVERY_WEEKS = 6
-    }
+    suspend operator fun invoke(sessionDateMs: Long = System.currentTimeMillis()): Boolean =
+        repo.getActiveProgram().isDeloadWeek(sessionDateMs)
 }
