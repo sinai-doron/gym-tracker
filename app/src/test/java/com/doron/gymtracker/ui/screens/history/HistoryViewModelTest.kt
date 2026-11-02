@@ -1,5 +1,6 @@
 package com.doron.gymtracker.ui.screens.history
 
+import com.doron.gymtracker.R
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.data.seed.TrainingPlanData
@@ -21,7 +22,9 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.time.Instant
 import java.time.YearMonth
+import java.time.ZoneId
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HistoryViewModelTest {
@@ -100,6 +103,17 @@ class HistoryViewModelTest {
         val days = vm.sessionDates.value.values.toList()
         assertTrue(setOf(DayKind.GYM, DayKind.CARDIO) in days)
         assertTrue(setOf(DayKind.CARDIO) in days)
+    }
+
+    @Test
+    fun `a run is named by a string resource`() = runTest(testDispatcher) {
+        val run = Session(2L, "RUNNING", startedAt = 2000L, finishedAt = 3000L, type = "RUNNING")
+        coEvery { sessionRepo.observeAll() } returns flowOf(listOf(run))
+        coEvery { sessionRepo.getLastCompleted() } returns run
+        val vm = HistoryViewModel(sessionRepo, workoutRepo)
+        vm.loadDaySessions(Instant.ofEpochMilli(2000L).atZone(ZoneId.systemDefault()).toLocalDate())
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(R.string.history_run, vm.selectedDaySessions.value?.sessions?.single()?.workoutNameRes)
     }
 
     @Test

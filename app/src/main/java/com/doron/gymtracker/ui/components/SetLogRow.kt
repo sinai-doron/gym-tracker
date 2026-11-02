@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.doron.gymtracker.R
@@ -29,19 +30,20 @@ fun SetLogRow(setNumber: Int, record: SetRecord, isEditing: Boolean = false, onC
             .padding(vertical = 4.dp, horizontal = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text("סט $setNumber", style = MaterialTheme.typography.bodyLarge)
+        Text(stringResource(R.string.session_set_number, setNumber), style = MaterialTheme.typography.bodyLarge)
         val label = when (record) {
             is RepSetRecord -> {
                 val w = if (record.weightKg == record.weightKg.toLong().toFloat())
                     record.weightKg.toLong().toString() else record.weightKg.toString()
-                if (record.weightKg == 0f) "${record.reps} חזרות" else "${record.reps} חזרות × $w ק״ג"
+                if (record.weightKg == 0f) pluralStringResource(R.plurals.session_reps, record.reps, record.reps)
+                else pluralStringResource(R.plurals.session_reps_weight, record.reps, record.reps, w)
             }
             is TimedSetRecord -> {
                 val m = record.durationSecs / 60
                 val s = record.durationSecs % 60
                 "%d:%02d".format(m, s)
             }
-            is DistanceSetRecord -> "${record.distanceM} מטרים"
+            is DistanceSetRecord -> pluralStringResource(R.plurals.session_meters, record.distanceM, record.distanceM)
         }
         Text(label, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
     }

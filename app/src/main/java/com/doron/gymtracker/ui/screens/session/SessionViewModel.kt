@@ -135,10 +135,11 @@ class SessionViewModel @AssistedInject constructor(
         }
     }
 
-    fun finishSession() {
+    /** [workoutName] is the localized name the session is saved under in Health Connect. */
+    fun finishSession(workoutName: String) {
         viewModelScope.launch {
             restTimer.dismiss()
-            finishSessionUseCase(sessionId)
+            finishSessionUseCase(sessionId, workoutName)
             _uiState.update { it.copy(isFinished = true) }
             _uiState.update { it.copy(newAchievements = getAchievements.earnedBy(sessionId)) }
         }

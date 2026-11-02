@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Home: achievements card -->
+    <string name="home_achievements_title">🏅 הישגים</string>
+    <string name="home_achievements_earned">%1$d מתוך %2$d</string>
+    <string name="home_achievements_ok">יופי!</string>
+    <string name="home_badges_title">🏃 מרחק</string>
+    <string name="home_badges_explain">הריצה הראשונה שהגיעה למרחק</string>
+
+    <!-- Home: next workout card -->
+    <string name="home_hide_exercises">הסתר תרגילים</string>
+    <string name="home_show_exercises">הצג תרגילים (%1$d)</string>
+    <string name="home_switch_workout">החלף</string>
+
+    <!-- Home: cardio card -->
+    <string name="home_cardio_title">ריצה והליכה</string>
+    <string name="home_run">ריצה</string>
+    <string name="home_walk">הליכה</string>
+    <string name="home_routes">מסלולים</string>
+    <string name="home_routes_saved">%1$d שמורים</string>
+
+    <!-- Home: personal records -->
+    <string name="home_records_title">🏆 שיאים אישיים</string>
+    <string name="home_record_week">שבוע %1$s</string>
+    <string name="home_record_longest_run">הריצה הארוכה</string>
+    <string name="home_record_best_week">השבוע הטוב</string>
+
+    <!-- Home: week card -->
+    <string name="home_week_rolling">📅 7 ימים אחרונים</string>
+    <string name="home_week_calendar">📅 השבוע</string>
+    <string name="home_stat_minutes">דקות</string>
+    <string name="home_stat_volume">נפח</string>
+    <string name="home_stat_streak">רצף</string>
+    <!-- %1$s is the day range ("25–31"), %2$s the month's name -->
+    <string name="home_week_range_month">%1$s ב%2$s</string>
+
+    <!-- Home: steps card -->
+    <string name="home_steps_title_rolling">👣 צעדים ב-7 ימים</string>
+    <string name="home_steps_title_week">👣 צעדים השבוע</string>
+    <string name="home_steps_day">%1$s · %2$,d</string>
+    <string name="home_steps_day_workout">%1$s · %2$,d (%3$,d באימון)</string>
+    <string name="home_steps_average">ממוצע %1$,d</string>
+    <plurals name="home_steps_days_at_goal">
+        <item quantity="one">%1$d יום ביעד</item>
+        <item quantity="other">%1$d ימים ביעד</item>
+    </plurals>
+    <!-- %2$s is home_steps_days_at_goal, %3$s one of the changes below -->
+    <string name="home_steps_total">סה״כ %1$,d · %2$s</string>
+    <string name="home_steps_total_change">סה״כ %1$,d · %2$s · %3$s</string>
+    <string name="home_steps_up_rolling">↑%1$d%% מ-7 הימים שלפני</string>
+    <string name="home_steps_up_week">↑%1$d%% משבוע שעבר</string>
+    <string name="home_steps_down_rolling">↓%1$d%% מ-7 הימים שלפני</string>
+    <string name="home_steps_down_week">↓%1$d%% משבוע שעבר</string>
+    <string name="home_steps_same_rolling">כמו ב-7 הימים שלפני</string>
+    <string name="home_steps_same_week">כמו בשבוע שעבר</string>
+    <string name="home_steps_legend_at_goal">ביעד</string>
+    <string name="home_steps_legend_below_goal">מתחת ליעד</string>
+    <string name="home_steps_legend_workout">ריצה / הליכה</string>
+
+    <!-- Settings -->
+    <string name="home_settings_back">חזור</string>
+    <string name="home_hc_granted">הרשאות פעילות</string>
+    <string name="home_hc_autosave">אימונים נשמרים אוטומטית ב-Health Connect</string>
+    <string name="home_hc_sync">סנכרן אימונים וצעדים עם Health Connect</string>
+    <string name="home_hc_grant">אשר הרשאות</string>
+
+    <!-- Music controls -->
+    <string name="home_music_permission">הפעל גישה למדיה כדי לשלוט במוזיקה</string>
+    <string name="home_music_enable">הפעל</string>
+</resources>

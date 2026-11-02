@@ -48,6 +48,7 @@ import com.doron.gymtracker.domain.model.DistanceExerciseDefinition
 import com.doron.gymtracker.domain.model.ExerciseDefinition
 import com.doron.gymtracker.domain.model.RepExerciseDefinition
 import com.doron.gymtracker.domain.model.TimedExerciseDefinition
+import com.doron.gymtracker.ui.components.localizedName
 import com.doron.gymtracker.ui.theme.Purple
 
 /** The editor's dialog: editing an existing exercise, or adding a new one. */
@@ -71,7 +72,7 @@ fun PlanEditorScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(workout?.let { stringResource(R.string.edit_workout, it.label.name, it.label.displayName) } ?: "")
+                    Text(workout?.let { stringResource(R.string.edit_workout, it.label.name, it.label.localizedName()) } ?: "")
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
                 navigationIcon = {

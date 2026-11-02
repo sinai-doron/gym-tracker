@@ -20,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -62,7 +63,7 @@ fun BadgesRow(badges: List<BadgeStatus>, modifier: Modifier = Modifier) {
                 BadgeImage(status.badge, status.isEarned, size = 88.dp)
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    status.earnedAt?.let { dateFormat.format(Date(it)) } ?: "טרם הושג",
+                    status.earnedAt?.let { dateFormat.format(Date(it)) } ?: stringResource(R.string.achievement_not_yet),
                     style = MaterialTheme.typography.labelMedium.copy(
                         fontWeight = if (status.isEarned) FontWeight.SemiBold else FontWeight.Normal
                     ),

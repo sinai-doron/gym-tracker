@@ -1,5 +1,7 @@
 package com.doron.gymtracker.data.repository
 
+import android.content.Context
+import com.doron.gymtracker.R
 import com.doron.gymtracker.data.RouteFollower
 import com.doron.gymtracker.data.RouteNamer
 import com.doron.gymtracker.data.db.dao.RouteDao
@@ -7,12 +9,14 @@ import com.doron.gymtracker.data.db.entities.RouteEntity
 import com.doron.gymtracker.data.db.entities.RoutePointEntity
 import com.doron.gymtracker.domain.model.RoutePoint
 import com.doron.gymtracker.domain.model.SavedRoute
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /** Routes to run: saved from past runs or imported from GPX files. */
 @Singleton
 class RouteRepository @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val dao: RouteDao,
     private val namer: RouteNamer
 ) {
@@ -35,7 +39,7 @@ class RouteRepository @Inject constructor(
     suspend fun save(points: List<RoutePoint>, name: String? = null): Long {
         val title = name?.takeIf { it.isNotBlank() }
             ?: points.firstOrNull()?.let { namer.placeName(it) }
-            ?: DEFAULT_NAME
+            ?: context.getString(R.string.routes_default_name)
         val simplified = simplify(points)
         return dao.insertWithPoints(
             RouteEntity(name = title, distanceMeters = RouteFollower.length(simplified), createdAt = System.currentTimeMillis())
@@ -64,6 +68,5 @@ class RouteRepository @Inject constructor(
 
     private companion object {
         const val MIN_SPACING_M = 10.0
-        const val DEFAULT_NAME = "מסלול"
     }
 }

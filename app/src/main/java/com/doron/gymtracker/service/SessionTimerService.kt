@@ -91,10 +91,10 @@ class SessionTimerService : Service() {
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "אימון פעיל",
+            getString(R.string.session_active_workout),
             NotificationManager.IMPORTANCE_LOW
         ).apply {
-            description = "טיימר אימון ומנוחה"
+            description = getString(R.string.session_channel_description)
             setShowBadge(false)
         }
         getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
@@ -116,14 +116,14 @@ class SessionTimerService : Service() {
         val title: String
         val text: String
         if (rest != null && rest > 0) {
-            title = "מנוחה ${formatTime(rest.toLong())}"
+            title = getString(R.string.rest_value, formatTime(rest.toLong()))
             text = "$workoutName — $sessionTime"
         } else {
             title = "$workoutName — $sessionTime"
             text = if (currentExercise.isNotEmpty()) {
                 if (setInfo.isNotEmpty()) "$currentExercise · $setInfo" else currentExercise
             } else {
-                "אימון פעיל"
+                getString(R.string.session_active_workout)
             }
         }
 

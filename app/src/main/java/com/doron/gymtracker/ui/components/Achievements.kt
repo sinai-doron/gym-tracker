@@ -142,7 +142,7 @@ fun NewAchievementsDialog(achievements: List<AchievementStatus>, onDismiss: () -
     )
     AlertDialog(
         onDismissRequest = onDismiss,
-        confirmButton = { TextButton(onClick = onDismiss) { Text("יופי!", color = Purple) } },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.home_achievements_ok), color = Purple) } },
         title = {
             Text(
                 "🎉 " + stringResource(R.string.achievements_new),

@@ -47,6 +47,8 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -64,6 +66,7 @@ import com.doron.gymtracker.ui.components.ElevationChart
 import com.doron.gymtracker.ui.components.MusicControls
 import com.doron.gymtracker.ui.components.PaceChart
 import com.doron.gymtracker.ui.components.RunMap
+import com.doron.gymtracker.ui.components.label
 import com.doron.gymtracker.ui.components.valueText
 import com.doron.gymtracker.ui.components.NewAchievementsDialog
 import com.doron.gymtracker.ui.theme.Purple
@@ -122,7 +125,7 @@ fun CardioSessionScreen(
         )
         if (state.isPaused || state.isManuallyPaused) {
             Text(
-                if (state.isManuallyPaused) "⏸ מושהה – לחץ ▶ כדי להמשיך" else "⏸ מושהה – ימשיך כשתזוז",
+                stringResource(if (state.isManuallyPaused) R.string.cardio_paused_manual else R.string.cardio_paused_auto),
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -134,7 +137,7 @@ fun CardioSessionScreen(
         }
         if (state.isOffRoute) {
             Text(
-                "↩ יצאת מהמסלול",
+                stringResource(R.string.cardio_off_route),
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier
@@ -151,13 +154,13 @@ fun CardioSessionScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             StatBox(
-                label = "מרחק",
-                value = "%.2f ק״מ".format(state.distanceMeters / 1000.0),
+                label = stringResource(R.string.cardio_distance),
+                value = stringResource(R.string.cardio_km_2dp, state.distanceMeters / 1000.0),
                 modifier = Modifier.weight(1f)
             )
             StatBox(
-                label = "קצב",
-                value = if (state.currentPace.isNotEmpty()) "${state.currentPace} /ק״מ" else "—",
+                label = stringResource(R.string.cardio_pace),
+                value = if (state.currentPace.isNotEmpty()) stringResource(R.string.cardio_pace_value, state.currentPace) else "—",
                 modifier = Modifier.weight(1f)
             )
         }
@@ -169,20 +172,20 @@ fun CardioSessionScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             StatBox(
-                label = "קצב ממוצע",
-                value = state.avgPaceSecsPerKm?.let { "${formatPace(it)} /ק״מ" } ?: "—",
+                label = stringResource(R.string.cardio_avg_pace),
+                value = state.avgPaceSecsPerKm?.let { stringResource(R.string.cardio_pace_value, formatPace(it)) } ?: "—",
                 modifier = Modifier.weight(1f)
             )
             if (state.lapMeters > 0) {
                 StatBox(
-                    label = "הקפה ${state.currentLapNumber} · %.2f ק״מ".format(state.currentLapMeters / 1000.0),
+                    label = stringResource(R.string.cardio_current_lap, state.currentLapNumber, state.currentLapMeters / 1000.0),
                     value = formatTime(state.currentLapSecs),
                     modifier = Modifier.weight(1f)
                 )
             } else {
                 StatBox(
-                    label = "מהירות",
-                    value = if (state.currentSpeed > 0.3f) "%.1f קמ״ש".format(state.currentSpeed * 3.6f) else "—",
+                    label = stringResource(R.string.cardio_speed),
+                    value = if (state.currentSpeed > 0.3f) stringResource(R.string.cardio_kmh_1dp, state.currentSpeed * 3.6f) else "—",
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -209,7 +212,7 @@ fun CardioSessionScreen(
             ) {
                 Icon(
                     painterResource(if (state.isManuallyPaused) R.drawable.ic_play else R.drawable.ic_pause),
-                    contentDescription = if (state.isManuallyPaused) "המשך" else "השהה",
+                    contentDescription = stringResource(if (state.isManuallyPaused) R.string.cardio_resume else R.string.cardio_pause),
                     tint = Color.White,
                     modifier = Modifier.size(30.dp)
                 )
@@ -224,7 +227,7 @@ fun CardioSessionScreen(
             ) {
                 Icon(
                     Icons.Default.Close,
-                    contentDescription = "סיום",
+                    contentDescription = stringResource(R.string.cardio_finish),
                     tint = MaterialTheme.colorScheme.error,
                     modifier = Modifier.size(30.dp)
                 )
@@ -235,10 +238,11 @@ fun CardioSessionScreen(
     if (showFinishDialog) {
         AlertDialog(
             onDismissRequest = { showFinishDialog = false },
-            title = { Text("סיום אימון?") },
+            title = { Text(stringResource(R.string.cardio_finish_title)) },
             text = {
                 Text(
-                    "%.2f ק״מ ב-%s".format(
+                    stringResource(
+                        R.string.cardio_finish_text,
                         state.distanceMeters / 1000.0,
                         formatTime(state.elapsedSecs)
                     )
@@ -249,7 +253,7 @@ fun CardioSessionScreen(
                     showFinishDialog = false
                     viewModel.finish()
                 }) {
-                    Text("סיים", color = Purple)
+                    Text(stringResource(R.string.cardio_finish_confirm), color = Purple)
                 }
             },
             dismissButton = {
@@ -258,10 +262,10 @@ fun CardioSessionScreen(
                         showFinishDialog = false
                         viewModel.discard(onDiscarded = onFinished)
                     }) {
-                        Text("בטל", color = MaterialTheme.colorScheme.error)
+                        Text(stringResource(R.string.cardio_discard), color = MaterialTheme.colorScheme.error)
                     }
                     TextButton(onClick = { showFinishDialog = false }) {
-                        Text("המשך")
+                        Text(stringResource(R.string.cardio_keep_going))
                     }
                 }
             }
@@ -294,7 +298,7 @@ private fun CardioSummary(
         Spacer(Modifier.height(16.dp))
 
         Text(
-            if (state.type == "RUNNING") "ריצה הושלמה!" else "הליכה הושלמה!",
+            stringResource(if (state.type == "RUNNING") R.string.cardio_run_complete else R.string.cardio_walk_complete),
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
             color = SuccessGreen
         )
@@ -311,7 +315,7 @@ private fun CardioSummary(
             colors = ButtonDefaults.elevatedButtonColors(containerColor = Purple)
         ) {
             Text(
-                "סגור",
+                stringResource(R.string.cardio_close),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.onPrimary
             )
@@ -337,7 +341,11 @@ fun RunReport(
         state.weather?.let {
             Spacer(Modifier.height(4.dp))
             Text(
-                "${it.condition.emoji} ${it.temperatureC}° בתחילת ה${if (state.type == "RUNNING") "ריצה" else "הליכה"}",
+                stringResource(
+                    if (state.type == "RUNNING") R.string.cardio_weather_run_start else R.string.cardio_weather_walk_start,
+                    it.condition.emoji,
+                    it.temperatureC
+                ),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -349,8 +357,8 @@ fun RunReport(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            SummaryCard("משך", formatTime(state.elapsedSecs), Modifier.weight(1f))
-            SummaryCard("מרחק", "%.2f ק״מ".format(state.distanceMeters / 1000.0), Modifier.weight(1f))
+            SummaryCard(stringResource(R.string.cardio_duration), formatTime(state.elapsedSecs), Modifier.weight(1f))
+            SummaryCard(stringResource(R.string.cardio_distance), stringResource(R.string.cardio_km_2dp, state.distanceMeters / 1000.0), Modifier.weight(1f))
         }
 
         Spacer(Modifier.height(12.dp))
@@ -361,15 +369,15 @@ fun RunReport(
         val avgPace = if (avgSpeedKmh > 0.5) {
             val paceMin = (60.0 / avgSpeedKmh).toInt()
             val paceSec = ((60.0 / avgSpeedKmh - paceMin) * 60).toInt()
-            "%d:%02d /ק״מ".format(paceMin, paceSec)
+            stringResource(R.string.cardio_pace_min_sec, paceMin, paceSec)
         } else "—"
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            SummaryCard("מהירות ממוצעת", "%.1f קמ״ש".format(avgSpeedKmh), Modifier.weight(1f))
-            SummaryCard("קצב ממוצע", avgPace, Modifier.weight(1f))
+            SummaryCard(stringResource(R.string.cardio_avg_speed), stringResource(R.string.cardio_kmh_1dp, avgSpeedKmh), Modifier.weight(1f))
+            SummaryCard(stringResource(R.string.cardio_avg_pace), avgPace, Modifier.weight(1f))
         }
 
         Spacer(Modifier.height(12.dp))
@@ -378,8 +386,12 @@ fun RunReport(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            SummaryCard("צעדים", state.steps?.let { "%,d".format(it) } ?: "—", Modifier.weight(1f))
-            SummaryCard("קדנס ממוצע", state.avgCadence?.let { "$it צעדים/ד׳" } ?: "—", Modifier.weight(1f))
+            SummaryCard(stringResource(R.string.cardio_steps), state.steps?.let { "%,d".format(it) } ?: "—", Modifier.weight(1f))
+            SummaryCard(
+                stringResource(R.string.cardio_avg_cadence),
+                state.avgCadence?.let { stringResource(R.string.cardio_cadence_value, it) } ?: "—",
+                Modifier.weight(1f)
+            )
         }
 
         Spacer(Modifier.height(12.dp))
@@ -388,8 +400,16 @@ fun RunReport(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            SummaryCard("עלייה מצטברת", "${state.elevationGainM.roundToInt()} מ׳", Modifier.weight(1f))
-            SummaryCard("קלוריות", state.calories?.let { "$it קק״ל" } ?: "הגדר משקל", Modifier.weight(1f))
+            SummaryCard(
+                stringResource(R.string.cardio_elevation_gain),
+                stringResource(R.string.meters_value, state.elevationGainM.roundToInt()),
+                Modifier.weight(1f)
+            )
+            SummaryCard(
+                stringResource(R.string.cardio_calories),
+                state.calories?.let { stringResource(R.string.cardio_kcal_value, it) } ?: stringResource(R.string.cardio_set_weight),
+                Modifier.weight(1f)
+            )
         }
 
         if (state.route.size >= 2) {
@@ -403,7 +423,11 @@ fun RunReport(
                     shape = MaterialTheme.shapes.large,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(savedRouteName?.let { "✓ נשמר כמסלול \"$it\"" } ?: "🗺 שמור כמסלול", color = Purple)
+                    Text(
+                        savedRouteName?.let { stringResource(R.string.cardio_saved_as_route, it) }
+                            ?: stringResource(R.string.cardio_save_as_route),
+                        color = Purple
+                    )
                 }
             }
         }
@@ -418,7 +442,7 @@ fun RunReport(
         if (pace.size >= 2) {
             Spacer(Modifier.height(24.dp))
             Text(
-                "קצב",
+                stringResource(R.string.cardio_pace),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
             )
@@ -435,7 +459,7 @@ fun RunReport(
         if (profile.size >= 2) {
             Spacer(Modifier.height(24.dp))
             Text(
-                "גובה",
+                stringResource(R.string.cardio_elevation),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
             )
@@ -457,7 +481,7 @@ fun RunReport(
             Spacer(Modifier.height(24.dp))
 
             Text(
-                "♫ פסקול האימון",
+                stringResource(R.string.cardio_soundtrack),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
             )
@@ -510,10 +534,10 @@ private fun NewBadgesDialog(badges: List<RunBadge>, onDismiss: () -> Unit) {
     )
     AlertDialog(
         onDismissRequest = onDismiss,
-        confirmButton = { TextButton(onClick = onDismiss) { Text("יופי!", color = Purple) } },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cardio_badges_ok), color = Purple) } },
         title = {
             Text(
-                if (badges.size > 1) "🎉 ${badges.size} הישגים חדשים!" else "🎉 הישג חדש!",
+                pluralStringResource(R.plurals.cardio_new_badges, badges.size, badges.size),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
@@ -531,7 +555,7 @@ private fun NewBadgesDialog(badges: List<RunBadge>, onDismiss: () -> Unit) {
                 }
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    "רצת לראשונה ${top.label}",
+                    stringResource(R.string.cardio_first_badge, top.label),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                     textAlign = TextAlign.Center
                 )
@@ -544,10 +568,10 @@ private fun NewBadgesDialog(badges: List<RunBadge>, onDismiss: () -> Unit) {
 private fun NewRecordsDialog(records: List<PersonalRecord>, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        confirmButton = { TextButton(onClick = onDismiss) { Text("יש!", color = Purple) } },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cardio_records_ok), color = Purple) } },
         title = {
             Text(
-                if (records.size > 1) "🏆 ${records.size} שיאים אישיים!" else "🏆 שיא אישי חדש!",
+                pluralStringResource(R.plurals.cardio_new_records, records.size, records.size),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
@@ -557,7 +581,7 @@ private fun NewRecordsDialog(records: List<PersonalRecord>, onDismiss: () -> Uni
                 records.forEach { record ->
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            record.kind.label,
+                            record.kind.label(),
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.weight(1f)
                         )
@@ -577,9 +601,11 @@ private fun NewRecordsDialog(records: List<PersonalRecord>, onDismiss: () -> Uni
 @Composable
 private fun RunExtras(state: CardioUiState) {
     val items = listOfNotNull(
-        state.steps?.let { steps -> "👟 %,d".format(steps) + (state.cadence?.let { " · $it/ד׳" } ?: "") },
-        "⛰ ${state.elevationGainM.roundToInt()} מ׳",
-        state.calories?.let { "🔥 $it קק״ל" },
+        state.steps?.let { steps ->
+            state.cadence?.let { stringResource(R.string.cardio_steps_cadence_extra, steps, it) } ?: "👟 %,d".format(steps)
+        },
+        stringResource(R.string.cardio_climb_extra, state.elevationGainM.roundToInt()),
+        state.calories?.let { stringResource(R.string.cardio_kcal_extra, it) },
         state.weather?.let { "${it.condition.emoji} ${it.temperatureC}°" }
     )
     Row(
@@ -605,19 +631,21 @@ private fun TargetProgress(state: CardioUiState, progress: Float) {
     val reached = progress >= 1f
     val color = if (reached) SuccessGreen else Purple
     val text = when (state.target.type) {
-        RunTargetType.ROUTE -> "%.2f / %.1f ק״מ".format(state.routeAlongM / 1000.0, state.routeLengthM / 1000.0)
-        RunTargetType.DISTANCE -> "%.2f / %s ק״מ".format(state.distanceMeters / 1000.0, formatKm(state.target.distanceKm))
+        RunTargetType.ROUTE -> stringResource(R.string.cardio_route_progress, state.routeAlongM / 1000.0, state.routeLengthM / 1000.0)
+        RunTargetType.DISTANCE -> stringResource(R.string.cardio_distance_progress, state.distanceMeters / 1000.0, formatKm(state.target.distanceKm))
         else -> "${formatTime(state.elapsedSecs)} / ${formatTime(state.target.durationMin * 60L)}"
     }
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
-                when {
-                    reached && state.routeLengthM > 0 -> "🏁 סיימת את המסלול!"
-                    reached -> "🎯 המטרה הושגה!"
-                    state.routeLengthM > 0 -> "🗺 מסלול"
-                    else -> "🎯 מטרה"
-                },
+                stringResource(
+                    when {
+                        reached && state.routeLengthM > 0 -> R.string.cardio_route_finished
+                        reached -> R.string.cardio_target_reached
+                        state.routeLengthM > 0 -> R.string.cardio_route_heading
+                        else -> R.string.cardio_target_heading
+                    }
+                ),
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                 color = color,
                 modifier = Modifier.weight(1f)
@@ -651,7 +679,7 @@ private fun LapTable(laps: List<Lap>) {
     val fastest = laps.filterNot { it.partial }.minByOrNull { it.paceSecsPerKm }
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            "הקפות",
+            stringResource(R.string.cardio_laps),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
             modifier = Modifier.padding(bottom = 8.dp)
         )
@@ -667,7 +695,9 @@ private fun LapTable(laps: List<Lap>) {
                 val color = if (best) Purple else MaterialTheme.colorScheme.onSurface
                 Row(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
                     Text(
-                        "${lap.number} · %s ק״מ".format(
+                        stringResource(
+                            R.string.cardio_lap_row,
+                            lap.number,
                             if (lap.partial) "%.2f".format(lap.distanceMeters / 1000) else formatKm((lap.distanceMeters / 1000).toFloat())
                         ),
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = weight),
@@ -681,7 +711,7 @@ private fun LapTable(laps: List<Lap>) {
                         modifier = Modifier.width(72.dp)
                     )
                     Text(
-                        "${formatPace(lap.paceSecsPerKm)} /ק״מ",
+                        stringResource(R.string.cardio_pace_value, formatPace(lap.paceSecsPerKm)),
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = weight),
                         color = color,
                         textAlign = TextAlign.End,

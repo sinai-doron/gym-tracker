@@ -58,6 +58,7 @@ import com.doron.gymtracker.media.NowPlayingProvider
 import com.doron.gymtracker.service.SessionTimerService
 import com.doron.gymtracker.ui.components.ExerciseCard
 import com.doron.gymtracker.ui.components.MusicControls
+import com.doron.gymtracker.ui.components.localizedName
 import com.doron.gymtracker.ui.theme.RestTimerColor
 import com.doron.gymtracker.ui.theme.WarningAmber
 
@@ -78,6 +79,7 @@ fun SessionScreen(
 
     val activeRestSecs = viewModel.restTimer.state.collectAsState().value?.remainingSecs
     val context = LocalContext.current
+    val workoutName = state.workout?.label?.localizedName() ?: ""
 
     // Android 13+ hides the session notification until the user allows notifications
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
@@ -95,7 +97,7 @@ fun SessionScreen(
     // Start foreground service when workout loads
     LaunchedEffect(state.workout) {
         state.workout?.let {
-            SessionTimerService.start(context, it.label.displayName, state.startedAt)
+            SessionTimerService.start(context, workoutName, state.startedAt)
         }
     }
 
@@ -111,7 +113,7 @@ fun SessionScreen(
         val summaryData = remember(summaryExerciseIds.value) {
             val filtered = detailStates.filterKeys { it in summaryExerciseIds.value }
             buildSummaryData(
-                workoutName = state.workout?.label?.displayName ?: "",
+                workoutName = workoutName,
                 durationSecs = state.elapsedSecs,
                 detailStates = filtered,
                 tracks = state.tracks
@@ -137,14 +139,14 @@ fun SessionScreen(
     if (showExitDialog) {
         AlertDialog(
             onDismissRequest = { showExitDialog = false },
-            title = { Text("לסיים את האימון?") },
-            text = { Text("אפשר לסיים ולשמור את הסטים, או לבטל את האימון ולמחוק אותו.") },
+            title = { Text(stringResource(R.string.session_finish_title)) },
+            text = { Text(stringResource(R.string.session_finish_text)) },
             confirmButton = {
                 TextButton(onClick = {
                     showExitDialog = false
-                    viewModel.finishSession()
+                    viewModel.finishSession(workoutName)
                 }) {
-                    Text("סיים")
+                    Text(stringResource(R.string.session_finish))
                 }
             },
             dismissButton = {
@@ -154,10 +156,10 @@ fun SessionScreen(
                         SessionTimerService.stop(context)
                         viewModel.discardSession(onDiscarded = onFinished)
                     }) {
-                        Text("בטל אימון", color = MaterialTheme.colorScheme.error)
+                        Text(stringResource(R.string.session_discard), color = MaterialTheme.colorScheme.error)
                     }
                     TextButton(onClick = { showExitDialog = false }) {
-                        Text("המשך")
+                        Text(stringResource(R.string.session_continue))
                     }
                 }
             }
@@ -180,12 +182,12 @@ fun SessionScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                state.workout?.label?.displayName ?: "",
+                workoutName,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f)
             )
-            FilledTonalButton(onClick = { viewModel.finishSession() }) {
-                Text("סיים")
+            FilledTonalButton(onClick = { viewModel.finishSession(workoutName) }) {
+                Text(stringResource(R.string.session_finish))
             }
         }
 
@@ -208,7 +210,7 @@ fun SessionScreen(
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    "זמן אימון",
+                    stringResource(R.string.session_workout_time),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -225,7 +227,7 @@ fun SessionScreen(
                     color = RestTimerColor
                 )
                 Text(
-                    "מנוחה",
+                    stringResource(R.string.rest),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

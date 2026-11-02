@@ -62,7 +62,7 @@ fun AchievementsScreen(onBack: () -> Unit, viewModel: BadgesViewModel = hiltView
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             if (badges.isNotEmpty()) {
-                Section(title = "🏃 מרחק", explain = "הריצה הראשונה שהגיעה למרחק") { BadgesRow(badges) }
+                Section(title = stringResource(R.string.home_badges_title), explain = stringResource(R.string.home_badges_explain)) { BadgesRow(badges) }
             }
             AchievementFamily.entries.forEach { family ->
                 val inFamily = achievements.filter { it.kind.family == family }

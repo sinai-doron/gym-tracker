@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Workout names -->
+    <string name="session_workout_a">Chest &amp; Back</string>
+    <string name="session_workout_b">Legs</string>
+    <string name="session_workout_c">Shoulders &amp; Arms</string>
+
+    <!-- Session screen -->
+    <string name="session_finish_title">Finish the workout?</string>
+    <string name="session_finish_text">You can finish and save your sets, or discard the workout and delete it.</string>
+    <string name="session_finish">Finish</string>
+    <string name="session_discard">Discard workout</string>
+    <string name="session_continue">Continue</string>
+    <string name="session_workout_time">Workout time</string>
+
+    <!-- Exercise card and set rows -->
+    <string name="session_optional">Optional</string>
+    <plurals name="session_done_sets">
+        <item quantity="one">Done — %1$d set</item>
+        <item quantity="other">Done — %1$d sets</item>
+    </plurals>
+    <string name="session_per_side">Per side</string>
+    <plurals name="session_reps">
+        <item quantity="one">%1$d rep</item>
+        <item quantity="other">%1$d reps</item>
+    </plurals>
+    <string name="session_reps_times_weight">%1$d × %2$s kg</string>
+    <plurals name="session_reps_weight">
+        <item quantity="one">%1$d rep × %2$s kg</item>
+        <item quantity="other">%1$d reps × %2$s kg</item>
+    </plurals>
+    <plurals name="session_meters">
+        <item quantity="one">%1$d meter</item>
+        <item quantity="other">%1$d meters</item>
+    </plurals>
+    <string name="session_set_number">Set %1$d</string>
+
+    <!-- Exercise sheet -->
+    <string name="session_per_side_hint">Per side – enter each side separately</string>
+    <string name="session_hint_increase">All sets hit the top of the range 3× in a row — add %1$s kg</string>
+    <string name="session_hint_stalled" formatted="false">3 workouts without progress — drop 10% and build back up</string>
+    <string name="session_delete_set">Delete set</string>
+    <string name="session_update_set">Update set</string>
+    <string name="session_distance_target">Distance (m) — target: %1$d m</string>
+
+    <!-- Summary -->
+    <string name="session_complete">Workout complete!</string>
+    <string name="session_duration">Duration</string>
+    <string name="session_exercises">Exercises</string>
+    <string name="session_total_volume">Total volume</string>
+    <string name="session_exercise_breakdown">Exercise breakdown</string>
+    <string name="session_breakdown_sets">%1$d/%2$d sets</string>
+    <string name="session_breakdown_sets_weight">%1$d/%2$d sets · %3$s kg</string>
+    <string name="session_delete_exercise">Delete exercise</string>
+    <string name="session_soundtrack">♫ Workout soundtrack</string>
+    <string name="session_go_home">Back to home</string>
+    <string name="session_delete_exercise_title">Delete exercise?</string>
+    <string name="session_delete_exercise_text">Delete %1$s and all its sets from this workout?</string>
+    <string name="session_delete">Delete</string>
+
+    <!-- Session notification -->
+    <string name="session_active_workout">Active workout</string>
+    <string name="session_channel_description">Workout and rest timer</string>
+</resources>

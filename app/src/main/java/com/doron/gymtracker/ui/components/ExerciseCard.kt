@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.doron.gymtracker.R
@@ -79,7 +80,7 @@ fun ExerciseCard(
                         )
                     } else if (exercise.isOptional) {
                         Text(
-                            "אופציונלי",
+                            stringResource(R.string.session_optional),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -88,7 +89,7 @@ fun ExerciseCard(
                 Row {
                     if (isDone) {
                         Text(
-                            "הושלם — ${completedSets.size} סטים",
+                            pluralStringResource(R.plurals.session_done_sets, completedSets.size, completedSets.size),
                             style = MaterialTheme.typography.bodyMedium,
                             color = SuccessGreen,
                             modifier = Modifier.weight(1f)
@@ -102,7 +103,7 @@ fun ExerciseCard(
                         )
                         if (exercise.isPerSide) {
                             Text(
-                                "לכל צד",
+                                stringResource(R.string.session_per_side),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -154,10 +155,11 @@ private fun InlineSetRow(setNumber: Int, record: SetRecord) {
             is RepSetRecord -> {
                 val w = if (record.weightKg == record.weightKg.toLong().toFloat())
                     record.weightKg.toLong().toString() else record.weightKg.toString()
-                if (record.weightKg == 0f) "${record.reps} חזרות" else "${record.reps} × $w ק״ג"
+                if (record.weightKg == 0f) pluralStringResource(R.plurals.session_reps, record.reps, record.reps)
+                else stringResource(R.string.session_reps_times_weight, record.reps, w)
             }
             is TimedSetRecord -> formatDuration(record.durationSecs)
-            is DistanceSetRecord -> "${record.distanceM} מ׳"
+            is DistanceSetRecord -> stringResource(R.string.meters_value, record.distanceM)
         }
         Text(
             value,

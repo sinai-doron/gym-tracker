@@ -58,7 +58,7 @@ class SessionViewModelTest {
         coEvery { sessionRepo.getEntriesForSession(1L) } returns emptyList()
         coEvery { sessionRepo.getById(1L) } returns Session(1L, "workout_a", System.currentTimeMillis(), null)
         coEvery { sessionRepo.observeAll() } returns flowOf(emptyList())
-        coJustRun { finishSession(1L) }
+        coJustRun { finishSession(1L, any()) }
     }
 
     @After
@@ -75,7 +75,7 @@ class SessionViewModelTest {
         coEvery { getAchievements.earnedBy(1L) } returns listOf(iron)
         val viewModel = makeViewModel()
         advanceTimeBy(100)
-        viewModel.finishSession()
+        viewModel.finishSession("Chest & Back")
         advanceTimeBy(100)
         assertEquals(listOf(iron), viewModel.uiState.value.newAchievements)
         viewModel.achievementsSeen()
@@ -91,7 +91,7 @@ class SessionViewModelTest {
         val elapsed = viewModel.uiState.value.elapsedSecs
         assertTrue("Expected about 600s, got $elapsed", elapsed in 599..605)
         // finish so the ticker loop exits and runTest can complete
-        viewModel.finishSession()
+        viewModel.finishSession("Chest & Back")
         advanceTimeBy(100)
     }
 
@@ -99,7 +99,7 @@ class SessionViewModelTest {
     fun `finishSession sets isFinished true`() = runTest(testDispatcher) {
         val viewModel = makeViewModel()
         advanceTimeBy(100)
-        viewModel.finishSession()
+        viewModel.finishSession("Chest & Back")
         advanceTimeBy(100)
         assertTrue(viewModel.uiState.value.isFinished)
     }
@@ -111,14 +111,14 @@ class SessionViewModelTest {
         val viewModel = makeViewModel()
         advanceTimeBy(100)
         assertEquals(listOf(set), viewModel.uiState.value.loggedSets["d1_e1"])
-        viewModel.finishSession()
+        viewModel.finishSession("Chest & Back")
         advanceTimeBy(100)
     }
 
     @Test
     fun `finish session without logging any exercise succeeds`() = runTest(testDispatcher) {
         val viewModel = makeViewModel()
-        viewModel.finishSession()
+        viewModel.finishSession("Chest & Back")
         advanceTimeBy(100)
         assertTrue(viewModel.uiState.value.isFinished)
     }
@@ -140,7 +140,7 @@ class SessionViewModelTest {
         assertEquals(1, again.uiState.value.completedSets.size)
 
         // finish so the ticker loop exits and runTest can complete
-        viewModel.finishSession()
+        viewModel.finishSession("Chest & Back")
         advanceTimeBy(100)
     }
 
@@ -153,7 +153,7 @@ class SessionViewModelTest {
         assertEquals(null, viewModel.uiState.value.selectedExerciseId)
 
         // finish so the ticker loop exits and runTest can complete
-        viewModel.finishSession()
+        viewModel.finishSession("Chest & Back")
         advanceTimeBy(100)
     }
 }

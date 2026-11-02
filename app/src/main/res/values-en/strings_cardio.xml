@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Run / walk session -->
+    <string name="cardio_run">Run</string>
+    <string name="cardio_walk">Walk</string>
+    <string name="cardio_paused_manual">⏸ Paused – tap ▶ to resume</string>
+    <string name="cardio_paused_auto">⏸ Paused – resumes when you move</string>
+    <string name="cardio_off_route">↩ You\'re off the route</string>
+    <string name="cardio_distance">Distance</string>
+    <string name="cardio_km_2dp">%1$.2f km</string>
+    <string name="cardio_km_1dp">%1$.1f km</string>
+    <string name="cardio_pace">Pace</string>
+    <string name="cardio_pace_value">%1$s /km</string>
+    <string name="cardio_pace_min_sec">%1$d:%2$02d /km</string>
+    <string name="cardio_avg_pace">Avg pace</string>
+    <string name="cardio_current_lap">Lap %1$d · %2$.2f km</string>
+    <string name="cardio_speed">Speed</string>
+    <string name="cardio_kmh_1dp">%1$.1f km/h</string>
+    <string name="cardio_resume">Resume</string>
+    <string name="cardio_pause">Pause</string>
+    <string name="cardio_finish">Finish</string>
+    <string name="cardio_finish_title">Finish workout?</string>
+    <string name="cardio_finish_text">%1$.2f km in %2$s</string>
+    <string name="cardio_finish_confirm">Finish</string>
+    <string name="cardio_discard">Discard</string>
+    <string name="cardio_keep_going">Keep going</string>
+    <string name="cardio_route_finished">🏁 Route complete!</string>
+    <string name="cardio_target_reached">🎯 Target reached!</string>
+    <string name="cardio_route_heading">🗺 Route</string>
+    <string name="cardio_target_heading">🎯 Target</string>
+    <string name="cardio_route_progress">%1$.2f / %2$.1f km</string>
+    <string name="cardio_distance_progress">%1$.2f / %2$s km</string>
+    <string name="cardio_steps_cadence_extra">👟 %1$,d · %2$d/min</string>
+    <string name="cardio_climb_extra">⛰ %1$d m</string>
+    <string name="cardio_kcal_extra">🔥 %1$d kcal</string>
+
+    <!-- Run report -->
+    <string name="cardio_run_complete">Run complete!</string>
+    <string name="cardio_walk_complete">Walk complete!</string>
+    <string name="cardio_close">Close</string>
+    <string name="cardio_weather_run_start">%1$s %2$d° at the start of the run</string>
+    <string name="cardio_weather_walk_start">%1$s %2$d° at the start of the walk</string>
+    <string name="cardio_duration">Duration</string>
+    <string name="cardio_avg_speed">Avg speed</string>
+    <string name="cardio_steps">Steps</string>
+    <string name="cardio_avg_cadence">Avg cadence</string>
+    <string name="cardio_cadence_value">%1$d steps/min</string>
+    <string name="cardio_elevation_gain">Total climb</string>
+    <string name="cardio_calories">Calories</string>
+    <string name="cardio_kcal_value">%1$d kcal</string>
+    <string name="cardio_set_weight">Set your weight</string>
+    <string name="cardio_saved_as_route">✓ Saved as route \"%1$s\"</string>
+    <string name="cardio_save_as_route">🗺 Save as route</string>
+    <string name="cardio_elevation">Elevation</string>
+    <string name="cardio_soundtrack">♫ Workout soundtrack</string>
+    <string name="cardio_laps">Laps</string>
+    <string name="cardio_lap_row">%1$d · %2$s km</string>
+    <string name="cardio_chart_point">%1$.2f km · %2$s</string>
+    <string name="cardio_badges_ok">Nice!</string>
+    <plurals name="cardio_new_badges">
+        <item quantity="one">🎉 New achievement!</item>
+        <item quantity="other">🎉 %1$d new achievements!</item>
+    </plurals>
+    <string name="cardio_first_badge">Your first %1$s run</string>
+    <string name="cardio_records_ok">Yes!</string>
+    <plurals name="cardio_new_records">
+        <item quantity="one">🏆 New personal record!</item>
+        <item quantity="other">🏆 %1$d personal records!</item>
+    </plurals>
+
+    <!-- GPS lock and target -->
+    <string name="cardio_back">Back</string>
+    <string name="cardio_gps_ready">GPS ready!</string>
+    <string name="cardio_gps_searching">Looking for GPS...</string>
+    <string name="cardio_gps_accuracy">Accuracy: %1$.0f m</string>
+    <string name="cardio_gps_waiting">Waiting for a signal...</string>
+    <string name="cardio_gps_go_outside">Step outside for a better signal</string>
+    <string name="cardio_at_route_start">📍 You\'re at the start of the route</string>
+    <string name="cardio_route_starts_away">📍 The route starts %1$s away</string>
+    <string name="cardio_start_run">🏃 Start run</string>
+    <string name="cardio_start_walk">🚶 Start walk</string>
+    <string name="cardio_target">Target</string>
+    <string name="cardio_target_none">No target</string>
+    <string name="cardio_time">Time</string>
+    <string name="cardio_route">Route</string>
+    <string name="cardio_minutes_value">%1$d min</string>
+    <string name="cardio_route_name_km">%1$s · %2$.1f km</string>
+    <string name="cardio_choose_route">Choose a route</string>
+    <string name="cardio_no_routes">No routes yet: save a run as a route or import a GPX file.</string>
+    <string name="cardio_manage_routes">Manage routes and import GPX</string>
+
+    <!-- Sharing a run -->
+    <string name="cardio_share">📤 Share</string>
+    <string name="cardio_share_run">Share run</string>
+    <string name="cardio_share_walk">Share walk</string>
+    <string name="cardio_share_image">🖼 Share image</string>
+    <string name="cardio_share_gpx">📄 GPX file</string>
+    <string name="cardio_share_image_send">📤 Share image</string>
+    <string name="cardio_climb">Climb</string>
+    <string name="cardio_date">Date</string>
+    <string name="cardio_records">Records</string>
+    <string name="cardio_pace_colors">Pace colors</string>
+    <string name="cardio_unit_km">km</string>
+    <string name="cardio_unit_time">time</string>
+    <string name="cardio_unit_pace">min/km</string>
+    <string name="cardio_unit_climb">m climb</string>
+    <string name="cardio_unit_kcal">kcal</string>
+    <string name="cardio_unit_steps">steps</string>
+    <!-- SimpleDateFormat pattern and the locale for its month names -->
+    <string name="cardio_share_date_pattern">MMM d · HH:mm</string>
+    <string name="cardio_share_date_locale">en</string>
+
+    <!-- Tracking notification -->
+    <string name="cardio_channel_name">Run/walk tracking</string>
+    <string name="cardio_channel_description">GPS is on during a workout</string>
+    <string name="cardio_notification_paused">%1$s · ⏸ Paused</string>
+</resources>

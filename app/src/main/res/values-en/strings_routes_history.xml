@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Routes -->
+    <string name="routes_title">Routes</string>
+    <string name="routes_back">Back</string>
+    <string name="routes_imported">Route added</string>
+    <string name="routes_not_a_route">No route found in this file</string>
+    <string name="routes_import">Import route</string>
+    <string name="routes_empty">No routes yet.\nSave a run as a route from your history, or import a GPX file.</string>
+    <string name="routes_import_text">Pick a GPX file: a route you downloaded, or a run you exported from Strava, Garmin and the like.</string>
+    <string name="routes_choose_gpx">Choose a GPX file</string>
+    <string name="routes_picker_hint">The file picker has no cancel button: to go back without picking, swipe back from the edge of the screen.</string>
+    <string name="routes_card_meta">%1$s km · added %2$s</string>
+    <string name="routes_rename">Rename</string>
+    <string name="routes_delete">Delete</string>
+    <string name="routes_run_route">🏃 Run this route</string>
+    <string name="routes_distance">Distance</string>
+    <string name="routes_unit_km">km</string>
+    <string name="routes_unit_m">m</string>
+    <string name="routes_climb">Total climb</string>
+    <string name="routes_descent">Total descent</string>
+    <string name="routes_highest">Highest point</string>
+    <string name="routes_estimated_time">Est. time</string>
+    <string name="routes_estimate_from_runs">Estimated from your average pace on recent runs (%1$s/km)</string>
+    <string name="routes_estimate_from_pace">Estimated at a pace of %1$s/km</string>
+    <string name="routes_elevation">Elevation</string>
+    <string name="routes_name_title">Route name</string>
+    <string name="routes_delete_title">Delete \"%1$s\"?</string>
+    <string name="routes_delete_text">Runs on this route stay in your history.</string>
+    <string name="routes_delete_confirm">Delete</string>
+    <string name="routes_loop_street">Loop · %1$s</string>
+    <string name="routes_legend_up">Uphill</string>
+    <string name="routes_legend_down">Downhill</string>
+    <string name="routes_legend_start">Start</string>
+    <string name="routes_legend_finish">Finish</string>
+    <!-- A new route's name when the phone can't tell where it starts -->
+    <string name="routes_default_name">Route</string>
+
+    <!-- History -->
+    <string name="history_back">Back</string>
+    <string name="history_next_month">Next month</string>
+    <string name="history_prev_month">Previous month</string>
+    <string-array name="history_day_headers">
+        <item>S</item>
+        <item>M</item>
+        <item>T</item>
+        <item>W</item>
+        <item>T</item>
+        <item>F</item>
+        <item>S</item>
+    </string-array>
+    <string name="history_legend_gym">Strength</string>
+    <string name="history_legend_cardio">Run / walk</string>
+    <plurals name="history_sessions_count">
+        <item quantity="one">%d workout</item>
+        <item quantity="other">%d workouts</item>
+    </plurals>
+    <string name="history_delete_title">Delete workout?</string>
+    <string name="history_delete_text">Delete %1$s?\nAll its data will be gone for good.</string>
+    <string name="history_delete_confirm">Delete</string>
+    <string name="history_delete_session">Delete workout</string>
+    <string name="history_minutes">%1$d min</string>
+    <plurals name="history_sets_count">
+        <item quantity="one">%d set</item>
+        <item quantity="other">%d sets</item>
+    </plurals>
+    <string name="history_run">Run</string>
+    <string name="history_walk">Walk</string>
+    <string name="history_duration">Duration</string>
+    <string name="history_exercises">Exercises</string>
+    <string name="history_total_volume">Total volume</string>
+    <string name="history_exercise_breakdown">Exercise breakdown</string>
+    <string name="history_line_sets">%1$d/%2$d sets</string>
+    <string name="history_line_sets_weight">%1$d/%2$d sets · %3$s kg</string>
+    <string name="history_soundtrack">♫ Workout soundtrack</string>
+</resources>

@@ -49,6 +49,7 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import com.doron.gymtracker.R
 import com.doron.gymtracker.ui.components.ExercisePreviewList
 import com.doron.gymtracker.ui.components.WorkoutMetaRow
+import com.doron.gymtracker.ui.components.localizedName
 import com.doron.gymtracker.ui.theme.Purple
 import kotlinx.coroutines.launch
 
@@ -111,7 +112,7 @@ fun WorkoutsScreen(
                 state.previews.forEachIndexed { i, p ->
                     WorkoutChoiceCard(
                         letter = p.workout.label.name,
-                        name = p.workout.label.displayName,
+                        name = p.workout.label.localizedName(),
                         isSelected = i == state.selectedIndex,
                         isNext = p.workout.id == state.nextWorkoutId,
                         onClick = { viewModel.select(i) },

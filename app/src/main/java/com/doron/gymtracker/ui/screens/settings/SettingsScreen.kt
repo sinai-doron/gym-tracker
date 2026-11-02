@@ -69,7 +69,7 @@ import com.doron.gymtracker.ui.screens.account.AccountCard
 data class LanguageOption(val code: String, val displayName: String)
 
 private val languages = listOf(
-    LanguageOption("iw", "עברית"),
+    LanguageOption("iw", "עברית"), // hebrew-ok: a language is listed by its own name
     LanguageOption("en", "English")
 )
 
@@ -166,7 +166,7 @@ fun SettingsScreen(
                 title = { Text(stringResource(R.string.settings)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "חזור")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.home_settings_back))
                     }
                 }
             )
@@ -365,18 +365,18 @@ fun SettingsScreen(
                         Column(modifier = Modifier.padding(16.dp)) {
                             if (healthConnectGranted) {
                                 Text(
-                                    "הרשאות פעילות",
+                                    stringResource(R.string.home_hc_granted),
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.primary
                                 )
                                 Text(
-                                    "אימונים נשמרים אוטומטית ב-Health Connect",
+                                    stringResource(R.string.home_hc_autosave),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             } else {
                                 Text(
-                                    "סנכרן אימונים וצעדים עם Health Connect",
+                                    stringResource(R.string.home_hc_sync),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -392,7 +392,7 @@ fun SettingsScreen(
                                     },
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    Text("אשר הרשאות")
+                                    Text(stringResource(R.string.home_hc_grant))
                                 }
                             }
                         }

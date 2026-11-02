@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import com.doron.gymtracker.R
 import androidx.compose.foundation.layout.Arrangement
@@ -89,8 +90,8 @@ fun RoutesScreen(
 
     LaunchedEffect(event) {
         when (event) {
-            RoutesViewModel.Event.Imported -> Toast.makeText(context, "המסלול נוסף", Toast.LENGTH_SHORT).show()
-            RoutesViewModel.Event.NotARoute -> Toast.makeText(context, "לא נמצא מסלול בקובץ", Toast.LENGTH_LONG).show()
+            RoutesViewModel.Event.Imported -> Toast.makeText(context, context.getString(R.string.routes_imported), Toast.LENGTH_SHORT).show()
+            RoutesViewModel.Event.NotARoute -> Toast.makeText(context, context.getString(R.string.routes_not_a_route), Toast.LENGTH_LONG).show()
             null -> Unit
         }
         if (event != null) viewModel.eventHandled()
@@ -99,10 +100,10 @@ fun RoutesScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("מסלולים") },
+                title = { Text(stringResource(R.string.routes_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "חזרה")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.routes_back))
                     }
                 }
             )
@@ -114,7 +115,7 @@ fun RoutesScreen(
                     containerColor = Purple,
                     contentColor = Color.White,
                     icon = { Icon(painterResource(R.drawable.ic_import_route), contentDescription = null) },
-                    text = { Text("ייבוא מסלול", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)) }
+                    text = { Text(stringResource(R.string.routes_import), style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)) }
                 )
             }
         }
@@ -132,7 +133,7 @@ fun RoutesScreen(
                 ImportBadge(size = 96.dp)
                 Spacer(Modifier.height(20.dp))
                 Text(
-                    "אין עדיין מסלולים.\nשמרו ריצה כמסלול מההיסטוריה, או ייבאו קובץ GPX.",
+                    stringResource(R.string.routes_empty),
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -165,10 +166,10 @@ fun RoutesScreen(
             ) {
                 ImportBadge(size = 72.dp)
                 Spacer(Modifier.height(16.dp))
-                Text("ייבוא מסלול", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold))
+                Text(stringResource(R.string.routes_import), style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold))
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "בחרו קובץ GPX: מסלול שהורדתם, או ריצה שייצאתם מ-Strava, Garmin וכדומה.",
+                    stringResource(R.string.routes_import_text),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
@@ -185,7 +186,7 @@ fun RoutesScreen(
                 ) {
                     Icon(painterResource(R.drawable.ic_import_route), contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("בחירת קובץ GPX", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold))
+                    Text(stringResource(R.string.routes_choose_gpx), style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold))
                 }
                 Spacer(Modifier.height(8.dp))
                 OutlinedButton(
@@ -193,11 +194,11 @@ fun RoutesScreen(
                     shape = MaterialTheme.shapes.large,
                     modifier = Modifier.fillMaxWidth().height(52.dp)
                 ) {
-                    Text("ביטול", color = Purple)
+                    Text(stringResource(R.string.cancel), color = Purple)
                 }
                 Spacer(Modifier.height(12.dp))
                 Text(
-                    "בבוחר הקבצים אין כפתור ביטול: כדי לחזור בלי לבחור, החליקו אחורה מקצה המסך.",
+                    stringResource(R.string.routes_picker_hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
@@ -254,7 +255,7 @@ private fun RouteCard(route: SavedRoute, onClick: () -> Unit) {
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    "%.1f ק״מ · נוסף %s".format(route.distanceMeters / 1000, dateFormat.format(Date(route.createdAt))),
+                    stringResource(R.string.routes_card_meta, "%.1f".format(route.distanceMeters / 1000), dateFormat.format(Date(route.createdAt))),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

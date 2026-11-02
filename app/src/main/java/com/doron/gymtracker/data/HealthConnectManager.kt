@@ -20,6 +20,7 @@ import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.health.connect.client.units.Energy
 import androidx.health.connect.client.units.Length
+import com.doron.gymtracker.R
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.Instant
 import java.time.LocalDate
@@ -114,7 +115,7 @@ class HealthConnectManager @Inject constructor(
                 metadata = Metadata.activelyRecorded(Device(type = Device.TYPE_PHONE)),
                 exerciseType = if (run.type == "WALKING") ExerciseSessionRecord.EXERCISE_TYPE_WALKING
                     else ExerciseSessionRecord.EXERCISE_TYPE_RUNNING,
-                title = if (run.type == "WALKING") "הליכה" else "ריצה",
+                title = context.getString(if (run.type == "WALKING") R.string.home_walk else R.string.home_run),
                 laps = run.laps.withStarts(run.startedAt).map { (lap, lapStart) ->
                     ExerciseLap(Instant.ofEpochMilli(lapStart), Instant.ofEpochMilli(lap.endedAt), Length.meters(lap.distanceMeters))
                 },

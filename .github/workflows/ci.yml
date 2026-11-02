@@ -23,6 +23,9 @@ jobs:
           java-version: 17
       - uses: gradle/actions/setup-gradle@v4
 
+      - name: No Hebrew in Kotlin string literals
+        run: scripts/check-hebrew-literals.sh
+
       - name: Build and run unit tests
         run: ./gradlew assembleDebug testDebugUnitTest
 

@@ -1,6 +1,7 @@
 package com.doron.gymtracker.ui.screens.cardio
 
 import android.annotation.SuppressLint
+import androidx.annotation.StringRes
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -57,6 +58,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -66,6 +68,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.viewModelScope
+import com.doron.gymtracker.R
 import com.doron.gymtracker.data.LocationPoint
 import com.doron.gymtracker.data.LocationTracker
 import com.doron.gymtracker.data.RouteFollower
@@ -175,7 +178,7 @@ fun GpsLockScreen(
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.loadRoutes() }
     val needsRoute = target.type == RunTargetType.ROUTE && selectedRoute == null
     val scope = rememberCoroutineScope()
-    val typeName = if (type == "RUNNING") "ריצה" else "הליכה"
+    val typeName = stringResource(if (type == "RUNNING") R.string.cardio_run else R.string.cardio_walk)
 
     Scaffold(
         topBar = {
@@ -183,7 +186,7 @@ fun GpsLockScreen(
                 title = { Text(typeName) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "חזרה")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cardio_back))
                     }
                 }
             )
@@ -223,14 +226,15 @@ fun GpsLockScreen(
             Spacer(Modifier.height(20.dp))
 
             Text(
-                if (gpsState.isLocked) "GPS מוכן!" else "מחפש GPS...",
+                stringResource(if (gpsState.isLocked) R.string.cardio_gps_ready else R.string.cardio_gps_searching),
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                 color = if (gpsState.isLocked) SuccessGreen else MaterialTheme.colorScheme.onBackground
             )
 
             Spacer(Modifier.height(6.dp))
 
-            val accuracyText = gpsState.accuracy?.let { "דיוק: %.0f מ׳".format(it) } ?: "ממתין לאות..."
+            val accuracyText = gpsState.accuracy?.let { stringResource(R.string.cardio_gps_accuracy, it) }
+                ?: stringResource(R.string.cardio_gps_waiting)
             Text(
                 accuracyText,
                 style = MaterialTheme.typography.bodyLarge,
@@ -240,7 +244,7 @@ fun GpsLockScreen(
 
             if (!gpsState.isLocked && gpsState.accuracy != null) {
                 Text(
-                    "צא החוצה לקליטה טובה יותר",
+                    stringResource(R.string.cardio_gps_go_outside),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     textAlign = TextAlign.Center
@@ -261,7 +265,8 @@ fun GpsLockScreen(
             if (start != null && here != null) {
                 val away = RouteFollower.meters(start, RoutePoint(here.latitude, here.longitude))
                 Text(
-                    if (away < 50) "📍 אתה בתחילת המסלול" else "📍 המסלול מתחיל ${formatAway(away)} ממך",
+                    if (away < 50) stringResource(R.string.cardio_at_route_start)
+                    else stringResource(R.string.cardio_route_starts_away, formatAway(away)),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 6.dp)
@@ -285,7 +290,7 @@ fun GpsLockScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = Purple)
             ) {
                 Text(
-                    if (type == "RUNNING") "🏃 התחל ריצה" else "🚶 התחל הליכה",
+                    stringResource(if (type == "RUNNING") R.string.cardio_start_run else R.string.cardio_start_walk),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
                 )
             }
@@ -318,11 +323,11 @@ private fun RunTargetPicker(
             modifier = Modifier.weight(1f)
         ) {
             OutlinedTextField(
-                value = targetTypeLabel(target.type),
+                value = stringResource(targetTypeLabel(target.type)),
                 onValueChange = {},
                 readOnly = true,
                 singleLine = true,
-                label = { Text("מטרה") },
+                label = { Text(stringResource(R.string.cardio_target)) },
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 shape = MaterialTheme.shapes.large,
                 modifier = Modifier
@@ -332,7 +337,7 @@ private fun RunTargetPicker(
             ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                 RunTargetType.entries.forEach { type ->
                     DropdownMenuItem(
-                        text = { Text(targetTypeLabel(type)) },
+                        text = { Text(stringResource(targetTypeLabel(type))) },
                         onClick = {
                             onChange(target.copy(type = type))
                             expanded = false
@@ -343,14 +348,14 @@ private fun RunTargetPicker(
         }
         when (target.type) {
             RunTargetType.DISTANCE -> ValueStepper(
-                text = "%s ק״מ".format(formatKm(target.distanceKm)),
+                text = stringResource(R.string.km_value, formatKm(target.distanceKm)),
                 onMinus = {
                     onChange(target.copy(distanceKm = (target.distanceKm - RunTarget.DISTANCE_STEP_KM).coerceAtLeast(RunTarget.DISTANCE_STEP_KM)))
                 },
                 onPlus = { onChange(target.copy(distanceKm = target.distanceKm + RunTarget.DISTANCE_STEP_KM)) }
             )
             RunTargetType.DURATION -> ValueStepper(
-                text = "${target.durationMin} דק׳",
+                text = stringResource(R.string.cardio_minutes_value, target.durationMin),
                 onMinus = {
                     onChange(target.copy(durationMin = (target.durationMin - RunTarget.DURATION_STEP_MIN).coerceAtLeast(RunTarget.DURATION_STEP_MIN)))
                 },
@@ -362,7 +367,8 @@ private fun RunTargetPicker(
                 modifier = Modifier.weight(1f).height(56.dp)
             ) {
                 Text(
-                    selectedRoute?.let { "${it.name} · %.1f ק״מ".format(it.distanceMeters / 1000) } ?: "בחר מסלול",
+                    selectedRoute?.let { stringResource(R.string.cardio_route_name_km, it.name, it.distanceMeters / 1000) }
+                        ?: stringResource(R.string.cardio_choose_route),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     color = Purple
@@ -375,10 +381,10 @@ private fun RunTargetPicker(
     if (choosingRoute) {
         ModalBottomSheet(onDismissRequest = { choosingRoute = false }) {
             Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 24.dp)) {
-                Text("בחר מסלול", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(bottom = 8.dp))
+                Text(stringResource(R.string.cardio_choose_route), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(bottom = 8.dp))
                 if (routes.isEmpty()) {
                     Text(
-                        "אין עדיין מסלולים: שמרו ריצה כמסלול או ייבאו קובץ GPX.",
+                        stringResource(R.string.cardio_no_routes),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -398,14 +404,14 @@ private fun RunTargetPicker(
                         Spacer(Modifier.width(12.dp))
                         Text(route.name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
                         Text(
-                            "%.1f ק״מ".format(route.distanceMeters / 1000),
+                            stringResource(R.string.cardio_km_1dp, route.distanceMeters / 1000),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
                 TextButton(onClick = { choosingRoute = false; onManageRoutes() }) {
-                    Text("ניהול מסלולים וייבוא GPX", color = Purple)
+                    Text(stringResource(R.string.cardio_manage_routes), color = Purple)
                 }
             }
         }
@@ -427,14 +433,17 @@ private fun ValueStepper(text: String, onMinus: () -> Unit, onPlus: () -> Unit) 
     }
 }
 
+@Composable
 private fun formatAway(meters: Double): String =
-    if (meters < 1000) "${(meters / 10).toInt() * 10} מ׳" else "%.1f ק״מ".format(meters / 1000)
+    if (meters < 1000) stringResource(R.string.meters_value, (meters / 10).toInt() * 10)
+    else stringResource(R.string.cardio_km_1dp, meters / 1000)
 
-private fun targetTypeLabel(type: RunTargetType): String = when (type) {
-    RunTargetType.NONE -> "ללא מטרה"
-    RunTargetType.DISTANCE -> "מרחק"
-    RunTargetType.DURATION -> "זמן"
-    RunTargetType.ROUTE -> "מסלול"
+@StringRes
+private fun targetTypeLabel(type: RunTargetType): Int = when (type) {
+    RunTargetType.NONE -> R.string.cardio_target_none
+    RunTargetType.DISTANCE -> R.string.cardio_distance
+    RunTargetType.DURATION -> R.string.cardio_time
+    RunTargetType.ROUTE -> R.string.cardio_route
 }
 
 private fun formatKm(km: Float): String =

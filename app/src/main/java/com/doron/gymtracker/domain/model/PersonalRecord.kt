@@ -1,12 +1,12 @@
 package com.doron.gymtracker.domain.model
 
 /** The kinds of personal record; the fastest ones are for a stretch of [meters] within any run. */
-enum class RecordKind(val label: String, val meters: Double? = null) {
-    FASTEST_1K("1 ק״מ", 1_000.0),
-    FASTEST_5K("5 ק״מ", 5_000.0),
-    FASTEST_10K("10 ק״מ", 10_000.0),
-    LONGEST_RUN("הריצה הארוכה"),
-    BEST_WEEK("השבוע הטוב");
+enum class RecordKind(val meters: Double? = null) {
+    FASTEST_1K(1_000.0),
+    FASTEST_5K(5_000.0),
+    FASTEST_10K(10_000.0),
+    LONGEST_RUN,
+    BEST_WEEK;
 
     val isTime: Boolean get() = meters != null
 }
