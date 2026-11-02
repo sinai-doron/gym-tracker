@@ -3,28 +3,23 @@ package com.doron.gymtracker.domain.usecase
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.domain.model.ProgressionHint
 import com.doron.gymtracker.domain.model.RepSetRecord
-import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 class ProgressionHintUseCase @Inject constructor(
     private val sessionRepo: SessionRepository
 ) {
     suspend operator fun invoke(exerciseId: String, targetReps: Int): ProgressionHint {
-        val sessions = sessionRepo.observeAll().first()
-            .filter { it.finishedAt != null }
-            .sortedBy { it.startedAt }
-
-        if (sessions.size < 3) return ProgressionHint.OnTrack
-
-        val last3 = sessions.takeLast(3)
+        // The last 3 finished sessions that had this exercise, oldest first. Not the last 3 sessions
+        // overall: with an A/B/C rotation and runs in between, those almost never all include it,
+        // and the hint could only ever say "on track".
+        val last3 = sessionRepo.getExerciseHistory(exerciseId).takeLast(3)
+        if (last3.size < 3) return ProgressionHint.OnTrack
 
         // Collect per-session: max reps achieved and weight used
         data class SessionStats(val maxReps: Int, val maxWeight: Float)
 
         val stats = last3.mapNotNull { session ->
-            val entries = sessionRepo.getEntriesForSession(session.id)
-            val entry = entries.find { it.exerciseId == exerciseId } ?: return@mapNotNull null
-            val repSets = entry.sets.filterIsInstance<RepSetRecord>()
+            val repSets = session.sets.filterIsInstance<RepSetRecord>()
             if (repSets.isEmpty()) return@mapNotNull null
             SessionStats(
                 maxReps = repSets.maxOf { it.reps },
