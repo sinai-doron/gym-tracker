@@ -37,6 +37,22 @@ class SyncPayloads(private val db: SupportSQLiteDatabase) {
         return listOf(OutgoingChange(entity, uuid, changedAt, false, data))
     }
 
+    private fun setParts(setId: Long): JsonArray = buildJsonArray {
+        db.query("SELECT * FROM set_parts WHERE setId = ? ORDER BY seq", arrayOf<Any?>(setId)).use { c ->
+            while (c.moveToNext()) add(
+                buildJsonObject {
+                    put("side", c.strOrNull("side"))
+                    put("reps", c.intOrNull("reps"))
+                    put("loadKg", c.doubleOrNull("loadKg"))
+                    put("durationS", c.intOrNull("durationS"))
+                    put("distanceM", c.intOrNull("distanceM"))
+                    put("calories", c.intOrNull("calories"))
+                    put("extra", c.strOrNull("extra")?.let { SyncJson.parseToJsonElement(it) } ?: JsonNull)
+                }
+            )
+        }
+    }
+
     private fun data(entity: String, uuid: String): JsonObject? = when (entity) {
         "workout" -> row("SELECT id, label FROM workouts WHERE uuid = ?", uuid) { c ->
             buildJsonObject { put("key", c.str("id")); put("label", c.str("label")) }
@@ -83,18 +99,19 @@ class SyncPayloads(private val db: SupportSQLiteDatabase) {
                JOIN exercise_definitions x ON x.id = e.exerciseId WHERE e.uuid = ?""",
             uuid,
         ) { c -> buildJsonObject { put("sessionId", c.str("session_uuid")); put("exerciseId", c.str("exercise_uuid")) } }
+        // A set with its parts, in order (version 15 on).
         "set" -> row(
-            "SELECT r.*, e.uuid AS entry_uuid FROM set_records r JOIN exercise_entries e ON e.id = r.entryId WHERE r.uuid = ?",
+            "SELECT s.*, e.uuid AS entry_uuid FROM sets s JOIN exercise_entries e ON e.id = s.entryId WHERE s.uuid = ?",
             uuid,
         ) { c ->
             buildJsonObject {
                 put("entryId", c.str("entry_uuid"))
+                put("seq", c.int("seq"))
+                put("kind", c.str("kind"))
+                put("rpe", c.doubleOrNull("rpe"))
+                put("note", c.strOrNull("note"))
                 put("completedAt", c.long("completedAt"))
-                put("type", c.str("type"))
-                put("reps", c.intOrNull("reps"))
-                put("weightKg", c.doubleOrNull("weightKg"))
-                put("durationSecs", c.intOrNull("durationSecs"))
-                put("distanceM", c.intOrNull("distanceM"))
+                put("parts", setParts(c.long("id")))
             }
         }
         // Not the step counter's reading at the start: it means nothing on another device.

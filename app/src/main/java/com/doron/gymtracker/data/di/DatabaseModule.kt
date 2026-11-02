@@ -12,7 +12,7 @@ import com.doron.gymtracker.data.db.dao.LocationLogDao
 import com.doron.gymtracker.data.db.dao.RouteDao
 import com.doron.gymtracker.data.db.dao.RunDetailsDao
 import com.doron.gymtracker.data.db.dao.SessionDao
-import com.doron.gymtracker.data.db.dao.SetRecordDao
+import com.doron.gymtracker.data.db.dao.SetDao
 import com.doron.gymtracker.data.db.dao.TrackLogDao
 import com.doron.gymtracker.data.db.dao.WorkoutDao
 import dagger.Module
@@ -41,7 +41,7 @@ object DatabaseModule {
     @Provides fun provideWorkoutDao(db: GymDatabase): WorkoutDao = db.workoutDao()
     @Provides fun provideSessionDao(db: GymDatabase): SessionDao = db.sessionDao()
     @Provides fun provideExerciseEntryDao(db: GymDatabase): ExerciseEntryDao = db.exerciseEntryDao()
-    @Provides fun provideSetRecordDao(db: GymDatabase): SetRecordDao = db.setRecordDao()
+    @Provides fun provideSetDao(db: GymDatabase): SetDao = db.setDao()
     @Provides fun provideTrackLogDao(db: GymDatabase): TrackLogDao = db.trackLogDao()
     @Provides fun provideLocationLogDao(db: GymDatabase): LocationLogDao = db.locationLogDao()
     @Provides fun provideRunDetailsDao(db: GymDatabase): RunDetailsDao = db.runDetailsDao()

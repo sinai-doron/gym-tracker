@@ -7,6 +7,9 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.doron.gymtracker.data.db.GymDatabase
 import com.doron.gymtracker.data.db.SyncMigration
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -64,9 +67,8 @@ class SyncRoundTripTest {
         )
         a.execSQL("INSERT INTO sessions (workoutId, startedAt, finishedAt, type) VALUES ('workout_a', 1000, 5000, 'GYM')")
         a.execSQL("INSERT INTO exercise_entries (sessionId, exerciseId) VALUES (1, 'bench')")
-        a.execSQL(
-            "INSERT INTO set_records (entryId, completedAt, type, reps, weightKg) VALUES (1, 2000, 'REP', 8, 62.5)"
-        )
+        a.execSQL("INSERT INTO sets (entryId, seq, kind, completedAt) VALUES (1, 1, 'WORKING', 2000)")
+        a.execSQL("INSERT INTO set_parts (setId, seq, reps, loadKg) VALUES (1, 1, 8, 62.5)")
         a.execSQL(
             "INSERT INTO sessions (workoutId, startedAt, finishedAt, type, distanceMeters) VALUES ('RUNNING', 10000, 20000, 'RUNNING', 1234.5)"
         )
@@ -119,11 +121,11 @@ class SyncRoundTripTest {
         assertEquals(0L, b.count("SELECT count(*) FROM sync_inbox"))
         assertEquals("downloads are not logged back as local changes", 0L, b.count("SELECT count(*) FROM sync_changes"))
         assertEquals(pages.size.toLong(), SyncPull(b).cursor())
-        for (table in listOf("workouts", "exercise_definitions", "sessions", "exercise_entries", "set_records",
+        for (table in listOf("workouts", "exercise_definitions", "sessions", "exercise_entries", "sets", "set_parts",
             "run_details", "run_pauses", "track_log", "routes", "route_points", "location_log")) {
             assertEquals(table, a.count("SELECT count(*) FROM `$table`"), b.count("SELECT count(*) FROM `$table`"))
         }
-        assertEquals("62.5", b.text("SELECT weightKg FROM set_records"))
+        assertEquals("62.5", b.text("SELECT loadKg FROM set_parts"))
         assertEquals("RUNNING", b.text("SELECT workoutId FROM sessions WHERE type = 'RUNNING'"))
         assertEquals("bench", b.text("SELECT id FROM exercise_definitions"))
         assertEquals("Park loop", b.text("SELECT name FROM routes"))
@@ -134,8 +136,8 @@ class SyncRoundTripTest {
         )
         // The same uuids, so the next upload from B updates A's items instead of copying them.
         assertEquals(
-            a.text("SELECT group_concat(uuid) FROM (SELECT uuid FROM set_records ORDER BY uuid)"),
-            b.text("SELECT group_concat(uuid) FROM (SELECT uuid FROM set_records ORDER BY uuid)"),
+            a.text("SELECT group_concat(uuid) FROM (SELECT uuid FROM sets ORDER BY uuid)"),
+            b.text("SELECT group_concat(uuid) FROM (SELECT uuid FROM sets ORDER BY uuid)"),
         )
     }
 
@@ -174,7 +176,7 @@ class SyncRoundTripTest {
     fun deletionsArriveAndAreNotEchoed() {
         fillPhoneA()
         SyncPull(b).applyPage(serverItemsFromA(), 1)
-        val setUuid = b.text("SELECT uuid FROM set_records")!!
+        val setUuid = b.text("SELECT uuid FROM sets")!!
         val trackChunk = SyncPayloads.trackChunkId(b.text("SELECT uuid FROM sessions WHERE type = 'RUNNING'")!!, 2)
 
         SyncPull(b).applyPage(
@@ -184,9 +186,36 @@ class SyncRoundTripTest {
             ),
             2,
         )
-        assertEquals(0L, b.count("SELECT count(*) FROM set_records"))
+        assertEquals(0L, b.count("SELECT count(*) FROM sets"))
+        assertEquals(0L, b.count("SELECT count(*) FROM set_parts"))
         assertEquals("the last chunk's 100 points are gone", 1200L, b.count("SELECT count(*) FROM location_log"))
         assertEquals(0L, b.count("SELECT count(*) FROM sync_changes"))
         assertTrue(b.count("SELECT count(*) FROM sync_control WHERE applying = 0") == 1L)
+    }
+
+    /** A set uploaded by an app from before version 15 arrives as one row; it becomes a set with one part. */
+    @Test
+    fun aSetInTheOldShapeBecomesASetWithOnePart() {
+        fillPhoneA()
+        val items = serverItemsFromA()
+        val set = items.single { it.entity == "set" }
+        val entry = set.data!!["entryId"]!!
+        fun old(reps: Int, weightKg: Double) = buildJsonObject {
+            put("entryId", entry)
+            put("completedAt", 2000)
+            put("type", "REP")
+            put("reps", reps)
+            put("weightKg", weightKg)
+            put("durationSecs", JsonNull)
+            put("distanceM", JsonNull)
+        }
+
+        SyncPull(b).applyPage(items.map { if (it.entity == "set") it.copy(data = old(8, 62.5)) else it }, 1)
+        assertEquals("1|WORKING|8|62.5", b.text("SELECT s.seq || '|' || s.kind || '|' || p.reps || '|' || p.loadKg FROM sets s JOIN set_parts p ON p.setId = s.id"))
+
+        // Saved as 0 kg before version 15: no load
+        SyncPull(b).applyPage(listOf(set.copy(updatedAt = set.updatedAt + 1, data = old(12, 0.0))), 2)
+        assertEquals(1L, b.count("SELECT count(*) FROM set_parts"))
+        assertEquals("12|", b.text("SELECT p.reps || '|' || coalesce(p.loadKg, '') FROM set_parts p"))
     }
 }

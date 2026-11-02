@@ -17,7 +17,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * - Everything already on the phone is logged once, so the first sync uploads it all.
  *
  * Route points and GPS points are synced per route and per session (`route_points`, `track`),
- * keyed by the route's or session's uuid. The music log (track_log) joined in version 12.
+ * keyed by the route's or session's uuid. The music log (track_log) joined in version 12. In version
+ * 15 sets moved from `set_records` to `sets`, each synced with its `set_parts` (SetsMigration).
  */
 object SyncMigration {
 
@@ -26,16 +27,31 @@ object SyncMigration {
         "substr(hex(randomblob(2)), 2) || '-' || substr('89ab', 1 + (abs(random()) % 4), 1) || " +
         "substr(hex(randomblob(2)), 2) || '-' || hex(randomblob(6)))"
 
-    private const val NOW_MS = "CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER)"
+    internal const val NOW_MS = "CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER)"
     private const val NOT_APPLYING = "(SELECT applying FROM sync_control WHERE id = 1) = 0"
 
-    /** Table -> the kind the server knows it as. */
-    val TABLES = linkedMapOf(
+    /**
+     * Table -> the kind the server knows it as, as the version 11 to 13 migrations had them. Frozen:
+     * those migrations must keep making what they made, whatever the tables are called later.
+     */
+    private val TABLES_V11 = linkedMapOf(
         "workouts" to "workout",
         "exercise_definitions" to "exercise",
         "sessions" to "session",
         "exercise_entries" to "entry",
         "set_records" to "set",
+        "run_details" to "run",
+        "run_pauses" to "pause",
+        "routes" to "route",
+    )
+
+    /** Table -> the kind the server knows it as, today. Sets are in `sets` from version 15. */
+    val TABLES = linkedMapOf(
+        "workouts" to "workout",
+        "exercise_definitions" to "exercise",
+        "sessions" to "session",
+        "exercise_entries" to "entry",
+        "sets" to "set",
         "run_details" to "run",
         "run_pauses" to "pause",
         "routes" to "route",
@@ -72,16 +88,22 @@ object SyncMigration {
             db.query("SELECT name FROM sqlite_master WHERE type = 'trigger' AND name LIKE 'sync_%'").use { c ->
                 buildList { while (c.moveToNext()) add(c.getString(0)) }
             }.forEach { db.execSQL("DROP TRIGGER IF EXISTS `$it`") }
-            triggerStatements().forEach(db::execSQL)
+            triggerStatements(TABLES_V11, withSetParts = false).forEach(db::execSQL)
         }
     }
 
-    private fun triggerStatements(): List<String> = buildList {
-        (TABLES + ("track_log" to "song")).forEach { (table, kind) -> addAll(itemTriggers(table, kind)) }
+    private fun triggerStatements(tables: Map<String, String>, withSetParts: Boolean): List<String> = buildList {
+        (tables + ("track_log" to "song")).forEach { (table, kind) -> addAll(itemTriggers(table, kind)) }
         addAll(groupTriggers("route_points", "routeId", "routes", "route_points"))
         addAll(groupTriggers("location_log", "sessionId", "sessions", "track"))
+        if (withSetParts) addAll(setPartTriggers())
         addAll(goneTriggers())
     }
+
+    /** The triggers of `sets` (version 15): each set's own, and its parts', which log the set they belong to. */
+    internal fun setTriggers(): List<String> = itemTriggers("sets", "set") + setPartTriggers()
+
+    private fun setPartTriggers() = groupTriggers("set_parts", "setId", "sets", "set")
 
     /**
      * A database created fresh at the current version never runs the migrations above: Room makes
@@ -100,7 +122,7 @@ object SyncMigration {
         )
         add("CREATE TABLE IF NOT EXISTS sync_control (id INTEGER PRIMARY KEY CHECK (id = 1), applying INTEGER NOT NULL)")
         add("INSERT OR IGNORE INTO sync_control (id, applying) VALUES (1, 0)")
-        addAll(triggerStatements())
+        addAll(triggerStatements(TABLES, withSetParts = true))
     }
 
     fun statements(): List<String> = buildList {
@@ -111,7 +133,7 @@ object SyncMigration {
         add("CREATE TABLE IF NOT EXISTS sync_control (id INTEGER PRIMARY KEY CHECK (id = 1), applying INTEGER NOT NULL)")
         add("INSERT OR IGNORE INTO sync_control (id, applying) VALUES (1, 0)")
 
-        TABLES.forEach { (table, kind) -> addAll(tableStatements(table, kind)) }
+        TABLES_V11.forEach { (table, kind) -> addAll(tableStatements(table, kind)) }
 
         // A route's points, and a session's GPS points, sync as one item each.
         addAll(groupTriggers("route_points", "routeId", "routes", "route_points"))

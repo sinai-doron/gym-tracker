@@ -6,14 +6,15 @@ import com.doron.gymtracker.data.db.dao.ExerciseEntryDao
 import com.doron.gymtracker.data.db.dao.LocationLogDao
 import com.doron.gymtracker.data.db.dao.RunDetailsDao
 import com.doron.gymtracker.data.db.dao.SessionDao
-import com.doron.gymtracker.data.db.dao.SetRecordDao
+import com.doron.gymtracker.data.db.dao.SetDao
+import com.doron.gymtracker.data.db.dao.SetWithParts
 import com.doron.gymtracker.data.db.dao.TrackLogDao
 import com.doron.gymtracker.data.db.entities.ExerciseEntryEntity
 import com.doron.gymtracker.data.db.entities.LocationLogEntity
 import com.doron.gymtracker.data.db.entities.RunDetailsEntity
 import com.doron.gymtracker.data.db.entities.RunPauseEntity
 import com.doron.gymtracker.data.db.entities.SessionEntity
-import com.doron.gymtracker.data.db.entities.SetRecordEntity
+import com.doron.gymtracker.data.db.entities.SetPartEntity
 import com.doron.gymtracker.data.db.entities.TrackLogEntity
 import com.doron.gymtracker.domain.model.DistanceSetRecord
 import com.doron.gymtracker.domain.model.ExerciseEntry
@@ -34,7 +35,7 @@ import kotlinx.coroutines.flow.map
 class SessionRepositoryImpl @Inject constructor(
     private val sessionDao: SessionDao,
     private val entryDao: ExerciseEntryDao,
-    private val setDao: SetRecordDao,
+    private val setDao: SetDao,
     private val trackLogDao: TrackLogDao,
     private val locationLogDao: LocationLogDao,
     private val runDetailsDao: RunDetailsDao
@@ -79,12 +80,11 @@ class SessionRepositoryImpl @Inject constructor(
                 val newId = entryDao.insert(ExerciseEntryEntity(0, sessionId, exerciseId))
                 ExerciseEntryEntity(newId, sessionId, exerciseId)
             }
-        return setDao.insert(record.toEntity(entry.id))
+        return setDao.insert(entry.id, record.completedAt, record.toParts())
     }
 
     override suspend fun updateSetRecord(record: SetRecord) {
-        val entryId = record.entryId
-        setDao.update(record.toEntity(entryId))
+        setDao.update(record.id, record.completedAt, record.toParts())
     }
 
     override suspend fun deleteSetRecord(setId: Long) {
@@ -159,7 +159,7 @@ class SessionRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteExerciseFromSession(sessionId: Long, exerciseId: String) {
-        entryDao.deleteSetsForExercise(sessionId, exerciseId)
+        setDao.deleteForExercise(sessionId, exerciseId)
         entryDao.deleteForSessionAndExercise(sessionId, exerciseId)
     }
 
@@ -176,11 +176,11 @@ class SessionRepositoryImpl @Inject constructor(
         setDao.getHistoryForExercise(exerciseId)
             .groupBy { it.sessionId }
             .map { (sessionId, rows) ->
-                ExerciseSessionSets(sessionId, rows.first().sessionStartedAt, rows.map { it.set.toDomain() })
+                ExerciseSessionSets(sessionId, rows.first().sessionStartedAt, rows.map { SetWithParts(it.set, it.parts).toDomain() })
             }
 
     override suspend fun getLastActivityAt(sessionId: Long): Long? {
-        val lastSet = setDao.getForSession(sessionId).maxOfOrNull { it.completedAt }
+        val lastSet = setDao.getForSession(sessionId).maxOfOrNull { it.set.completedAt }
         val lastLocation = locationLogDao.getForSession(sessionId).lastOrNull()?.timestamp
         return listOfNotNull(lastSet, lastLocation).maxOrNull()
     }
@@ -215,10 +215,8 @@ class SessionRepositoryImpl @Inject constructor(
         for (session in sessions) {
             if (session.type != "GYM") continue
             val sets = setDao.getForSession(session.id)
-            for (set in sets) {
-                if (set.type == "REP" && set.reps != null && set.weightKg != null) {
-                    total += set.reps * set.weightKg
-                }
+            for (part in sets.flatMap { it.parts }) {
+                if (part.reps != null && part.loadKg != null) total += part.reps * part.loadKg
             }
         }
         return total
@@ -226,16 +224,22 @@ class SessionRepositoryImpl @Inject constructor(
 
     private fun SessionEntity.toDomain() = Session(id, workoutId, startedAt, finishedAt, type, distanceMeters)
 
-    private fun SetRecord.toEntity(entryId: Long) = when (this) {
-        is RepSetRecord -> SetRecordEntity(id, entryId, completedAt, "REP", reps, weightKg, null, null)
-        is TimedSetRecord -> SetRecordEntity(id, entryId, completedAt, "TIMED", null, null, durationSecs, null)
-        is DistanceSetRecord -> SetRecordEntity(id, entryId, completedAt, "DISTANCE", null, null, null, distanceM)
-    }
+    // A set the app logs today has one part (ADR-0006). 0 kg on screen means no load, stored as null.
+    private fun SetRecord.toParts(): List<SetPartEntity> = listOf(
+        when (this) {
+            is RepSetRecord -> SetPartEntity(0, 1, reps = reps, loadKg = weightKg.takeIf { it > 0f })
+            is TimedSetRecord -> SetPartEntity(0, 1, durationS = durationSecs)
+            is DistanceSetRecord -> SetPartEntity(0, 1, distanceM = distanceM)
+        }
+    )
 
-    private fun SetRecordEntity.toDomain(): SetRecord = when (type) {
-        "REP" -> RepSetRecord(id, entryId, completedAt, reps!!, weightKg!!)
-        "TIMED" -> TimedSetRecord(id, entryId, completedAt, durationSecs!!)
-        "DISTANCE" -> DistanceSetRecord(id, entryId, completedAt, distanceM!!)
-        else -> TimedSetRecord(id, entryId, completedAt, durationSecs ?: 0)
+    // Until the logging screens show parts, a set reads as its first part.
+    private fun SetWithParts.toDomain(): SetRecord {
+        val part = parts.minByOrNull { it.seq }
+        return when {
+            part?.reps != null -> RepSetRecord(set.id, set.entryId, set.completedAt, part.reps, part.loadKg ?: 0f)
+            part?.distanceM != null -> DistanceSetRecord(set.id, set.entryId, set.completedAt, part.distanceM)
+            else -> TimedSetRecord(set.id, set.entryId, set.completedAt, part?.durationS ?: 0)
+        }
     }
 }

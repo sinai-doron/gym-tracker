@@ -10,7 +10,7 @@ import com.doron.gymtracker.data.db.SyncMigration
 import com.doron.gymtracker.data.db.entities.ExerciseEntryEntity
 import com.doron.gymtracker.data.db.entities.LocationLogEntity
 import com.doron.gymtracker.data.db.entities.SessionEntity
-import com.doron.gymtracker.data.db.entities.SetRecordEntity
+import com.doron.gymtracker.data.db.entities.SetPartEntity
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -70,16 +70,32 @@ class SyncTriggersThroughRoomTest {
     fun editingTheSameSetTwiceBeforeASyncWorks() = runTest {
         val session = db.sessionDao().insert(SessionEntity(0, "workout_a", 1000, null, "GYM"))
         val entry = db.exerciseEntryDao().insert(ExerciseEntryEntity(0, session, "bench"))
-        val setId = db.setRecordDao().insert(SetRecordEntity(0, entry, 2000, "REP", 8, 60f, null, null))
-        val set = SetRecordEntity(setId, entry, 2000, "REP", 8, 60f, null, null)
-        db.setRecordDao().update(set.copy(reps = 9))
-        db.setRecordDao().update(set.copy(reps = 10))
-        db.setRecordDao().deleteById(setId)
+        val setId = db.setDao().insert(entry, 2000, listOf(SetPartEntity(0, 1, reps = 8, loadKg = 60f)))
+        db.setDao().update(setId, 2000, listOf(SetPartEntity(0, 1, reps = 9, loadKg = 60f)))
+        db.setDao().update(setId, 2000, listOf(SetPartEntity(0, 1, reps = 10, loadKg = 60f)))
+        db.setDao().deleteById(setId)
 
         assertEquals(1L, pending("set"))
         assertEquals(
             "the last change is the deletion", 1L,
             sql.query("SELECT deleted FROM sync_changes WHERE entity = 'set'").use { it.moveToFirst(); it.getLong(0) },
+        )
+    }
+
+    /** A set syncs with its parts, so a change to a part alone queues the set. */
+    @Test
+    fun changingAPartQueuesItsSet() = runTest {
+        val session = db.sessionDao().insert(SessionEntity(0, "workout_a", 1000, null, "GYM"))
+        val entry = db.exerciseEntryDao().insert(ExerciseEntryEntity(0, session, "bench"))
+        val setId = db.setDao().insert(entry, 2000, listOf(SetPartEntity(0, 1, reps = 8, loadKg = 60f)))
+        sql.execSQL("DELETE FROM sync_changes")
+
+        sql.execSQL("UPDATE set_parts SET reps = 9 WHERE setId = $setId")
+
+        assertEquals(1L, pending("set"))
+        assertEquals(
+            db.setDao().getForEntry(entry).single().set.uuid,
+            sql.query("SELECT uuid FROM sync_changes WHERE entity = 'set'").use { it.moveToFirst(); it.getString(0) },
         )
     }
 }

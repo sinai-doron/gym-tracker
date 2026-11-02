@@ -144,7 +144,7 @@ The programme start date, which drives the A/B weeks and deload weeks, is set in
 | UI | Jetpack Compose, Material 3 |
 | Architecture | MVVM with a use-case layer (`ui` → `domain` → `data`) |
 | Dependency injection | Hilt |
-| Database | Room (schema version 14, with migrations) |
+| Database | Room (schema version 15, with migrations) |
 | Maps | MapLibre, with OpenFreeMap tiles |
 | Health data | Health Connect |
 | Settings | DataStore |

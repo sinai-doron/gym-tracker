@@ -7,8 +7,10 @@ import android.database.Cursor
  * the numbers a migration must leave exactly as they were. Two fingerprints, one taken before a
  * migration and one after, must be equal.
  *
- * The v15 migration moves sets into `set_parts` (ADR-0006); it adds a second way to read the same
- * numbers from v15 on, so before and after stay comparable.
+ * Version 15 moved sets into `sets` and `set_parts` (ADR-0006), so sets are read from whichever the
+ * database has. It also took the load off bodyweight sets and sets saved with 0 kg; older history is
+ * read with that rule applied, so a migration that follows it compares equal and one that doesn't
+ * fails.
  */
 data class HistoryFingerprint(
     val sessionsByType: Map<String, Long>,
@@ -38,36 +40,55 @@ data class HistoryFingerprint(
 
     companion object {
         /** [query] runs one SELECT; pass the framework's `rawQuery` or Room's `query`. */
-        fun read(query: (String) -> Cursor): HistoryFingerprint = HistoryFingerprint(
-            sessionsByType = query.map("SELECT type, count(*) FROM sessions GROUP BY type") { it.getString(0) to it.getLong(1) },
-            finishedSessions = query.long("SELECT count(*) FROM sessions WHERE finishedAt IS NOT NULL"),
-            setsByType = query.map("SELECT type, count(*) FROM set_records GROUP BY type") { it.getString(0) to it.getLong(1) },
-            totalReps = query.long("SELECT coalesce(sum(reps), 0) FROM set_records"),
-            volumeGrams = query.long(
-                "SELECT coalesce(sum(round(reps * weightKg * 1000)), 0) FROM set_records " +
-                    "WHERE reps IS NOT NULL AND weightKg IS NOT NULL"
-            ),
-            bestPerExercise = query.map(
-                "SELECT e.exerciseId, max(s.weightKg), max(s.reps), max(s.durationSecs), max(s.distanceM) " +
-                    "FROM set_records s JOIN exercise_entries e ON e.id = s.entryId GROUP BY e.exerciseId"
-            ) { it.getString(0) to Best(it.doubleOrNull(1), it.longOrNull(2), it.longOrNull(3), it.longOrNull(4)) },
-            runDistances = query.map("SELECT id, distanceMeters FROM sessions WHERE type IN ('RUNNING', 'WALKING')") {
-                it.getLong(0) to it.doubleOrNull(1)
-            },
-            gpsPointsPerSession = query.map("SELECT sessionId, count(*) FROM location_log GROUP BY sessionId") {
-                it.getLong(0) to it.getLong(1)
-            },
-            pauses = query.long("SELECT count(*) FROM run_pauses"),
-            routes = query.long("SELECT count(*) FROM routes"),
-            routePoints = query.long("SELECT count(*) FROM route_points"),
-            songs = query.long("SELECT count(*) FROM track_log"),
-            workouts = query.map("SELECT id, label FROM workouts") { it.getString(0) to it.getString(1) },
-            exercises = query.map(
-                "SELECT id, name || '|' || type || '|' || targetSets || '|' || coalesce(targetReps, '') || '|' || " +
-                    "coalesce(targetDistanceM, '') || '|' || restDurationSecs || '|' || isBodyweight || '|' || " +
-                    "coalesce(variantOfId, '') || '|' || isRemoved FROM exercise_definitions"
-            ) { it.getString(0) to it.getString(1) },
-        )
+        fun read(query: (String) -> Cursor): HistoryFingerprint {
+            val sets = setsView(query)
+            return HistoryFingerprint(
+                sessionsByType = query.map("SELECT type, count(*) FROM sessions GROUP BY type") { it.getString(0) to it.getLong(1) },
+                finishedSessions = query.long("SELECT count(*) FROM sessions WHERE finishedAt IS NOT NULL"),
+                setsByType = query.map("SELECT type, count(*) FROM $sets GROUP BY type") { it.getString(0) to it.getLong(1) },
+                totalReps = query.long("SELECT coalesce(sum(reps), 0) FROM $sets"),
+                volumeGrams = query.long(
+                    "SELECT coalesce(sum(round(reps * weightKg * 1000)), 0) FROM $sets " +
+                        "WHERE reps IS NOT NULL AND weightKg IS NOT NULL"
+                ),
+                bestPerExercise = query.map(
+                    "SELECT exerciseId, max(weightKg), max(reps), max(durationSecs), max(distanceM) FROM $sets GROUP BY exerciseId"
+                ) { it.getString(0) to Best(it.doubleOrNull(1), it.longOrNull(2), it.longOrNull(3), it.longOrNull(4)) },
+                runDistances = query.map("SELECT id, distanceMeters FROM sessions WHERE type IN ('RUNNING', 'WALKING')") {
+                    it.getLong(0) to it.doubleOrNull(1)
+                },
+                gpsPointsPerSession = query.map("SELECT sessionId, count(*) FROM location_log GROUP BY sessionId") {
+                    it.getLong(0) to it.getLong(1)
+                },
+                pauses = query.long("SELECT count(*) FROM run_pauses"),
+                routes = query.long("SELECT count(*) FROM routes"),
+                routePoints = query.long("SELECT count(*) FROM route_points"),
+                songs = query.long("SELECT count(*) FROM track_log"),
+                workouts = query.map("SELECT id, label FROM workouts") { it.getString(0) to it.getString(1) },
+                exercises = query.map(
+                    "SELECT id, name || '|' || type || '|' || targetSets || '|' || coalesce(targetReps, '') || '|' || " +
+                        "coalesce(targetDistanceM, '') || '|' || restDurationSecs || '|' || isBodyweight || '|' || " +
+                        "coalesce(variantOfId, '') || '|' || isRemoved FROM exercise_definitions"
+                ) { it.getString(0) to it.getString(1) },
+            )
+        }
+
+        /**
+         * Every set as (exerciseId, type, reps, weightKg, durationSecs, distanceM), as a subquery: from
+         * `set_records` before version 15, with version 15's load rule applied, or from a set's first
+         * part after it.
+         */
+        private fun setsView(query: (String) -> Cursor): String =
+            if (query.long("SELECT count(*) FROM sqlite_master WHERE type = 'table' AND name = 'set_records'") > 0) {
+                "(SELECT e.exerciseId, s.type, s.reps, " +
+                    "CASE WHEN coalesce(d.isBodyweight, 0) = 1 OR s.weightKg = 0 THEN NULL ELSE s.weightKg END AS weightKg, " +
+                    "s.durationSecs, s.distanceM FROM set_records s JOIN exercise_entries e ON e.id = s.entryId " +
+                    "LEFT JOIN exercise_definitions d ON d.id = e.exerciseId)"
+            } else {
+                "(SELECT e.exerciseId, CASE WHEN p.reps IS NOT NULL THEN 'REP' WHEN p.distanceM IS NOT NULL THEN 'DISTANCE' " +
+                    "ELSE 'TIMED' END AS type, p.reps, p.loadKg AS weightKg, p.durationS AS durationSecs, p.distanceM " +
+                    "FROM sets s JOIN exercise_entries e ON e.id = s.entryId JOIN set_parts p ON p.setId = s.id AND p.seq = 1)"
+            }
 
         private fun <K, V> ((String) -> Cursor).map(sql: String, row: (Cursor) -> Pair<K, V>): Map<K, V> =
             this(sql).use { c -> buildMap { while (c.moveToNext()) row(c).let { (k, v) -> put(k, v) } } }

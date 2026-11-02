@@ -11,7 +11,7 @@ import com.doron.gymtracker.data.catalogue.ExerciseCatalogue
 import com.doron.gymtracker.data.db.entities.ExerciseEntryEntity
 import com.doron.gymtracker.data.db.entities.LocationLogEntity
 import com.doron.gymtracker.data.db.entities.SessionEntity
-import com.doron.gymtracker.data.db.entities.SetRecordEntity
+import com.doron.gymtracker.data.db.entities.SetPartEntity
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -103,6 +103,43 @@ class MigrationFrom10Test {
         )
     }
 
+    /**
+     * Version 15: each set becomes a set with one part, keeping its id and uuid, numbered in the
+     * order it was done; bodyweight sets lose the load (0 kg, and the crunches' 80 kg).
+     */
+    @Test
+    fun setsBecomeSetsWithOnePart() {
+        migrate()
+        val parts = sql.query(
+            "SELECT s.id, s.entryId, s.seq, s.kind, p.seq, p.side, p.reps, p.loadKg, p.durationS, p.distanceM " +
+                "FROM sets s JOIN set_parts p ON p.setId = s.id ORDER BY s.id"
+        ).use { c ->
+            buildList {
+                while (c.moveToNext()) add(
+                    listOf(
+                        c.getLong(0), c.getLong(1), c.getInt(2), c.getString(3), c.getInt(4), c.getString(5),
+                        if (c.isNull(6)) null else c.getInt(6), if (c.isNull(7)) null else c.getDouble(7),
+                        if (c.isNull(8)) null else c.getInt(8), if (c.isNull(9)) null else c.getInt(9),
+                    )
+                )
+            }
+        }
+        assertEquals(
+            listOf(
+                listOf(1L, 1L, 1, "WORKING", 1, null, 8, 60.0, null, null),
+                listOf(2L, 1L, 2, "WORKING", 1, null, 6, 62.5, null, null),
+                listOf(3L, 2L, 1, "WORKING", 1, null, null, null, 45, null),
+                listOf(4L, 3L, 1, "WORKING", 1, null, null, null, null, 35),
+                listOf(5L, 4L, 1, "WORKING", 1, null, 15, null, null, null),
+                listOf(6L, 4L, 2, "WORKING", 1, null, 12, null, null, null),
+            ),
+            parts
+        )
+        assertEquals(0L, sql.query("SELECT count(*) FROM sqlite_master WHERE name = 'set_records'").use { it.moveToFirst(); it.getLong(0) })
+        // The next set the app logs doesn't reuse a migrated set's id
+        assertEquals(6L, sql.query("SELECT seq FROM sqlite_sequence WHERE name = 'sets'").use { it.moveToFirst(); it.getLong(0) })
+    }
+
     /** The v11/v12 triggers broke exactly this: the app's own writes, through Room, after the migration. */
     @Test
     fun theAppCanWriteAfterwards() = runTest {
@@ -115,9 +152,9 @@ class MigrationFrom10Test {
 
         val gym = db.sessionDao().insert(SessionEntity(0, "workout_a", 70_000, null, "GYM"))
         val entry = db.exerciseEntryDao().insert(ExerciseEntryEntity(0, gym, "d1_e1"))
-        val set = SetRecordEntity(db.setRecordDao().insert(SetRecordEntity(0, entry, 71_000, "REP", 8, 60f, null, null)), entry, 71_000, "REP", 8, 60f, null, null)
-        db.setRecordDao().update(set.copy(reps = 9))
-        db.setRecordDao().update(set.copy(reps = 10))
+        val set = db.setDao().insert(entry, 71_000, listOf(SetPartEntity(0, 1, reps = 8, loadKg = 60f)))
+        db.setDao().update(set, 71_000, listOf(SetPartEntity(0, 1, reps = 9, loadKg = 60f)))
+        db.setDao().update(set, 71_000, listOf(SetPartEntity(0, 1, reps = 10, loadKg = 60f)))
 
         val after = SyncChecks.loggedChanges(sql)
         assertEquals(before.getValue("session") + 2, after.getValue("session"))
@@ -163,8 +200,8 @@ class MigrationFrom10Test {
         )
 
         /**
-         * A small history with one of everything: rep, bodyweight (saved as 0 kg), timed and distance
-         * sets, a week-B variant, a removed exercise, an unfinished session, a run with GPS points,
+         * A small history with one of everything: rep, bodyweight (saved as 0 kg, and once as the
+         * crunches' 80 kg), timed and distance sets, a week-B variant, a removed exercise, an unfinished session, a run with GPS points,
          * details and a pause, a walk, a route with points, and a song.
          */
         val SAMPLE_HISTORY = listOf(
@@ -187,7 +224,8 @@ class MigrationFrom10Test {
                 "(2, 1, 1200, 'REP', 6, 62.5, NULL, NULL), " +
                 "(3, 2, 1300, 'TIMED', NULL, NULL, 45, NULL), " +
                 "(4, 3, 1400, 'DISTANCE', NULL, NULL, NULL, 35), " +
-                "(5, 4, 6100, 'REP', 15, 0.0, NULL, NULL)",
+                "(5, 4, 6100, 'REP', 15, 0.0, NULL, NULL), " +
+                "(6, 4, 6200, 'REP', 12, 80.0, NULL, NULL)",
             "INSERT INTO location_log VALUES " +
                 "(1, 3, 10000, 32.0853, 34.7818, 2.9, 12.0, 5.0, 90.0), " +
                 "(2, 3, 11000, 32.0860, 34.7825, 3.1, 13.5, 4.0, 91.0), " +
