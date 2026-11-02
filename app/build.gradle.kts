@@ -154,6 +154,12 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 }
 
+// Room writes each database version's schema here, to be committed: the record the migration
+// tests check later versions against.
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 // AGP 9 compiles Kotlin itself (no kotlin-android plugin); the JVM target follows compileOptions.
 kotlin {
     compilerOptions {
