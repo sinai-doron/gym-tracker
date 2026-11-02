@@ -7,8 +7,8 @@ import android.database.Cursor
  * the numbers a migration must leave exactly as they were. Two fingerprints, one taken before a
  * migration and one after, must be equal.
  *
- * The v14 migration moves sets into `set_parts` (ADR-0006); it adds a second way to read the same
- * numbers from v14 on, so before and after stay comparable.
+ * The v15 migration moves sets into `set_parts` (ADR-0006); it adds a second way to read the same
+ * numbers from v15 on, so before and after stay comparable.
  */
 data class HistoryFingerprint(
     val sessionsByType: Map<String, Long>,

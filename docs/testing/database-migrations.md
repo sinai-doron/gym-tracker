@@ -1,13 +1,14 @@
 # Database migrations: tests
 
 Every database version the app has shipped must open in the current app with its history intact.
-These instrumented tests check that before a new migration ships. They matter most for the v14
-migration ([ADR-0006](../adr/0006-exercise-model.md)), which rewrites every set.
+These instrumented tests check that before a new migration ships. They matter most for the steps of
+[ADR-0006](../adr/0006-exercise-model.md)'s migration, v15 most of all, which rewrites every set.
 
 | Test | What it checks | Needs |
 |---|---|---|
 | `MigrationFrom10Test` | A version 10 database with a small sample history migrates to the current version: same history, every synced row has a uuid and one change-log entry, the sync triggers match a fresh install, and the app's own writes work afterwards | An emulator |
 | `BackupMigrationTest` | A real backup zip migrates to the current version with the same history, uuids and triggers | An emulator and a backup zip; skipped without one |
+| `ExerciseLibraryTest` | The library seeded from the shipped catalogue, re-seeded as an update would (built-ins updated or archived, a user's own untouched), and the plan linked to it | An emulator |
 | `SyncTriggersThroughRoomTest` | The change-log triggers on a fresh install, written through Room's DAOs | An emulator |
 
 `HistoryFingerprint` is what "the same history" means: session and set counts, total reps and

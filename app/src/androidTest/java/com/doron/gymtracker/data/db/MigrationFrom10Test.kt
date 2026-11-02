@@ -7,6 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.doron.gymtracker.data.catalogue.ExerciseCatalogue
 import com.doron.gymtracker.data.db.entities.ExerciseEntryEntity
 import com.doron.gymtracker.data.db.entities.LocationLogEntity
 import com.doron.gymtracker.data.db.entities.SessionEntity
@@ -84,6 +85,22 @@ class MigrationFrom10Test {
     fun triggersAreTheOnesAFreshInstallGets() {
         migrate()
         assertEquals(SyncChecks.freshInstallTriggers(context), SyncChecks.triggers(sql))
+    }
+
+    /** Version 14 links each plan exercise to its built-in; history and sync are untouched. */
+    @Test
+    fun thePlanIsLinkedToTheLibrary() {
+        migrate()
+        val links = sql.query("SELECT id, libraryExerciseId FROM exercise_definitions").use { c ->
+            buildMap { while (c.moveToNext()) put(c.getString(0), c.getString(1)) }
+        }
+        assertEquals(
+            mapOf(
+                "d1_e1" to "barbell-bench-press", "d1_e7" to "plank", "d2_e8a" to "crunch",
+                "d2_e8b" to "hanging-knee-raise", "d2_e6" to "hip-adduction-machine", "d3_e8" to "farmers-walk",
+            ).mapValues { (_, slug) -> ExerciseCatalogue.builtinId(slug) },
+            links
+        )
     }
 
     /** The v11/v12 triggers broke exactly this: the app's own writes, through Room, after the migration. */

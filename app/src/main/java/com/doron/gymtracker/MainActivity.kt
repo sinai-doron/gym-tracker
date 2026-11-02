@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import com.doron.gymtracker.data.CardioRecorder
 import com.doron.gymtracker.data.CardioRun
 import com.doron.gymtracker.data.prefs.SettingsPrefs
+import com.doron.gymtracker.data.repository.ExerciseLibrary
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.ui.navigation.NavGraph
 import com.doron.gymtracker.ui.theme.GymTrackerTheme
@@ -25,6 +26,7 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
 
     @Inject lateinit var workoutRepository: WorkoutRepository
+    @Inject lateinit var exerciseLibrary: ExerciseLibrary
     @Inject lateinit var cardioRecorder: CardioRecorder
     @Inject lateinit var settingsPrefs: SettingsPrefs
 
@@ -38,7 +40,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         if (applyDefaultLocale()) return  // recreated in Hebrew straight away
         enableEdgeToEdge()
-        lifecycleScope.launch { workoutRepository.ensureSeeded() }
+        lifecycleScope.launch {
+            workoutRepository.ensureSeeded()
+            // After the plan: a fresh install's plan rows must exist to be linked to the library
+            exerciseLibrary.ensureSeeded()
+        }
         lifecycleScope.launch {
             if (!settingsPrefs.onboardingDone.first() && isUpdate()) {
                 // Upgraded from a version without the wizard: permissions were already asked for

@@ -116,6 +116,14 @@ class WorkoutRepositoryTest {
         }
     }
 
+    /** The edit is a whole-row update: without this the link to the library would be cleared. */
+    @Test
+    fun `updateExercise keeps the link to the library`() = runTest {
+        coEvery { dao.getExercise("e1") } returns row("e1", 4).copy(libraryExerciseId = "lib-1")
+        repo.updateExercise(RepExerciseDefinition("e1", "New name", 5, 120, 8))
+        coVerify { dao.updateExercise(match { it.libraryExerciseId == "lib-1" }) }
+    }
+
     @Test
     fun `addExercise goes to the end of the workout`() = runTest {
         coEvery { dao.maxSortOrder("workout_a") } returns 7

@@ -1,7 +1,8 @@
 # ADR-0006: Exercises declare their metrics; a set is made of parts
 
 ## Status
-Accepted (2026-11-02). Supersedes [ADR-0003](0003-two-exercise-types.md) once the v14 schema lands.
+Accepted (2026-11-02). Supersedes [ADR-0003](0003-two-exercise-types.md) once the sets migration lands
+(amended 2026-11-02: the migration runs in steps, see the end).
 
 ## Context
 To open the app to other people, it has to hold their exercises, not just the owner's 23.
@@ -83,10 +84,10 @@ the session, falling back to Settings.
 
 ### Scope of the first release
 - Metrics: reps, load, duration, distance, calories, speed, incline, level, band, height.
-- The schema holds drop sets, rest-pause and progression chains from v14. Their logging
+- The schema holds drop sets, rest-pause and progression chains from the sets step (v15). Their logging
   screens come later (progression chains with calisthenics).
 
-### Migrating the owner's history (v13 → v14)
+### Migrating the owner's history
 - Each `set_records` row becomes one set with one part. Per-side history stays one part with
   no side.
 - Dumbbell exercises migrate as **per hand**: the owner logs 20 kg for 20 kg in each hand.
@@ -106,5 +107,23 @@ the session, falling back to Settings.
   to the exercise's metric list and needs its own tests.
 - **Bad:** `extra` JSON can't be indexed or queried cheaply; any metric that needs charts
   or records must be promoted to a column.
-- **Bad:** the v14 migration rewrites every set in the owner's history. It ships only after
+- **Bad:** the sets migration (v15) rewrites every set in the owner's history. It ships only after
   migration tests pass against a copy of a real backup.
+
+## Amendment (2026-11-02): the migration runs in three steps
+
+One v13 → v14 migration would have changed every table and every synced item at once, and the
+backend accepts only the item shapes it knows (`gym.entities.ts`). It runs in three steps instead,
+each a database version of its own, each tested against a real backup, each leaving the app
+working:
+
+| Version | Step | Synced shapes |
+|---|---|---|
+| v14 | The exercise library: `exercises`, `exercise_names`, `exercise_muscles`, seeded from the catalogue at start; each plan exercise linked to its built-in (`exercise_definitions.libraryExerciseId`) | Unchanged |
+| v15 | Sets and parts, with the history rules above (per hand, bodyweight with no load) | New kinds; the backend learns them first |
+| v16 | Programmes and workouts: week-B rows become variants, the rotation leaves prefs | New kinds; the backend learns them first |
+
+A built-in's id is derived from its slug (`ExerciseCatalogue.builtinId`), so it is the same on
+every phone and history can name it without uploading it. The v14 migration links the plan by a
+map written into the migration, not read from the catalogue, so a later catalogue can't change
+what it did.

@@ -70,6 +70,13 @@ class BackupMigrationTest {
         assertEquals(before, after)
         assertEquals(emptyMap<String, Long>(), SyncChecks.rowsWithoutUuid(sql))
         assertEquals(SyncChecks.freshInstallTriggers(context), SyncChecks.triggers(sql))
+
+        // Version 14: every plan exercise the owner's plan has is linked to its built-in
+        val unlinked = sql.query(
+            "SELECT id FROM exercise_definitions WHERE libraryExerciseId IS NULL AND id IN " +
+                LibraryMigration.PLAN_TO_BUILTIN.keys.joinToString(", ", "(", ")") { "'$it'" }
+        ).use { c -> buildList { while (c.moveToNext()) add(c.getString(0)) } }
+        assertEquals(emptyList<String>(), unlinked)
     }
 
     /** The `backupZip` instrumentation argument, or gym-backup.zip in the app's external files folder. */
