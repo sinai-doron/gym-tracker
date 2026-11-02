@@ -179,6 +179,9 @@ app/src/main/java/com/doron/gymtracker/
     │                  history, settings
     └── theme/
 assets/map_style_run.json   The map style
+assets/exercises/           The exercise catalogue the app ships (built, don't edit)
+catalogue/            The built-in exercise catalogue: written by hand, built into
+                      assets/exercises/ by build_catalogue.py (see its README)
 catalogue/wger/       Pinned snapshot of wger's exercise data, the upstream of our
                       exercise catalogue; how to refresh it and what we owe in its README
 docs/
@@ -247,7 +250,9 @@ GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs on 
 
 - **Build and unit tests:** `assembleDebug` and `testDebugUnitTest`. It fails if the build
   changed a Room schema in `app/schemas/` that wasn't committed; the generated schemas are
-  attached to the run as the `room-schemas` artifact.
+  attached to the run as the `room-schemas` artifact. It also fails when the exercise
+  catalogue breaks a rule or wasn't rebuilt after a change
+  (`python3 -I catalogue/build_catalogue.py --check`).
 - **Instrumented tests:** `connectedDebugAndroidTest` on an API 34 emulator.
 
 ## Permissions

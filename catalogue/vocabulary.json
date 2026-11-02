@@ -1,0 +1,62 @@
+{
+ "comment": "The words the catalogue is written in: presets and load conventions (ADR-0006), muscles with their body-map regions, and equipment with its default weight step (plan doc). build_catalogue.py checks every exercise against these and copies them into the app's catalogue.",
+ "catalogueVersion": 1,
+ "metrics": ["reps", "load", "duration", "distance", "calories", "height", "speed", "incline", "level", "band"],
+ "loadConventions": {
+  "total": "the whole weight moved: a barbell, a machine's stack, one dumbbell",
+  "per_hand": "one of two equal weights, one in each hand; volume counts it twice",
+  "added": "on top of body weight, optional: a belt, a vest, a plate held",
+  "assistance": "taken off body weight: an assisted machine, a band",
+  "none": "no load is recorded"
+ },
+ "presets": {
+  "reps_load": {"en": "Reps × weight", "he": "חזרות × משקל", "metrics": [{"metric": "reps", "required": true}, {"metric": "load", "required": true}], "record": "estimated_1rm", "better": "higher", "loads": ["total", "per_hand"]},
+  "reps": {"en": "Reps", "he": "חזרות", "metrics": [{"metric": "reps", "required": true}, {"metric": "load", "required": false}], "record": "reps", "better": "higher", "loads": ["added", "none"]},
+  "reps_assisted": {"en": "Assisted reps", "he": "חזרות בעזרה", "metrics": [{"metric": "reps", "required": true}, {"metric": "load", "required": true}], "record": "load", "better": "lower", "loads": ["assistance"]},
+  "time": {"en": "Time", "he": "זמן", "metrics": [{"metric": "duration", "required": true}, {"metric": "load", "required": false}], "record": "duration", "better": "higher", "loads": ["added", "none"]},
+  "distance_load": {"en": "Distance × weight", "he": "מרחק × משקל", "metrics": [{"metric": "distance", "required": true}, {"metric": "load", "required": true}], "record": "load", "better": "higher", "loads": ["total", "per_hand"]},
+  "distance_time": {"en": "Distance and time", "he": "מרחק וזמן", "metrics": [{"metric": "distance", "required": true}, {"metric": "duration", "required": true}], "record": "pace", "better": "lower", "loads": ["none"]},
+  "calories_time": {"en": "Calories and time", "he": "קלוריות וזמן", "metrics": [{"metric": "calories", "required": true}, {"metric": "duration", "required": true}], "record": "calories", "better": "higher", "loads": ["none"]}
+ },
+ "sides": ["both", "per_side"],
+ "mechanics": ["compound", "isolation"],
+ "muscles": {
+  "chest": {"en": "Chest", "he": "חזה", "region": "chest", "view": "front"},
+  "front_delts": {"en": "Front delts", "he": "כתף קדמית", "region": "deltoids", "view": "front"},
+  "side_delts": {"en": "Side delts", "he": "כתף אמצעית", "region": "deltoids", "view": "front"},
+  "rear_delts": {"en": "Rear delts", "he": "כתף אחורית", "region": "deltoids", "view": "back"},
+  "biceps": {"en": "Biceps", "he": "יד קדמית", "region": "biceps", "view": "front"},
+  "triceps": {"en": "Triceps", "he": "יד אחורית", "region": "triceps", "view": "both"},
+  "forearms": {"en": "Forearms", "he": "אמות", "region": "forearm", "view": "both"},
+  "abs": {"en": "Abs", "he": "בטן", "region": "abs", "view": "front"},
+  "obliques": {"en": "Obliques", "he": "אלכסוניים", "region": "obliques", "view": "front"},
+  "lats": {"en": "Lats", "he": "רחב גבי", "region": "upper-back", "view": "back"},
+  "traps": {"en": "Traps", "he": "טרפז", "region": "trapezius", "view": "both"},
+  "upper_back": {"en": "Upper back", "he": "גב עליון", "region": "upper-back", "view": "back"},
+  "lower_back": {"en": "Lower back", "he": "גב תחתון", "region": "lower-back", "view": "back"},
+  "glutes": {"en": "Glutes", "he": "ישבן", "region": "gluteal", "view": "back"},
+  "quads": {"en": "Quads", "he": "ארבע ראשי", "region": "quadriceps", "view": "front"},
+  "hamstrings": {"en": "Hamstrings", "he": "המסטרינג", "region": "hamstring", "view": "back"},
+  "adductors": {"en": "Adductors", "he": "מקרבים", "region": "adductors", "view": "both"},
+  "calves": {"en": "Calves", "he": "תאומים", "region": "calves", "view": "both"}
+ },
+ "equipment": {
+  "barbell": {"en": "Barbell", "he": "מוט", "weightStepKg": 2.5},
+  "ez_bar": {"en": "EZ bar", "he": "מוט EZ", "weightStepKg": 2.5},
+  "dumbbell": {"en": "Dumbbell", "he": "משקולות יד", "weightStepKg": 2},
+  "kettlebell": {"en": "Kettlebell", "he": "קטלבל", "weightStepKg": 4},
+  "cable": {"en": "Cable", "he": "כבל", "weightStepKg": 2.5},
+  "machine": {"en": "Machine", "he": "מכונה", "weightStepKg": 5},
+  "smith_machine": {"en": "Smith machine", "he": "סמית'", "weightStepKg": 2.5},
+  "bodyweight": {"en": "Bodyweight", "he": "משקל גוף", "weightStepKg": null},
+  "band": {"en": "Band", "he": "גומייה", "weightStepKg": null},
+  "other": {"en": "Other", "he": "אחר", "weightStepKg": null}
+ },
+ "defaults": {
+  "compound": {"sets": 3, "repsMin": 6, "repsMax": 10, "restS": 120},
+  "isolation": {"sets": 3, "repsMin": 10, "repsMax": 15, "restS": 60},
+  "time": {"sets": 3, "durationS": 45, "restS": 60},
+  "distance_load": {"sets": 3, "distanceM": 30, "restS": 90},
+  "cardio": {"sets": 1, "restS": 0}
+ }
+}
