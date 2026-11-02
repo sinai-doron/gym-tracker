@@ -12,16 +12,16 @@ class FinishSessionUseCase @Inject constructor(
     private val prefs: RotationPrefs,
     private val healthConnect: HealthConnectManager
 ) {
-    suspend operator fun invoke(sessionId: Long) {
+    /** [title] is the session's name for Health Connect, resolved by the UI in the user's language. */
+    suspend operator fun invoke(sessionId: Long, title: String) {
         sessionRepo.finishSession(sessionId)
         val session = sessionRepo.getLastCompleted() ?: return
         val finishedAt = session.finishedAt ?: return
         if (session.type == "GYM") {
             val workout = workoutRepo.getById(session.workoutId) ?: return
             prefs.setLastLabel(workout.label)
-            healthConnect.writeWorkoutSession(session.startedAt, finishedAt, workout.label.displayName)
+            healthConnect.writeWorkoutSession(session.startedAt, finishedAt, title)
         } else {
-            val title = if (session.type == "RUNNING") "ריצה" else "הליכה"
             healthConnect.writeWorkoutSession(session.startedAt, finishedAt, title, session.type)
         }
     }

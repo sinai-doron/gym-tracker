@@ -75,7 +75,7 @@ fun ExerciseDetailSheet(
             }
         }
         if (state.exercise.isPerSide) {
-            Text("לכל צד – הזן לכל צד בנפרד",
+            Text(stringResource(R.string.session_per_side_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -83,7 +83,7 @@ fun ExerciseDetailSheet(
             modifier = Modifier.padding(top = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("סטים", style = MaterialTheme.typography.bodyLarge)
+            Text(stringResource(R.string.sets_label), style = MaterialTheme.typography.bodyLarge)
             Spacer(Modifier.width(12.dp))
             FilledTonalButton(
                 onClick = { viewModel.changeTargetSets(-1) },
@@ -120,8 +120,8 @@ fun ExerciseDetailSheet(
 
         // Progression hint — only shown for rep exercises
         val hintText = when (val h = state.progressionHint) {
-            is ProgressionHint.Increase -> "כל הסטים הגיעו לטווח העליון 3× ברצף — הוסף ${h.addKg} ק״ג"
-            is ProgressionHint.Stalled -> "3 אימונים ללא שיפור — הפחת 10% ובנה מחדש"
+            is ProgressionHint.Increase -> stringResource(R.string.session_hint_increase, h.addKg.toString())
+            is ProgressionHint.Stalled -> stringResource(R.string.session_hint_stalled)
             is ProgressionHint.OnTrack -> null
         }
         if (hintText != null) {
@@ -148,7 +148,7 @@ fun ExerciseDetailSheet(
             // Editing during rest: the countdown keeps running, so keep it visible
             if (restSecs != null) {
                 Text(
-                    "מנוחה %d:%02d".format(restSecs / 60, restSecs % 60),
+                    stringResource(R.string.rest_value, "%d:%02d".format(restSecs / 60, restSecs % 60)),
                     style = MaterialTheme.typography.titleMedium,
                     color = RestTimerColor,
                     modifier = Modifier.padding(bottom = 8.dp)
@@ -176,7 +176,7 @@ fun ExerciseDetailSheet(
                         onClick = { viewModel.cancelEditing() },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("ביטול")
+                        Text(stringResource(R.string.cancel))
                     }
                 } else {
                     TimedSetInput(
@@ -208,7 +208,7 @@ fun ExerciseDetailSheet(
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("מחק סט")
+                    Text(stringResource(R.string.session_delete_set))
                 }
             }
         }
@@ -272,7 +272,7 @@ private fun RepSetInput(
                 onClick = onCancelEdit,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("ביטול")
+                Text(stringResource(R.string.cancel))
             }
         }
         Button(
@@ -287,7 +287,7 @@ private fun RepSetInput(
             modifier = Modifier.weight(1f),
             enabled = repsText.isNotBlank() && (isBodyweight || weightText.isNotBlank())
         ) {
-            Text(if (editingSet != null) "עדכן סט" else stringResource(R.string.log_set))
+            Text(stringResource(if (editingSet != null) R.string.session_update_set else R.string.log_set))
         }
     }
 }
@@ -323,7 +323,7 @@ private fun DistanceSetInput(
         OutlinedTextField(
             value = distanceText,
             onValueChange = { distanceText = it },
-            label = { Text("מרחק (מ׳) — יעד: $targetDistanceM מ׳") },
+            label = { Text(stringResource(R.string.session_distance_target, targetDistanceM)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
@@ -336,7 +336,7 @@ private fun DistanceSetInput(
                 onClick = onCancelEdit,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("ביטול")
+                Text(stringResource(R.string.cancel))
             }
         }
         Button(
@@ -348,7 +348,7 @@ private fun DistanceSetInput(
             modifier = Modifier.weight(1f),
             enabled = distanceText.isNotBlank()
         ) {
-            Text(if (editingSet != null) "עדכן סט" else stringResource(R.string.log_set))
+            Text(stringResource(if (editingSet != null) R.string.session_update_set else R.string.log_set))
         }
     }
 }

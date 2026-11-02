@@ -21,7 +21,7 @@
     <string name="sets_progress">%1$d / %2$d sets</string>
     <string name="suggested_marker">★</string>
     <string name="no_sessions_month">No sessions this month</string>
-    <string name="deload_week_banner">Deload week — 60%% of last weight, 2 sets</string>
+    <string name="deload_week_banner" formatted="false">Deload week — 60% of last weight, 2 sets</string>
     <string name="settings">Settings</string>
     <string name="language">Language</string>
     <string name="next_workout">Next workout</string>

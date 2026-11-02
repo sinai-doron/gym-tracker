@@ -34,6 +34,8 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
@@ -41,6 +43,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.doron.gymtracker.R
 import com.doron.gymtracker.ui.components.Activity
 import com.doron.gymtracker.ui.components.ActivityIcon
 import com.doron.gymtracker.ui.theme.Purple
@@ -74,12 +77,12 @@ fun StepsWeekCard(week: StepsWeek, modifier: Modifier = Modifier) {
     ) {
         val day = selected?.let { week.days[it] }
         CardTitle(
-            if (week.rolling) "👣 צעדים ב-7 ימים" else "👣 צעדים השבוע",
+            stringResource(if (week.rolling) R.string.home_steps_title_rolling else R.string.home_steps_title_week),
             trailing = if (day != null) {
                 val name = day.date.dayOfWeek.getDisplayName(DateTextStyle.FULL, Locale("he"))
-                val ofWorkout = if (day.workoutSteps > 0) " (%,d באימון)".format(day.workoutSteps) else ""
-                "$name · %,d$ofWorkout".format(day.steps)
-            } else "ממוצע %,d".format(week.average)
+                if (day.workoutSteps > 0) stringResource(R.string.home_steps_day_workout, name, day.steps, day.workoutSteps)
+                else stringResource(R.string.home_steps_day, name, day.steps)
+            } else stringResource(R.string.home_steps_average, week.average)
         )
         Spacer(Modifier.height(12.dp))
 
@@ -150,24 +153,25 @@ fun StepsWeekCard(week: StepsWeek, modifier: Modifier = Modifier) {
         }
 
         Spacer(Modifier.height(8.dp))
-        val fromBefore = if (week.rolling) "מ-7 הימים שלפני" else "משבוע שעבר"
         val change = week.changePercent?.let {
             when {
-                it > 0 -> " · ↑$it% $fromBefore"
-                it < 0 -> " · ↓${abs(it)}% $fromBefore"
-                else -> if (week.rolling) " · כמו ב-7 הימים שלפני" else " · כמו בשבוע שעבר"
+                it > 0 -> stringResource(if (week.rolling) R.string.home_steps_up_rolling else R.string.home_steps_up_week, it)
+                it < 0 -> stringResource(if (week.rolling) R.string.home_steps_down_rolling else R.string.home_steps_down_week, abs(it))
+                else -> stringResource(if (week.rolling) R.string.home_steps_same_rolling else R.string.home_steps_same_week)
             }
-        } ?: ""
+        }
+        val atGoal = pluralStringResource(R.plurals.home_steps_days_at_goal, week.daysAtGoal, week.daysAtGoal)
         Text(
-            "סה״כ %,d · %d %s ביעד".format(week.total, week.daysAtGoal, if (week.daysAtGoal == 1) "יום" else "ימים") + change,
+            if (change != null) stringResource(R.string.home_steps_total_change, week.total, atGoal, change)
+            else stringResource(R.string.home_steps_total, week.total, atGoal),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(Modifier.height(6.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            LegendDot(Purple, "ביעד")
-            LegendDot(belowGoal, "מתחת ליעד")
-            if (hasWorkouts) LegendDot(SuccessGreen, "ריצה / הליכה")
+            LegendDot(Purple, stringResource(R.string.home_steps_legend_at_goal))
+            LegendDot(belowGoal, stringResource(R.string.home_steps_legend_below_goal))
+            if (hasWorkouts) LegendDot(SuccessGreen, stringResource(R.string.home_steps_legend_workout))
         }
     }
 }

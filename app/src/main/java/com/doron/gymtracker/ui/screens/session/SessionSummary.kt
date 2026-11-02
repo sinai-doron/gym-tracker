@@ -33,9 +33,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.doron.gymtracker.R
 import com.doron.gymtracker.domain.model.RepSetRecord
 import com.doron.gymtracker.domain.model.SetRecord
 import com.doron.gymtracker.domain.model.TrackLog
@@ -143,7 +145,7 @@ fun SessionSummaryScreen(
         Spacer(Modifier.height(16.dp))
 
         Text(
-            "אימון הושלם!",
+            stringResource(R.string.session_complete),
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -164,12 +166,12 @@ fun SessionSummaryScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             StatCard(
-                label = "משך",
+                label = stringResource(R.string.session_duration),
                 value = formatDuration(data.durationSecs),
                 modifier = Modifier.weight(1f)
             )
             StatCard(
-                label = "תרגילים",
+                label = stringResource(R.string.session_exercises),
                 value = "${data.exercisesCompleted}/${data.exercisesTotal}",
                 modifier = Modifier.weight(1f)
             )
@@ -182,13 +184,13 @@ fun SessionSummaryScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             StatCard(
-                label = "סטים",
+                label = stringResource(R.string.sets_label),
                 value = "${data.totalSets}",
                 modifier = Modifier.weight(1f)
             )
             StatCard(
-                label = "נפח כולל",
-                value = if (data.totalVolumeKg > 0) "%,.0f ק״ג".format(data.totalVolumeKg) else "—",
+                label = stringResource(R.string.session_total_volume),
+                value = if (data.totalVolumeKg > 0) stringResource(R.string.weight_value, "%,.0f".format(data.totalVolumeKg)) else "—",
                 modifier = Modifier.weight(1f)
             )
         }
@@ -197,7 +199,7 @@ fun SessionSummaryScreen(
 
         // Exercise breakdown
         Text(
-            "פירוט תרגילים",
+            stringResource(R.string.session_exercise_breakdown),
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
             modifier = Modifier
                 .fillMaxWidth()
@@ -220,11 +222,13 @@ fun SessionSummaryScreen(
                         line.name,
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
                     )
-                    val detail = buildString {
-                        append("${line.setsCompleted}/${line.setsTarget} סטים")
-                        if (line.topWeight != null && line.topWeight > 0f) {
-                            append(" · ${formatWeight(line.topWeight)} ק״ג")
-                        }
+                    val detail = if (line.topWeight != null && line.topWeight > 0f) {
+                        stringResource(
+                            R.string.session_breakdown_sets_weight,
+                            line.setsCompleted, line.setsTarget, formatWeight(line.topWeight)
+                        )
+                    } else {
+                        stringResource(R.string.session_breakdown_sets, line.setsCompleted, line.setsTarget)
                     }
                     Text(
                         detail,
@@ -244,7 +248,7 @@ fun SessionSummaryScreen(
                     IconButton(onClick = { deleteTarget = line }) {
                         Icon(
                             Icons.Default.Delete,
-                            contentDescription = "מחק תרגיל",
+                            contentDescription = stringResource(R.string.session_delete_exercise),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                             modifier = Modifier.size(20.dp)
                         )
@@ -258,7 +262,7 @@ fun SessionSummaryScreen(
             Spacer(Modifier.height(24.dp))
 
             Text(
-                "♫ פסקול האימון",
+                stringResource(R.string.session_soundtrack),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
             )
@@ -309,7 +313,7 @@ fun SessionSummaryScreen(
             colors = ButtonDefaults.buttonColors(containerColor = Purple)
         ) {
             Text(
-                "חזרה הביתה",
+                stringResource(R.string.session_go_home),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
             )
         }
@@ -320,19 +324,19 @@ fun SessionSummaryScreen(
     deleteTarget?.let { line ->
         AlertDialog(
             onDismissRequest = { deleteTarget = null },
-            title = { Text("מחיקת תרגיל?") },
-            text = { Text("למחוק את ${line.name} ואת כל הסטים שלו מהאימון?") },
+            title = { Text(stringResource(R.string.session_delete_exercise_title)) },
+            text = { Text(stringResource(R.string.session_delete_exercise_text, line.name)) },
             confirmButton = {
                 TextButton(onClick = {
                     onDeleteExercise?.invoke(line.exerciseId)
                     deleteTarget = null
                 }) {
-                    Text("מחק", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.session_delete), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { deleteTarget = null }) {
-                    Text("ביטול")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )

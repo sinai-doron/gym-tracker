@@ -86,6 +86,8 @@ import com.doron.gymtracker.ui.components.AchievementsStrip
 import com.doron.gymtracker.ui.components.BadgesRow
 import com.doron.gymtracker.ui.components.ExercisePreviewList
 import com.doron.gymtracker.ui.components.WorkoutMetaRow
+import com.doron.gymtracker.ui.components.localizedName
+import com.doron.gymtracker.ui.components.label
 import com.doron.gymtracker.ui.components.valueText
 import com.doron.gymtracker.ui.theme.Purple
 import com.doron.gymtracker.ui.theme.SuccessGreen
@@ -302,7 +304,7 @@ fun HomeScreen(
                         .padding(16.dp)
                 ) {
                     val earned = badges.count { it.isEarned } + achievements.count { it.isEarned }
-                    CardTitle("🏅 הישגים", trailing = "$earned מתוך ${badges.size + achievements.size}")
+                    CardTitle(stringResource(R.string.home_achievements_title), trailing = stringResource(R.string.home_achievements_earned, earned, badges.size + achievements.size))
                     Spacer(Modifier.height(12.dp))
                     BadgesRow(badges)
                     if (achievements.isNotEmpty()) {
@@ -361,7 +363,7 @@ private fun ResumeWorkoutCard(session: Session, workout: Workout, onResume: () -
                 color = Purple
             )
             Text(
-                workout.label.displayName,
+                workout.label.localizedName(),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
             )
             Text(
@@ -459,7 +461,7 @@ private fun NextWorkoutCard(
             }
             Spacer(Modifier.width(12.dp))
             Text(
-                preview.workout.label.displayName,
+                preview.workout.label.localizedName(),
                 style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
             )
         }
@@ -468,7 +470,7 @@ private fun NextWorkoutCard(
         WorkoutMetaRow(preview)
         TextButton(onClick = { showExercises = !showExercises }, contentPadding = PaddingValues(0.dp)) {
             Text(
-                if (showExercises) "הסתר תרגילים" else "הצג תרגילים (${preview.exercises.size})",
+                if (showExercises) stringResource(R.string.home_hide_exercises) else stringResource(R.string.home_show_exercises, preview.exercises.size),
                 style = MaterialTheme.typography.bodyMedium,
                 color = Purple
             )
@@ -503,7 +505,7 @@ private fun NextWorkoutCard(
                 modifier = Modifier.height(52.dp),
                 shape = MaterialTheme.shapes.large
             ) {
-                Text("החלף", style = MaterialTheme.typography.titleSmall, color = Purple)
+                Text(stringResource(R.string.home_switch_workout), style = MaterialTheme.typography.titleSmall, color = Purple)
             }
         }
     }
@@ -523,11 +525,11 @@ private fun CardioCard(
             .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(24.dp))
             .padding(16.dp)
     ) {
-        CardTitle("ריצה והליכה")
+        CardTitle(stringResource(R.string.home_cardio_title))
         Spacer(Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            CardioButton(Activity.RUN, "ריצה", Modifier.weight(1f), onRun)
-            CardioButton(Activity.WALK, "הליכה", Modifier.weight(1f), onWalk)
+            CardioButton(Activity.RUN, stringResource(R.string.home_run), Modifier.weight(1f), onRun)
+            CardioButton(Activity.WALK, stringResource(R.string.home_walk), Modifier.weight(1f), onWalk)
         }
         Spacer(Modifier.height(8.dp))
         Row(
@@ -541,11 +543,11 @@ private fun CardioCard(
             ActivityIcon(Activity.ROUTES, size = 28.dp)
             Spacer(Modifier.width(10.dp))
             Text(
-                "מסלולים",
+                stringResource(R.string.home_routes),
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold)
             )
             Text(
-                " · $routesCount שמורים",
+                " · " + stringResource(R.string.home_routes_saved, routesCount),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.weight(1f)
@@ -584,7 +586,7 @@ private fun PersonalRecords(records: List<PersonalRecord>, onSessionClick: (Long
     val byKind = records.associateBy { it.kind }
     val dateFormat = remember { java.text.SimpleDateFormat("d.M.yy", java.util.Locale.getDefault()) }
     Text(
-        "🏆 שיאים אישיים",
+        stringResource(R.string.home_records_title),
         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold)
     )
     Spacer(Modifier.height(4.dp))
@@ -599,10 +601,10 @@ private fun PersonalRecords(records: List<PersonalRecord>, onSessionClick: (Long
                 .padding(vertical = 8.dp, horizontal = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(kind.label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+            Text(kind.label(), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
             if (record != null) {
                 Text(
-                    if (kind == RecordKind.BEST_WEEK) "שבוע " + dateFormat.format(java.util.Date(record.at))
+                    if (kind == RecordKind.BEST_WEEK) stringResource(R.string.home_record_week, dateFormat.format(java.util.Date(record.at)))
                     else dateFormat.format(java.util.Date(record.at)),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -626,34 +628,35 @@ private fun WeeklyStatsRow(stats: WeeklyStats) {
             .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(24.dp))
             .padding(vertical = 16.dp, horizontal = 8.dp)
     ) {
-        CardTitle(if (stats.rolling) "📅 7 ימים אחרונים" else "📅 השבוע", Modifier.padding(horizontal = 8.dp), trailing = weekRange(stats.days))
+        CardTitle(stringResource(if (stats.rolling) R.string.home_week_rolling else R.string.home_week_calendar), Modifier.padding(horizontal = 8.dp), trailing = weekRange(stats.days))
         Spacer(Modifier.height(12.dp))
         if (stats.days.isNotEmpty()) {
             WeekStrip(stats.days)
             Spacer(Modifier.height(14.dp))
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            WeeklyStatItem("אימונים", "${stats.sessionsCount}")
-            WeeklyStatItem("דקות", "${stats.totalMinutes}")
+            WeeklyStatItem(stringResource(R.string.workouts), "${stats.sessionsCount}")
+            WeeklyStatItem(stringResource(R.string.home_stat_minutes), "${stats.totalMinutes}")
             if (stats.totalVolumeKg > 0) {
-                WeeklyStatItem("נפח", "%,.0f".format(stats.totalVolumeKg))
+                WeeklyStatItem(stringResource(R.string.home_stat_volume), "%,.0f".format(stats.totalVolumeKg))
             }
-            WeeklyStatItem("רצף", "${stats.streakDays}", highlight = stats.streakDays >= 3)
+            WeeklyStatItem(stringResource(R.string.home_stat_streak), "${stats.streakDays}", highlight = stats.streakDays >= 3)
         }
     }
 }
 
 /** "25–31 באוקטובר", or across months "29.11–5.12". */
+@Composable
 private fun weekRange(days: List<WeekDay>): String? {
     val first = days.firstOrNull()?.date ?: return null
     val last = days.last().date
     // Isolated left to right, or Hebrew text around it turns "25–31" into "31–25"
     val range = if (first.month == last.month) "${first.dayOfMonth}–${last.dayOfMonth}"
     else "${first.dayOfMonth}.${first.monthValue}–${last.dayOfMonth}.${last.monthValue}"
-    val month = if (first.month == last.month) {
-        " ב" + first.month.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale("he"))
-    } else ""
-    return "\u2066$range\u2069$month"
+    val isolated = "\u2066$range\u2069"
+    return if (first.month == last.month) {
+        stringResource(R.string.home_week_range_month, isolated, first.month.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale("he")))
+    } else isolated
 }
 
 /** Sunday to Saturday, or the last seven days ending today (right to left in Hebrew): trained days filled with the workout, today outlined. */

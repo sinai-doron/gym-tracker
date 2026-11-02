@@ -3,6 +3,7 @@ package com.doron.gymtracker.ui.screens.cardio
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -50,6 +51,7 @@ import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -57,6 +59,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.FileProvider
+import com.doron.gymtracker.R
 import com.doron.gymtracker.data.Gpx
 import com.doron.gymtracker.data.LocationPoint
 import com.doron.gymtracker.data.Pace
@@ -65,6 +68,7 @@ import com.doron.gymtracker.data.RouteDistance
 import com.doron.gymtracker.domain.model.PersonalRecord
 import com.doron.gymtracker.ui.components.Activity
 import com.doron.gymtracker.ui.components.ActivityIcon
+import com.doron.gymtracker.ui.components.label
 import com.doron.gymtracker.ui.components.valueText
 import com.doron.gymtracker.ui.theme.Purple
 import java.io.File
@@ -102,7 +106,7 @@ fun ShareRunButton(state: CardioUiState, records: List<PersonalRecord>, modifier
         shape = MaterialTheme.shapes.large,
         modifier = modifier.fillMaxWidth()
     ) {
-        Text("📤 שתף", color = Purple)
+        Text(stringResource(R.string.cardio_share), color = Purple)
     }
 
     if (choosing) {
@@ -112,7 +116,7 @@ fun ShareRunButton(state: CardioUiState, records: List<PersonalRecord>, modifier
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    "שיתוף ה${runWord(state.type)}",
+                    stringResource(if (state.type == "WALKING") R.string.cardio_share_walk else R.string.cardio_share_run),
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
@@ -123,13 +127,13 @@ fun ShareRunButton(state: CardioUiState, records: List<PersonalRecord>, modifier
                     colors = ButtonDefaults.buttonColors(containerColor = Purple),
                     shape = MaterialTheme.shapes.large,
                     modifier = Modifier.fillMaxWidth().height(52.dp)
-                ) { Text("🖼 שתף תמונה") }
+                ) { Text(stringResource(R.string.cardio_share_image)) }
                 OutlinedButton(
                     onClick = { choosing = false; shareGpx(context, state) },
                     enabled = state.route.size >= 2,
                     shape = MaterialTheme.shapes.large,
                     modifier = Modifier.fillMaxWidth().height(52.dp)
-                ) { Text("📄 קובץ GPX", color = Purple) }
+                ) { Text(stringResource(R.string.cardio_share_gpx), color = Purple) }
             }
         }
     }
@@ -138,9 +142,10 @@ fun ShareRunButton(state: CardioUiState, records: List<PersonalRecord>, modifier
 }
 
 /** What the shared picture can show; chosen on the share screen and remembered. */
-private enum class ShareField(val label: String) {
-    DISTANCE("מרחק"), TIME("זמן"), PACE("קצב"), CLIMB("עלייה"), CALORIES("קלוריות"), STEPS("צעדים"),
-    DATE("תאריך"), RECORDS("שיאים"), PACE_COLORS("צבעי קצב");
+private enum class ShareField(@StringRes val label: Int) {
+    DISTANCE(R.string.cardio_distance), TIME(R.string.cardio_time), PACE(R.string.cardio_pace),
+    CLIMB(R.string.cardio_climb), CALORIES(R.string.cardio_calories), STEPS(R.string.cardio_steps),
+    DATE(R.string.cardio_date), RECORDS(R.string.cardio_records), PACE_COLORS(R.string.cardio_pace_colors);
 
     companion object {
         val DEFAULT = setOf(DISTANCE, DATE, PACE_COLORS)
@@ -211,7 +216,7 @@ private fun ShareImageDialog(state: CardioUiState, records: List<PersonalRecord>
                             fields = if (on) fields - field else fields + field
                             prefs.edit().putStringSet("fields", fields.map { it.name }.toSet()).apply()
                         },
-                        label = { Text(field.label) },
+                        label = { Text(stringResource(field.label)) },
                         colors = FilterChipDefaults.filterChipColors(
                             containerColor = Color.White,
                             selectedContainerColor = Purple,
@@ -223,7 +228,7 @@ private fun ShareImageDialog(state: CardioUiState, records: List<PersonalRecord>
             Spacer(Modifier.height(12.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedButton(onClick = onDismiss, shape = MaterialTheme.shapes.large) {
-                    Text("ביטול", color = Color.White)
+                    Text(stringResource(R.string.cancel), color = Color.White)
                 }
                 Button(
                     onClick = {
@@ -241,7 +246,7 @@ private fun ShareImageDialog(state: CardioUiState, records: List<PersonalRecord>
                     enabled = ready,
                     colors = ButtonDefaults.buttonColors(containerColor = Purple),
                     shape = MaterialTheme.shapes.large
-                ) { Text("📤 שתף תמונה") }
+                ) { Text(stringResource(R.string.cardio_share_image_send)) }
             }
         }
     }
@@ -254,12 +259,12 @@ private fun ShareImageDialog(state: CardioUiState, records: List<PersonalRecord>
 @Composable
 private fun RunShareCard(state: CardioUiState, records: List<PersonalRecord>, map: Bitmap?, fields: Set<ShareField>) {
     val numbers = listOfNotNull(
-        (ShareField.DISTANCE in fields).takeIf { it }?.let { "%.2f".format(state.distanceMeters / 1000) to "ק״מ" },
-        (ShareField.TIME in fields).takeIf { it }?.let { formatClock(state.elapsedSecs) to "זמן" },
-        state.avgPaceSecsPerKm?.takeIf { ShareField.PACE in fields }?.let { formatClock(it) to "דק׳/ק״מ" },
-        (ShareField.CLIMB in fields).takeIf { it }?.let { "${state.elevationGainM.roundToInt()}" to "מ׳ עלייה" },
-        state.calories?.takeIf { ShareField.CALORIES in fields }?.let { "$it" to "קק״ל" },
-        state.steps?.takeIf { ShareField.STEPS in fields }?.let { "%,d".format(it) to "צעדים" }
+        (ShareField.DISTANCE in fields).takeIf { it }?.let { "%.2f".format(state.distanceMeters / 1000) to stringResource(R.string.cardio_unit_km) },
+        (ShareField.TIME in fields).takeIf { it }?.let { formatClock(state.elapsedSecs) to stringResource(R.string.cardio_unit_time) },
+        state.avgPaceSecsPerKm?.takeIf { ShareField.PACE in fields }?.let { formatClock(it) to stringResource(R.string.cardio_unit_pace) },
+        (ShareField.CLIMB in fields).takeIf { it }?.let { "${state.elevationGainM.roundToInt()}" to stringResource(R.string.cardio_unit_climb) },
+        state.calories?.takeIf { ShareField.CALORIES in fields }?.let { "$it" to stringResource(R.string.cardio_unit_kcal) },
+        state.steps?.takeIf { ShareField.STEPS in fields }?.let { "%,d".format(it) to stringResource(R.string.cardio_unit_steps) }
     )
     val ink = Color(0xFF1A1035)
     Box(
@@ -289,8 +294,10 @@ private fun RunShareCard(state: CardioUiState, records: List<PersonalRecord>, ma
             Spacer(Modifier.weight(1f))
             if (ShareField.DATE in fields) {
                 state.startedAt?.let {
+                    val pattern = stringResource(R.string.cardio_share_date_pattern)
+                    val locale = Locale.forLanguageTag(stringResource(R.string.cardio_share_date_locale))
                     Text(
-                        SimpleDateFormat("d בMMM · HH:mm", Locale.forLanguageTag("he")).format(Date(it)),
+                        SimpleDateFormat(pattern, locale).format(Date(it)),
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = ink
@@ -301,7 +308,7 @@ private fun RunShareCard(state: CardioUiState, records: List<PersonalRecord>, ma
         Column(modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter).padding(horizontal = 16.dp, vertical = 12.dp)) {
             if (ShareField.RECORDS in fields && records.isNotEmpty()) {
                 Text(
-                    "🏆 " + records.joinToString(" · ") { "${it.kind.label} ${it.valueText()}" },
+                    "🏆 " + records.map { "${it.kind.label()} ${it.valueText()}" }.joinToString(" · "),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = ink,
@@ -453,7 +460,7 @@ private fun framed(route: List<LocationPoint>): LatLngBounds {
 
 private fun shareGpx(context: Context, state: CardioUiState) {
     val start = state.startedAt ?: return
-    val name = "${runWord(state.type)} " + SimpleDateFormat("d.M.yyyy", Locale.getDefault()).format(Date(start))
+    val name = "${context.getString(runWord(state.type))} " + SimpleDateFormat("d.M.yyyy", Locale.getDefault()).format(Date(start))
     val file = sharedFile(context, "run_$start.gpx")
     file.writeText(Gpx.write(name, state.type, state.route))
     share(context, file, "application/gpx+xml")
@@ -472,7 +479,8 @@ private fun share(context: Context, file: File, mime: String) {
     context.startActivity(Intent.createChooser(send, null))
 }
 
-private fun runWord(type: String) = if (type == "WALKING") "הליכה" else "ריצה"
+@StringRes
+private fun runWord(type: String) = if (type == "WALKING") R.string.cardio_walk else R.string.cardio_run
 
 private fun formatClock(totalSecs: Long): String {
     val h = totalSecs / 3600

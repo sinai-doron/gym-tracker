@@ -44,6 +44,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -69,7 +71,6 @@ private val weekDayOrder = listOf(
     DayOfWeek.SUNDAY, DayOfWeek.MONDAY, DayOfWeek.TUESDAY,
     DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY
 )
-private val dayHeaders = listOf("א", "ב", "ג", "ד", "ה", "ו", "ש")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -89,7 +90,7 @@ fun HistoryScreen(
                 title = { Text(stringResource(R.string.history)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "חזרה")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.history_back))
                     }
                 }
             )
@@ -131,7 +132,7 @@ private fun MonthHeader(month: YearMonth, onPrev: () -> Unit, onNext: () -> Unit
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         IconButton(onClick = onNext) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "חודש הבא")
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.history_next_month))
         }
         val monthName = month.month.getDisplayName(TextStyle.FULL_STANDALONE, heLocale)
         Text(
@@ -140,7 +141,7 @@ private fun MonthHeader(month: YearMonth, onPrev: () -> Unit, onNext: () -> Unit
             fontWeight = FontWeight.Bold
         )
         IconButton(onClick = onPrev) {
-            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "חודש קודם")
+            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(R.string.history_prev_month))
         }
     }
 }
@@ -148,7 +149,7 @@ private fun MonthHeader(month: YearMonth, onPrev: () -> Unit, onNext: () -> Unit
 @Composable
 private fun DayHeaders() {
     Row(modifier = Modifier.fillMaxWidth()) {
-        dayHeaders.forEach { label ->
+        stringArrayResource(R.array.history_day_headers).forEach { label ->
             Text(
                 label,
                 modifier = Modifier.weight(1f),
@@ -256,7 +257,7 @@ private fun Legend() {
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        listOf(GymColor to "אימון כוח", CardioColor to "ריצה / הליכה").forEachIndexed { i, (color, label) ->
+        listOf(GymColor to stringResource(R.string.history_legend_gym), CardioColor to stringResource(R.string.history_legend_cardio)).forEachIndexed { i, (color, label) ->
             if (i > 0) Spacer(Modifier.width(24.dp))
             Box(Modifier.size(12.dp).background(color, CircleShape))
             Spacer(Modifier.width(6.dp))
@@ -284,7 +285,7 @@ private fun DaySessionsSheet(
         )
         Spacer(Modifier.height(4.dp))
         Text(
-            "${state.sessions.size} אימונים",
+            pluralStringResource(R.plurals.history_sessions_count, state.sessions.size, state.sessions.size),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -305,19 +306,19 @@ private fun DaySessionsSheet(
     deleteTarget?.let { session ->
         AlertDialog(
             onDismissRequest = { deleteTarget = null },
-            title = { Text("מחיקת אימון?") },
-            text = { Text("למחוק את האימון ${session.workoutName}?\nכל הנתונים יימחקו לצמיתות.") },
+            title = { Text(stringResource(R.string.history_delete_title)) },
+            text = { Text(stringResource(R.string.history_delete_text, session.workoutNameRes?.let { stringResource(it) } ?: session.workoutName)) },
             confirmButton = {
                 TextButton(onClick = {
                     onDeleteSession(session.sessionId)
                     deleteTarget = null
                 }) {
-                    Text("מחק", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.history_delete_confirm), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { deleteTarget = null }) {
-                    Text("ביטול")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -341,7 +342,7 @@ private fun SessionCard(
         ) {
             Column(modifier = Modifier.weight(1f).padding(top = 8.dp, bottom = 8.dp)) {
                 Text(
-                    session.workoutName,
+                    session.workoutNameRes?.let { stringResource(it) } ?: session.workoutName,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -353,15 +354,15 @@ private fun SessionCard(
                 )
                 Spacer(Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    StatChip("${session.durationMinutes} דק׳")
+                    StatChip(stringResource(R.string.history_minutes, session.durationMinutes))
                     if (session.sessionType == "GYM") {
-                        StatChip("${session.totalSets} סטים")
+                        StatChip(pluralStringResource(R.plurals.history_sets_count, session.totalSets, session.totalSets))
                         if (session.totalVolumeKg > 0) {
-                            StatChip("%,.0f ק״ג".format(session.totalVolumeKg))
+                            StatChip(stringResource(R.string.weight_value, "%,.0f".format(session.totalVolumeKg)))
                         }
                     } else {
                         session.distanceKm?.let { km ->
-                            StatChip("%.2f ק״מ".format(km))
+                            StatChip(stringResource(R.string.km_value, "%.2f".format(km)))
                         }
                     }
                 }
@@ -369,7 +370,7 @@ private fun SessionCard(
             IconButton(onClick = onDelete) {
                 Icon(
                     Icons.Default.Delete,
-                    contentDescription = "מחק אימון",
+                    contentDescription = stringResource(R.string.history_delete_session),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                     modifier = Modifier.size(20.dp)
                 )

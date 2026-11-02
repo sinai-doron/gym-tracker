@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Home: achievements card -->
+    <string name="home_achievements_title">🏅 Achievements</string>
+    <string name="home_achievements_earned">%1$d of %2$d</string>
+    <string name="home_achievements_ok">Nice!</string>
+    <string name="home_badges_title">🏃 Distance</string>
+    <string name="home_badges_explain">Your first run to reach each distance</string>
+
+    <!-- Home: next workout card -->
+    <string name="home_hide_exercises">Hide exercises</string>
+    <string name="home_show_exercises">Show exercises (%1$d)</string>
+    <string name="home_switch_workout">Change</string>
+
+    <!-- Home: cardio card -->
+    <string name="home_cardio_title">Run &amp; walk</string>
+    <string name="home_run">Run</string>
+    <string name="home_walk">Walk</string>
+    <string name="home_routes">Routes</string>
+    <string name="home_routes_saved">%1$d saved</string>
+
+    <!-- Home: personal records -->
+    <string name="home_records_title">🏆 Personal records</string>
+    <string name="home_record_week">Week of %1$s</string>
+    <string name="home_record_longest_run">Longest run</string>
+    <string name="home_record_best_week">Best week</string>
+
+    <!-- Home: week card -->
+    <string name="home_week_rolling">📅 Last 7 days</string>
+    <string name="home_week_calendar">📅 This week</string>
+    <string name="home_stat_minutes">Minutes</string>
+    <string name="home_stat_volume">Volume</string>
+    <string name="home_stat_streak">Streak</string>
+    <!-- %1$s is the day range ("25–31"), %2$s the month's name -->
+    <string name="home_week_range_month">%2$s %1$s</string>
+
+    <!-- Home: steps card -->
+    <string name="home_steps_title_rolling">👣 Steps, last 7 days</string>
+    <string name="home_steps_title_week">👣 Steps this week</string>
+    <string name="home_steps_day">%1$s · %2$,d</string>
+    <string name="home_steps_day_workout">%1$s · %2$,d (%3$,d in workouts)</string>
+    <string name="home_steps_average">Avg %1$,d</string>
+    <plurals name="home_steps_days_at_goal">
+        <item quantity="one">%1$d day at goal</item>
+        <item quantity="other">%1$d days at goal</item>
+    </plurals>
+    <!-- %2$s is home_steps_days_at_goal, %3$s one of the changes below -->
+    <string name="home_steps_total">Total %1$,d · %2$s</string>
+    <string name="home_steps_total_change">Total %1$,d · %2$s · %3$s</string>
+    <string name="home_steps_up_rolling">↑%1$d%% vs the 7 days before</string>
+    <string name="home_steps_up_week">↑%1$d%% vs last week</string>
+    <string name="home_steps_down_rolling">↓%1$d%% vs the 7 days before</string>
+    <string name="home_steps_down_week">↓%1$d%% vs last week</string>
+    <string name="home_steps_same_rolling">Same as the 7 days before</string>
+    <string name="home_steps_same_week">Same as last week</string>
+    <string name="home_steps_legend_at_goal">At goal</string>
+    <string name="home_steps_legend_below_goal">Below goal</string>
+    <string name="home_steps_legend_workout">Run / walk</string>
+
+    <!-- Settings -->
+    <string name="home_settings_back">Back</string>
+    <string name="home_hc_granted">Permissions on</string>
+    <string name="home_hc_autosave">Workouts are saved to Health Connect automatically</string>
+    <string name="home_hc_sync">Sync workouts and steps with Health Connect</string>
+    <string name="home_hc_grant">Grant permissions</string>
+
+    <!-- Music controls -->
+    <string name="home_music_permission">Allow media access to control your music</string>
+    <string name="home_music_enable">Allow</string>
+</resources>

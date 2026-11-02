@@ -47,10 +47,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.doron.gymtracker.R
 import com.doron.gymtracker.data.Slope
 import com.doron.gymtracker.ui.components.ElevationChart
 import com.doron.gymtracker.ui.components.RunMap
@@ -79,15 +81,15 @@ fun RouteDetailScreen(
                 title = {},
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "חזרה")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.routes_back))
                     }
                 },
                 actions = {
                     IconButton(onClick = { renaming = true }, enabled = state != null) {
-                        Icon(Icons.Default.Edit, contentDescription = "שינוי שם")
+                        Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.routes_rename))
                     }
                     IconButton(onClick = { deleting = true }, enabled = state != null) {
-                        Icon(Icons.Default.Delete, contentDescription = "מחיקה")
+                        Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.routes_delete))
                     }
                 }
             )
@@ -104,7 +106,7 @@ fun RouteDetailScreen(
                         .padding(horizontal = 16.dp, vertical = 12.dp)
                         .height(56.dp)
                 ) {
-                    Text("🏃 רוץ במסלול", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                    Text(stringResource(R.string.routes_run_route), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
                 }
             }
         }
@@ -167,21 +169,23 @@ fun RouteDetailScreen(
                         MapLegend(s, Modifier.align(Alignment.TopStart).padding(10.dp))
                     }
                     Spacer(Modifier.height(16.dp))
-                    StatTile("מרחק", "%.2f".format(s.route.distanceMeters / 1000), "ק״מ", Modifier.fillMaxWidth())
+                    StatTile(stringResource(R.string.routes_distance), "%.2f".format(s.route.distanceMeters / 1000), stringResource(R.string.routes_unit_km), Modifier.fillMaxWidth())
                     Spacer(Modifier.height(12.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        StatTile("עלייה מצטברת", meters(s.climbM), "מ׳", Modifier.weight(1f))
-                        StatTile("ירידה מצטברת", meters(s.descentM), "מ׳", Modifier.weight(1f))
+                        StatTile(stringResource(R.string.routes_climb), meters(s.climbM), stringResource(R.string.routes_unit_m), Modifier.weight(1f))
+                        StatTile(stringResource(R.string.routes_descent), meters(s.descentM), stringResource(R.string.routes_unit_m), Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(12.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        StatTile("נקודה גבוהה", meters(s.highestM), "מ׳", Modifier.weight(1f))
-                        StatTile("זמן משוער", formatTime(s.estimatedSecs), null, Modifier.weight(1f))
+                        StatTile(stringResource(R.string.routes_highest), meters(s.highestM), stringResource(R.string.routes_unit_m), Modifier.weight(1f))
+                        StatTile(stringResource(R.string.routes_estimated_time), formatTime(s.estimatedSecs), null, Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        if (s.paceFromRuns) "הזמן המשוער לפי הקצב הממוצע שלך בריצות האחרונות (%s לק״מ)".format(formatPace(s.paceSecsPerKm))
-                        else "הזמן המשוער לפי קצב של %s לק״מ".format(formatPace(s.paceSecsPerKm)),
+                        stringResource(
+                            if (s.paceFromRuns) R.string.routes_estimate_from_runs else R.string.routes_estimate_from_pace,
+                            formatPace(s.paceSecsPerKm)
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -195,7 +199,7 @@ fun RouteDetailScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(Modifier.padding(16.dp)) {
-                        Text("גובה", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold))
+                        Text(stringResource(R.string.routes_elevation), style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold))
                         Spacer(Modifier.height(8.dp))
                         ElevationChart(s.profile)
                     }
@@ -210,36 +214,37 @@ fun RouteDetailScreen(
             var name by remember(s.route.id) { mutableStateOf(s.route.name) }
             AlertDialog(
                 onDismissRequest = { renaming = false },
-                title = { Text("שם המסלול") },
+                title = { Text(stringResource(R.string.routes_name_title)) },
                 text = { OutlinedTextField(value = name, onValueChange = { name = it.take(40) }, singleLine = true) },
                 confirmButton = {
                     TextButton(onClick = { viewModel.rename(name); renaming = false }, enabled = name.isNotBlank()) {
-                        Text("שמור", color = Purple)
+                        Text(stringResource(R.string.save), color = Purple)
                     }
                 },
-                dismissButton = { TextButton(onClick = { renaming = false }) { Text("ביטול") } }
+                dismissButton = { TextButton(onClick = { renaming = false }) { Text(stringResource(R.string.cancel)) } }
             )
         }
         if (deleting) {
             AlertDialog(
                 onDismissRequest = { deleting = false },
-                title = { Text("למחוק את \"${s.route.name}\"?") },
-                text = { Text("הריצות שנעשו במסלול נשארות בהיסטוריה.") },
+                title = { Text(stringResource(R.string.routes_delete_title, s.route.name)) },
+                text = { Text(stringResource(R.string.routes_delete_text)) },
                 confirmButton = {
                     TextButton(onClick = { deleting = false; viewModel.delete() }) {
-                        Text("מחק", color = MaterialTheme.colorScheme.error)
+                        Text(stringResource(R.string.routes_delete_confirm), color = MaterialTheme.colorScheme.error)
                     }
                 },
-                dismissButton = { TextButton(onClick = { deleting = false }) { Text("ביטול") } }
+                dismissButton = { TextButton(onClick = { deleting = false }) { Text(stringResource(R.string.cancel)) } }
             )
         }
     }
 }
 
 /** "Berners Street ~ Oxford Street", or just the start for a loop; null until looked up. */
+@Composable
 private fun streets(s: RouteDetailState): String? = when {
     s.startStreet == null -> null
-    s.isLoop -> "מעגלי · ${s.startStreet}"
+    s.isLoop -> stringResource(R.string.routes_loop_street, s.startStreet)
     s.finishStreet == null -> s.startStreet
     else -> "${s.startStreet} ~ ${s.finishStreet}"
 }
@@ -247,10 +252,10 @@ private fun streets(s: RouteDetailState): String? = when {
 @Composable
 private fun MapLegend(s: RouteDetailState, modifier: Modifier = Modifier) {
     val entries = buildList {
-        if (Slope.UP in s.slopes) add(SlopeColors.up to "עלייה")
-        if (Slope.DOWN in s.slopes) add(SlopeColors.down to "ירידה")
-        add(SlopeColors.start to "התחלה")
-        if (!s.isLoop) add(SlopeColors.finish to "סיום")
+        if (Slope.UP in s.slopes) add(SlopeColors.up to stringResource(R.string.routes_legend_up))
+        if (Slope.DOWN in s.slopes) add(SlopeColors.down to stringResource(R.string.routes_legend_down))
+        add(SlopeColors.start to stringResource(R.string.routes_legend_start))
+        if (!s.isLoop) add(SlopeColors.finish to stringResource(R.string.routes_legend_finish))
     }
     Column(
         modifier = modifier

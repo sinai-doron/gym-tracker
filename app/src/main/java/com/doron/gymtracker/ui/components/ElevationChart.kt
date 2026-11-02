@@ -20,7 +20,9 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
@@ -28,6 +30,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.doron.gymtracker.R
 import com.doron.gymtracker.data.ElevationPoint
 import com.doron.gymtracker.data.PacePoint
 import com.doron.gymtracker.ui.theme.Purple
@@ -39,26 +42,30 @@ import kotlin.math.roundToInt
  * lowest and highest points.
  */
 @Composable
-fun ElevationChart(points: List<ElevationPoint>, modifier: Modifier = Modifier) =
+fun ElevationChart(points: List<ElevationPoint>, modifier: Modifier = Modifier) {
+    val resources = LocalContext.current.resources
     DistanceChart(
         points = points.map { it.meters to it.altitudeM },
-        format = { "${it.roundToInt()} מ׳" },
+        format = { resources.getString(R.string.meters_value, it.roundToInt()) },
         // The chart shows at least this much height, so a 2 m wobble isn't drawn as a cliff
         minRange = 20.0,
         modifier = modifier
     )
+}
 
 /** Pace along the run, faster higher up; touch or drag to read it at a point. */
 @Composable
-fun PaceChart(points: List<PacePoint>, modifier: Modifier = Modifier) =
+fun PaceChart(points: List<PacePoint>, modifier: Modifier = Modifier) {
+    val resources = LocalContext.current.resources
     DistanceChart(
         points = points.map { it.meters to it.secsPerKm },
-        format = { secs -> "%d:%02d /ק״מ".format(secs.roundToInt() / 60, secs.roundToInt() % 60) },
+        format = { secs -> resources.getString(R.string.cardio_pace_min_sec, secs.roundToInt() / 60, secs.roundToInt() % 60) },
         // A minute a km at least, so steady running reads as steady
         minRange = 60.0,
         faster = true,
         modifier = modifier
     )
+}
 
 /**
  * A value against distance (left to right, also in RTL), filled below the line. Touch or
@@ -81,6 +88,7 @@ private fun DistanceChart(
     val minValue = points.minOf { it.second }
     val maxValue = points.maxOf { it.second }
     val totalM = points.last().first.coerceAtLeast(1.0)
+    val totalLabel = stringResource(R.string.cardio_km_1dp, totalM / 1000)
 
     fun nearest(x: Float, width: Float, left: Float, right: Float): Pair<Double, Double> {
         val meters = ((x - left) / (width - left - right)).coerceIn(0f, 1f) * totalM
@@ -89,7 +97,7 @@ private fun DistanceChart(
 
     Column(modifier) {
         Text(
-            selected?.let { "%.2f ק״מ · %s".format(it.first / 1000, format(it.second)) }
+            selected?.let { stringResource(R.string.cardio_chart_point, it.first / 1000, format(it.second)) }
                 // The range isolated left to right, or Hebrew around it shows "50–20"
                 ?: if (format(minValue) == format(maxValue)) format(minValue)
                 else "\u2066${format(minValue).substringBefore(" ")}–${format(maxValue).substringBefore(" ")}\u2069 " +
@@ -138,7 +146,7 @@ private fun DistanceChart(
                 }
                 val start = textMeasurer.measure("0", labelStyle)
                 drawText(start, topLeft = Offset(left, bottom + 4.dp.toPx()))
-                val end = textMeasurer.measure("%.1f ק״מ".format(totalM / 1000), labelStyle)
+                val end = textMeasurer.measure(totalLabel, labelStyle)
                 drawText(end, topLeft = Offset(size.width - right - end.size.width, bottom + 4.dp.toPx()))
 
                 val line = Path().apply {

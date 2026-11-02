@@ -1,5 +1,6 @@
 package com.doron.gymtracker.ui.screens.history
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,11 +30,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.doron.gymtracker.R
 import com.doron.gymtracker.data.ActiveClock
 import com.doron.gymtracker.data.Elevation
 import com.doron.gymtracker.data.Laps
@@ -48,6 +51,7 @@ import com.doron.gymtracker.domain.model.Session
 import com.doron.gymtracker.domain.model.TrackLog
 import com.doron.gymtracker.domain.model.Weather
 import com.doron.gymtracker.domain.usecase.GetPersonalRecordsUseCase
+import com.doron.gymtracker.ui.components.nameRes
 import com.doron.gymtracker.ui.screens.cardio.CardioUiState
 import com.doron.gymtracker.ui.screens.cardio.RunReport
 import com.doron.gymtracker.ui.theme.Purple
@@ -65,6 +69,8 @@ import kotlinx.coroutines.launch
 data class SessionDetailData(
     val sessionType: String = "GYM",
     val workoutName: String,
+    /** Shown in place of [workoutName] for a run, a walk or a known workout. */
+    @StringRes val workoutNameRes: Int? = null,
     val dateLabel: String,
     val timeRange: String,
     val durationSecs: Long,
@@ -117,7 +123,7 @@ class SessionDetailViewModel @Inject constructor(
 
 
     private val heLocale = Locale("he")
-    private val dateFormat = SimpleDateFormat("dd בMMMM yyyy", heLocale)
+    private val dateFormat = SimpleDateFormat("dd בMMMM yyyy", heLocale) // hebrew-ok: dates follow the app language in phase 3
     private val timeFormat = SimpleDateFormat("HH:mm", heLocale)
 
     fun load(sessionId: Long) {
@@ -160,15 +166,17 @@ class SessionDetailViewModel @Inject constructor(
             val durationSecs = (session.finishedAt - session.startedAt) / 1000
             val tracks = sessionRepo.getTracksForSession(session.id)
 
-            val workoutName = when (session.type) {
-                "RUNNING" -> "ריצה"
-                "WALKING" -> "הליכה"
-                else -> workout?.label?.displayName ?: session.workoutId
+            val workoutNameRes = when (session.type) {
+                "RUNNING" -> R.string.history_run
+                "WALKING" -> R.string.history_walk
+                else -> workout?.label?.nameRes()
             }
+            val workoutName = session.workoutId
 
             _state.value = SessionDetailData(
                 sessionType = session.type,
                 workoutName = workoutName,
+                workoutNameRes = workoutNameRes,
                 dateLabel = dateFormat.format(Date(session.startedAt)),
                 timeRange = "${timeFormat.format(Date(session.startedAt))} – ${timeFormat.format(Date(session.finishedAt))}",
                 durationSecs = durationSecs,
@@ -231,10 +239,10 @@ fun SessionDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(data?.workoutName ?: "") },
+                title = { Text(data?.let { d -> d.workoutNameRes?.let { stringResource(it) } ?: d.workoutName } ?: "") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "חזרה")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.history_back))
                     }
                 }
             )
@@ -277,8 +285,8 @@ fun SessionDetailScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    StatCard("משך", formatDuration(d.durationSecs), Modifier.weight(1f))
-                    StatCard("תרגילים", "${d.exercisesCompleted}/${d.exercisesTotal}", Modifier.weight(1f))
+                    StatCard(stringResource(R.string.history_duration), formatDuration(d.durationSecs), Modifier.weight(1f))
+                    StatCard(stringResource(R.string.history_exercises), "${d.exercisesCompleted}/${d.exercisesTotal}", Modifier.weight(1f))
                 }
 
                 Spacer(Modifier.height(12.dp))
@@ -287,10 +295,10 @@ fun SessionDetailScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    StatCard("סטים", "${d.totalSets}", Modifier.weight(1f))
+                    StatCard(stringResource(R.string.sets_label), "${d.totalSets}", Modifier.weight(1f))
                     StatCard(
-                        "נפח כולל",
-                        if (d.totalVolumeKg > 0) "%,.0f ק״ג".format(d.totalVolumeKg) else "—",
+                        stringResource(R.string.history_total_volume),
+                        if (d.totalVolumeKg > 0) stringResource(R.string.weight_value, "%,.0f".format(d.totalVolumeKg)) else "—",
                         Modifier.weight(1f)
                     )
                 }
@@ -302,7 +310,7 @@ fun SessionDetailScreen(
                 Spacer(Modifier.height(24.dp))
 
                 Text(
-                    "פירוט תרגילים",
+                    stringResource(R.string.history_exercise_breakdown),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                     modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
                 )
@@ -320,13 +328,12 @@ fun SessionDetailScreen(
                                 line.name,
                                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
                             )
-                            val detail = buildString {
-                                append("${line.setsCompleted}/${line.setsTarget} סטים")
-                                if (line.topWeight != null && line.topWeight > 0f) {
-                                    val w = if (line.topWeight == line.topWeight.toLong().toFloat())
-                                        line.topWeight.toLong().toString() else "%.1f".format(line.topWeight)
-                                    append(" · $w ק״ג")
-                                }
+                            val detail = if (line.topWeight != null && line.topWeight > 0f) {
+                                val w = if (line.topWeight == line.topWeight.toLong().toFloat())
+                                    line.topWeight.toLong().toString() else "%.1f".format(line.topWeight)
+                                stringResource(R.string.history_line_sets_weight, line.setsCompleted, line.setsTarget, w)
+                            } else {
+                                stringResource(R.string.history_line_sets, line.setsCompleted, line.setsTarget)
                             }
                             Text(
                                 detail,
@@ -352,7 +359,7 @@ fun SessionDetailScreen(
                 Spacer(Modifier.height(24.dp))
 
                 Text(
-                    "♫ פסקול האימון",
+                    stringResource(R.string.history_soundtrack),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                     modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
                 )

@@ -1,12 +1,15 @@
 package com.doron.gymtracker.ui.screens.history
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.doron.gymtracker.R
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.model.RepSetRecord
 import com.doron.gymtracker.domain.model.SetRecord
 import com.doron.gymtracker.domain.model.WorkoutLabel
+import com.doron.gymtracker.ui.components.nameRes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,6 +34,8 @@ data class SessionSummaryItem(
     val sessionType: String,
     val workoutLabel: WorkoutLabel?,
     val workoutName: String,
+    /** Shown in place of [workoutName] for a run, a walk or a known workout. */
+    @StringRes val workoutNameRes: Int? = null,
     val timeRange: String,
     val durationMinutes: Long,
     val totalSets: Int,
@@ -65,7 +70,7 @@ class HistoryViewModel @Inject constructor(
 
     private val heLocale = Locale("he")
     private val timeFormat = SimpleDateFormat("HH:mm", heLocale)
-    private val dateFormat = SimpleDateFormat("dd בMMMM yyyy", heLocale)
+    private val dateFormat = SimpleDateFormat("dd בMMMM yyyy", heLocale) // hebrew-ok: dates follow the app language in phase 3
     private val zone = ZoneId.systemDefault()
 
     init {
@@ -124,17 +129,19 @@ class HistoryViewModel @Inject constructor(
                 val endTime = timeFormat.format(Date(session.finishedAt!!))
                 val durationMin = (session.finishedAt - session.startedAt) / 60_000
 
-                val workoutName = when {
-                    session.type == "RUNNING" -> "ריצה"
-                    session.type == "WALKING" -> "הליכה"
-                    else -> workout?.label?.displayName ?: session.workoutId
+                val workoutNameRes = when (session.type) {
+                    "RUNNING" -> R.string.history_run
+                    "WALKING" -> R.string.history_walk
+                    else -> workout?.label?.nameRes()
                 }
+                val workoutName = session.workoutId
 
                 SessionSummaryItem(
                     sessionId = session.id,
                     sessionType = session.type,
                     workoutLabel = workout?.label,
                     workoutName = workoutName,
+                    workoutNameRes = workoutNameRes,
                     timeRange = "$startTime – $endTime",
                     durationMinutes = durationMin,
                     totalSets = totalSets,

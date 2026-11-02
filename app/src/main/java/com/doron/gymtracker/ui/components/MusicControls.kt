@@ -18,9 +18,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import com.doron.gymtracker.R
 import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.media.MediaPermissionHelper
 import com.doron.gymtracker.media.NowPlayingProvider
@@ -55,14 +57,14 @@ fun MusicControls(settingsPrefs: SettingsPrefs?, modifier: Modifier = Modifier) 
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                "הפעל גישה למדיה כדי לשלוט במוזיקה",
+                stringResource(R.string.home_music_permission),
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.weight(1f)
             )
             FilledTonalButton(onClick = {
                 MediaPermissionHelper.openNotificationListenerSettings(context)
             }) {
-                Text("הפעל")
+                Text(stringResource(R.string.home_music_enable))
             }
             IconButton(onClick = {
                 scope.launch { settingsPrefs?.dismissMediaPermission() }

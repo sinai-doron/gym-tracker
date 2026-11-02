@@ -171,10 +171,10 @@ class CardioTrackingService : Service() {
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "מעקב ריצה/הליכה",
+            getString(R.string.cardio_channel_name),
             NotificationManager.IMPORTANCE_LOW
         ).apply {
-            description = "GPS פעיל בזמן אימון"
+            description = getString(R.string.cardio_channel_description)
             setShowBadge(false)
         }
         getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
@@ -189,15 +189,15 @@ class CardioTrackingService : Service() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val typeName = if (run?.type == "WALKING") "הליכה" else "ריצה"
+        val typeName = getString(if (run?.type == "WALKING") R.string.cardio_walk else R.string.cardio_run)
         val distKm = (run?.distanceMeters ?: 0.0) / 1000.0
         val now = System.currentTimeMillis()
         val clock = run?.clock
         val paused = clock?.isPaused(now) == true
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(if (paused) "$typeName · ⏸ מושהה" else typeName)
-            .setContentText("%.2f ק״מ".format(distKm))
+            .setContentTitle(if (paused) getString(R.string.cardio_notification_paused, typeName) else typeName)
+            .setContentText(getString(R.string.cardio_km_2dp, distKm))
             // The system ticks the clock itself, so the notification needn't update every second;
             // it counts moving time, so it starts as far back as the run has been moving
             .setUsesChronometer(clock != null && !paused)
@@ -219,7 +219,7 @@ class CardioTrackingService : Service() {
                             .setAction(if (manual) RunPauseReceiver.ACTION_RESUME else RunPauseReceiver.ACTION_PAUSE),
                         PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
                     )
-                    addAction(if (manual) R.drawable.ic_play else R.drawable.ic_pause, if (manual) "המשך" else "השהה", action)
+                    addAction(if (manual) R.drawable.ic_play else R.drawable.ic_pause, getString(if (manual) R.string.cardio_resume else R.string.cardio_pause), action)
                 }
             }
             .setSilent(true)

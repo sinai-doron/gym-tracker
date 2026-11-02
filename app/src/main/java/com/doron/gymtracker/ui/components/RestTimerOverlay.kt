@@ -58,7 +58,7 @@ fun RestTimerOverlay(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("מנוחה", style = MaterialTheme.typography.titleMedium, color = RestTimerColor)
+        Text(stringResource(R.string.rest), style = MaterialTheme.typography.titleMedium, color = RestTimerColor)
 
         Spacer(Modifier.height(16.dp))
 
