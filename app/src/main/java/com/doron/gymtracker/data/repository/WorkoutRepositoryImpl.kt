@@ -62,7 +62,7 @@ class WorkoutRepositoryImpl @Inject constructor(
     override suspend fun updateExercise(exercise: ExerciseDefinition) {
         val existing = dao.getExercise(exercise.id) ?: return
         val edited = exercise.toEntity(existing.workoutId, existing.variantOfId, existing.sortOrder)
-        dao.updateExercise(edited.copy(type = existing.type))
+        dao.updateExercise(edited.copy(type = existing.type, libraryExerciseId = existing.libraryExerciseId))
     }
 
     override suspend fun addExercise(workoutId: String, exercise: ExerciseDefinition) {

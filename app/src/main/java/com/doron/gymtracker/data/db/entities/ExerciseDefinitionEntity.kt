@@ -4,7 +4,10 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "exercise_definitions", indices = [Index(value = ["uuid"], unique = true)])
+@Entity(
+    tableName = "exercise_definitions",
+    indices = [Index(value = ["uuid"], unique = true), Index("libraryExerciseId")]
+)
 data class ExerciseDefinitionEntity(
     @PrimaryKey val id: String,
     val workoutId: String,
@@ -24,5 +27,7 @@ data class ExerciseDefinitionEntity(
     /** Removed by the user. Kept (not deleted) so history stays and the plan sync won't re-add it. */
     val isRemoved: Boolean = false,
     /** The id the server knows this row by (sync). Set by the database when left null. */
-    val uuid: String? = null
+    val uuid: String? = null,
+    /** The library exercise this is (`exercises.id`); null until linked. Not synced: derived from [id]. */
+    val libraryExerciseId: String? = null
 )

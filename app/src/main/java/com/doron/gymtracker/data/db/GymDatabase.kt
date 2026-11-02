@@ -5,6 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.doron.gymtracker.data.db.dao.ExerciseEntryDao
+import com.doron.gymtracker.data.db.dao.ExerciseLibraryDao
 import com.doron.gymtracker.data.db.dao.LocationLogDao
 import com.doron.gymtracker.data.db.dao.RouteDao
 import com.doron.gymtracker.data.db.dao.RunDetailsDao
@@ -13,7 +14,10 @@ import com.doron.gymtracker.data.db.dao.SetRecordDao
 import com.doron.gymtracker.data.db.dao.TrackLogDao
 import com.doron.gymtracker.data.db.dao.WorkoutDao
 import com.doron.gymtracker.data.db.entities.ExerciseDefinitionEntity
+import com.doron.gymtracker.data.db.entities.ExerciseEntity
 import com.doron.gymtracker.data.db.entities.ExerciseEntryEntity
+import com.doron.gymtracker.data.db.entities.ExerciseMuscleEntity
+import com.doron.gymtracker.data.db.entities.ExerciseNameEntity
 import com.doron.gymtracker.data.db.entities.LocationLogEntity
 import com.doron.gymtracker.data.db.entities.RouteEntity
 import com.doron.gymtracker.data.db.entities.RoutePointEntity
@@ -36,9 +40,12 @@ import com.doron.gymtracker.data.db.entities.WorkoutEntity
         RunDetailsEntity::class,
         RouteEntity::class,
         RoutePointEntity::class,
-        RunPauseEntity::class
+        RunPauseEntity::class,
+        ExerciseEntity::class,
+        ExerciseNameEntity::class,
+        ExerciseMuscleEntity::class
     ],
-    version = 13,
+    version = 14,
     // Each version's schema is written to app/schemas/ (see app/build.gradle.kts) for the migration tests
     exportSchema = true
 )
@@ -51,6 +58,7 @@ abstract class GymDatabase : RoomDatabase() {
     abstract fun locationLogDao(): LocationLogDao
     abstract fun runDetailsDao(): RunDetailsDao
     abstract fun routeDao(): RouteDao
+    abstract fun exerciseLibraryDao(): ExerciseLibraryDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -186,7 +194,7 @@ abstract class GymDatabase : RoomDatabase() {
         val MIGRATIONS: Array<Migration> = arrayOf(
             MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
             MIGRATION_8_9, MIGRATION_9_10, SyncMigration.MIGRATION_10_11, SyncMigration.MIGRATION_11_12,
-            SyncMigration.MIGRATION_12_13
+            SyncMigration.MIGRATION_12_13, LibraryMigration.MIGRATION_13_14
         )
     }
 }

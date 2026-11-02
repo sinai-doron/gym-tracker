@@ -123,7 +123,9 @@ English available in Settings.
 The programme is seeded into the database on first launch from
 [`TrainingPlanData.kt`](app/src/main/java/com/doron/gymtracker/data/seed/TrainingPlanData.kt).
 After that, edit it in the app's plan editor; see
-[ADR-0002](docs/adr/0002-hardcoded-training-plan.md).
+[ADR-0002](docs/adr/0002-hardcoded-training-plan.md). Each of its exercises is linked to the
+built-in exercise it is in the exercise library, which the app fills from the catalogue on start
+([ADR-0006](docs/adr/0006-exercise-model.md)).
 
 | Workout | Focus |
 |---|---|
@@ -142,7 +144,7 @@ The programme start date, which drives the A/B weeks and deload weeks, is set in
 | UI | Jetpack Compose, Material 3 |
 | Architecture | MVVM with a use-case layer (`ui` → `domain` → `data`) |
 | Dependency injection | Hilt |
-| Database | Room (schema version 10, with migrations) |
+| Database | Room (schema version 14, with migrations) |
 | Maps | MapLibre, with OpenFreeMap tiles |
 | Health data | Health Connect |
 | Settings | DataStore |
@@ -156,10 +158,11 @@ The programme start date, which drives the A/B weeks and deload weeks, is set in
 ```
 app/src/main/java/com/doron/gymtracker/
 ├── data/
+│   ├── catalogue/     Reads the exercise catalogue from assets/exercises/
 │   ├── db/            Room database, entities, DAOs and migrations
 │   ├── di/            Hilt modules
 │   ├── prefs/         DataStore: rotation, programme start, settings
-│   ├── repository/    Session, workout and route repositories
+│   ├── repository/    Session, workout and route repositories; the exercise library
 │   ├── seed/          The initial training programme
 │   ├── CardioRecorder, LocationTracker   Recording a run from GPS fixes
 │   ├── ActiveClock, RouteDistance, Laps  Moving time, distance and laps

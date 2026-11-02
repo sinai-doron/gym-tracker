@@ -7,6 +7,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.doron.gymtracker.data.db.GymDatabase
 import com.doron.gymtracker.data.db.SyncMigration
 import com.doron.gymtracker.data.db.dao.ExerciseEntryDao
+import com.doron.gymtracker.data.db.dao.ExerciseLibraryDao
 import com.doron.gymtracker.data.db.dao.LocationLogDao
 import com.doron.gymtracker.data.db.dao.RouteDao
 import com.doron.gymtracker.data.db.dao.RunDetailsDao
@@ -45,4 +46,5 @@ object DatabaseModule {
     @Provides fun provideLocationLogDao(db: GymDatabase): LocationLogDao = db.locationLogDao()
     @Provides fun provideRunDetailsDao(db: GymDatabase): RunDetailsDao = db.runDetailsDao()
     @Provides fun provideRouteDao(db: GymDatabase): RouteDao = db.routeDao()
+    @Provides fun provideExerciseLibraryDao(db: GymDatabase): ExerciseLibraryDao = db.exerciseLibraryDao()
 }
