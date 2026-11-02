@@ -26,6 +26,11 @@ jobs:
       - name: No Hebrew in Kotlin string literals
         run: scripts/check-hebrew-literals.sh
 
+      # The app's exercise catalogue is built from catalogue/exercises.src.json; a source change
+      # without a rebuild, or an exercise that breaks the rules (licence, muscles, presets), fails here.
+      - name: Exercise catalogue is valid and up to date
+        run: python3 -I catalogue/build_catalogue.py --check
+
       - name: Build and run unit tests
         run: ./gradlew assembleDebug testDebugUnitTest
 
