@@ -179,6 +179,8 @@ app/src/main/java/com/doron/gymtracker/
     │                  history, settings
     └── theme/
 assets/map_style_run.json   The map style
+catalogue/wger/       Pinned snapshot of wger's exercise data, the upstream of our
+                      exercise catalogue; how to refresh it and what we owe in its README
 docs/
 ├── adr/               Architecture decision records
 └── superpowers/plans/ Implementation plans
