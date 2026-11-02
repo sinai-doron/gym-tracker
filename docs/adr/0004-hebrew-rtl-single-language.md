@@ -1,7 +1,17 @@
 # ADR-0004: Hebrew as the sole UI language, RTL forced at app root
 
 ## Status
-Accepted, amended 2026-10
+Superseded in part (2026-11)
+
+> **Amendment (2026-11).** The app is going to the public Play Store with English as the
+> main language. Interface text lives in string resources (`values` and `values-iw` in
+> Hebrew, `values-en` in English), and RTL is no longer forced: `GymTrackerTheme` leaves
+> the layout direction to Android, which sets it from the app's locale (right to left in
+> Hebrew, left to right in English; `supportsRtl` stays on). A few rows that should look
+> the same in both languages pin themselves left to right: History's month header
+> ("← previous, month, next →") and the run target stepper ("− value +"), next to the
+> charts that already did. Exercise names in `TrainingPlanData` are still Hebrew until
+> the exercise library (ADR-0006).
 
 > **Amendment (2026-10).** Hebrew stays the default, but an English translation now
 > exists (`values-iw` and `values-en`), chosen in Settings. Hebrew screens wrap numeric

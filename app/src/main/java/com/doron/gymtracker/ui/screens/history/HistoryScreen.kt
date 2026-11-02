@@ -1,5 +1,8 @@
 package com.doron.gymtracker.ui.screens.history
 
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -126,22 +129,25 @@ fun HistoryScreen(
 
 @Composable
 private fun MonthHeader(month: YearMonth, onPrev: () -> Unit, onNext: () -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        IconButton(onClick = onNext) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.history_next_month))
-        }
-        val monthName = month.month.getDisplayName(TextStyle.FULL_STANDALONE, heLocale)
-        Text(
-            "$monthName ${month.year}",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
-        )
-        IconButton(onClick = onPrev) {
-            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(R.string.history_prev_month))
+    // "← previous  month  next →" in every language, as months go left to right on a timeline
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            IconButton(onClick = onPrev) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.history_prev_month))
+            }
+            val monthName = month.month.getDisplayName(TextStyle.FULL_STANDALONE, heLocale)
+            Text(
+                "$monthName ${month.year}",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            IconButton(onClick = onNext) {
+                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(R.string.history_next_month))
+            }
         }
     }
 }
