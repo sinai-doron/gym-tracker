@@ -190,13 +190,11 @@ CONTEXT.md             Domain glossary
 ### Requirements
 
 - **Android Studio** (recent stable). Its bundled JDK is enough to build.
-- **Android SDK Platform 35**, which Android Studio installs on first sync.
-- **Gradle 9.x on your `PATH`.** See the note below.
+- **Android SDK Platform 37**, which Android Studio installs on first sync.
 
-> **About `gradlew`:** the `gradlew` script in this repo is not the standard Gradle
-> wrapper. It just runs `exec gradle "$@"`, so you need Gradle installed system-wide
-> (`brew install gradle` on macOS). Running `gradle wrapper` once would replace it with a
-> real wrapper pinned to the version in `gradle/wrapper/gradle-wrapper.properties`.
+`./gradlew` is the standard Gradle wrapper: it downloads the Gradle version pinned in
+`gradle/wrapper/gradle-wrapper.properties` (9.8.1, checked against its SHA-256), so no
+system-wide Gradle is needed.
 
 ### Build and run
 
@@ -234,8 +232,21 @@ device with pairing code**, then run `adb pair <ip>:<port>` and `adb connect <ip
 
 ```sh
 ./gradlew testDebugUnitTest          # unit tests: use cases, view models, run maths (clock, laps, pace, GPX)
-./gradlew connectedDebugAndroidTest  # instrumented tests: Room DAOs (needs a device)
+./gradlew connectedDebugAndroidTest  # instrumented tests: Room, sync, migrations (an emulator, never your phone)
 ```
+
+`connectedDebugAndroidTest` uninstalls the app when it finishes, which deletes its data: run
+it on an emulator. See [docs/testing/database-migrations.md](docs/testing/database-migrations.md).
+
+### CI
+
+GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs on every push to
+`main` and every pull request:
+
+- **Build and unit tests:** `assembleDebug` and `testDebugUnitTest`. It fails if the build
+  changed a Room schema in `app/schemas/` that wasn't committed; the generated schemas are
+  attached to the run as the `room-schemas` artifact.
+- **Instrumented tests:** `connectedDebugAndroidTest` on an API 34 emulator.
 
 ## Permissions
 
@@ -281,5 +292,6 @@ The reasoning behind the main choices is recorded in [`docs/adr`](docs/adr):
 - [0003 — Distinct exercise types (rep-based and timed)](docs/adr/0003-two-exercise-types.md)
 - [0004 — Hebrew UI with right-to-left forced at the app root](docs/adr/0004-hebrew-rtl-single-language.md)
 - [0005 — Runs: moving time, pauses and GPS dropouts](docs/adr/0005-run-moving-time.md)
+- [0006 — Exercises declare their metrics; a set is made of parts](docs/adr/0006-exercise-model.md)
 
 The domain vocabulary used throughout the code is defined in [`CONTEXT.md`](CONTEXT.md).

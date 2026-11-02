@@ -39,7 +39,8 @@ import com.doron.gymtracker.data.db.entities.WorkoutEntity
         RunPauseEntity::class
     ],
     version = 13,
-    exportSchema = false
+    // Each version's schema is written to app/schemas/ (see app/build.gradle.kts) for the migration tests
+    exportSchema = true
 )
 abstract class GymDatabase : RoomDatabase() {
     abstract fun workoutDao(): WorkoutDao
@@ -180,5 +181,12 @@ abstract class GymDatabase : RoomDatabase() {
                 """.trimIndent())
             }
         }
+
+        /** Every migration, oldest first. The app and the migration tests open the database with this one list. */
+        val MIGRATIONS: Array<Migration> = arrayOf(
+            MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
+            MIGRATION_8_9, MIGRATION_9_10, SyncMigration.MIGRATION_10_11, SyncMigration.MIGRATION_11_12,
+            SyncMigration.MIGRATION_12_13
+        )
     }
 }
