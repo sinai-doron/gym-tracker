@@ -9,6 +9,7 @@ import com.doron.gymtracker.data.db.SyncMigration
 import com.doron.gymtracker.data.db.dao.ExerciseEntryDao
 import com.doron.gymtracker.data.db.dao.ExerciseLibraryDao
 import com.doron.gymtracker.data.db.dao.LocationLogDao
+import com.doron.gymtracker.data.db.dao.ProgramDao
 import com.doron.gymtracker.data.db.dao.RouteDao
 import com.doron.gymtracker.data.db.dao.RunDetailsDao
 import com.doron.gymtracker.data.db.dao.SessionDao
@@ -47,4 +48,5 @@ object DatabaseModule {
     @Provides fun provideRunDetailsDao(db: GymDatabase): RunDetailsDao = db.runDetailsDao()
     @Provides fun provideRouteDao(db: GymDatabase): RouteDao = db.routeDao()
     @Provides fun provideExerciseLibraryDao(db: GymDatabase): ExerciseLibraryDao = db.exerciseLibraryDao()
+    @Provides fun provideProgramDao(db: GymDatabase): ProgramDao = db.programDao()
 }

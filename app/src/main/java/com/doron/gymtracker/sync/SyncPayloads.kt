@@ -10,6 +10,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import java.time.LocalDate
 import java.util.UUID
 
 /** One item as doron-backend's /api/gym takes it: kind, uuid, when, deleted, and its data. */
@@ -54,8 +55,29 @@ class SyncPayloads(private val db: SupportSQLiteDatabase) {
     }
 
     private fun data(entity: String, uuid: String): JsonObject? = when (entity) {
-        "workout" -> row("SELECT id, label FROM workouts WHERE uuid = ?", uuid) { c ->
-            buildJsonObject { put("key", c.str("id")); put("label", c.str("label")) }
+        // A programme, keyed by its id like the plan's workouts (version 16 on).
+        "program" -> row("SELECT * FROM programs WHERE uuid = ?", uuid) { c ->
+            buildJsonObject {
+                put("key", c.str("id"))
+                put("name", c.strOrNull("name"))
+                put("startDate", LocalDate.ofEpochDay(c.long("startEpochDay")).toString())
+                put("deloadEveryWeeks", c.intOrNull("deloadEveryWeeks"))
+                put("variantRule", c.str("variantRule"))
+                put("isActive", c.bool("isActive"))
+            }
+        }
+        "workout" -> row(
+            "SELECT w.*, p.uuid AS program_uuid FROM workouts w LEFT JOIN programs p ON p.id = w.programId WHERE w.uuid = ?",
+            uuid,
+        ) { c ->
+            buildJsonObject {
+                put("key", c.str("id"))
+                put("label", c.str("label"))
+                put("programId", c.strOrNull("program_uuid"))
+                put("sortOrder", c.int("sortOrder"))
+                put("name", c.strOrNull("name"))
+                put("weekday", c.intOrNull("weekday"))
+            }
         }
         "exercise" -> row(
             """SELECT e.*, w.uuid AS workout_uuid, v.uuid AS variant_uuid FROM exercise_definitions e
@@ -94,11 +116,17 @@ class SyncPayloads(private val db: SupportSQLiteDatabase) {
             }
         }
         "entry" -> row(
-            """SELECT s.uuid AS session_uuid, x.uuid AS exercise_uuid FROM exercise_entries e
+            """SELECT s.uuid AS session_uuid, x.uuid AS exercise_uuid, e.libraryExerciseId FROM exercise_entries e
                JOIN sessions s ON s.id = e.sessionId
                JOIN exercise_definitions x ON x.id = e.exerciseId WHERE e.uuid = ?""",
             uuid,
-        ) { c -> buildJsonObject { put("sessionId", c.str("session_uuid")); put("exerciseId", c.str("exercise_uuid")) } }
+        ) { c ->
+            buildJsonObject {
+                put("sessionId", c.str("session_uuid"))
+                put("exerciseId", c.str("exercise_uuid"))
+                put("libraryExerciseId", c.strOrNull("libraryExerciseId"))
+            }
+        }
         // A set with its parts, in order (version 15 on).
         "set" -> row(
             "SELECT s.*, e.uuid AS entry_uuid FROM sets s JOIN exercise_entries e ON e.id = s.entryId WHERE s.uuid = ?",

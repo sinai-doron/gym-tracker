@@ -52,8 +52,8 @@ class SessionViewModelTest {
         isDeloadWeek = mockk()
         getAchievements = mockk()
         coEvery { getAchievements.earnedBy(any()) } returns emptyList()
-        every { resolveVariant(any(), any()) } answers { firstArg() }
-        every { isDeloadWeek(any()) } returns false // identity — return exercise as-is
+        coEvery { resolveVariant(any(), any()) } answers { firstArg() }
+        coEvery { isDeloadWeek(any()) } returns false // identity — return exercise as-is
         coEvery { workoutRepo.getById("workout_a") } returns TrainingPlanData.workoutA
         coEvery { sessionRepo.getEntriesForSession(1L) } returns emptyList()
         coEvery { sessionRepo.getById(1L) } returns Session(1L, "workout_a", System.currentTimeMillis(), null)

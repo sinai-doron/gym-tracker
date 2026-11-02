@@ -23,8 +23,9 @@ interface WorkoutDao {
         insertAllExercises(exercises)
     }
 
-    @Query("SELECT * FROM workouts")
-    suspend fun getAll(): List<WorkoutEntity>
+    /** A programme's workouts, in the order they rotate. */
+    @Query("SELECT * FROM workouts WHERE programId = :programId ORDER BY sortOrder, rowid")
+    suspend fun getForProgram(programId: String): List<WorkoutEntity>
 
     @Query("UPDATE exercise_definitions SET targetSets = :sets WHERE id = :exerciseId")
     suspend fun updateTargetSets(exerciseId: String, sets: Int)

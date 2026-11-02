@@ -72,7 +72,7 @@ fun PlanEditorScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(workout?.let { stringResource(R.string.edit_workout, it.label.name, it.label.localizedName()) } ?: "")
+                    Text(workout?.let { stringResource(R.string.edit_workout, it.code, it.localizedName()) } ?: "")
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
                 navigationIcon = {

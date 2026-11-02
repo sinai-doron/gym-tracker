@@ -18,7 +18,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  *
  * Route points and GPS points are synced per route and per session (`route_points`, `track`),
  * keyed by the route's or session's uuid. The music log (track_log) joined in version 12. In version
- * 15 sets moved from `set_records` to `sets`, each synced with its `set_parts` (SetsMigration).
+ * 15 sets moved from `set_records` to `sets`, each synced with its `set_parts` (SetsMigration); in
+ * version 16 programmes joined (ProgramMigration).
  */
 object SyncMigration {
 
@@ -45,8 +46,9 @@ object SyncMigration {
         "routes" to "route",
     )
 
-    /** Table -> the kind the server knows it as, today. Sets are in `sets` from version 15. */
+    /** Table -> the kind the server knows it as, today. Sets are in `sets` from version 15, programmes from 16. */
     val TABLES = linkedMapOf(
+        "programs" to "program",
         "workouts" to "workout",
         "exercise_definitions" to "exercise",
         "sessions" to "session",
@@ -102,6 +104,9 @@ object SyncMigration {
 
     /** The triggers of `sets` (version 15): each set's own, and its parts', which log the set they belong to. */
     internal fun setTriggers(): List<String> = itemTriggers("sets", "set") + setPartTriggers()
+
+    /** The triggers of `programs` (version 16). */
+    internal fun programTriggers(): List<String> = itemTriggers("programs", "program")
 
     private fun setPartTriggers() = groupTriggers("set_parts", "setId", "sets", "set")
 

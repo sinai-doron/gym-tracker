@@ -1,10 +1,14 @@
 package com.doron.gymtracker.data.repository
 
 import com.doron.gymtracker.domain.model.ExerciseDefinition
+import com.doron.gymtracker.domain.model.Program
 import com.doron.gymtracker.domain.model.Workout
 
 interface WorkoutRepository {
     suspend fun ensureSeeded()
+    /** The programme being followed: its weeks, deloads and variants. */
+    suspend fun getActiveProgram(): Program
+    /** The active programme's workouts, in the order they rotate. */
     suspend fun getAll(): List<Workout>
     suspend fun getById(id: String): Workout?
     suspend fun updateTargetSets(exerciseId: String, sets: Int)

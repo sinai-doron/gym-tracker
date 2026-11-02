@@ -1,29 +1,27 @@
 package com.doron.gymtracker.domain.usecase
 
-import com.doron.gymtracker.data.prefs.ProgramPrefs
-import com.doron.gymtracker.domain.usecase.IsDeloadWeekUseCase.Companion.DELOAD_EVERY_WEEKS
+import com.doron.gymtracker.data.repository.WorkoutRepository
 import javax.inject.Inject
 
 data class ProgramStatus(
     val weekNumber: Int,
-    /** Even weeks use the week-B exercise variants. */
+    /** A week the programme does exercises' variants (week B). */
     val isWeekB: Boolean,
     val isDeloadWeek: Boolean,
-    /** 0 during a deload week. */
-    val weeksUntilDeload: Int
+    /** 0 during a deload week; null when the programme has no deloads. */
+    val weeksUntilDeload: Int?
 )
 
 class GetProgramStatusUseCase @Inject constructor(
-    private val prefs: ProgramPrefs
+    private val repo: WorkoutRepository
 ) {
-    operator fun invoke(nowMs: Long = System.currentTimeMillis()): ProgramStatus {
-        val week = prefs.weekNumber(nowMs)
-        val untilDeload = (DELOAD_EVERY_WEEKS - week % DELOAD_EVERY_WEEKS) % DELOAD_EVERY_WEEKS
+    suspend operator fun invoke(nowMs: Long = System.currentTimeMillis()): ProgramStatus {
+        val program = repo.getActiveProgram()
         return ProgramStatus(
-            weekNumber = week,
-            isWeekB = week % 2 == 0,
-            isDeloadWeek = untilDeload == 0,
-            weeksUntilDeload = untilDeload
+            weekNumber = program.weekNumber(nowMs),
+            isWeekB = program.usesVariants(nowMs),
+            isDeloadWeek = program.isDeloadWeek(nowMs),
+            weeksUntilDeload = program.weeksUntilDeload(nowMs)
         )
     }
 }

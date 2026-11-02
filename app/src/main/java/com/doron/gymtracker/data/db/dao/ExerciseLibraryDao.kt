@@ -79,8 +79,15 @@ interface ExerciseLibraryDao {
     @Query("UPDATE exercise_definitions SET libraryExerciseId = :exerciseId WHERE id = :planId AND libraryExerciseId IS NULL")
     suspend fun link(planId: String, exerciseId: String)
 
+    /** And the history logged under it, for entries made or downloaded before the link. */
+    @Query("UPDATE exercise_entries SET libraryExerciseId = :exerciseId WHERE exerciseId = :planId AND libraryExerciseId IS NULL")
+    suspend fun linkEntries(planId: String, exerciseId: String)
+
     @Transaction
     suspend fun linkAll(links: Map<String, String>) {
-        links.forEach { (planId, exerciseId) -> link(planId, exerciseId) }
+        links.forEach { (planId, exerciseId) ->
+            link(planId, exerciseId)
+            linkEntries(planId, exerciseId)
+        }
     }
 }

@@ -79,7 +79,7 @@ fun SessionScreen(
 
     val activeRestSecs = viewModel.restTimer.state.collectAsState().value?.remainingSecs
     val context = LocalContext.current
-    val workoutName = state.workout?.label?.localizedName() ?: ""
+    val workoutName = state.workout?.localizedName() ?: ""
 
     // Android 13+ hides the session notification until the user allows notifications
     val notificationPermissionLauncher = rememberLauncherForActivityResult(

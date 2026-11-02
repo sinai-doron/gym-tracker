@@ -2,6 +2,7 @@ package com.doron.gymtracker.sync
 
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
+import com.doron.gymtracker.data.db.ProgramMigration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -12,6 +13,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
+import java.time.LocalDate
 
 /** One item from the server, as /api/gym/sync/pull returns it. */
 data class IncomingChange(
@@ -107,9 +109,26 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
             return true
         }
         return when (change.entity) {
-            "workout" -> upsertPlanItem("workouts", change.id, data.str("key"), ContentValues().apply {
-                put("label", data.str("label"))
+            "program" -> upsertPlanItem("programs", change.id, data.str("key"), ContentValues().apply {
+                put("name", data.strOrNull("name"))
+                put("startEpochDay", LocalDate.parse(data.str("startDate")).toEpochDay())
+                putIntOrNull("deloadEveryWeeks", data.intOrNull("deloadEveryWeeks"))
+                put("variantRule", data.str("variantRule"))
+                put("isActive", data.bool("isActive"))
             })
+            "workout" -> {
+                // Workouts sent before version 16 name no programme: they are the seeded plan's
+                val programId = data.strOrNull("programId")?.let { idOf("programs", it) ?: return false }
+                    ?: ProgramMigration.PROGRAM_ID
+                val label = data.str("label")
+                upsertPlanItem("workouts", change.id, data.str("key"), ContentValues().apply {
+                    put("label", label)
+                    put("programId", programId)
+                    put("sortOrder", data.intOrNull("sortOrder") ?: (listOf("A", "B", "C").indexOf(label) + 1).takeIf { it > 0 } ?: 4)
+                    put("name", data.strOrNull("name"))
+                    putIntOrNull("weekday", data.intOrNull("weekday"))
+                })
+            }
             "exercise" -> {
                 val workoutId = idOf("workouts", data.str("workoutId")) ?: return false
                 val variantOf = data.strOrNull("variantOfId")?.let { idOf("exercise_definitions", it) ?: return false }
@@ -146,6 +165,13 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
                 upsert("exercise_entries", change.id, ContentValues().apply {
                     put("sessionId", sessionId)
                     put("exerciseId", exerciseId)
+                    // Entries sent before version 16 name no library exercise: their plan exercise's
+                    put(
+                        "libraryExerciseId",
+                        data.strOrNull("libraryExerciseId") ?: db.query(
+                            "SELECT libraryExerciseId FROM exercise_definitions WHERE id = ?", arrayOf<Any?>(exerciseId)
+                        ).use { if (it.moveToFirst()) it.getString(0) else null },
+                    )
                 })
             }
             "set" -> {
@@ -378,11 +404,11 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
     companion object {
         /** Parents before children, so most items go in on the first try. */
         private val ORDER = listOf(
-            "workout", "exercise", "route", "session", "entry", "set", "run", "pause", "song", "route_points", SyncPayloads.TRACK,
+            "program", "workout", "exercise", "route", "session", "entry", "set", "run", "pause", "song", "route_points", SyncPayloads.TRACK,
         )
         private val DERIVED = setOf("route_points", SyncPayloads.TRACK)
         private val TABLE_OF = mapOf(
-            "workout" to "workouts", "exercise" to "exercise_definitions", "session" to "sessions",
+            "program" to "programs", "workout" to "workouts", "exercise" to "exercise_definitions", "session" to "sessions",
             "entry" to "exercise_entries", "set" to "sets", "run" to "run_details",
             "pause" to "run_pauses", "route" to "routes", "song" to "track_log",
         )

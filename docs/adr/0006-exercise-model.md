@@ -121,7 +121,7 @@ working:
 |---|---|---|
 | v14 | The exercise library: `exercises`, `exercise_names`, `exercise_muscles`, seeded from the catalogue at start; each plan exercise linked to its built-in (`exercise_definitions.libraryExerciseId`) | Unchanged |
 | v15 | Sets and parts, with the history rules above (per hand, bodyweight with no load) | `set` takes a new shape with its parts; the backend takes both shapes first (doron-backend Task 31) |
-| v16 | Programmes and workouts: week-B rows become variants, the rotation leaves prefs | New kinds; the backend learns them first |
+| v16 | Programmes: one row with the start date, deload rule and variant rule the app had hard-coded; workouts belong to it in rotation order; history entries point at the library. The next workout is read from history, so the rotation leaves prefs. Week-B rows stay rows pointing at their week-A exercise, which already holds a list of variants | `program` is new; `workout` and `entry` gain fields (doron-backend Task 32 first) |
 
 A built-in's id is derived from its slug (`ExerciseCatalogue.builtinId`), so it is the same on
 every phone and history can name it without uploading it. The v14 migration links the plan by a

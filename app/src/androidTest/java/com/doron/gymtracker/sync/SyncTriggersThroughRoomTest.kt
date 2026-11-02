@@ -39,7 +39,7 @@ class SyncTriggersThroughRoomTest {
                 override fun onCreate(db: SupportSQLiteDatabase) = SyncMigration.installFresh(db)
             })
             .build()
-        sql.execSQL("INSERT INTO workouts (id, label) VALUES ('workout_a', 'A')")
+        sql.execSQL("INSERT INTO workouts (id, label, programId, sortOrder) VALUES ('workout_a', 'A', 'program_abc', 1)")
         sql.execSQL(
             "INSERT INTO exercise_definitions (id, workoutId, name, type, targetSets, restDurationSecs, isOptional, " +
                 "isPerSide, isBodyweight, sortOrder, isRemoved) VALUES ('bench', 'workout_a', 'Bench', 'REP', 3, 90, 0, 0, 0, 0, 0)"

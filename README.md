@@ -36,8 +36,8 @@ English available in Settings.
 
 ### Gym workouts
 
-- **A → B → C rotation.** Home suggests the next workout in the cycle; you can pick
-  another before starting.
+- **A → B → C rotation.** Home suggests the workout after the last one you finished;
+  you can pick another before starting.
 - **Session clock.** A session runs from when you start it until you end it. If the app
   is killed mid-workout, home offers to resume it.
 - **Three kinds of exercise.**
@@ -133,8 +133,9 @@ built-in exercise it is in the exercise library, which the app fills from the ca
 | B | Legs and core |
 | C | Shoulders and arms |
 
-The programme start date, which drives the A/B weeks and deload weeks, is set in
-[`ProgramPrefs.kt`](app/src/main/java/com/doron/gymtracker/data/prefs/ProgramPrefs.kt).
+The plan belongs to a programme, a row in the database: its start date drives the A/B weeks
+and the deload weeks (every sixth). The owner's started on 2026-10-26; a fresh install's starts
+the day it is first opened.
 
 ## Tech stack
 
@@ -144,7 +145,7 @@ The programme start date, which drives the A/B weeks and deload weeks, is set in
 | UI | Jetpack Compose, Material 3 |
 | Architecture | MVVM with a use-case layer (`ui` → `domain` → `data`) |
 | Dependency injection | Hilt |
-| Database | Room (schema version 15, with migrations) |
+| Database | Room (schema version 16, with migrations) |
 | Maps | MapLibre, with OpenFreeMap tiles |
 | Health data | Health Connect |
 | Settings | DataStore |
@@ -161,7 +162,7 @@ app/src/main/java/com/doron/gymtracker/
 │   ├── catalogue/     Reads the exercise catalogue from assets/exercises/
 │   ├── db/            Room database, entities, DAOs and migrations
 │   ├── di/            Hilt modules
-│   ├── prefs/         DataStore: rotation, programme start, settings
+│   ├── prefs/         DataStore: settings
 │   ├── repository/    Session, workout and route repositories; the exercise library
 │   ├── seed/          The initial training programme
 │   ├── CardioRecorder, LocationTracker   Recording a run from GPS fixes

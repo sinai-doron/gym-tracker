@@ -4,7 +4,8 @@ import com.doron.gymtracker.domain.model.DistanceExerciseDefinition
 import com.doron.gymtracker.domain.model.RepExerciseDefinition
 import com.doron.gymtracker.domain.model.TimedExerciseDefinition
 import com.doron.gymtracker.domain.model.Workout
-import com.doron.gymtracker.domain.model.WorkoutLabel
+import com.doron.gymtracker.domain.model.Program
+import com.doron.gymtracker.domain.model.VariantRule
 
 // Programme: חזה וגב / רגליים / כתפיים וידיים
 // Start date: 2026-10-26. variantB = Week B exercise; null = fixed.
@@ -12,7 +13,7 @@ object TrainingPlanData {
 
     val workoutA = Workout(
         id = "workout_a",
-        label = WorkoutLabel.A,
+        code = "A",
         exercises = listOf(
             RepExerciseDefinition("d1_e1", "לחיצת חזה עם מוט (שטוח)", targetSets = 4, restDurationSecs = 180, targetReps = 6),
             RepExerciseDefinition("d1_e2", "פולי עליון אחיזה רחבה", targetSets = 4, restDurationSecs = 120, targetReps = 6),
@@ -42,7 +43,7 @@ object TrainingPlanData {
 
     val workoutB = Workout(
         id = "workout_b",
-        label = WorkoutLabel.B,
+        code = "B",
         exercises = listOf(
             RepExerciseDefinition("d2_e1", "סקוואט עם מוט חופשי", targetSets = 4, restDurationSecs = 180, targetReps = 6),
             RepExerciseDefinition(
@@ -71,7 +72,7 @@ object TrainingPlanData {
 
     val workoutC = Workout(
         id = "workout_c",
-        label = WorkoutLabel.C,
+        code = "C",
         exercises = listOf(
             RepExerciseDefinition("d3_e1", "לחיצת כתפיים עם משקולות בישיבה", targetSets = 4, restDurationSecs = 120, targetReps = 8),
             RepExerciseDefinition(
@@ -101,4 +102,14 @@ object TrainingPlanData {
     )
 
     val all: List<Workout> = listOf(workoutA, workoutB, workoutC)
+
+    const val PROGRAM_ID = "program_abc"
+
+    /**
+     * The programme the plan rotates in: A, B, C in turn, week-B variants on even weeks, a deload
+     * every sixth week. Its weeks count from [startDate]: the owner's 2026-10-26 (set by the v16
+     * migration), or the day a fresh install first starts.
+     */
+    fun program(startDate: java.time.LocalDate) =
+        Program(PROGRAM_ID, name = null, startDate = startDate, deloadEveryWeeks = 6, variantRule = VariantRule.ALTERNATE_WEEKLY)
 }
