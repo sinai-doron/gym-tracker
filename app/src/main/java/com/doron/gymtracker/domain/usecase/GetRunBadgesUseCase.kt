@@ -14,7 +14,8 @@ class GetRunBadgesUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(): List<BadgeStatus> {
         val runs = sessionRepo.getCompletedSince(0)
-            .filter { it.type == "RUNNING" && it.distanceMeters != null }
+            // A run logged by hand counts for totals, not for distance badges (plan decision)
+            .filter { it.type == "RUNNING" && it.distanceMeters != null && !it.loggedManually }
             .sortedBy { it.startedAt }
         return RunBadge.entries.map { badge ->
             val first = runs.firstOrNull { it.distanceMeters!! >= badge.meters }

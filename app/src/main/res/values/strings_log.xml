@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Log a past session -->
+    <string name="log_title">תיעוד אימון שהיה</string>
+    <string name="log_type">סוג</string>
+    <string name="log_workout">אימון</string>
+    <string name="log_no_programme">אין עדיין תוכנית. הגדר אחת כדי לתעד אימון כוח.</string>
+    <string name="log_date">תאריך</string>
+    <string name="log_started">התחלה</string>
+    <string name="log_duration">משך</string>
+    <string name="log_hours">שעות</string>
+    <string name="log_minutes">דקות</string>
+    <string name="log_distance">מרחק בק״מ (לא חובה)</string>
+    <string name="log_calories">קלוריות (לא חובה)</string>
+    <string name="log_calories_estimate">אם יישאר ריק: כ-%d, לפי משקל הגוף שלך והמשך</string>
+    <string name="log_note">הערה (לא חובה)</string>
+    <string name="log_health_connect">שמור גם ב-Health Connect</string>
+    <string name="log_in_future">האימון מסתיים בעתיד. בדוק את התאריך, השעה והמשך.</string>
+    <string name="log_no_duration">כמה זמן זה נמשך?</string>
+    <string name="log_strength_next">אחרי השמירה ייפתחו תרגילי האימון, כדי למלא את הסטים.</string>
+</resources>

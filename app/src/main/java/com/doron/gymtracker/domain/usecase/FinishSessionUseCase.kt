@@ -13,8 +13,10 @@ class FinishSessionUseCase @Inject constructor(
     /** [title] is the session's name for Health Connect, resolved by the UI in the user's language. */
     suspend operator fun invoke(sessionId: Long, title: String) {
         sessionRepo.finishSession(sessionId)
-        val session = sessionRepo.getLastCompleted() ?: return
+        val session = sessionRepo.getById(sessionId) ?: return
         val finishedAt = session.finishedAt ?: return
+        // Logged by hand: written to Health Connect when it was logged
+        if (session.loggedManually) return
         if (session.type == "GYM") {
             // The next workout is read from history (GetNextWorkoutUseCase); nothing to record
             workoutRepo.getById(session.workoutId) ?: return

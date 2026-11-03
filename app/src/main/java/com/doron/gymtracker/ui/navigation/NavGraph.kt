@@ -11,6 +11,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.doron.gymtracker.data.CardioRun
 import com.doron.gymtracker.data.prefs.SettingsPrefs
+import com.doron.gymtracker.ui.screens.account.ConsentScreen
+import com.doron.gymtracker.ui.screens.achievements.AchievementsScreen
 import com.doron.gymtracker.ui.screens.cardio.CardioSessionScreen
 import com.doron.gymtracker.ui.screens.cardio.CardioSessionViewModel
 import com.doron.gymtracker.ui.screens.cardio.GpsLockScreen
@@ -18,9 +20,15 @@ import com.doron.gymtracker.ui.screens.cardio.GpsLockViewModel
 import com.doron.gymtracker.ui.screens.history.SessionDetailScreen
 import com.doron.gymtracker.ui.screens.history.SessionDetailViewModel
 import com.doron.gymtracker.ui.screens.home.HomeScreen
+import com.doron.gymtracker.ui.screens.log.LogSessionScreen
 import com.doron.gymtracker.ui.screens.onboarding.OnboardingScreen
+import com.doron.gymtracker.ui.screens.picker.ExercisePickerScreen
 import com.doron.gymtracker.ui.screens.plan.PlanEditorScreen
+import com.doron.gymtracker.ui.screens.programs.ProgramBuilderScreen
+import com.doron.gymtracker.ui.screens.programs.ProgramsScreen
 import com.doron.gymtracker.ui.screens.progress.ExerciseProgressScreen
+import com.doron.gymtracker.ui.screens.routes.RouteDetailScreen
+import com.doron.gymtracker.ui.screens.routes.RoutesScreen
 import com.doron.gymtracker.ui.screens.session.SessionScreen
 import com.doron.gymtracker.ui.screens.session.SessionViewModel
 import com.doron.gymtracker.ui.screens.settings.LicencesScreen
@@ -29,13 +37,6 @@ import com.doron.gymtracker.ui.screens.setup.AboutYouScreen
 import com.doron.gymtracker.ui.screens.setup.TrainingScreen
 import com.doron.gymtracker.ui.screens.types.TimerScreen
 import com.doron.gymtracker.ui.screens.types.TrainingTypesScreen
-import com.doron.gymtracker.ui.screens.achievements.AchievementsScreen
-import com.doron.gymtracker.ui.screens.account.ConsentScreen
-import com.doron.gymtracker.ui.screens.routes.RouteDetailScreen
-import com.doron.gymtracker.ui.screens.picker.ExercisePickerScreen
-import com.doron.gymtracker.ui.screens.programs.ProgramBuilderScreen
-import com.doron.gymtracker.ui.screens.programs.ProgramsScreen
-import com.doron.gymtracker.ui.screens.routes.RoutesScreen
 import com.doron.gymtracker.ui.screens.workouts.WorkoutsScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -102,7 +103,8 @@ fun NavGraph(runToResume: CardioRun? = null, showOnboarding: Boolean = false) {
                 onProgramsClick = { navController.navigate("programs") },
                 onSetUpTraining = { navController.navigate("training/new") },
                 onTimer = { typeId -> navController.navigate("timer/$typeId") },
-                onTrainingTypes = { navController.navigate("training-types") }
+                onTrainingTypes = { navController.navigate("training-types") },
+                onLogSession = { navController.navigate("log") }
             )
         }
         composable("achievements") {
@@ -157,6 +159,15 @@ fun NavGraph(runToResume: CardioRun? = null, showOnboarding: Boolean = false) {
                 onAboutYou = { navController.navigate("about-you/edit") },
                 onTrainingTypes = { navController.navigate("training-types") },
                 onLicences = { navController.navigate("licences") }
+            )
+        }
+        composable("log") {
+            LogSessionScreen(
+                onClose = { navController.popBackStack() },
+                // A strength session goes on to its workout, to fill in the sets
+                onStrength = { sessionId, workoutId ->
+                    navController.navigate("session/$sessionId/$workoutId") { popUpTo("log") { inclusive = true } }
+                }
             )
         }
         composable("training-types") {

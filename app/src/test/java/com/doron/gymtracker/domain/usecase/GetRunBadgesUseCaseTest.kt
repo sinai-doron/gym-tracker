@@ -43,4 +43,12 @@ class GetRunBadgesUseCaseTest {
         assertEquals(listOf(RunBadge.ONE_K), uc.earnedBy(2))
         assertEquals(emptyList<RunBadge>(), uc.earnedBy(3))
     }
+
+    @Test
+    fun `a run logged by hand earns no distance badge`() = runTest {
+        val logged = run(1, 100, 6_000.0).copy(loggedManually = true)
+        val badges = useCase(logged, run(2, 200, 1_100.0))()
+        assertEquals(2L, badges.first { it.badge == RunBadge.ONE_K }.sessionId)
+        assertNull(badges.first { it.badge == RunBadge.FIVE_K }.sessionId)
+    }
 }
