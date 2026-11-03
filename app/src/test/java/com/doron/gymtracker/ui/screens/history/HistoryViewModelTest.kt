@@ -2,11 +2,14 @@ package com.doron.gymtracker.ui.screens.history
 
 import com.doron.gymtracker.R
 import com.doron.gymtracker.data.repository.SessionRepository
+import com.doron.gymtracker.data.repository.TrainingTypes
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.data.seed.TrainingPlanData
 import com.doron.gymtracker.domain.model.ExerciseEntry
+import com.doron.gymtracker.domain.model.Recorder
 import com.doron.gymtracker.domain.model.RepSetRecord
 import com.doron.gymtracker.domain.model.Session
+import com.doron.gymtracker.domain.model.TrainingType
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
@@ -92,18 +95,23 @@ class HistoryViewModelTest {
     }
 
     @Test
-    fun `a day with a gym session and a run is marked as both`() = runTest(testDispatcher) {
+    fun `each day lists the training types done on it`() = runTest(testDispatcher) {
         val gym = Session(1L, "workout_a", startedAt = 0L, finishedAt = 1000L)
-        val run = Session(2L, "RUNNING", startedAt = 2000L, finishedAt = 3000L, type = "RUNNING")
-        val walk = Session(3L, "WALKING", startedAt = 2 * 86_400_000L, finishedAt = 2 * 86_400_000L + 1000, type = "WALKING")
-        coEvery { sessionRepo.observeAll() } returns flowOf(listOf(gym, run, walk))
-        coEvery { sessionRepo.getLastCompleted() } returns walk
-        val vm = HistoryViewModel(sessionRepo, workoutRepo, mockk(relaxed = true))
+        val run = Session(2L, "RUNNING", startedAt = 2000L, finishedAt = 3000L, type = "RUNNING", activityTypeId = "run")
+        val pilates = Session(3L, "OTHER", startedAt = 2 * 86_400_000L, finishedAt = 2 * 86_400_000L + 1000, type = "OTHER", activityTypeId = "pilates")
+        coEvery { sessionRepo.observeAll() } returns flowOf(listOf(gym, run, pilates))
+        coEvery { sessionRepo.getLastCompleted() } returns pilates
+        val types = mockk<TrainingTypes>()
+        coEvery { types.all() } returns listOf(type("strength", 1), type("run", 2), type("pilates", 10))
+        val vm = HistoryViewModel(sessionRepo, workoutRepo, types)
         testDispatcher.scheduler.advanceUntilIdle()
-        val days = vm.sessionDates.value.values.toList()
-        assertTrue(setOf(DayKind.GYM, DayKind.CARDIO) in days)
-        assertTrue(setOf(DayKind.CARDIO) in days)
+        val days = vm.sessionDates.value.values.map { day -> day.map { it.id }.toSet() }
+        assertTrue(setOf("strength", "run") in days)
+        assertTrue(setOf("pilates") in days)
     }
+
+    private fun type(id: String, order: Int) =
+        TrainingType(id, null, id, "#123456", Recorder.DURATION, null, null, true, order, false)
 
     @Test
     fun `a run is named by a string resource`() = runTest(testDispatcher) {

@@ -24,6 +24,7 @@ import com.doron.gymtracker.domain.usecase.GetProgramStatusUseCase
 import com.doron.gymtracker.domain.usecase.GetWorkoutPreviewUseCase
 import com.doron.gymtracker.domain.usecase.ProgramStatus
 import com.doron.gymtracker.domain.usecase.StartSessionUseCase
+import com.doron.gymtracker.ui.components.circleCode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -57,7 +58,9 @@ data class WeekDay(
     val mark: String?,
     val isToday: Boolean,
     val gym: Boolean = false,
-    val cardio: Boolean = false
+    val cardio: Boolean = false,
+    /** The training types done that day, for its colours. */
+    val types: List<TrainingType> = emptyList()
 )
 
 data class HomeUiState(
@@ -214,8 +217,8 @@ class HomeViewModel @Inject constructor(
             }
         }.toSet()
         val streak = streakDays(datesWithSessions, today)
-        val labels = _uiState.value.allWorkouts.associate { it.id to it.code }
-        val days = weekDays(weekStart, today, sessions, labels, ZoneId.systemDefault())
+        val labels = _uiState.value.allWorkouts.associate { it.id to circleCode(it.code) }
+        val days = weekDays(weekStart, today, sessions, labels, ZoneId.systemDefault(), trainingTypes.all().associateBy { it.id })
 
         _uiState.update {
             it.copy(weeklyStats = WeeklyStats(
@@ -279,14 +282,15 @@ internal fun streakDays(datesWithSessions: Set<LocalDate>, today: LocalDate): In
 
 /**
  * The seven days from [weekStart], each marked with what was trained that day: the gym workout's
- * letter if there was one, otherwise a run or walk icon.
+ * letter if there was one, and the training types done, for the day's colours.
  */
 internal fun weekDays(
     weekStart: LocalDate,
     today: LocalDate,
     sessions: List<Session>,
     workoutLabels: Map<String, String>,
-    zone: ZoneId
+    zone: ZoneId,
+    typesById: Map<String, TrainingType> = emptyMap()
 ): List<WeekDay> {
     val byDate = sessions.groupBy { java.time.Instant.ofEpochMilli(it.startedAt).atZone(zone).toLocalDate() }
     return (0L until 7L).map { offset ->
@@ -298,7 +302,8 @@ internal fun weekDays(
             mark = gym?.let { workoutLabels[it.workoutId] },
             isToday = date == today,
             gym = gym != null,
-            cardio = daySessions.any { it.type != "GYM" }
+            cardio = daySessions.any { it.type != "GYM" },
+            types = daySessions.mapNotNull { typesById[it.activityTypeId] }.distinctBy { it.id }
         )
     }
 }

@@ -9,6 +9,7 @@ import com.doron.gymtracker.data.repository.TrainingTypes
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.model.RepSetRecord
 import com.doron.gymtracker.domain.model.SetRecord
+import com.doron.gymtracker.domain.model.TrainingType
 import com.doron.gymtracker.ui.components.builtinTypeName
 import com.doron.gymtracker.ui.components.defaultNameRes
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -52,8 +53,6 @@ data class DaySessionsUiState(
 )
 
 /** What a day in the calendar is colored by. */
-enum class DayKind { GYM, CARDIO }
-
 @HiltViewModel
 class HistoryViewModel @Inject constructor(
     private val sessionRepo: SessionRepository,
@@ -64,9 +63,9 @@ class HistoryViewModel @Inject constructor(
     private val _currentMonth = MutableStateFlow(YearMonth.now())
     val currentMonth: StateFlow<YearMonth> = _currentMonth.asStateFlow()
 
-    private val _sessionDates = MutableStateFlow<Map<LocalDate, Set<DayKind>>>(emptyMap())
-    /** The days with a finished session, and which kinds. */
-    val sessionDates: StateFlow<Map<LocalDate, Set<DayKind>>> = _sessionDates.asStateFlow()
+    private val _sessionDates = MutableStateFlow<Map<LocalDate, List<TrainingType>>>(emptyMap())
+    /** The days with a finished session, and the training types done on each. */
+    val sessionDates: StateFlow<Map<LocalDate, List<TrainingType>>> = _sessionDates.asStateFlow()
 
     private val _selectedDaySessions = MutableStateFlow<DaySessionsUiState?>(null)
     val selectedDaySessions: StateFlow<DaySessionsUiState?> = _selectedDaySessions.asStateFlow()
@@ -79,12 +78,12 @@ class HistoryViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             sessionRepo.observeAll().collectLatest { sessions ->
+                // Hidden types too: what was done stays coloured as it was
+                val types = trainingTypes.all().associateBy { it.id }
                 _sessionDates.value = sessions
                     .filter { it.finishedAt != null }
-                    .groupBy({ Instant.ofEpochMilli(it.startedAt).atZone(zone).toLocalDate() }) {
-                        if (it.type == "GYM") DayKind.GYM else DayKind.CARDIO
-                    }
-                    .mapValues { it.value.toSet() }
+                    .groupBy({ Instant.ofEpochMilli(it.startedAt).atZone(zone).toLocalDate() }) { types[it.activityTypeId] }
+                    .mapValues { (_, dayTypes) -> dayTypes.filterNotNull().distinctBy { it.id } }
             }
         }
     }

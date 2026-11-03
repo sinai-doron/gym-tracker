@@ -9,7 +9,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -81,8 +84,9 @@ fun TrainingType.recorderLabel(): String = stringResource(
     }
 )
 
+/** The type's "#RRGGBB" as a colour; grey if it isn't one. */
 fun TrainingType.colorValue(): Color =
-    runCatching { Color(android.graphics.Color.parseColor(color)) }.getOrDefault(Color.Gray)
+    color.removePrefix("#").takeIf { it.length == 6 }?.toLongOrNull(16)?.let { Color(0xFF000000 or it) } ?: Color.Gray
 
 /** A type's icon on a circle of its colour. */
 @Composable
@@ -94,5 +98,24 @@ fun TrainingTypeBadge(type: TrainingType, modifier: Modifier = Modifier, size: D
             .background(type.colorValue().copy(alpha = 0.18f), CircleShape)
     ) {
         Text(TrainingTypeIcons.emoji(type.icon), fontSize = (size.value * 0.5f).sp)
+    }
+}
+
+/**
+ * The colours to fill a day's circle with, one per colour among [types] (a run and a walk share
+ * one): strength last, so it takes the right-hand side as it always has.
+ */
+fun dayColors(types: List<TrainingType>): List<Color> =
+    types.sortedByDescending { it.sortOrder }.map { it.colorValue() }.distinct()
+
+/** Fills the circle with [colors] side by side, or with [empty] when there are none. */
+fun DrawScope.drawDay(colors: List<Color>, empty: Color) {
+    if (colors.isEmpty()) {
+        drawRect(empty)
+        return
+    }
+    val slice = size.width / colors.size
+    colors.forEachIndexed { i, color ->
+        drawRect(color, topLeft = Offset(i * slice, 0f), size = Size(slice, size.height))
     }
 }
