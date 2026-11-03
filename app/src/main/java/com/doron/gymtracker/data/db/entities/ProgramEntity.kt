@@ -14,5 +14,9 @@ data class ProgramEntity(
     val variantRule: String,        // NONE or ALTERNATE_WEEKLY
     val isActive: Boolean,
     /** The id the server knows this row by (sync). Set by the database when left null. */
-    val uuid: String? = null
+    val uuid: String? = null,
+    /** Archived by the user: kept, since its sessions point at its workouts. */
+    val archivedAt: Long? = null,
+    /** The training type it's for (`activity_types.id`); null is a strength programme. */
+    val activityTypeId: String? = null
 )

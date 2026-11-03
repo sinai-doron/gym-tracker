@@ -27,11 +27,12 @@ object SyncChecks {
             mapOf(
                 "route_points" to db.long("SELECT count(DISTINCT routeId) FROM route_points"),
                 "track" to db.long("SELECT count(DISTINCT sessionId) FROM location_log"),
+                SyncMigration.LIBRARY_EXERCISE to db.long("SELECT count(*) FROM exercises WHERE source = 'CUSTOM'"),
             )
 
     /** Kind -> change-log entries waiting to be uploaded. */
     fun loggedChanges(db: SupportSQLiteDatabase): Map<String, Long> =
-        (syncedTables.values + listOf("route_points", "track")).associateWith {
+        (syncedTables.values + listOf("route_points", "track", SyncMigration.LIBRARY_EXERCISE)).associateWith {
             db.long("SELECT count(*) FROM sync_changes WHERE entity = '$it' AND deleted = 0")
         }
 
@@ -47,7 +48,7 @@ object SyncChecks {
     fun freshInstallTriggers(context: Context): Map<String, String> {
         val fresh = Room.inMemoryDatabaseBuilder(context, GymDatabase::class.java)
             .addCallback(object : RoomDatabase.Callback() {
-                override fun onCreate(db: SupportSQLiteDatabase) = SyncMigration.installFresh(db)
+                override fun onCreate(db: SupportSQLiteDatabase) = GymDatabase.installFresh(db)
             })
             .build()
         return try {
