@@ -55,14 +55,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.doron.gymtracker.R
 import com.doron.gymtracker.data.catalogue.LibraryVocabulary
 import com.doron.gymtracker.domain.model.LibraryExercise
+import com.doron.gymtracker.ui.components.BodyMapFigures
 import com.doron.gymtracker.ui.components.localizedName
 import com.doron.gymtracker.ui.screens.plan.ExerciseTargetsSheet
 import com.doron.gymtracker.ui.theme.Purple
 import com.doron.gymtracker.ui.theme.SuccessGreen
 
 /**
- * Adds an exercise to a workout from the library: search by any name or alias, filter by muscle and
- * equipment, the ones done lately first. Picking one opens its targets, filled with its defaults.
+ * Adds an exercise to a workout from the library: search by any name or alias, filter by muscle (on
+ * the body map or by name) and equipment, the ones done lately first. Picking one opens its targets, filled with its defaults.
  * Not there: create one (a user's own exercise), after being shown similar ones already there.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -119,6 +120,7 @@ fun ExercisePickerScreen(
                 total = all.size,
                 onQuery = viewModel::setQuery,
                 onMuscle = viewModel::toggleMuscle,
+                onRegion = viewModel::toggleRegion,
                 onEquipment = viewModel::toggleEquipment,
                 onPick = { picked = it },
                 onCreate = { creating = state.query.trim() },
@@ -146,6 +148,7 @@ private fun PickerList(
     total: Int,
     onQuery: (String) -> Unit,
     onMuscle: (String) -> Unit,
+    onRegion: (List<String>) -> Unit,
     onEquipment: (String) -> Unit,
     onPick: (LibraryExercise) -> Unit,
     onCreate: () -> Unit,
@@ -167,6 +170,10 @@ private fun PickerList(
                 shape = RoundedCornerShape(28.dp),
                 modifier = Modifier.fillMaxWidth()
             )
+        }
+        // The map makes room for the results while a name is being typed
+        if (state.query.isBlank()) {
+            item(key = "body") { BodyMapFigures(state.muscles, onRegion, Modifier.padding(top = 4.dp)) }
         }
         item(key = "muscles") {
             ChipRow(LibraryVocabulary.MUSCLES, state.muscles, LibraryVocabulary::muscleLabel, onMuscle)

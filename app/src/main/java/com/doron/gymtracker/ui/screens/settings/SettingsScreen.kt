@@ -79,6 +79,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onReviewPermissions: () -> Unit,
     onSignIn: () -> Unit,
+    onLicences: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val user by viewModel.user.collectAsState()
@@ -397,6 +398,13 @@ fun SettingsScreen(
                             }
                         }
                     }
+                }
+
+                Spacer(Modifier.height(24.dp))
+                Text(stringResource(R.string.about), style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(12.dp))
+                OutlinedButton(onClick = onLicences, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.licences_title))
                 }
             }
         }

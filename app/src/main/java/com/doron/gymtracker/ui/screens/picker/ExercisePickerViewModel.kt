@@ -3,6 +3,7 @@ package com.doron.gymtracker.ui.screens.picker
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.doron.gymtracker.data.catalogue.BodyRegions
 import com.doron.gymtracker.data.repository.ExerciseLibrary
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.model.ExerciseDefinition
@@ -62,6 +63,9 @@ class ExercisePickerViewModel @Inject constructor(
     fun setQuery(text: String) = _state.update { it.copy(query = text) }
 
     fun toggleMuscle(slug: String) = _state.update { it.copy(muscles = it.muscles.toggle(slug)) }
+
+    /** A tap on the body map: its region's muscles, all on or all off. */
+    fun toggleRegion(muscles: List<String>) = _state.update { it.copy(muscles = BodyRegions.toggle(it.muscles, muscles)) }
 
     fun toggleEquipment(slug: String) = _state.update { it.copy(equipment = it.equipment.toggle(slug)) }
 

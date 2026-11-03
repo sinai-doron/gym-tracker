@@ -39,7 +39,7 @@ when the output wasn't rebuilt after a change.
 
 The catalogue is CC BY-SA 4.0, because the instructions come from wger under CC BY-SA. Each
 exercise's `source` names the wger exercise and text it follows, with their licence and authors;
-the app's Open-source licences screen must credit them before the catalogue ships. The Hebrew
+the app's Open-source licences screen (Settings → About) lists them, read from the built catalogue. The Hebrew
 names, muscles and everything else not from wger are ours.
 
 ## Before release

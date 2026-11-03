@@ -32,6 +32,31 @@ object LibraryVocabulary {
         "calves",
     )
 
+    /**
+     * Muscle -> where the body map draws it: the figure's region and the view it shows on (front,
+     * back or both). Several muscles can share a region: the shoulder holds all three delts.
+     */
+    val MUSCLE_REGIONS: Map<String, MuscleRegion> = linkedMapOf(
+        "chest" to MuscleRegion("chest", "front"),
+        "front_delts" to MuscleRegion("deltoids", "front"),
+        "side_delts" to MuscleRegion("deltoids", "front"),
+        "rear_delts" to MuscleRegion("deltoids", "back"),
+        "biceps" to MuscleRegion("biceps", "front"),
+        "triceps" to MuscleRegion("triceps", "both"),
+        "forearms" to MuscleRegion("forearm", "both"),
+        "abs" to MuscleRegion("abs", "front"),
+        "obliques" to MuscleRegion("obliques", "front"),
+        "lats" to MuscleRegion("upper-back", "back"),
+        "traps" to MuscleRegion("trapezius", "both"),
+        "upper_back" to MuscleRegion("upper-back", "back"),
+        "lower_back" to MuscleRegion("lower-back", "back"),
+        "glutes" to MuscleRegion("gluteal", "back"),
+        "quads" to MuscleRegion("quadriceps", "front"),
+        "hamstrings" to MuscleRegion("hamstring", "back"),
+        "adductors" to MuscleRegion("adductors", "both"),
+        "calves" to MuscleRegion("calves", "both"),
+    )
+
     /** Equipment -> the step its weight goes up by, in kg; null for none. */
     val EQUIPMENT_STEP_KG: Map<String, Double?> = linkedMapOf(
         "barbell" to 2.5,
@@ -98,3 +123,6 @@ object LibraryVocabulary {
         else -> null
     }
 }
+
+/** A body-map region (react-native-body-highlighter's slug) and the view it shows on: front, back or both. */
+data class MuscleRegion(val region: String, val view: String)
