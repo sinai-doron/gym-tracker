@@ -35,7 +35,7 @@ class WorkoutsViewModel @Inject constructor(
 
     fun reload() {
         viewModelScope.launch {
-            val nextId = getNextWorkout().id
+            val nextId = getNextWorkout()?.id
             val previews = workoutRepo.getAll().map { getWorkoutPreview(it) }
             _uiState.update {
                 it.copy(

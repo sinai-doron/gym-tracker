@@ -8,6 +8,7 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Test
 
 class GetNextWorkoutUseCaseTest {
@@ -27,30 +28,44 @@ class GetNextWorkoutUseCaseTest {
     @Test
     fun `returns A when no prior session`() = runTest {
         history()
-        assertEquals("A", useCase().code)
+        assertEquals("A", useCase()?.code)
     }
 
     @Test
     fun `returns B after A`() = runTest {
         history("workout_a")
-        assertEquals("B", useCase().code)
+        assertEquals("B", useCase()?.code)
     }
 
     @Test
     fun `returns C after B`() = runTest {
         history("workout_b", "workout_a")
-        assertEquals("C", useCase().code)
+        assertEquals("C", useCase()?.code)
     }
 
     @Test
     fun `returns A after C — wraps around`() = runTest {
         history("workout_c")
-        assertEquals("A", useCase().code)
+        assertEquals("A", useCase()?.code)
     }
 
     @Test
     fun `a run since the last workout doesn't move the rotation`() = runTest {
         history("RUNNING", "workout_a")
-        assertEquals("B", useCase().code)
+        assertEquals("B", useCase()?.code)
+    }
+
+    @Test
+    fun `a workout taken out of the rotation is passed over`() = runTest {
+        // workout_x was hidden after it was done: the one before it decides
+        history("workout_x", "workout_b")
+        assertEquals("C", useCase()?.code)
+    }
+
+    @Test
+    fun `a programme with no workouts yet has no next workout`() = runTest {
+        coEvery { repo.getAll() } returns emptyList()
+        history("workout_a")
+        assertNull(useCase())
     }
 }

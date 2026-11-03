@@ -2,6 +2,8 @@ package com.doron.gymtracker.data.di
 
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.SessionRepositoryImpl
+import com.doron.gymtracker.data.repository.ProgramRepository
+import com.doron.gymtracker.data.repository.ProgramRepositoryImpl
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.data.repository.WorkoutRepositoryImpl
 import dagger.Binds
@@ -17,6 +19,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindWorkoutRepository(impl: WorkoutRepositoryImpl): WorkoutRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindProgramRepository(impl: ProgramRepositoryImpl): ProgramRepository
 
     @Binds
     @Singleton

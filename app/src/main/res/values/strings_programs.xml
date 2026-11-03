@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Programmes list and programme builder (roadmap phase 2) -->
+    <string name="programs_title">תוכניות אימון</string>
+    <string name="program_default_name">A / B / C</string>
+    <string name="program_active">פעילה</string>
+    <string name="program_make_active">הפוך לפעילה</string>
+    <string name="program_archived_header">בארכיון</string>
+    <string name="program_archive">העבר לארכיון</string>
+    <string name="program_restore">שחזר</string>
+    <string name="program_delete">מחק</string>
+    <string name="program_delete_title">למחוק את %s?</string>
+    <string name="program_delete_text">לא בוצע בה אף אימון, כך ששום דבר מההיסטוריה לא נמחק איתה.</string>
+    <string name="program_new">תוכנית חדשה</string>
+    <string name="program_new_name">תוכנית חדשה</string>
+    <string name="program_since">מאז %s</string>
+    <string name="program_switch_note">החלפת תוכנית שומרת את כל האימונים והשיאים. גרפי ההתקדמות שייכים לתרגיל, לא לתוכנית.</string>
+    <string name="program_more">אפשרויות נוספות ל%s</string>
+    <string name="program_choose">תוכנית: %s. החלף</string>
+    <plurals name="program_workouts">
+        <item quantity="one">אימון אחד</item>
+        <item quantity="two">%d אימונים</item>
+        <item quantity="many">%d אימונים</item>
+        <item quantity="other">%d אימונים</item>
+    </plurals>
+    <plurals name="program_sessions">
+        <item quantity="one">אימון אחד בוצע</item>
+        <item quantity="two">%d אימונים בוצעו</item>
+        <item quantity="many">%d אימונים בוצעו</item>
+        <item quantity="other">%d אימונים בוצעו</item>
+    </plurals>
+
+    <string name="builder_rename">שנה שם</string>
+    <string name="builder_program_name">שם התוכנית</string>
+    <string name="builder_workouts_header">אימונים · לפי הסדר</string>
+    <string name="builder_no_workouts">עדיין אין אימונים. הוסף את הראשון ומלא אותו בתרגילים.</string>
+    <string name="builder_add_workout">הוסף אימון</string>
+    <string name="builder_edit_workout">עריכת אימון</string>
+    <string name="builder_workout_code">קוד</string>
+    <string name="builder_workout_code_hint">מוצג על תג האימון: A, B, Push…</string>
+    <string name="builder_workout_name">שם (רשות)</string>
+    <string name="builder_about_minutes">כ-%d דק׳</string>
+    <plurals name="builder_exercises">
+        <item quantity="one">תרגיל אחד</item>
+        <item quantity="two">%d תרגילים</item>
+        <item quantity="many">%d תרגילים</item>
+        <item quantity="other">%d תרגילים</item>
+    </plurals>
+    <string name="builder_remove_workout_title">להסיר את %s?</string>
+    <string name="builder_remove_workout_text">הוא יוצא מהסבב. אימונים שביצעת נשארים בהיסטוריה.</string>
+    <string name="builder_schedule">לוח זמנים</string>
+    <string name="builder_start_date">שבוע 1 מתחיל</string>
+    <string name="builder_start_value">%1$s · שבוע %2$d</string>
+    <string name="builder_rules">סבב · הורדת עומס · שבועות מתחלפים</string>
+    <string name="builder_rules_in_order">לפי הסדר</string>
+    <string name="builder_rules_deload_every">הורדת עומס כל %d שבועות</string>
+    <string name="builder_rules_no_deload">בלי הורדת עומס</string>
+    <string name="builder_rules_alternate">שבוע B בשבועות הזוגיים</string>
+    <string name="builder_rules_no_variants">בלי שבועות מתחלפים</string>
+    <string name="builder_rules_later">ההגדרות לאלה יגיעו בהמשך.</string>
+    <string name="builder_open_workout">עריכת התרגילים של %s</string>
+</resources>

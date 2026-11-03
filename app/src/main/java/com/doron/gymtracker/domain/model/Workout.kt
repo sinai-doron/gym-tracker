@@ -9,4 +9,15 @@ data class Workout(
     val name: String? = null,
     /** Its place in the programme's rotation. */
     val sortOrder: Int = 0
-)
+) {
+    /**
+     * A rough length, for a new user to notice a workout growing too long: each set takes its rest
+     * plus [SET_SECONDS] of work. History's typical length (WorkoutPreview) replaces it once done.
+     */
+    fun estimatedMinutes(): Int =
+        ((exercises.sumOf { it.targetSets * (it.restDurationSecs + SET_SECONDS) } + 30) / 60)
+
+    private companion object {
+        const val SET_SECONDS = 40
+    }
+}

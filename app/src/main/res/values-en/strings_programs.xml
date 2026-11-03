@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Programmes list and programme builder (roadmap phase 2) -->
+    <string name="programs_title">Programmes</string>
+    <string name="program_default_name">A / B / C</string>
+    <string name="program_active">Active</string>
+    <string name="program_make_active">Make active</string>
+    <string name="program_archived_header">Archived</string>
+    <string name="program_archive">Archive</string>
+    <string name="program_restore">Restore</string>
+    <string name="program_delete">Delete</string>
+    <string name="program_delete_title">Delete %s?</string>
+    <string name="program_delete_text">Nothing was done in it, so nothing in your history goes with it.</string>
+    <string name="program_new">New programme</string>
+    <string name="program_new_name">New programme</string>
+    <string name="program_since">since %s</string>
+    <string name="program_switch_note">Switching keeps every session and record. Progress charts follow the exercise, not the programme.</string>
+    <string name="program_more">More for %s</string>
+    <string name="program_choose">Programme: %s. Change</string>
+    <plurals name="program_workouts">
+        <item quantity="one">%d workout</item>
+        <item quantity="other">%d workouts</item>
+    </plurals>
+    <plurals name="program_sessions">
+        <item quantity="one">%d session</item>
+        <item quantity="other">%d sessions</item>
+    </plurals>
+
+    <string name="builder_rename">Rename</string>
+    <string name="builder_program_name">Programme name</string>
+    <string name="builder_workouts_header">Workouts · done in this order</string>
+    <string name="builder_no_workouts">No workouts yet. Add the first one, then fill it with exercises.</string>
+    <string name="builder_add_workout">Add workout</string>
+    <string name="builder_edit_workout">Edit workout</string>
+    <string name="builder_workout_code">Code</string>
+    <string name="builder_workout_code_hint">Shown on the workout\'s chip: A, B, Push…</string>
+    <string name="builder_workout_name">Name (optional)</string>
+    <string name="builder_about_minutes">about %d min</string>
+    <plurals name="builder_exercises">
+        <item quantity="one">%d exercise</item>
+        <item quantity="other">%d exercises</item>
+    </plurals>
+    <string name="builder_remove_workout_title">Remove %s?</string>
+    <string name="builder_remove_workout_text">It leaves the rotation. Sessions you did stay in your history.</string>
+    <string name="builder_schedule">Schedule</string>
+    <string name="builder_start_date">Week 1 starts</string>
+    <string name="builder_start_value">%1$s · week %2$d</string>
+    <string name="builder_rules">Rotation · deload · alternate weeks</string>
+    <string name="builder_rules_in_order">In order</string>
+    <string name="builder_rules_deload_every">deload every %d weeks</string>
+    <string name="builder_rules_no_deload">no deload</string>
+    <string name="builder_rules_alternate">week B on even weeks</string>
+    <string name="builder_rules_no_variants">no alternate weeks</string>
+    <string name="builder_rules_later">Settings for these are coming.</string>
+    <string name="builder_open_workout">Edit exercises of %s</string>
+</resources>
