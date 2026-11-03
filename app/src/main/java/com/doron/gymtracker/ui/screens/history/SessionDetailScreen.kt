@@ -43,6 +43,7 @@ import com.doron.gymtracker.data.Laps
 import com.doron.gymtracker.data.RouteDistance
 import com.doron.gymtracker.data.repository.RouteRepository
 import com.doron.gymtracker.data.repository.SessionRepository
+import com.doron.gymtracker.data.repository.TrainingTypes
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.model.RepSetRecord
 import com.doron.gymtracker.domain.model.RoutePoint
@@ -51,6 +52,7 @@ import com.doron.gymtracker.domain.model.Session
 import com.doron.gymtracker.domain.model.TrackLog
 import com.doron.gymtracker.domain.model.Weather
 import com.doron.gymtracker.domain.usecase.GetPersonalRecordsUseCase
+import com.doron.gymtracker.ui.components.builtinTypeName
 import com.doron.gymtracker.ui.components.defaultNameRes
 import com.doron.gymtracker.ui.screens.cardio.CardioUiState
 import com.doron.gymtracker.ui.screens.cardio.RunReport
@@ -82,7 +84,10 @@ data class SessionDetailData(
     val exerciseBreakdown: List<ExerciseBreakdownLine>,
     val tracks: List<TrackLog> = emptyList(),
     /** For a run or walk: everything recorded, shown like the finish screen. */
-    val run: CardioUiState? = null
+    val run: CardioUiState? = null,
+    /** For a session of another type: what was entered with it. */
+    val calories: Int? = null,
+    val note: String? = null
 )
 
 data class ExerciseBreakdownLine(
@@ -98,7 +103,8 @@ class SessionDetailViewModel @Inject constructor(
     private val sessionRepo: SessionRepository,
     private val workoutRepo: WorkoutRepository,
     private val routeRepo: RouteRepository,
-    private val getPersonalRecords: GetPersonalRecordsUseCase
+    private val getPersonalRecords: GetPersonalRecordsUseCase,
+    private val trainingTypes: TrainingTypes
 ) : ViewModel() {
 
     private val _savedRouteName = MutableStateFlow<String?>(null)
@@ -135,6 +141,7 @@ class SessionDetailViewModel @Inject constructor(
             }
 
             val isCardio = session.type != "GYM"
+            val otherType = if (session.type == "OTHER") trainingTypes.get(session.activityTypeId) else null
             val workout = if (!isCardio) workoutRepo.getById(session.workoutId) else null
             val entries = if (!isCardio) sessionRepo.getEntriesForSession(session.id) else emptyList()
 
@@ -163,15 +170,16 @@ class SessionDetailViewModel @Inject constructor(
                 lines.add(ExerciseBreakdownLine(entry.exerciseId, name, sets.size, target, topWeight))
             }
 
-            val durationSecs = (session.finishedAt - session.startedAt) / 1000
+            val durationSecs = session.durationS?.toLong() ?: ((session.finishedAt - session.startedAt) / 1000)
             val tracks = sessionRepo.getTracksForSession(session.id)
 
             val workoutNameRes = when (session.type) {
                 "RUNNING" -> R.string.history_run
                 "WALKING" -> R.string.history_walk
+                "OTHER" -> otherType?.takeIf { it.name == null }?.let { builtinTypeName(it.id) }
                 else -> workout?.takeIf { it.name == null }?.defaultNameRes()
             }
-            val workoutName = workout?.name ?: session.workoutId
+            val workoutName = otherType?.name ?: workout?.name ?: session.workoutId
 
             _state.value = SessionDetailData(
                 sessionType = session.type,
@@ -187,7 +195,9 @@ class SessionDetailViewModel @Inject constructor(
                 distanceKm = session.distanceMeters?.let { it / 1000.0 },
                 exerciseBreakdown = lines,
                 tracks = tracks,
-                run = if (isCardio) runReport(session, durationSecs, tracks) else null
+                run = if (session.type == "RUNNING" || session.type == "WALKING") runReport(session, durationSecs, tracks) else null,
+                calories = session.calories,
+                note = session.note
             )
             _isLoading.value = false
         }
@@ -304,6 +314,26 @@ fun SessionDetailScreen(
                 }
             } else if (d.run != null) {
                 RunReport(d.run, savedRouteName = savedRouteName, onSaveAsRoute = viewModel::saveAsRoute)
+            } else {
+                // Another training type: how long, and what was entered with it
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    StatCard(stringResource(R.string.history_duration), formatDuration(d.durationSecs), Modifier.weight(1f))
+                    StatCard(stringResource(R.string.history_calories), d.calories?.toString() ?: "—", Modifier.weight(1f))
+                }
+                d.note?.let { note ->
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        note,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surface, MaterialTheme.shapes.small)
+                            .padding(14.dp)
+                    )
+                }
             }
 
             if (d.sessionType == "GYM" && d.exerciseBreakdown.isNotEmpty()) {

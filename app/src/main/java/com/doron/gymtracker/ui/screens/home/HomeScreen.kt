@@ -75,19 +75,22 @@ import com.doron.gymtracker.data.HealthConnectManager
 import com.doron.gymtracker.domain.model.PersonalRecord
 import com.doron.gymtracker.domain.model.RecordKind
 import com.doron.gymtracker.domain.model.Session
+import com.doron.gymtracker.domain.model.TrainingType
 import com.doron.gymtracker.domain.model.Weather
 import com.doron.gymtracker.domain.model.WeatherCondition
 import com.doron.gymtracker.domain.model.Workout
 import com.doron.gymtracker.domain.model.WorkoutPreview
 import com.doron.gymtracker.domain.usecase.ProgramStatus
+import com.doron.gymtracker.ui.components.AchievementsStrip
 import com.doron.gymtracker.ui.components.Activity
 import com.doron.gymtracker.ui.components.ActivityIcon
-import com.doron.gymtracker.ui.components.AchievementsStrip
 import com.doron.gymtracker.ui.components.BadgesRow
 import com.doron.gymtracker.ui.components.ExercisePreviewList
+import com.doron.gymtracker.ui.components.TrainingTypeBadge
 import com.doron.gymtracker.ui.components.WorkoutMetaRow
-import com.doron.gymtracker.ui.components.localizedName
+import com.doron.gymtracker.ui.components.displayName
 import com.doron.gymtracker.ui.components.label
+import com.doron.gymtracker.ui.components.localizedName
 import com.doron.gymtracker.ui.components.valueText
 import com.doron.gymtracker.ui.theme.Purple
 import com.doron.gymtracker.ui.theme.PurpleLight
@@ -108,6 +111,8 @@ fun HomeScreen(
     onAchievementsClick: () -> Unit,
     onProgramsClick: () -> Unit,
     onSetUpTraining: () -> Unit,
+    onTimer: (typeId: String) -> Unit,
+    onTrainingTypes: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
     badgesViewModel: BadgesViewModel = hiltViewModel()
 ) {
@@ -313,11 +318,22 @@ fun HomeScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            CardioCard(
-                routesCount = state.routesCount,
-                onRun = { startCardio("RUNNING") },
-                onWalk = { startCardio("WALKING") },
-                onRoutes = onRoutesClick
+            if (state.runShown || state.walkShown) {
+                CardioCard(
+                    routesCount = state.routesCount,
+                    onRun = { startCardio("RUNNING") }.takeIf { state.runShown },
+                    onWalk = { startCardio("WALKING") }.takeIf { state.walkShown },
+                    onRoutes = onRoutesClick
+                )
+            }
+
+            Spacer(Modifier.height(12.dp))
+            OtherTrainingCard(
+                types = state.timedTypes,
+                openTimer = state.openTimer,
+                openTimerType = state.openTimerType,
+                onTimer = onTimer,
+                onTrainingTypes = onTrainingTypes
             )
 
             // Achievements: the distance badges, then the rest (climb, mileage, iron, regular,
@@ -577,11 +593,68 @@ private fun NextWorkoutCard(
 }
 
 /** Running and walking, in the same green as cardio days in the history calendar, with the way to routes. */
+/**
+ * The training types timed rather than recorded (Pilates, football…), one button each; a timer
+ * left running comes first. With none shown it is just the way to Settings → Training types.
+ */
+@Composable
+private fun OtherTrainingCard(
+    types: List<TrainingType>,
+    openTimer: Session?,
+    openTimerType: TrainingType?,
+    onTimer: (String) -> Unit,
+    onTrainingTypes: () -> Unit
+) {
+    if (types.isEmpty() && openTimer == null) {
+        TextButton(onClick = onTrainingTypes, modifier = Modifier.fillMaxWidth()) {
+            Text("+ " + stringResource(R.string.home_more_types), color = Purple)
+        }
+        return
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(24.dp))
+            .padding(16.dp)
+    ) {
+        CardTitle(stringResource(R.string.home_other_title))
+        Spacer(Modifier.height(8.dp))
+        if (openTimer != null && openTimerType != null) {
+            TypeRow(openTimerType, stringResource(R.string.home_timer_running)) { onTimer(openTimerType.id) }
+        }
+        types.filter { it.id != openTimerType?.id }.forEach { type ->
+            TypeRow(type, stringResource(R.string.recorder_timer)) { onTimer(type.id) }
+        }
+        TextButton(onClick = onTrainingTypes, contentPadding = PaddingValues(0.dp)) {
+            Text(stringResource(R.string.home_edit_types), color = Purple, style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+}
+
+@Composable
+private fun TypeRow(type: TrainingType, detail: String, onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp, horizontal = 4.dp)
+    ) {
+        TrainingTypeBadge(type)
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(type.displayName(), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+            Text(detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
 @Composable
 private fun CardioCard(
     routesCount: Int,
-    onRun: () -> Unit,
-    onWalk: () -> Unit,
+    onRun: (() -> Unit)?,
+    onWalk: (() -> Unit)?,
     onRoutes: () -> Unit
 ) {
     Column(
@@ -593,8 +666,8 @@ private fun CardioCard(
         CardTitle(stringResource(R.string.home_cardio_title))
         Spacer(Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            CardioButton(Activity.RUN, stringResource(R.string.home_run), Modifier.weight(1f), onRun)
-            CardioButton(Activity.WALK, stringResource(R.string.home_walk), Modifier.weight(1f), onWalk)
+            onRun?.let { CardioButton(Activity.RUN, stringResource(R.string.home_run), Modifier.weight(1f), it) }
+            onWalk?.let { CardioButton(Activity.WALK, stringResource(R.string.home_walk), Modifier.weight(1f), it) }
         }
         Spacer(Modifier.height(8.dp))
         Row(

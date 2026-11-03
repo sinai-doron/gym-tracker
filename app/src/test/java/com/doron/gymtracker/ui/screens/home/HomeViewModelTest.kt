@@ -61,7 +61,7 @@ class HomeViewModelTest {
                 every { weekMode } returns flowOf(com.doron.gymtracker.data.prefs.WeekMode.CALENDAR)
                 every { runTarget } returns flowOf(com.doron.gymtracker.domain.model.RunTarget())
             },
-            mockk(relaxed = true))
+            mockk(relaxed = true), mockk(relaxed = true))
     }
 
     @After

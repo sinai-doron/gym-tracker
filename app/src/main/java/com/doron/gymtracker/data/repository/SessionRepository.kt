@@ -14,6 +14,12 @@ interface SessionRepository {
     suspend fun startSession(workoutId: String): Long
     suspend fun startCardioSession(type: String): Long
     suspend fun finishSession(sessionId: Long)
+    /** Starts timing a session of a training type recorded by a timer. */
+    suspend fun startTimedSession(activityTypeId: String): Long
+    /** Stops a timed session at [finishedAt], with what the user added. */
+    suspend fun finishTimedSession(sessionId: Long, finishedAt: Long, calories: Int?, note: String?)
+    /** The timer still running, if one is. */
+    suspend fun getOpenTimedSession(): Session?
     suspend fun finishCardioSession(sessionId: Long, distanceMeters: Double, finishedAt: Long = System.currentTimeMillis())
     fun observeAll(): Flow<List<Session>>
     suspend fun getById(sessionId: Long): Session?
