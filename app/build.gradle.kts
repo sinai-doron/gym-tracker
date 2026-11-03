@@ -92,6 +92,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.material.icons.core)
 
     // Hilt
     implementation(libs.hilt.android)
@@ -164,5 +165,29 @@ ksp {
 kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
+}
+
+// The Compose the app compiles against must be the Compose it runs with. A library once raised
+// Compose at run time (1.7.8 -> 1.10.0) past the BOM; FlowRow's signature differed between the two
+// and calling it crashed. This fails the build when any androidx.compose library resolves to
+// different versions on the two classpaths.
+val verifyComposeVersions by tasks.registering {
+    val compile = configurations.named("debugCompileClasspath")
+    val runtime = configurations.named("debugRuntimeClasspath")
+    doLast {
+        fun composeVersions(c: org.gradle.api.artifacts.Configuration) =
+            c.incoming.resolutionResult.allComponents
+                .mapNotNull { it.moduleVersion }
+                .filter { it.group.startsWith("androidx.compose") }
+                .associate { "${it.group}:${it.name}" to it.version }
+        val compiled = composeVersions(compile.get())
+        val running = composeVersions(runtime.get())
+        val differ = compiled.filter { (module, version) -> running[module] != null && running[module] != version }
+        check(differ.isEmpty()) {
+            "Compose differs between compile and run time: " +
+                differ.entries.joinToString { (m, v) -> "$m $v -> ${running[m]}" } +
+                ". Raise composeBom in gradle/libs.versions.toml to match."
+        }
     }
 }

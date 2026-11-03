@@ -241,6 +241,7 @@ device with pairing code**, then run `adb pair <ip>:<port>` and `adb connect <ip
 
 ```sh
 ./gradlew testDebugUnitTest          # unit tests: use cases, view models, run maths (clock, laps, pace, GPX)
+./gradlew verifyComposeVersions      # fails if a library pulls Compose past the BOM at run time (CI runs it)
 ./gradlew connectedDebugAndroidTest  # instrumented tests: Room, sync, migrations (an emulator, never your phone)
 ```
 

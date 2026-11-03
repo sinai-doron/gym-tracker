@@ -32,7 +32,7 @@ jobs:
         run: python3 -I catalogue/build_catalogue.py --check
 
       - name: Build and run unit tests
-        run: ./gradlew assembleDebug testDebugUnitTest
+        run: ./gradlew verifyComposeVersions assembleDebug testDebugUnitTest
 
       # Room writes each database version's schema while building. A schema that changed without
       # being committed means a migration nobody can test against later.
