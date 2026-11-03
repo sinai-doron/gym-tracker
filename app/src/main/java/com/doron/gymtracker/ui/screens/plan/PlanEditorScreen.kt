@@ -51,7 +51,7 @@ import com.doron.gymtracker.domain.model.TimedExerciseDefinition
 import com.doron.gymtracker.ui.components.localizedName
 import com.doron.gymtracker.ui.theme.Purple
 
-/** The editor's dialog: editing an existing exercise, or adding a new one. */
+/** The editor's sheet: editing an existing exercise, or adding a new one. */
 private sealed interface EditTarget {
     data class Existing(val exercise: ExerciseDefinition) : EditTarget
     data object New : EditTarget
@@ -123,7 +123,7 @@ fun PlanEditorScreen(
 
     editing?.let { target ->
         val initial = (target as? EditTarget.Existing)?.exercise
-        ExerciseEditDialog(
+        ExerciseTargetsSheet(
             initial = initial,
             onDismiss = { editing = null },
             onSave = { exercise ->
@@ -169,10 +169,18 @@ private fun PlanExerciseRow(
         Column(modifier = Modifier.weight(1f)) {
             Text(exercise.name, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold))
             Text(
-                exerciseSummary(exercise),
+                exerciseSummary(exercise) +
+                    if (exercise.isOptional) " · " + stringResource(R.string.targets_optional_tag) else "",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            exercise.variantB?.let { variant ->
+                Text(
+                    stringResource(R.string.targets_week_b, variant.name),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Purple
+                )
+            }
         }
         Column {
             IconButton(onClick = onMoveUp, enabled = canMoveUp, modifier = Modifier.height(32.dp)) {
@@ -196,7 +204,7 @@ private fun PlanExerciseRow(
 private fun exerciseSummary(exercise: ExerciseDefinition): String {
     // LTR isolate keeps "4×6" in order inside RTL text
     val target = when (exercise) {
-        is RepExerciseDefinition -> "\u2066${exercise.targetSets}×${exercise.targetReps}\u2069" +
+        is RepExerciseDefinition -> "\u2066${exercise.targetSets}×${exercise.repsLabel}\u2069" +
             if (exercise.isBodyweight) " · " + stringResource(R.string.bodyweight_label) else ""
         is DistanceExerciseDefinition -> "\u2066${exercise.targetSets}×\u2069" +
             stringResource(R.string.distance_value, exercise.targetDistanceM)
