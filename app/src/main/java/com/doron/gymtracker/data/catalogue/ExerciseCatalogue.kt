@@ -71,6 +71,18 @@ data class CatalogueExercise(
     val muscles: CatalogueMuscles,
     val weightStepKg: Double? = null,
     val legacy: List<String> = emptyList(),
+    val defaults: CatalogueDefaults = CatalogueDefaults(),
+)
+
+/** What an exercise starts with when added to a workout. */
+@Serializable
+data class CatalogueDefaults(
+    val sets: Int = 3,
+    val repsMin: Int? = null,
+    val repsMax: Int? = null,
+    val restS: Int = 90,
+    val durationS: Int? = null,
+    val distanceM: Int? = null,
 )
 
 @Serializable

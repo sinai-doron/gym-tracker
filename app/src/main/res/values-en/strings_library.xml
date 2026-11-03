@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The exercise library's words, copied from catalogue/vocabulary.json (LibraryVocabularyTest checks they match) -->
+    <string name="muscle_chest">Chest</string>
+    <string name="muscle_front_delts">Front delts</string>
+    <string name="muscle_side_delts">Side delts</string>
+    <string name="muscle_rear_delts">Rear delts</string>
+    <string name="muscle_biceps">Biceps</string>
+    <string name="muscle_triceps">Triceps</string>
+    <string name="muscle_forearms">Forearms</string>
+    <string name="muscle_abs">Abs</string>
+    <string name="muscle_obliques">Obliques</string>
+    <string name="muscle_lats">Lats</string>
+    <string name="muscle_traps">Traps</string>
+    <string name="muscle_upper_back">Upper back</string>
+    <string name="muscle_lower_back">Lower back</string>
+    <string name="muscle_glutes">Glutes</string>
+    <string name="muscle_quads">Quads</string>
+    <string name="muscle_hamstrings">Hamstrings</string>
+    <string name="muscle_adductors">Adductors</string>
+    <string name="muscle_calves">Calves</string>
+    <string name="equipment_barbell">Barbell</string>
+    <string name="equipment_ez_bar">EZ bar</string>
+    <string name="equipment_dumbbell">Dumbbell</string>
+    <string name="equipment_kettlebell">Kettlebell</string>
+    <string name="equipment_cable">Cable</string>
+    <string name="equipment_machine">Machine</string>
+    <string name="equipment_smith_machine">Smith machine</string>
+    <string name="equipment_bodyweight">Bodyweight</string>
+    <string name="equipment_band">Band</string>
+    <string name="equipment_other">Other</string>
+    <string name="preset_reps_load">Reps × weight</string>
+    <string name="preset_reps">Reps</string>
+    <string name="preset_reps_assisted">Assisted reps</string>
+    <string name="preset_time">Time</string>
+    <string name="preset_distance_load">Distance × weight</string>
+    <string name="preset_distance_time">Distance and time</string>
+    <string name="preset_calories_time">Calories and time</string>
+</resources>

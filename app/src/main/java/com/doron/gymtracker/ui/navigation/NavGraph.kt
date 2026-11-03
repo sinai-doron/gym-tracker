@@ -27,6 +27,7 @@ import com.doron.gymtracker.ui.screens.settings.SettingsScreen
 import com.doron.gymtracker.ui.screens.achievements.AchievementsScreen
 import com.doron.gymtracker.ui.screens.account.ConsentScreen
 import com.doron.gymtracker.ui.screens.routes.RouteDetailScreen
+import com.doron.gymtracker.ui.screens.picker.ExercisePickerScreen
 import com.doron.gymtracker.ui.screens.programs.ProgramBuilderScreen
 import com.doron.gymtracker.ui.screens.programs.ProgramsScreen
 import com.doron.gymtracker.ui.screens.routes.RoutesScreen
@@ -103,7 +104,13 @@ fun NavGraph(runToResume: CardioRun? = null, showOnboarding: Boolean = false) {
             )
         }
         composable("plan/{workoutId}") {
-            PlanEditorScreen(onBack = { navController.popBackStack() })
+            PlanEditorScreen(
+                onBack = { navController.popBackStack() },
+                onAddExercise = { workoutId -> navController.navigate("picker/$workoutId") }
+            )
+        }
+        composable("picker/{workoutId}") {
+            ExercisePickerScreen(onDone = { navController.popBackStack() })
         }
         composable("exercise-progress/{exerciseId}") {
             ExerciseProgressScreen(onBack = { navController.popBackStack() })

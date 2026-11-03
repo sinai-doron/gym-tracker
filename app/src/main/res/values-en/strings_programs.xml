@@ -62,4 +62,25 @@
     <string name="targets_add">Add to workout</string>
     <string name="targets_week_b">Week B: %s</string>
     <string name="targets_optional_tag">optional</string>
+    <!-- The exercise picker and a user's own exercise -->
+    <string name="picker_title">Add to %s</string>
+    <string name="picker_search">Search %d exercises</string>
+    <string name="picker_muscles">Muscles</string>
+    <string name="picker_equipment">Equipment</string>
+    <string name="picker_recent">Done lately</string>
+    <string name="picker_nothing">Nothing matches.</string>
+    <string name="picker_not_here">Not in the list?</string>
+    <string name="picker_create">Create exercise</string>
+    <string name="picker_yours">yours</string>
+    <string name="picker_add">Add %s</string>
+    <plurals name="picker_count">
+        <item quantity="one">%d exercise</item>
+        <item quantity="other">%d exercises</item>
+    </plurals>
+    <string name="create_title">New exercise</string>
+    <string name="create_name">Name</string>
+    <string name="create_similar">Already in the library. Use one of these instead?</string>
+    <string name="create_records">What a set records</string>
+    <string name="create_muscle">Main muscle</string>
+    <string name="create_save">Save and add</string>
 </resources>

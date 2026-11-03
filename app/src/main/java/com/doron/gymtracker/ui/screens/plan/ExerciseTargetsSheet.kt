@@ -47,14 +47,16 @@ private enum class ExerciseKind { REPS, TIME, DISTANCE }
 
 /**
  * An exercise's targets in a workout: sets, reps (a range or a fixed count), rest, and whether it's
- * optional or done per side. Creates one when [initial] is null; then the kind can be chosen.
+ * optional or done per side. Creates one when [initial] is null; then the kind can be chosen. With
+ * [isNew] and an [initial], adds that exercise (one picked from the library) with its targets.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExerciseTargetsSheet(
     initial: ExerciseDefinition?,
     onDismiss: () -> Unit,
-    onSave: (ExerciseDefinition) -> Unit
+    onSave: (ExerciseDefinition) -> Unit,
+    isNew: Boolean = initial == null
 ) {
     val rep = initial as? RepExerciseDefinition
     var kind by remember {
@@ -91,7 +93,7 @@ fun ExerciseTargetsSheet(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                stringResource(if (initial == null) R.string.add_exercise else R.string.edit_exercise),
+                stringResource(if (isNew) R.string.add_exercise else R.string.edit_exercise),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
             )
             // The kind decides how sets are logged, so it's fixed once an exercise exists
@@ -182,7 +184,7 @@ fun ExerciseTargetsSheet(
                 shape = MaterialTheme.shapes.large,
                 colors = ButtonDefaults.buttonColors(containerColor = Purple)
             ) {
-                Text(stringResource(if (initial == null) R.string.targets_add else R.string.save))
+                Text(stringResource(if (isNew) R.string.targets_add else R.string.save))
             }
         }
     }

@@ -43,6 +43,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.doron.gymtracker.R
 import com.doron.gymtracker.domain.model.DistanceExerciseDefinition
 import com.doron.gymtracker.domain.model.ExerciseDefinition
@@ -51,21 +53,17 @@ import com.doron.gymtracker.domain.model.TimedExerciseDefinition
 import com.doron.gymtracker.ui.components.localizedName
 import com.doron.gymtracker.ui.theme.Purple
 
-/** The editor's sheet: editing an existing exercise, or adding a new one. */
-private sealed interface EditTarget {
-    data class Existing(val exercise: ExerciseDefinition) : EditTarget
-    data object New : EditTarget
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlanEditorScreen(
     onBack: () -> Unit,
+    onAddExercise: (workoutId: String) -> Unit,
     viewModel: PlanEditorViewModel = hiltViewModel()
 ) {
     val workout by viewModel.workout.collectAsState()
-    var editing by remember { mutableStateOf<EditTarget?>(null) }
+    var editing by remember { mutableStateOf<ExerciseDefinition?>(null) }
     var removing by remember { mutableStateOf<ExerciseDefinition?>(null) }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.reload() }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -102,13 +100,13 @@ fun PlanEditorScreen(
                         canMoveDown = i < exercises.lastIndex,
                         onMoveUp = { viewModel.move(exercise.id, -1) },
                         onMoveDown = { viewModel.move(exercise.id, 1) },
-                        onEdit = { editing = EditTarget.Existing(exercise) },
+                        onEdit = { editing = exercise },
                         onRemove = { removing = exercise }
                     )
                 }
             }
             Button(
-                onClick = { editing = EditTarget.New },
+                onClick = { workout?.let { onAddExercise(it.id) } },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(20.dp)
@@ -121,13 +119,12 @@ fun PlanEditorScreen(
         }
     }
 
-    editing?.let { target ->
-        val initial = (target as? EditTarget.Existing)?.exercise
+    editing?.let { exercise ->
         ExerciseTargetsSheet(
-            initial = initial,
+            initial = exercise,
             onDismiss = { editing = null },
-            onSave = { exercise ->
-                viewModel.save(exercise, isNew = initial == null)
+            onSave = { edited ->
+                viewModel.save(edited, isNew = false)
                 editing = null
             }
         )

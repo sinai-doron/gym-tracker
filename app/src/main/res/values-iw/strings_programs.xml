@@ -68,4 +68,27 @@
     <string name="targets_add">הוסף לאימון</string>
     <string name="targets_week_b">שבוע B: %s</string>
     <string name="targets_optional_tag">רשות</string>
+    <!-- The exercise picker and a user's own exercise -->
+    <string name="picker_title">הוספה ל%s</string>
+    <string name="picker_search">חיפוש ב-%d תרגילים</string>
+    <string name="picker_muscles">שרירים</string>
+    <string name="picker_equipment">ציוד</string>
+    <string name="picker_recent">בוצעו לאחרונה</string>
+    <string name="picker_nothing">לא נמצא תרגיל מתאים.</string>
+    <string name="picker_not_here">לא ברשימה?</string>
+    <string name="picker_create">צור תרגיל</string>
+    <string name="picker_yours">שלך</string>
+    <string name="picker_add">הוסף את %s</string>
+    <plurals name="picker_count">
+        <item quantity="one">תרגיל אחד</item>
+        <item quantity="two">%d תרגילים</item>
+        <item quantity="many">%d תרגילים</item>
+        <item quantity="other">%d תרגילים</item>
+    </plurals>
+    <string name="create_title">תרגיל חדש</string>
+    <string name="create_name">שם</string>
+    <string name="create_similar">כבר קיים בספרייה. להשתמש באחד מאלה?</string>
+    <string name="create_records">מה נרשם בכל סט</string>
+    <string name="create_muscle">שריר עיקרי</string>
+    <string name="create_save">שמור והוסף</string>
 </resources>
