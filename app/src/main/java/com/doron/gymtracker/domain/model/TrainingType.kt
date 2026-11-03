@@ -30,10 +30,18 @@ data class TrainingType(
     val sortOrder: Int,
     val hidden: Boolean,
 ) {
+    /** Whether a distance means anything for it: a run, a walk, a swim, a rower. Pilates has none. */
+    val hasDistance: Boolean get() = recorder == Recorder.GPS || id in DISTANCE_TYPES
+
     /** Calories for [durationS] seconds of it at [bodyWeightKg]: MET × kg × hours. Null without a MET or a weight. */
     fun estimateCalories(durationS: Long, bodyWeightKg: Float?): Int? {
         val met = metValue ?: return null
         val kg = bodyWeightKg ?: return null
         return (met * kg * durationS / 3600.0).roundToInt()
+    }
+
+    private companion object {
+        /** Timed built-ins that cover a distance. */
+        val DISTANCE_TYPES = setOf("swimming", "cardio_machines")
     }
 }

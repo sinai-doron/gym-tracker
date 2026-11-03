@@ -82,4 +82,14 @@ class TrainingTypesTest {
         assertNull(pilates.estimateCalories(3600, null))
         assertNull(pilates.copy(metValue = null).estimateCalories(3600, 78f))
     }
+
+    @Test
+    fun `only types that cover ground ask for a distance`() {
+        fun type(id: String, recorder: Recorder) = TrainingType(id, null, id, "#000000", recorder, null, null, true, 0, false)
+        assertTrue(type("run", Recorder.GPS).hasDistance)
+        assertTrue(type("swimming", Recorder.DURATION).hasDistance)
+        assertTrue(type("cardio_machines", Recorder.DURATION).hasDistance)
+        assertEquals(false, type("pilates", Recorder.DURATION).hasDistance)
+        assertEquals(false, type("strength", Recorder.EXERCISES).hasDistance)
+    }
 }
