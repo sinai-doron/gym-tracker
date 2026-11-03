@@ -1,0 +1,75 @@
+{
+ "id": "full_body",
+ "order": 1,
+ "badge": "FB",
+ "names": {
+  "en": "Full body",
+  "he": "גוף מלא"
+ },
+ "summary": {
+  "en": "3 days a week · 6 exercises each, two workouts in turn",
+  "he": "3 ימים בשבוע · 6 תרגילים בכל אימון, שני אימונים לסירוגין"
+ },
+ "workouts": [
+  {
+   "code": {
+    "en": "A",
+    "he": "A"
+   },
+   "names": {
+    "en": "Full body A",
+    "he": "גוף מלא A"
+   },
+   "exercises": [
+    {
+     "exercise": "barbell-back-squat"
+    },
+    {
+     "exercise": "barbell-bench-press"
+    },
+    {
+     "exercise": "barbell-row"
+    },
+    {
+     "exercise": "dumbbell-romanian-deadlift"
+    },
+    {
+     "exercise": "dumbbell-lateral-raise"
+    },
+    {
+     "exercise": "plank"
+    }
+   ]
+  },
+  {
+   "code": {
+    "en": "B",
+    "he": "B"
+   },
+   "names": {
+    "en": "Full body B",
+    "he": "גוף מלא B"
+   },
+   "exercises": [
+    {
+     "exercise": "leg-press"
+    },
+    {
+     "exercise": "overhead-press"
+    },
+    {
+     "exercise": "wide-grip-lat-pulldown"
+    },
+    {
+     "exercise": "barbell-hip-thrust"
+    },
+    {
+     "exercise": "dumbbell-curl"
+    },
+    {
+     "exercise": "triceps-pushdown-rope"
+    }
+   ]
+  }
+ ]
+}

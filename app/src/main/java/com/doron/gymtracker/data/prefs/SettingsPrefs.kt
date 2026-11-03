@@ -15,6 +15,7 @@ import com.doron.gymtracker.domain.model.RunTargetType
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -33,6 +34,11 @@ private val AUDIO_FEEDBACK = stringPreferencesKey("audio_feedback")
 private val RUN_TARGET_ROUTE_ID = longPreferencesKey("run_target_route_id")
 private val ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
 private val WEEK_MODE = stringPreferencesKey("week_mode")
+private val WEIGHT_UNIT = stringPreferencesKey("weight_unit")
+private val DISTANCE_UNIT = stringPreferencesKey("distance_unit")
+private val WEEK_START = stringPreferencesKey("week_start")
+private val BIRTH_YEAR = intPreferencesKey("birth_year")
+private val SEX = stringPreferencesKey("sex")
 
 enum class AudioFeedback { VOICE, TONES, OFF }
 
@@ -118,6 +124,28 @@ class SettingsPrefs @Inject constructor(
         }
     }
 
+    /** Units, week start and the optional details; what isn't saved yet comes from the phone's region. */
+    val profile: Flow<Profile> = context.settingsDataStore.data.map { prefs ->
+        val region = Profile.defaultsFor(Locale.getDefault())
+        Profile(
+            weightUnit = prefs[WEIGHT_UNIT].enumOr(region.weightUnit),
+            distanceUnit = prefs[DISTANCE_UNIT].enumOr(region.distanceUnit),
+            weekStart = prefs[WEEK_START].enumOr(region.weekStart),
+            birthYear = prefs[BIRTH_YEAR],
+            sex = prefs[SEX]?.let { runCatching { Sex.valueOf(it) }.getOrNull() }
+        )
+    }
+
+    suspend fun setProfile(profile: Profile) {
+        context.settingsDataStore.edit { prefs ->
+            prefs[WEIGHT_UNIT] = profile.weightUnit.name
+            prefs[DISTANCE_UNIT] = profile.distanceUnit.name
+            prefs[WEEK_START] = profile.weekStart.name
+            profile.birthYear?.let { prefs[BIRTH_YEAR] = it } ?: prefs.remove(BIRTH_YEAR)
+            profile.sex?.let { prefs[SEX] = it.name } ?: prefs.remove(SEX)
+        }
+    }
+
     /** How runs speak up for laps, the target and auto-pause. */
     val audioFeedback: Flow<AudioFeedback> = context.settingsDataStore.data.map { prefs ->
         prefs[AUDIO_FEEDBACK]?.let { runCatching { AudioFeedback.valueOf(it) }.getOrNull() } ?: AudioFeedback.VOICE
@@ -134,3 +162,6 @@ class SettingsPrefs @Inject constructor(
         val STEP_GOAL_OPTIONS = listOf(5_000, 6_000, 7_000, 8_000, 10_000, 12_000, 15_000, 20_000)
     }
 }
+
+private inline fun <reified E : Enum<E>> String?.enumOr(default: E): E =
+    this?.let { name -> enumValues<E>().firstOrNull { it.name == name } } ?: default

@@ -25,15 +25,18 @@ class WorkoutRepositoryImpl @Inject constructor(
     private val seedLock = Mutex()
     @Volatile private var seeded = false
 
-    // Inserts whatever part of the plan is missing, in one transaction (IGNORE keeps existing
-    // rows, so edited set counts survive). Covers a fresh install, an install a crash left
-    // half-seeded, and exercises added to the plan later, like the week-B variant rows. A fresh
-    // install's programme starts today; an existing one keeps its own start (the v16 migration).
+    // Tops up the owner's A/B/C plan, on installs that have it (the v16 migration made it from
+    // their history): inserts whatever part is missing, in one transaction (IGNORE keeps existing
+    // rows, so edited set counts survive), like the week-B variant rows added later. A fresh
+    // install starts with no programme, and gets one from a template or the builder.
     override suspend fun ensureSeeded() {
         if (seeded) return
         seedLock.withLock {
             if (seeded) return
-            programDao.insert(TrainingPlanData.program(LocalDate.now()).toEntity(isActive = true))
+            if (programDao.get(TrainingPlanData.PROGRAM_ID) == null) {
+                seeded = true
+                return
+            }
             val workoutEntities = TrainingPlanData.all.mapIndexed { i, w ->
                 WorkoutEntity(w.id, w.code, programId = TrainingPlanData.PROGRAM_ID, sortOrder = i + 1)
             }
@@ -48,12 +51,12 @@ class WorkoutRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getActiveProgram(): Program {
+    override suspend fun getActiveProgram(): Program? {
         ensureSeeded()
-        return checkNotNull(programDao.getActive()) { "no active programme after seeding" }.toDomain()
+        return programDao.getActive()?.toDomain()
     }
 
-    override suspend fun getAll(): List<Workout> = getForProgram(getActiveProgram().id)
+    override suspend fun getAll(): List<Workout> = getActiveProgram()?.let { getForProgram(it.id) }.orEmpty()
 
     override suspend fun getForProgram(programId: String): List<Workout> {
         ensureSeeded()
@@ -72,6 +75,21 @@ class WorkoutRepositoryImpl @Inject constructor(
             base.toDomain(variantB = variantsByBase[base.id]?.toDomain())
         }
         return Workout(id, label, exercises, name = name, sortOrder = sortOrder)
+    }
+
+    override suspend fun installProgram(program: Program, workouts: List<NewWorkout>) {
+        val rows = workouts.mapIndexed { i, w ->
+            WorkoutEntity(UUID.randomUUID().toString(), w.code, programId = program.id, sortOrder = i + 1, name = w.name) to w
+        }
+        programDao.install(
+            program.toEntity(isActive = true),
+            rows.map { it.first },
+            rows.flatMap { (row, w) ->
+                w.exercises.mapIndexed { i, (exercise, libraryId) ->
+                    exercise.toEntity(row.id, sortOrder = i + 1).copy(libraryExerciseId = libraryId)
+                }
+            }
+        )
     }
 
     override suspend fun addWorkout(programId: String, code: String, name: String?): String {

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- First launch: About you and Your training; home's set-up card -->
+    <string name="setup_about_title">פרטים עליך</string>
+    <string name="setup_about_text">משמש למשקלים, לקלוריות ולשבוע שלך. אפשר לשנות הכול בהגדרות.</string>
+    <string name="setup_weights_in">יחידת משקל</string>
+    <string name="setup_distances_in">יחידת מרחק</string>
+    <string name="setup_week_starts">השבוע מתחיל ביום</string>
+    <string name="unit_kg">ק״ג</string>
+    <string name="unit_lb">ליברות</string>
+    <string name="unit_km">ק״מ</string>
+    <string name="unit_mi">מייל</string>
+    <string name="day_sunday">ראשון</string>
+    <string name="day_monday">שני</string>
+    <string name="setup_optional">לא חובה</string>
+    <string name="setup_body_weight_kg">משקל גוף (ק״ג)</string>
+    <string name="setup_body_weight_lb">משקל גוף (ליברות)</string>
+    <string name="setup_steps_goal">יעד צעדים יומי</string>
+    <string name="setup_birth_year">שנת לידה</string>
+    <string name="setup_sex">מין</string>
+    <string name="sex_female">נקבה</string>
+    <string name="sex_male">זכר</string>
+    <string name="setup_optional_note">משקל גוף, שנת לידה ומין משמשים רק לדיוק הערכת הקלוריות.</string>
+    <string name="setup_training_title">איך אתה מתאמן?</string>
+    <string name="setup_training_text">בחר נקודת התחלה. אפשר לשנות הכול אחר כך.</string>
+    <string name="setup_skip">דלג בינתיים</string>
+    <string name="setup_week1_starts">שבוע 1 מתחיל ב-%s</string>
+    <string name="setup_empty_title">התחל ריק</string>
+    <string name="setup_empty_text">בנה את האימונים בעצמך</string>
+    <string name="setup_empty_name">התוכנית שלי</string>
+    <string name="setup_create">צור תוכנית</string>
+    <string name="home_setup_title">הגדרת האימונים</string>
+    <string name="home_setup_text">בחר תוכנית מוכנה להתחלה, או בנה תוכנית משלך.</string>
+    <string name="home_setup_button">להגדרה</string>
+    <string name="home_no_workouts_title">%s: עדיין אין אימונים</string>
+    <string name="home_no_workouts_text">הוסף אימונים לתוכנית, או עבור לתוכנית אחרת.</string>
+    <string name="home_no_workouts_button">לתוכניות</string>
+</resources>

@@ -191,6 +191,9 @@ app/src/main/java/com/doron/gymtracker/
     └── theme/
 assets/map_style_run.json   The map style
 assets/exercises/           The exercise catalogue the app ships (built, don't edit)
+assets/templates/           Programmes a new user can start from (Full body, Upper / Lower,
+                            Push / Pull / Legs, A / B / C): library exercises by slug;
+                            ProgramTemplateTest checks them against the catalogue
 assets/body_map/            The picker's body figures and their MIT licence, copied from
                             react-native-body-highlighter by scripts/build_body_map.py
 catalogue/            The built-in exercise catalogue: written by hand, built into

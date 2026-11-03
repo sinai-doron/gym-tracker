@@ -1,0 +1,105 @@
+{
+ "id": "push_pull_legs",
+ "order": 3,
+ "badge": "PPL",
+ "names": {
+  "en": "Push / Pull / Legs",
+  "he": "דחיפה / משיכה / רגליים"
+ },
+ "summary": {
+  "en": "3 or 6 days · split by movement",
+  "he": "3 או 6 ימים · חלוקה לפי תנועה"
+ },
+ "workouts": [
+  {
+   "code": {
+    "en": "Push",
+    "he": "דחיפה"
+   },
+   "names": {
+    "en": "Push",
+    "he": "דחיפה"
+   },
+   "exercises": [
+    {
+     "exercise": "barbell-bench-press"
+    },
+    {
+     "exercise": "overhead-press"
+    },
+    {
+     "exercise": "incline-dumbbell-press"
+    },
+    {
+     "exercise": "dumbbell-lateral-raise"
+    },
+    {
+     "exercise": "triceps-pushdown-rope"
+    },
+    {
+     "exercise": "overhead-dumbbell-triceps-extension"
+    }
+   ]
+  },
+  {
+   "code": {
+    "en": "Pull",
+    "he": "משיכה"
+   },
+   "names": {
+    "en": "Pull",
+    "he": "משיכה"
+   },
+   "exercises": [
+    {
+     "exercise": "barbell-row"
+    },
+    {
+     "exercise": "wide-grip-lat-pulldown"
+    },
+    {
+     "exercise": "seated-cable-row-v-handle"
+    },
+    {
+     "exercise": "cable-face-pull"
+    },
+    {
+     "exercise": "barbell-curl"
+    },
+    {
+     "exercise": "dumbbell-hammer-curl"
+    }
+   ]
+  },
+  {
+   "code": {
+    "en": "Legs",
+    "he": "רגליים"
+   },
+   "names": {
+    "en": "Legs",
+    "he": "רגליים"
+   },
+   "exercises": [
+    {
+     "exercise": "barbell-back-squat"
+    },
+    {
+     "exercise": "barbell-romanian-deadlift"
+    },
+    {
+     "exercise": "leg-press"
+    },
+    {
+     "exercise": "lying-leg-curl"
+    },
+    {
+     "exercise": "leg-extension"
+    },
+    {
+     "exercise": "machine-calf-raise"
+    }
+   ]
+  }
+ ]
+}

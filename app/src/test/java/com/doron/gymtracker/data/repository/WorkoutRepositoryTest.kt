@@ -29,13 +29,14 @@ class WorkoutRepositoryTest {
         dao = mockk(relaxed = true)
         programs = mockk(relaxed = true)
         coEvery { programs.getActive() } returns abc
+        coEvery { programs.get("program_abc") } returns abc
         repo = WorkoutRepositoryImpl(dao, programs)
     }
 
     @Test
-    fun `ensureSeeded adds the programme, its workouts in rotation order`() = runTest {
+    fun `ensureSeeded tops up the owner's programme, its workouts in rotation order`() = runTest {
         repo.ensureSeeded()
-        coVerify { programs.insert(match { it.id == "program_abc" && it.deloadEveryWeeks == 6 && it.isActive }) }
+        coVerify(exactly = 0) { programs.insert(any()) }
         coVerify {
             dao.seed(match { rows -> rows.map { it.label to it.sortOrder } == listOf("A" to 1, "B" to 2, "C" to 3) &&
                 rows.all { it.programId == "program_abc" } }, any())
@@ -43,8 +44,18 @@ class WorkoutRepositoryTest {
     }
 
     @Test
+    fun `a fresh install gets no programme`() = runTest {
+        coEvery { programs.get("program_abc") } returns null
+        coEvery { programs.getActive() } returns null
+        repo.ensureSeeded()
+        coVerify(exactly = 0) { dao.seed(any(), any()) }
+        assertNull(repo.getActiveProgram())
+        assertEquals(emptyList<Any>(), repo.getAll())
+    }
+
+    @Test
     fun `the active programme is read from the database`() = runTest {
-        val program = repo.getActiveProgram()
+        val program = repo.getActiveProgram()!!
         assertEquals(LocalDate.of(2026, 10, 26), program.startDate)
         assertEquals(6, program.deloadEveryWeeks)
     }

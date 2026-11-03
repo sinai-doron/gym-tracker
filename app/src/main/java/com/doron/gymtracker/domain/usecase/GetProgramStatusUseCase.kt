@@ -20,8 +20,9 @@ data class ProgramStatus(
 class GetProgramStatusUseCase @Inject constructor(
     private val repo: WorkoutRepository
 ) {
-    suspend operator fun invoke(nowMs: Long = System.currentTimeMillis()): ProgramStatus {
-        val program = repo.getActiveProgram()
+    /** Null while the user has no programme. */
+    suspend operator fun invoke(nowMs: Long = System.currentTimeMillis()): ProgramStatus? {
+        val program = repo.getActiveProgram() ?: return null
         return ProgramStatus(
             programName = program.name,
             weekNumber = program.weekNumber(nowMs),
