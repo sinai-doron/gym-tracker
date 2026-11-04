@@ -1,8 +1,5 @@
 package com.doron.gymtracker.ui.screens.history
 
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -39,6 +37,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,21 +46,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.doron.gymtracker.R
+import com.doron.gymtracker.domain.model.TrainingType
+import com.doron.gymtracker.ui.components.colorValue
+import com.doron.gymtracker.ui.components.dayColors
+import com.doron.gymtracker.ui.components.displayName
+import com.doron.gymtracker.ui.components.drawDay
 import com.doron.gymtracker.ui.theme.Purple
-import com.doron.gymtracker.ui.theme.SuccessGreen
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -106,7 +109,7 @@ fun HistoryScreen(
             Spacer(Modifier.height(4.dp))
             CalendarGrid(month = month, sessionDates = sessionDates, onDayClick = { viewModel.loadDaySessions(it) })
             Spacer(Modifier.height(16.dp))
-            Legend()
+            Legend(sessionDates.filterKeys { YearMonth.from(it) == month }.values.flatten().distinctBy { it.id })
         }
     }
 
@@ -170,7 +173,7 @@ private fun DayHeaders() {
 @Composable
 private fun CalendarGrid(
     month: YearMonth,
-    sessionDates: Map<LocalDate, Set<DayKind>>,
+    sessionDates: Map<LocalDate, List<TrainingType>>,
     onDayClick: (LocalDate) -> Unit
 ) {
     val today = LocalDate.now()
@@ -190,12 +193,12 @@ private fun CalendarGrid(
                         Box(modifier = Modifier.weight(1f).aspectRatio(1f))
                     } else {
                         val date = month.atDay(dayNum)
-                        val kinds = sessionDates[date].orEmpty()
-                        val hasSession = kinds.isNotEmpty()
+                        val types = sessionDates[date].orEmpty()
+                        val hasSession = types.isNotEmpty()
                         val isToday = date == today
                         DayCell(
                             day = dayNum,
-                            kinds = kinds,
+                            colors = dayColors(types),
                             isToday = isToday,
                             modifier = Modifier.weight(1f),
                             onClick = if (hasSession) ({ onDayClick(date) }) else null
@@ -210,12 +213,12 @@ private fun CalendarGrid(
 @Composable
 private fun DayCell(
     day: Int,
-    kinds: Set<DayKind>,
+    colors: List<Color>,
     isToday: Boolean,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)?
 ) {
-    val hasSession = kinds.isNotEmpty()
+    val hasSession = colors.isNotEmpty()
     val surface = MaterialTheme.colorScheme.surface
     val textColor = when {
         hasSession -> Color.White
@@ -230,18 +233,7 @@ private fun DayCell(
             .aspectRatio(1f)
             .padding(2.dp)
             .clip(CircleShape)
-            .drawBehind {
-                when {
-                    kinds.size > 1 -> {
-                        // Both on one day: gym on the right half, cardio on the left
-                        drawRect(CardioColor, size = Size(size.width / 2, size.height))
-                        drawRect(GymColor, topLeft = Offset(size.width / 2, 0f), size = Size(size.width / 2, size.height))
-                    }
-                    DayKind.GYM in kinds -> drawRect(GymColor)
-                    DayKind.CARDIO in kinds -> drawRect(CardioColor)
-                    else -> drawRect(surface)
-                }
-            }
+            .drawBehind { drawDay(colors, surface) }
             .then(borderMod)
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
         contentAlignment = Alignment.Center
@@ -255,25 +247,30 @@ private fun DayCell(
     }
 }
 
-/** Which color is which, under the calendar. */
+/** Which colour is which, under the calendar: the types done this month, one entry per colour. */
 @Composable
-private fun Legend() {
-    Row(
+private fun Legend(types: List<TrainingType>) {
+    val entries = types.sortedBy { it.sortOrder }.groupBy { it.colorValue() }
+    if (entries.isEmpty()) return
+    LazyRow(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
+        horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        listOf(GymColor to stringResource(R.string.history_legend_gym), CardioColor to stringResource(R.string.history_legend_cardio)).forEachIndexed { i, (color, label) ->
-            if (i > 0) Spacer(Modifier.width(24.dp))
-            Box(Modifier.size(12.dp).background(color, CircleShape))
-            Spacer(Modifier.width(6.dp))
-            Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        items(entries.entries.toList()) { (color, same) ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(12.dp).background(color, CircleShape))
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    same.map { it.displayName() }.joinToString(" / "),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
 
-private val GymColor = Purple
-private val CardioColor = SuccessGreen
 
 @Composable
 private fun DaySessionsSheet(

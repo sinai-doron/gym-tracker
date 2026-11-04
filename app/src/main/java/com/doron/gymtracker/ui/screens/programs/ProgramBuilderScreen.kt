@@ -56,6 +56,7 @@ import com.doron.gymtracker.R
 import com.doron.gymtracker.domain.model.Program
 import com.doron.gymtracker.domain.model.VariantRule
 import com.doron.gymtracker.domain.model.Workout
+import com.doron.gymtracker.ui.components.circleCode
 import com.doron.gymtracker.ui.components.localizedName
 import com.doron.gymtracker.ui.theme.Purple
 import com.doron.gymtracker.ui.theme.PurpleLight
@@ -272,7 +273,7 @@ private fun WorkoutRow(
                 .background(PurpleLight, RoundedCornerShape(10.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Text(workout.code, color = Purple, style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
+            Text(circleCode(workout.code), color = Purple, style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
         }
         Column(modifier = Modifier
             .weight(1f)

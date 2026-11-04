@@ -143,7 +143,7 @@ fun LogSessionScreen(
                 Number(stringResource(R.string.log_minutes), s.minutes, Modifier.weight(1f)) { v -> viewModel.update { it.copy(minutes = v.take(2)) } }
             }
 
-            if (!s.isStrength) {
+            if (s.type?.hasDistance == true) {
                 Number(stringResource(R.string.log_distance), s.distance, Modifier.fillMaxWidth(), decimal = true) { v ->
                     viewModel.update { it.copy(distance = v.take(6)) }
                 }

@@ -57,8 +57,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -88,7 +86,10 @@ import com.doron.gymtracker.ui.components.BadgesRow
 import com.doron.gymtracker.ui.components.ExercisePreviewList
 import com.doron.gymtracker.ui.components.TrainingTypeBadge
 import com.doron.gymtracker.ui.components.WorkoutMetaRow
+import com.doron.gymtracker.ui.components.circleCode
+import com.doron.gymtracker.ui.components.dayColors
 import com.doron.gymtracker.ui.components.displayName
+import com.doron.gymtracker.ui.components.drawDay
 import com.doron.gymtracker.ui.components.label
 import com.doron.gymtracker.ui.components.localizedName
 import com.doron.gymtracker.ui.components.valueText
@@ -539,7 +540,7 @@ private fun NextWorkoutCard(
                     .background(Purple, CircleShape)
             ) {
                 Text(
-                    preview.workout.code,
+                    circleCode(preview.workout.code),
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
                     color = MaterialTheme.colorScheme.onPrimary
                 )
@@ -806,6 +807,10 @@ private fun weekRange(days: List<WeekDay>): String? {
 private fun WeekStrip(days: List<WeekDay>) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
         days.forEach { day ->
+            val colors = dayColors(day.types).ifEmpty {
+                // Types not loaded: gym and cardio in their usual colours
+                listOfNotNull(SuccessGreen.takeIf { day.cardio }, Purple.takeIf { day.gym })
+            }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     day.date.dayOfWeek.getDisplayName(java.time.format.TextStyle.NARROW, java.util.Locale.getDefault()),
@@ -821,18 +826,8 @@ private fun WeekStrip(days: List<WeekDay>) {
                         .border(2.dp, if (day.isToday) Purple else Color.Transparent, CircleShape)
                         .padding(4.dp)
                         .clip(CircleShape)
-                        .drawBehind {
-                            when {
-                                // Both on one day: gym on the right half, cardio on the left, as in history
-                                day.gym && day.cardio -> {
-                                    drawRect(SuccessGreen, size = Size(size.width / 2, size.height))
-                                    drawRect(Purple, topLeft = Offset(size.width / 2, 0f), size = Size(size.width / 2, size.height))
-                                }
-                                day.gym -> drawRect(Purple)
-                                day.cardio -> drawRect(SuccessGreen)
-                                else -> drawRect(Purple.copy(alpha = 0.08f))
-                            }
-                        }
+                        // Each training type in its colour, as in history
+                        .drawBehind { drawDay(colors, Purple.copy(alpha = 0.08f)) }
                 ) {
                     Text(
                         day.mark ?: "",

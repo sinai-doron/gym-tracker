@@ -110,7 +110,8 @@ class LogSessionViewModel @Inject constructor(
             val startedAt = s.startMs()
             val finishedAt = startedAt + s.durationS * 1000L
             val calories = s.calories.toIntOrNull() ?: s.estimatedCalories
-            val distanceMeters = if (s.isStrength) null else s.distance.replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 }?.times(1000)
+            // Typed for another type before switching: only a type with a distance keeps it
+            val distanceMeters = if (!type.hasDistance) null else s.distance.replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 }?.times(1000)
             val sessionType = when {
                 s.isStrength -> "GYM"
                 type.id == ActivityTypeMigration.RUN -> "RUNNING"
