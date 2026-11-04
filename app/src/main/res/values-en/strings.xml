@@ -117,7 +117,7 @@
     <string name="audio_feedback_hint">Laps, target and auto-pause — through headphones when connected</string>
 
     <!-- Onboarding -->
-    <string name="onboarding_welcome_title">Hey there! 👋</string>
+    <string name="onboarding_welcome_title">Hey there!</string>
     <string name="onboarding_welcome_text">Glad you\'re here! I\'ll count your sets, runs and steps. A few quick permissions and we\'re off.</string>
     <string name="onboarding_lets_go">Let\'s go</string>
     <string name="onboarding_notifications_title">Ding! Next set</string>

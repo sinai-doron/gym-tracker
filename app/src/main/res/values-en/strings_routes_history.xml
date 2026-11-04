@@ -13,7 +13,7 @@
     <string name="routes_card_meta">%1$s km · added %2$s</string>
     <string name="routes_rename">Rename</string>
     <string name="routes_delete">Delete</string>
-    <string name="routes_run_route">🏃 Run this route</string>
+    <string name="routes_run_route">Run this route</string>
     <string name="routes_distance">Distance</string>
     <string name="routes_unit_km">km</string>
     <string name="routes_unit_m">m</string>

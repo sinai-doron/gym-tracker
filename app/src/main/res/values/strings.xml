@@ -117,7 +117,7 @@
     <string name="audio_feedback_hint">הקפות, מטרה והשהיה אוטומטית — באוזניות כשמחוברות</string>
 
     <!-- Onboarding -->
-    <string name="onboarding_welcome_title">ברוכים הבאים! 👋</string>
+    <string name="onboarding_welcome_title">ברוכים הבאים!</string>
     <string name="onboarding_welcome_text">שמחים שהגעת! האפליקציה תספור את הסטים, הריצות והצעדים שלך. רק כמה הרשאות קטנות ויוצאים לדרך.</string>
     <string name="onboarding_lets_go">יאללה, מתחילים</string>
     <string name="onboarding_notifications_title">דינג! זמן לסט הבא</string>

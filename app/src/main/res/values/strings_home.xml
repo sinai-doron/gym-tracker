@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Home: achievements card -->
-    <string name="home_achievements_title">🏅 הישגים</string>
+    <string name="home_achievements_title">הישגים</string>
     <string name="home_achievements_earned">%1$d מתוך %2$d</string>
     <string name="home_achievements_ok">יופי!</string>
-    <string name="home_badges_title">🏃 מרחק</string>
+    <string name="home_badges_title">מרחק</string>
     <string name="home_badges_explain">הריצה הראשונה שהגיעה למרחק</string>
 
     <!-- Home: next workout card -->
@@ -18,14 +18,14 @@
     <string name="home_walk">הליכה</string>
 
     <!-- Home: personal records -->
-    <string name="home_records_title">🏆 שיאים אישיים</string>
+    <string name="home_records_title">שיאים אישיים</string>
     <string name="home_record_week">שבוע %1$s</string>
     <string name="home_record_longest_run">הריצה הארוכה</string>
     <string name="home_record_best_week">השבוע הטוב</string>
 
     <!-- Home: week card -->
-    <string name="home_week_rolling">📅 7 ימים אחרונים</string>
-    <string name="home_week_calendar">📅 השבוע</string>
+    <string name="home_week_rolling">7 ימים אחרונים</string>
+    <string name="home_week_calendar">השבוע</string>
     <string name="home_stat_minutes">דקות</string>
     <string name="home_stat_volume">נפח</string>
     <string name="home_stat_streak">רצף</string>
@@ -33,8 +33,8 @@
     <string name="home_week_range_month">%1$s ב%2$s</string>
 
     <!-- Home: steps card -->
-    <string name="home_steps_title_rolling">👣 צעדים ב-7 ימים</string>
-    <string name="home_steps_title_week">👣 צעדים השבוע</string>
+    <string name="home_steps_title_rolling">צעדים ב-7 ימים</string>
+    <string name="home_steps_title_week">צעדים השבוע</string>
     <string name="home_steps_day">%1$s · %2$,d</string>
     <string name="home_steps_day_workout">%1$s · %2$,d (%3$,d באימון)</string>
     <string name="home_steps_average">ממוצע %1$,d</string>

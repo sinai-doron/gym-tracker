@@ -71,7 +71,7 @@ fun ExerciseDetailSheet(
             )
             if (onShowProgress != null) {
                 TextButton(onClick = onShowProgress) {
-                    Text("📈 " + stringResource(R.string.progress))
+                    Text(stringResource(R.string.progress))
                 }
             }
         }

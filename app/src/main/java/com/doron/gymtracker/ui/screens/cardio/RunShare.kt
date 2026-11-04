@@ -303,7 +303,7 @@ private fun RunShareCard(state: CardioUiState, records: List<PersonalRecord>, ma
         Column(modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter).padding(horizontal = 16.dp, vertical = 12.dp)) {
             if (ShareField.RECORDS in fields && records.isNotEmpty()) {
                 Text(
-                    "🏆 " + records.map { "${it.kind.label()} ${it.valueText()}" }.joinToString(" · "),
+                    records.map { "${it.kind.label()} ${it.valueText()}" }.joinToString(" · "),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = ink,

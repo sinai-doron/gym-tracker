@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Home: achievements card -->
-    <string name="home_achievements_title">🏅 Achievements</string>
+    <string name="home_achievements_title">Achievements</string>
     <string name="home_achievements_earned">%1$d of %2$d</string>
     <string name="home_achievements_ok">Nice!</string>
-    <string name="home_badges_title">🏃 Distance</string>
+    <string name="home_badges_title">Distance</string>
     <string name="home_badges_explain">Your first run to reach each distance</string>
 
     <!-- Home: next workout card -->
@@ -18,14 +18,14 @@
     <string name="home_walk">Walk</string>
 
     <!-- Home: personal records -->
-    <string name="home_records_title">🏆 Personal records</string>
+    <string name="home_records_title">Personal records</string>
     <string name="home_record_week">Week of %1$s</string>
     <string name="home_record_longest_run">Longest run</string>
     <string name="home_record_best_week">Best week</string>
 
     <!-- Home: week card -->
-    <string name="home_week_rolling">📅 Last 7 days</string>
-    <string name="home_week_calendar">📅 This week</string>
+    <string name="home_week_rolling">Last 7 days</string>
+    <string name="home_week_calendar">This week</string>
     <string name="home_stat_minutes">Minutes</string>
     <string name="home_stat_volume">Volume</string>
     <string name="home_stat_streak">Streak</string>
@@ -33,8 +33,8 @@
     <string name="home_week_range_month">%2$s %1$s</string>
 
     <!-- Home: steps card -->
-    <string name="home_steps_title_rolling">👣 Steps, last 7 days</string>
-    <string name="home_steps_title_week">👣 Steps this week</string>
+    <string name="home_steps_title_rolling">Steps, last 7 days</string>
+    <string name="home_steps_title_week">Steps this week</string>
     <string name="home_steps_day">%1$s · %2$,d</string>
     <string name="home_steps_day_workout">%1$s · %2$,d (%3$,d in workouts)</string>
     <string name="home_steps_average">Avg %1$,d</string>

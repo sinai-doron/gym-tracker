@@ -24,15 +24,15 @@
     <string name="cardio_finish_confirm">סיים</string>
     <string name="cardio_discard">בטל</string>
     <string name="cardio_keep_going">המשך</string>
-    <string name="cardio_route_finished">🏁 סיימת את המסלול!</string>
-    <string name="cardio_target_reached">🎯 המטרה הושגה!</string>
-    <string name="cardio_route_heading">🗺 מסלול</string>
-    <string name="cardio_target_heading">🎯 מטרה</string>
+    <string name="cardio_route_finished">סיימת את המסלול!</string>
+    <string name="cardio_target_reached">המטרה הושגה!</string>
+    <string name="cardio_route_heading">מסלול</string>
+    <string name="cardio_target_heading">מטרה</string>
     <string name="cardio_route_progress">%1$.2f / %2$.1f ק״מ</string>
     <string name="cardio_distance_progress">%1$.2f / %2$s ק״מ</string>
-    <string name="cardio_steps_cadence_extra">👟 %1$,d · %2$d/ד׳</string>
-    <string name="cardio_climb_extra">⛰ %1$d מ׳</string>
-    <string name="cardio_kcal_extra">🔥 %1$d קק״ל</string>
+    <string name="cardio_steps_cadence_extra">%1$,d · %2$d/ד׳</string>
+    <string name="cardio_climb_extra">%1$d מ׳</string>
+    <string name="cardio_kcal_extra">%1$d קק״ל</string>
 
     <!-- Run report -->
     <string name="cardio_duration">משך</string>
@@ -45,14 +45,14 @@
     <string name="cardio_chart_point">%1$.2f ק״מ · %2$s</string>
     <string name="cardio_badges_ok">יופי!</string>
     <plurals name="cardio_new_badges">
-        <item quantity="one">🎉 הישג חדש!</item>
-        <item quantity="other">🎉 %1$d הישגים חדשים!</item>
+        <item quantity="one">הישג חדש!</item>
+        <item quantity="other">%1$d הישגים חדשים!</item>
     </plurals>
     <string name="cardio_first_badge">רצת לראשונה %1$s</string>
     <string name="cardio_records_ok">יש!</string>
     <plurals name="cardio_new_records">
-        <item quantity="one">🏆 שיא אישי חדש!</item>
-        <item quantity="other">🏆 %1$d שיאים אישיים!</item>
+        <item quantity="one">שיא אישי חדש!</item>
+        <item quantity="other">%1$d שיאים אישיים!</item>
     </plurals>
 
     <!-- GPS lock and target -->

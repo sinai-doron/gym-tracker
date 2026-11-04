@@ -145,7 +145,7 @@ fun NewAchievementsDialog(achievements: List<AchievementStatus>, onDismiss: () -
         confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.home_achievements_ok), color = Purple) } },
         title = {
             Text(
-                "🎉 " + stringResource(R.string.achievements_new),
+                stringResource(R.string.achievements_new),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )

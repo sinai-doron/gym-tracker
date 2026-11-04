@@ -54,11 +54,12 @@ import com.doron.gymtracker.domain.model.PersonalRecord
 import com.doron.gymtracker.domain.model.RunBadge
 import com.doron.gymtracker.domain.model.RunTargetType
 import com.doron.gymtracker.ui.components.BadgeImage
+import com.doron.gymtracker.ui.components.IconLabel
 import com.doron.gymtracker.ui.components.MusicControls
+import com.doron.gymtracker.ui.components.NewAchievementsDialog
 import com.doron.gymtracker.ui.components.RunMap
 import com.doron.gymtracker.ui.components.label
 import com.doron.gymtracker.ui.components.valueText
-import com.doron.gymtracker.ui.components.NewAchievementsDialog
 import com.doron.gymtracker.ui.theme.Purple
 import com.doron.gymtracker.ui.theme.SuccessGreen
 import kotlin.math.roundToInt
@@ -350,11 +351,11 @@ private fun NewRecordsDialog(records: List<PersonalRecord>, onDismiss: () -> Uni
 private fun RunExtras(state: CardioUiState) {
     val items = listOfNotNull(
         state.steps?.let { steps ->
-            state.cadence?.let { stringResource(R.string.cardio_steps_cadence_extra, steps, it) } ?: "👟 %,d".format(steps)
+            R.drawable.ic_activity_walk to (state.cadence?.let { stringResource(R.string.cardio_steps_cadence_extra, steps, it) } ?: "%,d".format(steps))
         },
-        stringResource(R.string.cardio_climb_extra, state.elevationGainM.roundToInt()),
-        state.calories?.let { stringResource(R.string.cardio_kcal_extra, it) },
-        state.weather?.let { "${it.condition.emoji} ${it.temperatureC}°" }
+        R.drawable.ic_climb to stringResource(R.string.cardio_climb_extra, state.elevationGainM.roundToInt()),
+        state.calories?.let { R.drawable.ic_flame to stringResource(R.string.cardio_kcal_extra, it) },
+        state.weather?.let { R.drawable.ic_cloud to "${it.temperatureC}°" }
     )
     Row(
         modifier = Modifier
@@ -362,11 +363,13 @@ private fun RunExtras(state: CardioUiState) {
             .padding(top = 10.dp),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        items.forEach {
-            Text(
-                it,
+        items.forEach { (icon, text) ->
+            IconLabel(
+                icon,
+                text,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                iconSize = 16.dp,
                 maxLines = 1
             )
         }
@@ -385,7 +388,12 @@ private fun TargetProgress(state: CardioUiState, progress: Float) {
     }
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(
+            IconLabel(
+                when {
+                    reached -> R.drawable.ic_check
+                    state.routeLengthM > 0 -> R.drawable.ic_route
+                    else -> R.drawable.ic_target
+                },
                 stringResource(
                     when {
                         reached && state.routeLengthM > 0 -> R.string.cardio_route_finished
@@ -396,6 +404,7 @@ private fun TargetProgress(state: CardioUiState, progress: Float) {
                 ),
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                 color = color,
+                iconSize = 16.dp,
                 modifier = Modifier.weight(1f)
             )
             Text(

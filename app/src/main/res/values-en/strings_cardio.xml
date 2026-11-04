@@ -24,15 +24,15 @@
     <string name="cardio_finish_confirm">Finish</string>
     <string name="cardio_discard">Discard</string>
     <string name="cardio_keep_going">Keep going</string>
-    <string name="cardio_route_finished">🏁 Route complete!</string>
-    <string name="cardio_target_reached">🎯 Target reached!</string>
-    <string name="cardio_route_heading">🗺 Route</string>
-    <string name="cardio_target_heading">🎯 Target</string>
+    <string name="cardio_route_finished">Route complete!</string>
+    <string name="cardio_target_reached">Target reached!</string>
+    <string name="cardio_route_heading">Route</string>
+    <string name="cardio_target_heading">Target</string>
     <string name="cardio_route_progress">%1$.2f / %2$.1f km</string>
     <string name="cardio_distance_progress">%1$.2f / %2$s km</string>
-    <string name="cardio_steps_cadence_extra">👟 %1$,d · %2$d/min</string>
-    <string name="cardio_climb_extra">⛰ %1$d m</string>
-    <string name="cardio_kcal_extra">🔥 %1$d kcal</string>
+    <string name="cardio_steps_cadence_extra">%1$,d · %2$d/min</string>
+    <string name="cardio_climb_extra">%1$d m</string>
+    <string name="cardio_kcal_extra">%1$d kcal</string>
 
     <!-- Run report -->
     <string name="cardio_duration">Duration</string>
@@ -45,14 +45,14 @@
     <string name="cardio_chart_point">%1$.2f km · %2$s</string>
     <string name="cardio_badges_ok">Nice!</string>
     <plurals name="cardio_new_badges">
-        <item quantity="one">🎉 New achievement!</item>
-        <item quantity="other">🎉 %1$d new achievements!</item>
+        <item quantity="one">New achievement!</item>
+        <item quantity="other">%1$d new achievements!</item>
     </plurals>
     <string name="cardio_first_badge">Your first %1$s run</string>
     <string name="cardio_records_ok">Yes!</string>
     <plurals name="cardio_new_records">
-        <item quantity="one">🏆 New personal record!</item>
-        <item quantity="other">🏆 %1$d personal records!</item>
+        <item quantity="one">New personal record!</item>
+        <item quantity="other">%1$d personal records!</item>
     </plurals>
 
     <!-- GPS lock and target -->
