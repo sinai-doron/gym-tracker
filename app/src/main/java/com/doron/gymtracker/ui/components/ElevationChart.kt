@@ -82,6 +82,21 @@ fun HeartRateChart(points: List<Pair<Double, Double>>, modifier: Modifier = Modi
     )
 }
 
+/** Steps a minute along the run; touch or drag to read it at a point. */
+@Composable
+fun CadenceChart(points: List<Pair<Double, Double>>, modifier: Modifier = Modifier) {
+    val resources = LocalContext.current.resources
+    DistanceChart(
+        points = points,
+        format = { resources.getString(R.string.cadence_spm_value, it.roundToInt()) },
+        // 20 steps a minute at least, so an even stride reads as even
+        minRange = 20.0,
+        modifier = modifier,
+        // The unit is in the header, as for heart rate
+        axisLabel = { "${it.roundToInt()}" }
+    )
+}
+
 /**
  * A value against distance (left to right, also in RTL), filled below the line. Touch or
  * drag to read the distance and value at a point; with nothing touched the header shows

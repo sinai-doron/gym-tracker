@@ -182,6 +182,23 @@ class SyncRoundTripTest {
     }
 
     @Test
+    fun aRunsStepsStayOnThePhoneThroughSyncAndGoWithTheRun() {
+        fillPhoneA()
+        for (i in 0 until 10) a.execSQL("INSERT INTO run_steps (sessionId, timestamp, steps) VALUES (2, ?, ?)", arrayOf<Any?>(10000L + i * 5000, i * 14))
+        val items = serverItemsFromA()
+        assertTrue(items.none { it.data.toString().contains("steps\":[") })
+
+        // The phone that recorded the run pulls its own upload back, track and all
+        SyncPull(a).applyPage(items, 1)
+        assertEquals(10L, a.count("SELECT count(*) FROM run_steps"))
+        assertEquals(1300L, a.count("SELECT count(*) FROM location_log"))
+
+        val run = a.text("SELECT uuid FROM sessions WHERE type = 'RUNNING'")!!
+        SyncPull(a).applyPage(listOf(IncomingChange("session", run, Long.MAX_VALUE / 2, true, null)), 2)
+        assertEquals(0L, a.count("SELECT count(*) FROM run_steps"))
+    }
+
+    @Test
     fun deletionsArriveAndAreNotEchoed() {
         fillPhoneA()
         SyncPull(b).applyPage(serverItemsFromA(), 1)

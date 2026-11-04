@@ -66,12 +66,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.doron.gymtracker.R
+import com.doron.gymtracker.data.Cadence
 import com.doron.gymtracker.data.Elevation
 import com.doron.gymtracker.data.HealthConnectManager
 import com.doron.gymtracker.data.HeartRateSummary
 import com.doron.gymtracker.data.Lap
 import com.doron.gymtracker.data.Laps
 import com.doron.gymtracker.data.Pace
+import com.doron.gymtracker.ui.components.CadenceChart
 import com.doron.gymtracker.ui.components.ElevationChart
 import com.doron.gymtracker.ui.components.HeartRateChart
 import com.doron.gymtracker.ui.components.PaceChart
@@ -466,6 +468,16 @@ private fun ChartCards(state: CardioUiState, heartRate: HeartRateSummary?) {
             HeartRateChart(points = heartRate!!.profile, modifier = Modifier.fillMaxWidth())
         }
     }
+    val startedAt = state.startedAt
+    val cadence = remember(state.stepMarks, state.moves, state.pauses, startedAt) {
+        startedAt?.let { Cadence.profile(state.stepMarks, it, state.moves, state.pauses) }.orEmpty()
+    }
+    if (cadence.size >= 2) {
+        val note = state.avgCadence?.takeIf { it > 0 }?.let { stringResource(R.string.run_summary_cadence_avg, it) }
+        SectionCard(stringResource(R.string.run_summary_cadence), note = note) {
+            CadenceChart(points = cadence, modifier = Modifier.fillMaxWidth())
+        }
+    }
 }
 
 /** The run's heart rate from Health Connect, and how to ask for it. */
@@ -512,6 +524,9 @@ private fun ConnectHeartRate(onConnect: () -> Unit) {
 private fun LapsCard(state: CardioUiState) {
     val laps = state.laps
     val climbs = remember(laps, state.route) { Laps.climbs(laps, state.route) }
+    val cadences = remember(laps, state.stepMarks, state.startedAt) {
+        state.startedAt?.let { Cadence.laps(laps, state.stepMarks, it) }?.takeIf { c -> c.any { it != null } }
+    }
     // A short last stretch isn't a fair race against the full laps
     val fastest = laps.filterNot { it.partial }.takeIf { it.size > 1 }?.minByOrNull { it.paceSecsPerKm }
     val every = state.lapMeters.takeIf { it > 0 }?.let { stringResource(R.string.run_summary_laps_every, formatKm(it / 1000f)) }
@@ -521,18 +536,19 @@ private fun LapsCard(state: CardioUiState) {
                 height = null,
                 cells = listOfNotNull(
                     stringResource(R.string.run_summary_lap), stringResource(R.string.run_summary_lap_time),
-                    stringResource(R.string.run_summary_lap_pace), climbs?.let { stringResource(R.string.run_summary_lap_climb) }
+                    stringResource(R.string.run_summary_lap_pace), climbs?.let { stringResource(R.string.run_summary_lap_climb) },
+                    cadences?.let { stringResource(R.string.run_summary_cadence) }
                 ).map { { Text(it, style = RunSummaryType.tableHeader) } }
             )
             laps.forEachIndexed { i, lap ->
-                LapLine(lap, climbs?.get(i), best = lap == fastest)
+                LapLine(lap, climbs?.get(i), cadence = cadences?.get(i), cadenceColumn = cadences != null, best = lap == fastest)
             }
         }
     }
 }
 
 @Composable
-private fun LapLine(lap: Lap, climb: Double?, best: Boolean) {
+private fun LapLine(lap: Lap, climb: Double?, cadence: Int?, cadenceColumn: Boolean, best: Boolean) {
     val color = if (lap.partial) RunSummaryColors.textMuted else RunSummaryColors.text
     val cell = RunSummaryType.tableCell.copy(color = color)
     val fastestLabel = stringResource(R.string.run_summary_fastest_lap)
@@ -564,7 +580,9 @@ private fun LapLine(lap: Lap, climb: Double?, best: Boolean) {
                     Text(formatPace(lap.paceSecsPerKm), style = cell.copy(fontWeight = FontWeight.SemiBold))
                 }
             },
-            climb?.let { { Text(stringResource(R.string.meters_value, it.roundToInt()), style = cell) } }
+            climb?.let { { Text(stringResource(R.string.meters_value, it.roundToInt()), style = cell) } },
+            // A lap without a believable figure leaves its cell empty
+            if (cadenceColumn) ({ cadence?.let { Text("$it", style = cell) } }) else null
         )
     )
 }

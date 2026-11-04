@@ -178,6 +178,9 @@ object RunCalories {
 /** The phone's step counter at a moment. */
 data class StepSample(val timestamp: Long, val counter: Long)
 
+/** A run's steps so far at a moment, saved as it's recorded. */
+data class StepMark(val timestamp: Long, val steps: Int)
+
 /** Steps per minute. */
 object Cadence {
     const val WINDOW_MS = 30_000L
@@ -195,5 +198,56 @@ object Cadence {
     fun average(steps: Int, elapsedSecs: Long): Int? =
         if (elapsedSecs >= 60) (steps * 60.0 / elapsedSecs).roundToInt() else null
 
+    /**
+     * Cadence along the run, from its [steps] as it went: (meters along the run, steps a minute),
+     * one point a minute of the run at most, placed by [marks]. Time across a pause the runner
+     * asked for, and a minute mostly stood still, are left out. Empty for a run recorded before
+     * steps were saved as it went.
+     */
+    fun profile(steps: List<StepMark>, startedAt: Long, marks: List<DistanceMark>, pauses: List<Pause>): List<Pair<Double, Double>> =
+        stretches(steps)
+            .filterNot { (a, b) -> pauses.any { p -> p.startedAt < b.timestamp && (p.endedAt ?: Long.MAX_VALUE) > a.timestamp } }
+            .groupBy { (a, _) -> (a.timestamp - startedAt) / MINUTE_MS }
+            .values
+            .mapNotNull { minute ->
+                val taken = minute.sumOf { (a, b) -> b.steps - a.steps }
+                val ms = minute.sumOf { (a, b) -> b.timestamp - a.timestamp }
+                (taken * 60_000.0 / ms).takeIf { it in PLAUSIBLE_SPM }
+                    ?.let { HeartRate.metersAt(marks, minute.last().second.timestamp) to it }
+            }
+
+    /**
+     * Each lap's cadence, in [laps] order: its steps over its moving time. Null for a lap without
+     * a believable figure; null altogether for a run recorded before steps were saved as it went.
+     */
+    fun laps(laps: List<Lap>, steps: List<StepMark>, startedAt: Long): List<Int?>? {
+        if (steps.size < 2) return null
+        var from = startedAt
+        return laps.map { lap ->
+            val taken = stepsAt(steps, lap.endedAt) - stepsAt(steps, from)
+            from = lap.endedAt
+            if (lap.durationSecs <= 0) null
+            else (taken * 60.0 / lap.durationSecs).takeIf { it in PLAUSIBLE_SPM }?.roundToInt()
+        }
+    }
+
+    /** Consecutive marks, the steps not going backwards. */
+    private fun stretches(steps: List<StepMark>) =
+        steps.zipWithNext().filter { (a, b) -> b.timestamp > a.timestamp && b.steps >= a.steps }
+
+    /** The steps by [time], in proportion between the marks around it. */
+    private fun stepsAt(steps: List<StepMark>, time: Long): Double {
+        if (time <= steps.first().timestamp) return steps.first().steps.toDouble()
+        val after = steps.indexOfFirst { it.timestamp >= time }
+        if (after == -1) return steps.last().steps.toDouble()
+        val a = steps[after - 1]
+        val b = steps[after]
+        val f = (time - a.timestamp).toDouble() / (b.timestamp - a.timestamp).coerceAtLeast(1)
+        return a.steps + (b.steps - a.steps) * f
+    }
+
     private const val MIN_SPAN_SECS = 10.0
+    private const val MINUTE_MS = 60_000L
+    /** Below this is mostly standing; above it, a counter that jumped. */
+    private val PLAUSIBLE_SPM = 40.0..260.0
 }
