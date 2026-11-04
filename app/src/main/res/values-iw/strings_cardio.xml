@@ -57,15 +57,10 @@
 
     <!-- GPS lock and target -->
     <string name="cardio_back">חזרה</string>
-    <string name="cardio_gps_ready">GPS מוכן!</string>
-    <string name="cardio_gps_searching">מחפש GPS...</string>
-    <string name="cardio_gps_accuracy">דיוק: %1$.0f מ׳</string>
-    <string name="cardio_gps_waiting">ממתין לאות...</string>
-    <string name="cardio_gps_go_outside">צא החוצה לקליטה טובה יותר</string>
-    <string name="cardio_at_route_start">📍 אתה בתחילת המסלול</string>
-    <string name="cardio_route_starts_away">📍 המסלול מתחיל %1$s ממך</string>
-    <string name="cardio_start_run">🏃 התחל ריצה</string>
-    <string name="cardio_start_walk">🚶 התחל הליכה</string>
+    <string name="cardio_at_route_start">אתה בתחילת המסלול</string>
+    <string name="cardio_route_starts_away">המסלול מתחיל %1$s ממך</string>
+    <string name="cardio_start_run">התחל ריצה</string>
+    <string name="cardio_start_walk">התחל הליכה</string>
     <string name="cardio_target">מטרה</string>
     <string name="cardio_target_none">ללא מטרה</string>
     <string name="cardio_time">זמן</string>

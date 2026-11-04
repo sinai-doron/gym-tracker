@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- From the before-run design; tinted where it is drawn. Where you are expected to be -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M12,21s-6,-5.5 -6,-10.5a6,6 0,0 1,12 0C18,15.5 12,21 12,21z"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M12,8.5a2,2 0,1 0,0 4a2,2 0,1 0,0 -4z"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="2" />
+</vector>

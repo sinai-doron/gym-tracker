@@ -7,6 +7,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -14,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
@@ -73,7 +75,14 @@ fun RunMap(
     /** A fixed width for [route], in dp; null widens it with the zoom. */
     routeWidth: Float? = null,
     /** Mark where [route] started: a white dot ringed in [routeColor]. */
-    markStart: Boolean = false
+    markStart: Boolean = false,
+    /** How much of the map's bottom is covered: [position] is kept centred above it, and so is the credit. */
+    bottomInset: Dp = 0.dp,
+    /**
+     * Change it to centre on [position] again. When given, panning the map stops it following
+     * [position] until then.
+     */
+    recenter: Int? = null
 ) {
     val context = LocalContext.current
     val mapView = remember {
@@ -91,7 +100,11 @@ fun RunMap(
     }
     var map by remember { mutableStateOf<MapLibreMap?>(null) }
     var style by remember { mutableStateOf<Style?>(null) }
-    val fitPaddingPx = with(LocalDensity.current) { FIT_PADDING_DP.dp.toPx() }.toInt()
+    val density = LocalDensity.current
+    val fitPaddingPx = with(density) { FIT_PADDING_DP.dp.toPx() }.toInt()
+    // Panned away by hand: stop following until asked to centre again
+    val panned = remember { booleanArrayOf(false) }
+    val pausesOnPan by rememberUpdatedState(recenter != null)
 
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     DisposableEffect(lifecycle) {
@@ -123,6 +136,9 @@ fun RunMap(
                 attributionGravity = Gravity.BOTTOM or Gravity.START
                 setAttributionTintColor(Purple.toArgb())
                 setAllGesturesEnabled(interactive)
+            }
+            m.addOnCameraMoveStartedListener { reason ->
+                if (pausesOnPan && reason == MapLibreMap.OnCameraMoveStartedListener.REASON_API_GESTURE) panned[0] = true
             }
             // A short or stationary route would otherwise zoom in far past street level
             m.setMaxZoomPreference(MAX_ZOOM)
@@ -180,7 +196,7 @@ fun RunMap(
         s.getLayer(ACCURACY_FILL_LAYER)?.setProperties(PropertyFactory.fillColor(dotColor.toArgb()))
         s.getLayer(ACCURACY_EDGE_LAYER)?.setProperties(PropertyFactory.lineColor(dotColor.toArgb()))
 
-        if (follow) {
+        if (follow && !panned[0]) {
             position?.let {
                 val target = LatLng(it.latitude, it.longitude)
                 if (!centered[0]) {
@@ -197,6 +213,24 @@ fun RunMap(
             mapView.post { m.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, fitPaddingPx)) }
             fitted[0] = true
         }
+    }
+
+    LaunchedEffect(map, bottomInset) {
+        val m = map ?: return@LaunchedEffect
+        if (bottomInset <= 0.dp) return@LaunchedEffect
+        val insetPx = with(density) { bottomInset.toPx() }.toDouble()
+        val marginPx = with(density) { CREDIT_MARGIN_DP.dp.toPx() }.toInt()
+        m.moveCamera(CameraUpdateFactory.paddingTo(0.0, 0.0, 0.0, insetPx))
+        m.uiSettings.setAttributionMargins(marginPx, 0, marginPx, insetPx.toInt() + marginPx)
+    }
+
+    val centredFor = remember { intArrayOf(recenter ?: 0) }
+    LaunchedEffect(map, recenter) {
+        val m = map ?: return@LaunchedEffect
+        if (recenter == null || recenter == centredFor[0]) return@LaunchedEffect
+        centredFor[0] = recenter
+        panned[0] = false
+        position?.let { m.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(it.latitude, it.longitude), FOLLOW_ZOOM), CAMERA_ANIMATION_MS) }
     }
 
     AndroidView(factory = { mapView }, modifier = modifier)
@@ -237,6 +271,7 @@ private const val FOLLOW_ZOOM = 16.5
 private const val MAX_ZOOM = 17.5
 private const val FIT_PADDING_DP = 40
 private const val CAMERA_ANIMATION_MS = 600
+private const val CREDIT_MARGIN_DP = 8
 
 private fun features(feature: Feature?): FeatureCollection =
     FeatureCollection.fromFeatures(listOfNotNull(feature))
