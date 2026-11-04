@@ -1,9 +1,9 @@
 package com.doron.gymtracker.ui.screens.cardio
 
-import com.doron.gymtracker.ui.components.runMapStyle
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,6 +27,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -52,6 +54,7 @@ import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -70,6 +73,7 @@ import com.doron.gymtracker.domain.model.PersonalRecord
 import com.doron.gymtracker.ui.components.Activity
 import com.doron.gymtracker.ui.components.ActivityIcon
 import com.doron.gymtracker.ui.components.label
+import com.doron.gymtracker.ui.components.runMapStyle
 import com.doron.gymtracker.ui.components.valueText
 import com.doron.gymtracker.ui.theme.Purple
 import java.io.File
@@ -122,18 +126,26 @@ fun ShareRunFlow(state: CardioUiState, records: List<PersonalRecord>, open: Bool
                     colors = ButtonDefaults.buttonColors(containerColor = Purple),
                     shape = MaterialTheme.shapes.large,
                     modifier = Modifier.fillMaxWidth().height(52.dp)
-                ) { Text(stringResource(R.string.cardio_share_image)) }
+                ) { IconLabel(R.drawable.ic_image, stringResource(R.string.cardio_share_image)) }
                 OutlinedButton(
                     onClick = { onClose(); shareGpx(context, state) },
                     enabled = state.route.size >= 2,
                     shape = MaterialTheme.shapes.large,
                     modifier = Modifier.fillMaxWidth().height(52.dp)
-                ) { Text(stringResource(R.string.cardio_share_gpx), color = Purple) }
+                ) { IconLabel(R.drawable.ic_import_route, stringResource(R.string.cardio_share_gpx), color = Purple) }
             }
         }
     }
 
     if (previewing) ShareImageDialog(state, records, onDismiss = { previewing = false })
+}
+
+/** A button's icon and label; the icon takes the label's colour. */
+@Composable
+private fun IconLabel(@DrawableRes icon: Int, label: String, color: Color = Color.Unspecified) {
+    Icon(painterResource(icon), contentDescription = null, tint = if (color == Color.Unspecified) LocalContentColor.current else color, modifier = Modifier.size(20.dp))
+    Spacer(Modifier.width(8.dp))
+    Text(label, color = color)
 }
 
 /** What the shared picture can show; chosen on the share screen and remembered. */
@@ -241,7 +253,7 @@ private fun ShareImageDialog(state: CardioUiState, records: List<PersonalRecord>
                     enabled = ready,
                     colors = ButtonDefaults.buttonColors(containerColor = Purple),
                     shape = MaterialTheme.shapes.large
-                ) { Text(stringResource(R.string.cardio_share_image_send)) }
+                ) { IconLabel(R.drawable.ic_share, stringResource(R.string.cardio_share_image_send)) }
             }
         }
     }

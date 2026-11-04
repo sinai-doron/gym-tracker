@@ -74,9 +74,9 @@
     <!-- Sharing a run -->
     <string name="cardio_share_run">Share run</string>
     <string name="cardio_share_walk">Share walk</string>
-    <string name="cardio_share_image">🖼 Share image</string>
-    <string name="cardio_share_gpx">📄 GPX file</string>
-    <string name="cardio_share_image_send">📤 Share image</string>
+    <string name="cardio_share_image">Share image</string>
+    <string name="cardio_share_gpx">GPX file</string>
+    <string name="cardio_share_image_send">Share image</string>
     <string name="cardio_climb">Climb</string>
     <string name="cardio_date">Date</string>
     <string name="cardio_records">Records</string>
