@@ -58,4 +58,19 @@ class DomainModelTest {
     fun `the seeded plan rotates A, B, C`() {
         assertEquals(listOf("A", "B", "C"), com.doron.gymtracker.data.seed.TrainingPlanData.all.map { it.code })
     }
+
+    @Test
+    fun `reps read as a range or a fixed count`() {
+        assertEquals("6–10", RepExerciseDefinition("e", "Bench", 3, 120, 10, targetRepsMin = 6).repsLabel)
+        assertEquals("8", RepExerciseDefinition("e", "Bench", 3, 120, 8).repsLabel)
+        assertEquals("a range of one number is a fixed count", "8", RepExerciseDefinition("e", "Bench", 3, 120, 8, targetRepsMin = 8).repsLabel)
+    }
+
+    @Test
+    fun `a workout's length is its sets of rest plus work`() {
+        // 3 × (120 + 40) + 2 × (60 + 40) = 680 s, about 11 minutes
+        val workout = Workout("w", "A", listOf(RepExerciseDefinition("a", "A", 3, 120, 8), TimedExerciseDefinition("b", "B", 2, 60)))
+        assertEquals(11, workout.estimatedMinutes())
+        assertEquals(0, Workout("e", "E", emptyList()).estimatedMinutes())
+    }
 }

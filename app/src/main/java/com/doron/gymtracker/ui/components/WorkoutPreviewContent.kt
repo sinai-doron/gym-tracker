@@ -84,7 +84,7 @@ private fun ExercisePreviewRow(
         Text(
             when (exercise) {
                 // LTR isolate: in RTL, "4×6" would otherwise render as "6×4"
-                is RepExerciseDefinition -> "\u2066${exercise.targetSets}×${exercise.targetReps}\u2069"
+                is RepExerciseDefinition -> "\u2066${exercise.targetSets}×${exercise.repsLabel}\u2069"
                 is DistanceExerciseDefinition -> "\u2066${exercise.targetSets}×\u2069" +
                     stringResource(R.string.distance_value, exercise.targetDistanceM)
                 is TimedExerciseDefinition -> stringResource(R.string.sets_count, exercise.targetSets)

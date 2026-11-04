@@ -53,4 +53,13 @@
     <string name="builder_rules_no_variants">no alternate weeks</string>
     <string name="builder_rules_later">Settings for these are coming.</string>
     <string name="builder_open_workout">Edit exercises of %s</string>
+    <!-- An exercise's targets in a workout (the sheet in the workout editor) -->
+    <string name="targets_reps_from">Reps from</string>
+    <string name="targets_reps_to">Reps up to</string>
+    <string name="targets_reps_hint">The same number twice is a fixed count.</string>
+    <string name="targets_optional">Optional (can be skipped)</string>
+    <string name="targets_per_side">Each side separately</string>
+    <string name="targets_add">Add to workout</string>
+    <string name="targets_week_b">Week B: %s</string>
+    <string name="targets_optional_tag">optional</string>
 </resources>

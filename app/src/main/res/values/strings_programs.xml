@@ -59,4 +59,13 @@
     <string name="builder_rules_no_variants">בלי שבועות מתחלפים</string>
     <string name="builder_rules_later">ההגדרות לאלה יגיעו בהמשך.</string>
     <string name="builder_open_workout">עריכת התרגילים של %s</string>
+    <!-- An exercise's targets in a workout (the sheet in the workout editor) -->
+    <string name="targets_reps_from">חזרות, מ-</string>
+    <string name="targets_reps_to">חזרות, עד</string>
+    <string name="targets_reps_hint">אותו מספר פעמיים הוא מספר חזרות קבוע.</string>
+    <string name="targets_optional">רשות (אפשר לדלג)</string>
+    <string name="targets_per_side">כל צד בנפרד</string>
+    <string name="targets_add">הוסף לאימון</string>
+    <string name="targets_week_b">שבוע B: %s</string>
+    <string name="targets_optional_tag">רשות</string>
 </resources>

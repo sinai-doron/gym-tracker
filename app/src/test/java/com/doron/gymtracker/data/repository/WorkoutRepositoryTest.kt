@@ -195,6 +195,19 @@ class WorkoutRepositoryTest {
     }
 
     @Test
+    fun `a rep range is saved and read back`() = runTest {
+        coEvery { dao.getExercise("e1") } returns row("e1", 4)
+        repo.updateExercise(RepExerciseDefinition("e1", "Bench", 3, 120, 10, targetRepsMin = 6))
+        coVerify { dao.updateExercise(match { it.targetReps == 10 && it.targetRepsMin == 6 }) }
+
+        coEvery { dao.getWorkout("workout_a") } returns WorkoutEntity("workout_a", "A", programId = "program_abc")
+        coEvery { dao.getExercisesForWorkout("workout_a") } returns listOf(row("e1", 1).copy(targetRepsMin = 6))
+        val read = repo.getById("workout_a")!!.exercises.single() as RepExerciseDefinition
+        assertEquals(6, read.targetRepsMin)
+        assertEquals("6–10", read.repsLabel)
+    }
+
+    @Test
     fun `addExercise goes to the end of the workout`() = runTest {
         coEvery { dao.maxSortOrder("workout_a") } returns 7
         repo.addExercise("workout_a", RepExerciseDefinition("custom_1", "Dips", 3, 90, 10))
