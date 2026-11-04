@@ -137,6 +137,8 @@ The plan belongs to a programme, a row in the database: its start date drives th
 and the deload weeks (every sixth). The owner's started on 2026-10-26; a fresh install's starts
 the day it is first opened.
 
+Every session has a training type, also a row: Strength, Run and Walk are built in.
+
 ## Tech stack
 
 | | |
@@ -145,7 +147,7 @@ the day it is first opened.
 | UI | Jetpack Compose, Material 3 |
 | Architecture | MVVM with a use-case layer (`ui` → `domain` → `data`) |
 | Dependency injection | Hilt |
-| Database | Room (schema version 16, with migrations) |
+| Database | Room (schema version 17, with migrations) |
 | Maps | MapLibre, with OpenFreeMap tiles |
 | Health data | Health Connect |
 | Settings | DataStore |

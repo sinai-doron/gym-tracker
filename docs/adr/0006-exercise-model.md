@@ -123,6 +123,12 @@ working:
 | v15 | Sets and parts, with the history rules above (per hand, bodyweight with no load) | `set` takes a new shape with its parts; the backend takes both shapes first (doron-backend Task 31) |
 | v16 | Programmes: one row with the start date, deload rule and variant rule the app had hard-coded; workouts belong to it in rotation order; history entries point at the library. The next workout is read from history, so the rotation leaves prefs. Week-B rows stay rows pointing at their week-A exercise, which already holds a list of variants | `program` is new; `workout` and `entry` gain fields (doron-backend Task 32 first) |
 
+Version 17 followed for the programme builder (roadmap phase 2), on the same terms:
+
+| Version | Step | Synced shapes |
+|---|---|---|
+| v17 | Training types become rows (`activity_types`: Strength, Run and Walk to start); every session names one, the owner's by the type it had. Sessions can be logged by hand (duration, calories, note); target reps can be a range (`targetRepsMin`); programmes are archived and workouts hidden instead of deleted. A user's own library exercises sync with their names and muscles; built-ins still don't | `activity_type` and `library_exercise` are new; `session`, `exercise`, `program` and `workout` gain optional fields; sessions can be `OTHER` (doron-backend Task 33 first) |
+
 A built-in's id is derived from its slug (`ExerciseCatalogue.builtinId`), so it is the same on
 every phone and history can name it without uploading it. The v14 migration links the plan by a
 map written into the migration, not read from the catalogue, so a later catalogue can't change

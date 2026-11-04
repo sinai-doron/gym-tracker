@@ -258,6 +258,10 @@ class SyncRepository @Inject constructor(
                 db.execSQL("INSERT OR REPLACE INTO sync_changes SELECT '$kind', uuid, ?, 0 FROM `$table` WHERE uuid IS NOT NULL", arrayOf<Any?>(now))
             }
             db.execSQL("INSERT OR REPLACE INTO sync_changes SELECT 'song', uuid, ?, 0 FROM track_log WHERE uuid IS NOT NULL", arrayOf<Any?>(now))
+            db.execSQL(
+                "INSERT OR REPLACE INTO sync_changes SELECT '${SyncMigration.LIBRARY_EXERCISE}', id, ?, 0 FROM exercises WHERE source = 'CUSTOM'",
+                arrayOf<Any?>(now),
+            )
         }
         requeueRouteData()
         context.syncStatusStore.edit { it.clear() }

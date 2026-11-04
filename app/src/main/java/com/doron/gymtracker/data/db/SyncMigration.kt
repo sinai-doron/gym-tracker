@@ -19,7 +19,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * Route points and GPS points are synced per route and per session (`route_points`, `track`),
  * keyed by the route's or session's uuid. The music log (track_log) joined in version 12. In version
  * 15 sets moved from `set_records` to `sets`, each synced with its `set_parts` (SetsMigration); in
- * version 16 programmes joined (ProgramMigration).
+ * version 16 programmes joined (ProgramMigration); in version 17 training types and a user's own library
+ * exercises (ActivityTypeMigration).
  */
 object SyncMigration {
 
@@ -46,8 +47,13 @@ object SyncMigration {
         "routes" to "route",
     )
 
-    /** Table -> the kind the server knows it as, today. Sets are in `sets` from version 15, programmes from 16. */
+    /**
+     * Table -> the kind the server knows it as, today. Sets are in `sets` from version 15, programmes from
+     * 16, training types from 17. A user's own library exercises sync too, by their own triggers
+     * ([libraryExerciseTriggers]), since the built-ins in the same table don't.
+     */
     val TABLES = linkedMapOf(
+        "activity_types" to "activity_type",
         "programs" to "program",
         "workouts" to "workout",
         "exercise_definitions" to "exercise",
@@ -108,6 +114,38 @@ object SyncMigration {
     /** The triggers of `programs` (version 16). */
     internal fun programTriggers(): List<String> = itemTriggers("programs", "program")
 
+    /** The triggers of `activity_types` (version 17). */
+    internal fun activityTypeTriggers(): List<String> = itemTriggers("activity_types", "activity_type")
+
+    /**
+     * A user's own library exercises (version 17), each one item with its names and muscles, known by
+     * its id, which is already a uuid. Built-ins never log: the catalogue rewrites them on every phone.
+     */
+    internal fun libraryExerciseTriggers(): List<String> {
+        val custom = "$NOT_APPLYING AND %s.source = 'CUSTOM'"
+        fun customParent(ref: String) = "(SELECT id FROM exercises WHERE id = $ref AND source = 'CUSTOM')"
+        val parts = listOf("exercise_names", "exercise_muscles").flatMap { table ->
+            listOf(
+                "CREATE TRIGGER IF NOT EXISTS sync_${table}_insert AFTER INSERT ON `$table` BEGIN " +
+                    log(LIBRARY_EXERCISE, customParent("NEW.exerciseId"), 0, NOT_APPLYING) + " END",
+                "CREATE TRIGGER IF NOT EXISTS sync_${table}_update AFTER UPDATE ON `$table` BEGIN " +
+                    log(LIBRARY_EXERCISE, customParent("NEW.exerciseId"), 0, NOT_APPLYING) + " END",
+                "CREATE TRIGGER IF NOT EXISTS sync_${table}_delete AFTER DELETE ON `$table` BEGIN " +
+                    log(LIBRARY_EXERCISE, customParent("OLD.exerciseId"), 0, NOT_APPLYING) + " END",
+            )
+        }
+        return listOf(
+            "CREATE TRIGGER IF NOT EXISTS sync_exercises_insert AFTER INSERT ON `exercises` BEGIN " +
+                log(LIBRARY_EXERCISE, "NEW.id", 0, custom.format("NEW")) + " END",
+            "CREATE TRIGGER IF NOT EXISTS sync_exercises_update AFTER UPDATE ON `exercises` BEGIN " +
+                log(LIBRARY_EXERCISE, "NEW.id", 0, custom.format("NEW")) + " END",
+            "CREATE TRIGGER IF NOT EXISTS sync_exercises_delete AFTER DELETE ON `exercises` BEGIN " +
+                log(LIBRARY_EXERCISE, "OLD.id", 1, custom.format("OLD")) + " END",
+        ) + parts
+    }
+
+    const val LIBRARY_EXERCISE = "library_exercise"
+
     private fun setPartTriggers() = groupTriggers("set_parts", "setId", "sets", "set")
 
     /**
@@ -128,6 +166,7 @@ object SyncMigration {
         add("CREATE TABLE IF NOT EXISTS sync_control (id INTEGER PRIMARY KEY CHECK (id = 1), applying INTEGER NOT NULL)")
         add("INSERT OR IGNORE INTO sync_control (id, applying) VALUES (1, 0)")
         addAll(triggerStatements(TABLES, withSetParts = true))
+        addAll(libraryExerciseTriggers())
     }
 
     fun statements(): List<String> = buildList {

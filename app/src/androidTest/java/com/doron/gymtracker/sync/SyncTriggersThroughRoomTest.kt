@@ -36,7 +36,7 @@ class SyncTriggersThroughRoomTest {
         db = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext(), GymDatabase::class.java)
             .allowMainThreadQueries()
             .addCallback(object : RoomDatabase.Callback() {
-                override fun onCreate(db: SupportSQLiteDatabase) = SyncMigration.installFresh(db)
+                override fun onCreate(db: SupportSQLiteDatabase) = GymDatabase.installFresh(db)
             })
             .build()
         sql.execSQL("INSERT INTO workouts (id, label, programId, sortOrder) VALUES ('workout_a', 'A', 'program_abc', 1)")

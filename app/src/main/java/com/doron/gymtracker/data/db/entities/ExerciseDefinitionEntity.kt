@@ -15,7 +15,7 @@ data class ExerciseDefinitionEntity(
     val type: String,           // "REP", "TIMED", or "DISTANCE"
     val targetSets: Int,
     val restDurationSecs: Int,
-    val targetReps: Int?,       // REP only
+    val targetReps: Int?,       // REP only; the top of the range when [targetRepsMin] is set
     val targetDistanceM: Int?,  // DISTANCE only
     val isOptional: Boolean = false,
     val isPerSide: Boolean = false,
@@ -28,6 +28,8 @@ data class ExerciseDefinitionEntity(
     val isRemoved: Boolean = false,
     /** The id the server knows this row by (sync). Set by the database when left null. */
     val uuid: String? = null,
-    /** The library exercise this is (`exercises.id`); null until linked. Not synced: derived from [id]. */
-    val libraryExerciseId: String? = null
+    /** The library exercise this is (`exercises.id`); null until linked. */
+    val libraryExerciseId: String? = null,
+    /** The bottom of a rep range (6 in 6–10); null when [targetReps] is a fixed count. */
+    val targetRepsMin: Int? = null
 )

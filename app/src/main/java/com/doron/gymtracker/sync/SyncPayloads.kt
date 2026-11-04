@@ -2,6 +2,7 @@ package com.doron.gymtracker.sync
 
 import android.database.Cursor
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.doron.gymtracker.data.db.SyncMigration
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -54,9 +55,58 @@ class SyncPayloads(private val db: SupportSQLiteDatabase) {
         }
     }
 
+    private fun libraryNames(exerciseId: String): JsonArray = buildJsonArray {
+        db.query("SELECT lang, name, isAlias FROM exercise_names WHERE exerciseId = ? ORDER BY lang, isAlias, name", arrayOf<Any?>(exerciseId))
+            .use { c ->
+                while (c.moveToNext()) add(
+                    buildJsonObject { put("lang", c.str("lang")); put("name", c.str("name")); put("isAlias", c.bool("isAlias")) }
+                )
+            }
+    }
+
+    private fun libraryMuscles(exerciseId: String): JsonArray = buildJsonArray {
+        db.query("SELECT muscle, isPrimary FROM exercise_muscles WHERE exerciseId = ? ORDER BY muscle", arrayOf<Any?>(exerciseId))
+            .use { c ->
+                while (c.moveToNext()) add(buildJsonObject { put("muscle", c.str("muscle")); put("isPrimary", c.bool("isPrimary")) })
+            }
+    }
+
     private fun data(entity: String, uuid: String): JsonObject? = when (entity) {
+        // A training type, keyed by its id so a fresh install's built-ins match (version 17 on).
+        "activity_type" -> row("SELECT * FROM activity_types WHERE uuid = ?", uuid) { c ->
+            buildJsonObject {
+                put("key", c.str("id"))
+                put("name", c.strOrNull("name"))
+                put("icon", c.str("icon"))
+                put("color", c.str("color"))
+                put("recorder", c.str("recorder"))
+                put("healthConnectType", c.intOrNull("healthConnectType"))
+                put("metValue", c.doubleOrNull("metValue"))
+                put("builtin", c.bool("builtin"))
+                put("sortOrder", c.int("sortOrder"))
+                put("hiddenAt", c.longOrNull("hiddenAt"))
+            }
+        }
+        // A user's own library exercise with its names and muscles, known by its id (version 17 on).
+        SyncMigration.LIBRARY_EXERCISE -> row("SELECT * FROM exercises WHERE id = ? AND source = 'CUSTOM'", uuid) { c ->
+            buildJsonObject {
+                put("preset", c.str("preset"))
+                put("load", c.str("load"))
+                put("loadUnit", c.strOrNull("loadUnit"))
+                put("sides", c.str("sides"))
+                put("equipment", c.str("equipment"))
+                put("mechanics", c.strOrNull("mechanics"))
+                put("weightStepKg", c.doubleOrNull("weightStepKg"))
+                put("archivedAt", c.longOrNull("archivedAt"))
+                put("names", libraryNames(uuid))
+                put("muscles", libraryMuscles(uuid))
+            }
+        }
         // A programme, keyed by its id like the plan's workouts (version 16 on).
-        "program" -> row("SELECT * FROM programs WHERE uuid = ?", uuid) { c ->
+        "program" -> row(
+            "SELECT p.*, t.uuid AS type_uuid FROM programs p LEFT JOIN activity_types t ON t.id = p.activityTypeId WHERE p.uuid = ?",
+            uuid,
+        ) { c ->
             buildJsonObject {
                 put("key", c.str("id"))
                 put("name", c.strOrNull("name"))
@@ -64,6 +114,8 @@ class SyncPayloads(private val db: SupportSQLiteDatabase) {
                 put("deloadEveryWeeks", c.intOrNull("deloadEveryWeeks"))
                 put("variantRule", c.str("variantRule"))
                 put("isActive", c.bool("isActive"))
+                put("archivedAt", c.longOrNull("archivedAt"))
+                put("activityTypeId", c.strOrNull("type_uuid"))
             }
         }
         "workout" -> row(
@@ -77,6 +129,7 @@ class SyncPayloads(private val db: SupportSQLiteDatabase) {
                 put("sortOrder", c.int("sortOrder"))
                 put("name", c.strOrNull("name"))
                 put("weekday", c.intOrNull("weekday"))
+                put("hiddenAt", c.longOrNull("hiddenAt"))
             }
         }
         "exercise" -> row(
@@ -100,10 +153,14 @@ class SyncPayloads(private val db: SupportSQLiteDatabase) {
                 put("variantOfId", c.strOrNull("variant_uuid"))
                 put("sortOrder", c.int("sortOrder"))
                 put("isRemoved", c.bool("isRemoved"))
+                put("targetRepsMin", c.intOrNull("targetRepsMin"))
+                put("libraryExerciseId", c.strOrNull("libraryExerciseId"))
             }
         }
         "session" -> row(
-            "SELECT s.*, w.uuid AS workout_uuid FROM sessions s LEFT JOIN workouts w ON w.id = s.workoutId WHERE s.uuid = ?",
+            """SELECT s.*, w.uuid AS workout_uuid, t.uuid AS type_uuid FROM sessions s
+               LEFT JOIN workouts w ON w.id = s.workoutId
+               LEFT JOIN activity_types t ON t.id = s.activityTypeId WHERE s.uuid = ?""",
             uuid,
         ) { c ->
             buildJsonObject {
@@ -113,6 +170,11 @@ class SyncPayloads(private val db: SupportSQLiteDatabase) {
                 put("finishedAt", c.longOrNull("finishedAt"))
                 put("type", serverSessionType(c.str("type")))
                 put("distanceMeters", c.doubleOrNull("distanceMeters"))
+                put("activityTypeId", c.strOrNull("type_uuid"))
+                put("loggedManually", c.bool("loggedManually"))
+                put("durationS", c.intOrNull("durationS"))
+                put("calories", c.intOrNull("calories"))
+                put("note", c.strOrNull("note"))
             }
         }
         "entry" -> row(
@@ -271,6 +333,7 @@ class SyncPayloads(private val db: SupportSQLiteDatabase) {
         fun serverSessionType(local: String): String = when (local) {
             "RUNNING" -> "RUN"
             "WALKING" -> "WALK"
+            "OTHER" -> "OTHER"
             else -> "GYM"
         }
     }

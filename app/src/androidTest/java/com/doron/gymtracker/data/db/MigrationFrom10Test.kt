@@ -58,7 +58,7 @@ class MigrationFrom10Test {
         Room.databaseBuilder(context, GymDatabase::class.java, NAME)
             .addMigrations(*GymDatabase.MIGRATIONS)
             .addCallback(object : RoomDatabase.Callback() {
-                override fun onCreate(db: SupportSQLiteDatabase) = SyncMigration.installFresh(db)
+                override fun onCreate(db: SupportSQLiteDatabase) = GymDatabase.installFresh(db)
             })
             .allowMainThreadQueries()
             .build()
@@ -165,6 +165,24 @@ class MigrationFrom10Test {
         )
     }
 
+    @Test
+    fun sessionsGetTheirTrainingType() {
+        migrate()
+        fun text(q: String) = sql.query(q).use { c -> buildList { while (c.moveToNext()) add(c.getString(0)) } }
+        assertEquals(
+            listOf("run|GPS|56", "strength|EXERCISES|70", "walk|GPS|79"),
+            text("SELECT id || '|' || recorder || '|' || healthConnectType FROM activity_types WHERE builtin = 1 ORDER BY id"),
+        )
+        assertEquals(
+            listOf("1|GYM|strength", "2|GYM|strength", "3|RUNNING|run", "4|WALKING|walk"),
+            text("SELECT id || '|' || type || '|' || activityTypeId FROM sessions ORDER BY id"),
+        )
+        assertEquals(listOf("0"), text("SELECT count(*) FROM sessions WHERE loggedManually != 0 OR durationS IS NOT NULL OR note IS NOT NULL"))
+        // A fixed rep count stays fixed; nothing is archived or hidden
+        assertEquals(listOf("0"), text("SELECT count(*) FROM exercise_definitions WHERE targetRepsMin IS NOT NULL"))
+        assertEquals(listOf("0"), text("SELECT (SELECT count(*) FROM programs WHERE archivedAt IS NOT NULL OR activityTypeId IS NOT NULL) + (SELECT count(*) FROM workouts WHERE hiddenAt IS NOT NULL)"))
+    }
+
     /** The v11/v12 triggers broke exactly this: the app's own writes, through Room, after the migration. */
     @Test
     fun theAppCanWriteAfterwards() = runTest {
@@ -187,6 +205,8 @@ class MigrationFrom10Test {
         assertEquals(before.getValue("entry") + 1, after.getValue("entry"))
         assertEquals(before.getValue("set") + 1, after.getValue("set"))
         assertEquals(emptyMap<String, Long>(), SyncChecks.rowsWithoutUuid(sql))
+        assertEquals("run", db.sessionDao().getById(run)!!.activityTypeId)
+        assertEquals("strength", db.sessionDao().getById(gym)!!.activityTypeId)
     }
 
     private companion object {

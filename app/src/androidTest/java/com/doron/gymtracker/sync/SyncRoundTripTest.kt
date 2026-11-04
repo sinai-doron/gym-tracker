@@ -34,7 +34,7 @@ class SyncRoundTripTest {
     private fun freshDatabase(): GymDatabase = Room.inMemoryDatabaseBuilder(
         ApplicationProvider.getApplicationContext(), GymDatabase::class.java,
     ).allowMainThreadQueries().addCallback(object : RoomDatabase.Callback() {
-        override fun onCreate(db: SupportSQLiteDatabase) = SyncMigration.installFresh(db)
+        override fun onCreate(db: SupportSQLiteDatabase) = GymDatabase.installFresh(db)
     }).build()
 
     @Before
@@ -69,12 +69,13 @@ class SyncRoundTripTest {
                 "targetDistanceM, isOptional, isPerSide, isBodyweight, sortOrder, isRemoved) " +
                 "VALUES ('bench', 'workout_a', 'Bench press', 'REP', 3, 90, 8, NULL, 0, 0, 0, 0, 0)"
         )
-        a.execSQL("INSERT INTO sessions (workoutId, startedAt, finishedAt, type) VALUES ('workout_a', 1000, 5000, 'GYM')")
+        a.execSQL("INSERT INTO sessions (workoutId, startedAt, finishedAt, type, activityTypeId) VALUES ('workout_a', 1000, 5000, 'GYM', 'strength')")
         a.execSQL("INSERT INTO exercise_entries (sessionId, exerciseId) VALUES (1, 'bench')")
         a.execSQL("INSERT INTO sets (entryId, seq, kind, completedAt) VALUES (1, 1, 'WORKING', 2000)")
         a.execSQL("INSERT INTO set_parts (setId, seq, reps, loadKg) VALUES (1, 1, 8, 62.5)")
         a.execSQL(
-            "INSERT INTO sessions (workoutId, startedAt, finishedAt, type, distanceMeters) VALUES ('RUNNING', 10000, 20000, 'RUNNING', 1234.5)"
+            "INSERT INTO sessions (workoutId, startedAt, finishedAt, type, distanceMeters, activityTypeId) " +
+                "VALUES ('RUNNING', 10000, 20000, 'RUNNING', 1234.5, 'run')"
         )
         a.execSQL(
             "INSERT INTO run_details (sessionId, targetType, lapMeters, steps, calories) VALUES (2, 'NONE', 1000, 1500, 80)"
@@ -125,7 +126,7 @@ class SyncRoundTripTest {
         assertEquals(0L, b.count("SELECT count(*) FROM sync_inbox"))
         assertEquals("downloads are not logged back as local changes", 0L, b.count("SELECT count(*) FROM sync_changes"))
         assertEquals(pages.size.toLong(), SyncPull(b).cursor())
-        for (table in listOf("programs", "workouts", "exercise_definitions", "sessions", "exercise_entries", "sets", "set_parts",
+        for (table in listOf("activity_types", "programs", "workouts", "exercise_definitions", "sessions", "exercise_entries", "sets", "set_parts",
             "run_details", "run_pauses", "track_log", "routes", "route_points", "location_log")) {
             assertEquals(table, a.count("SELECT count(*) FROM `$table`"), b.count("SELECT count(*) FROM `$table`"))
         }
@@ -236,5 +237,97 @@ class SyncRoundTripTest {
         )
         SyncPull(b).applyPage(listOf(old), 1)
         assertEquals("program_abc|2", b.text("SELECT programId || '|' || sortOrder FROM workouts WHERE id = 'workout_b'"))
+    }
+
+    @Test
+    fun aTrainingTypeOfTheUsersOwnAndASessionLoggedByHandArrive() {
+        a.execSQL(
+            "INSERT INTO activity_types (id, name, icon, color, recorder, healthConnectType, metValue, builtin, sortOrder) " +
+                "VALUES ('f0072b11-0000-4000-8000-000000000001', 'Football', 'football', '#E17055', 'DURATION', 64, 7.0, 0, 4)"
+        )
+        a.execSQL(
+            "INSERT INTO sessions (workoutId, startedAt, finishedAt, type, activityTypeId, loggedManually, durationS, calories, note) " +
+                "VALUES ('OTHER', 1000, 5401000, 'OTHER', 'f0072b11-0000-4000-8000-000000000001', 1, 5400, 780, '5-a-side, won 7-5')"
+        )
+        // A built-in hidden by the user travels too
+        a.execSQL("UPDATE activity_types SET hiddenAt = 99 WHERE id = 'walk'")
+
+        serverItemsFromA().chunked(2).forEachIndexed { i, page -> SyncPull(b).applyPage(page, (i + 1).toLong()) }
+
+        assertEquals(0L, b.count("SELECT count(*) FROM sync_inbox"))
+        assertEquals("Football|DURATION|64", b.text("SELECT name || '|' || recorder || '|' || healthConnectType FROM activity_types WHERE builtin = 0"))
+        assertEquals(
+            "OTHER|f0072b11-0000-4000-8000-000000000001|1|5400|780|5-a-side, won 7-5",
+            b.text("SELECT type || '|' || activityTypeId || '|' || loggedManually || '|' || durationS || '|' || calories || '|' || note FROM sessions"),
+        )
+        assertEquals("99", b.text("SELECT hiddenAt FROM activity_types WHERE id = 'walk'"))
+        // B's own built-ins took A's uuids instead of doubling up
+        assertEquals(3L, b.count("SELECT count(*) FROM activity_types WHERE builtin = 1"))
+        assertEquals(
+            a.text("SELECT group_concat(uuid) FROM (SELECT uuid FROM activity_types ORDER BY id)"),
+            b.text("SELECT group_concat(uuid) FROM (SELECT uuid FROM activity_types ORDER BY id)"),
+        )
+    }
+
+    @Test
+    fun anExerciseOfTheUsersOwnArrivesWithItsNamesAndMusclesAndTheBuiltInsStayHome() {
+        val custom = "c0ffee00-0000-4000-8000-000000000002"
+        a.execSQL(
+            "INSERT INTO exercises (id, slug, source, preset, load, sides, equipment, mechanics, weightStepKg, catalogueVersion) " +
+                "VALUES ('$custom', NULL, 'CUSTOM', 'reps_load', 'total', 'both', 'barbell', 'compound', 2.5, NULL)"
+        )
+        a.execSQL("INSERT INTO exercise_names VALUES ('$custom', 'en', 'Landmine press', 0)")
+        a.execSQL("INSERT INTO exercise_muscles VALUES ('$custom', 'front_delts', 1), ('$custom', 'triceps', 0)")
+        // A built-in written the way the catalogue writes one: never queued
+        a.execSQL(
+            "INSERT INTO exercises (id, slug, source, preset, load, sides, equipment, mechanics, weightStepKg, catalogueVersion) " +
+                "VALUES ('936c29b1-a11d-3212-9375-b4430e5930b2', 'barbell-bench-press', 'BUILTIN', 'reps_load', 'total', 'both', 'barbell', 'compound', 2.5, 1)"
+        )
+        a.execSQL("INSERT INTO exercise_names VALUES ('936c29b1-a11d-3212-9375-b4430e5930b2', 'en', 'Barbell bench press', 0)")
+        assertEquals(1L, a.count("SELECT count(*) FROM sync_changes WHERE entity = 'library_exercise'"))
+
+        a.execSQL(
+            "INSERT INTO programs (id, name, startEpochDay, deloadEveryWeeks, variantRule, isActive) VALUES ('p', 'Mine', 20760, NULL, 'NONE', 1)"
+        )
+        a.execSQL("INSERT INTO workouts (id, label, programId, sortOrder) VALUES ('w', 'UA', 'p', 1)")
+        a.execSQL(
+            "INSERT INTO exercise_definitions (id, workoutId, name, type, targetSets, restDurationSecs, targetReps, targetRepsMin, " +
+                "targetDistanceM, isOptional, isPerSide, isBodyweight, sortOrder, isRemoved, libraryExerciseId) " +
+                "VALUES ('x', 'w', 'Landmine press', 'REP', 3, 90, 10, 6, NULL, 0, 0, 0, 1, 0, '$custom')"
+        )
+
+        SyncPull(b).applyPage(serverItemsFromA(), 1)
+
+        assertEquals(0L, b.count("SELECT count(*) FROM sync_inbox"))
+        assertEquals("CUSTOM|barbell|2.5", b.text("SELECT source || '|' || equipment || '|' || weightStepKg FROM exercises WHERE id = '$custom'"))
+        assertEquals("Landmine press", b.text("SELECT name FROM exercise_names WHERE exerciseId = '$custom'"))
+        assertEquals("front_delts:1,triceps:0", b.text(
+            "SELECT group_concat(m) FROM (SELECT muscle || ':' || isPrimary AS m FROM exercise_muscles WHERE exerciseId = '$custom' ORDER BY muscle)"
+        ))
+        assertEquals("$custom|6|10", b.text("SELECT libraryExerciseId || '|' || targetRepsMin || '|' || targetReps FROM exercise_definitions WHERE id = 'x'"))
+        assertEquals("the built-in never left A", 0L, b.count("SELECT count(*) FROM exercises WHERE source = 'BUILTIN'"))
+
+        // Deleting it on A deletes it on B
+        a.execSQL("DELETE FROM exercise_names WHERE exerciseId = '$custom'")
+        a.execSQL("DELETE FROM exercise_muscles WHERE exerciseId = '$custom'")
+        a.execSQL("DELETE FROM exercises WHERE id = '$custom'")
+        SyncPull(b).applyPage(serverItemsFromA().filter { it.entity == "library_exercise" }, 2)
+        assertEquals(0L, b.count("SELECT count(*) FROM exercises"))
+        assertEquals(0L, b.count("SELECT count(*) FROM exercise_muscles"))
+    }
+
+    @Test
+    fun aSessionInTheOldShapeGetsTheTypeItsScreenMeant() {
+        fun old(type: String, at: Long) = IncomingChange(
+            "session", java.util.UUID.randomUUID().toString(), 1_000, false,
+            buildJsonObject {
+                put("workoutId", JsonNull); put("startedAt", at); put("finishedAt", at + 1); put("type", type); put("distanceMeters", 10.0)
+            },
+        )
+        SyncPull(b).applyPage(listOf(old("RUN", 1), old("WALK", 2)), 1)
+        assertEquals("RUNNING|run,WALKING|walk", b.text(
+            "SELECT group_concat(t) FROM (SELECT type || '|' || activityTypeId AS t FROM sessions ORDER BY startedAt)"
+        ))
+        assertEquals("0", b.text("SELECT max(loggedManually) FROM sessions"))
     }
 }

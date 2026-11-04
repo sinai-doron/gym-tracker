@@ -59,7 +59,7 @@ class BackupMigrationTest {
         val db = Room.databaseBuilder(context, GymDatabase::class.java, NAME)
             .addMigrations(*GymDatabase.MIGRATIONS)
             .addCallback(object : RoomDatabase.Callback() {
-                override fun onCreate(db: SupportSQLiteDatabase) = SyncMigration.installFresh(db)
+                override fun onCreate(db: SupportSQLiteDatabase) = GymDatabase.installFresh(db)
             })
             .build()
             .also { room = it }
@@ -93,6 +93,15 @@ class BackupMigrationTest {
         ).use { it.moveToFirst(); it.getLong(0) }
         assertEquals(0L, unlinkedEntries)
         assertEquals(SyncChecks.expectedChanges(sql)["entry"], SyncChecks.loggedChanges(sql)["entry"])
+
+        // Version 17: every session names the training type its screen meant, and is queued with it
+        val mistyped = sql.query(
+            "SELECT count(*) FROM sessions WHERE activityTypeId != " +
+                "CASE type WHEN 'RUNNING' THEN 'run' WHEN 'WALKING' THEN 'walk' ELSE 'strength' END"
+        ).use { it.moveToFirst(); it.getLong(0) }
+        assertEquals(0L, mistyped)
+        assertEquals(SyncChecks.expectedChanges(sql)["session"], SyncChecks.loggedChanges(sql)["session"])
+        assertEquals(3L, SyncChecks.loggedChanges(sql)["activity_type"])
     }
 
     /** The `backupZip` instrumentation argument, or gym-backup.zip in the app's external files folder. */

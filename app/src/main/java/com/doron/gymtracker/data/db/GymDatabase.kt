@@ -4,6 +4,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.doron.gymtracker.data.db.dao.ActivityTypeDao
 import com.doron.gymtracker.data.db.dao.ExerciseEntryDao
 import com.doron.gymtracker.data.db.dao.ExerciseLibraryDao
 import com.doron.gymtracker.data.db.dao.LocationLogDao
@@ -14,6 +15,7 @@ import com.doron.gymtracker.data.db.dao.SessionDao
 import com.doron.gymtracker.data.db.dao.SetDao
 import com.doron.gymtracker.data.db.dao.TrackLogDao
 import com.doron.gymtracker.data.db.dao.WorkoutDao
+import com.doron.gymtracker.data.db.entities.ActivityTypeEntity
 import com.doron.gymtracker.data.db.entities.ExerciseDefinitionEntity
 import com.doron.gymtracker.data.db.entities.ExerciseEntity
 import com.doron.gymtracker.data.db.entities.ExerciseEntryEntity
@@ -48,9 +50,10 @@ import com.doron.gymtracker.data.db.entities.WorkoutEntity
         ExerciseEntity::class,
         ExerciseNameEntity::class,
         ExerciseMuscleEntity::class,
-        ProgramEntity::class
+        ProgramEntity::class,
+        ActivityTypeEntity::class
     ],
-    version = 16,
+    version = 17,
     // Each version's schema is written to app/schemas/ (see app/build.gradle.kts) for the migration tests
     exportSchema = true
 )
@@ -65,6 +68,7 @@ abstract class GymDatabase : RoomDatabase() {
     abstract fun routeDao(): RouteDao
     abstract fun exerciseLibraryDao(): ExerciseLibraryDao
     abstract fun programDao(): ProgramDao
+    abstract fun activityTypeDao(): ActivityTypeDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -201,7 +205,17 @@ abstract class GymDatabase : RoomDatabase() {
             MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
             MIGRATION_8_9, MIGRATION_9_10, SyncMigration.MIGRATION_10_11, SyncMigration.MIGRATION_11_12,
             SyncMigration.MIGRATION_12_13, LibraryMigration.MIGRATION_13_14,
-            SetsMigration.MIGRATION_14_15, ProgramMigration.MIGRATION_15_16
+            SetsMigration.MIGRATION_14_15, ProgramMigration.MIGRATION_15_16, ActivityTypeMigration.MIGRATION_16_17
         )
+
+        /**
+         * What a database created fresh at the current version gets beyond Room's tables, which the
+         * migrations give an upgraded one: sync's change log and triggers, and the built-in training
+         * types. Room's onCreate.
+         */
+        fun installFresh(db: SupportSQLiteDatabase) {
+            SyncMigration.installFresh(db)
+            ActivityTypeMigration.builtinRows().forEach(db::execSQL)
+        }
     }
 }

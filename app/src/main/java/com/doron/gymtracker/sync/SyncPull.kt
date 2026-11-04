@@ -2,7 +2,9 @@ package com.doron.gymtracker.sync
 
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
+import com.doron.gymtracker.data.db.ActivityTypeMigration
 import com.doron.gymtracker.data.db.ProgramMigration
+import com.doron.gymtracker.data.db.SyncMigration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -109,13 +111,33 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
             return true
         }
         return when (change.entity) {
-            "program" -> upsertPlanItem("programs", change.id, data.str("key"), ContentValues().apply {
+            "activity_type" -> upsertPlanItem("activity_types", change.id, data.str("key"), ContentValues().apply {
                 put("name", data.strOrNull("name"))
-                put("startEpochDay", LocalDate.parse(data.str("startDate")).toEpochDay())
-                putIntOrNull("deloadEveryWeeks", data.intOrNull("deloadEveryWeeks"))
-                put("variantRule", data.str("variantRule"))
-                put("isActive", data.bool("isActive"))
+                put("icon", data.str("icon"))
+                put("color", data.str("color"))
+                put("recorder", data.str("recorder"))
+                putIntOrNull("healthConnectType", data.intOrNull("healthConnectType"))
+                putDoubleOrNull("metValue", data.doubleOrNull("metValue"))
+                put("builtin", data.bool("builtin"))
+                put("sortOrder", data.int("sortOrder"))
+                putLongOrNull("hiddenAt", data.longOrNull("hiddenAt"))
             })
+            SyncMigration.LIBRARY_EXERCISE -> {
+                upsertLibraryExercise(change.id, data)
+                true
+            }
+            "program" -> {
+                val typeId = data.strOrNull("activityTypeId")?.let { idOf("activity_types", it) ?: return false }
+                upsertPlanItem("programs", change.id, data.str("key"), ContentValues().apply {
+                    put("name", data.strOrNull("name"))
+                    put("startEpochDay", LocalDate.parse(data.str("startDate")).toEpochDay())
+                    putIntOrNull("deloadEveryWeeks", data.intOrNull("deloadEveryWeeks"))
+                    put("variantRule", data.str("variantRule"))
+                    put("isActive", data.bool("isActive"))
+                    putLongOrNull("archivedAt", data.longOrNull("archivedAt"))
+                    put("activityTypeId", typeId)
+                })
+            }
             "workout" -> {
                 // Workouts sent before version 16 name no programme: they are the seeded plan's
                 val programId = data.strOrNull("programId")?.let { idOf("programs", it) ?: return false }
@@ -127,6 +149,7 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
                     put("sortOrder", data.intOrNull("sortOrder") ?: (listOf("A", "B", "C").indexOf(label) + 1).takeIf { it > 0 } ?: 4)
                     put("name", data.strOrNull("name"))
                     putIntOrNull("weekday", data.intOrNull("weekday"))
+                    putLongOrNull("hiddenAt", data.longOrNull("hiddenAt"))
                 })
             }
             "exercise" -> {
@@ -146,17 +169,28 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
                     put("variantOfId", variantOf)
                     put("sortOrder", data.int("sortOrder"))
                     put("isRemoved", data.bool("isRemoved"))
+                    putIntOrNull("targetRepsMin", data.intOrNull("targetRepsMin"))
+                    // Sent from version 17 on; before, the link comes from the plan exercise's id at start
+                    data.strOrNull("libraryExerciseId")?.let { put("libraryExerciseId", it) }
                 })
             }
             "session" -> {
                 val type = localSessionType(data.str("type"))
                 val workoutId = data.strOrNull("workoutId")?.let { idOf("workouts", it) ?: return false } ?: type
+                // Sessions sent before version 17 name no training type: the one their screen means
+                val typeId = data.strOrNull("activityTypeId")?.let { idOf("activity_types", it) ?: return false }
+                    ?: ActivityTypeMigration.forSessionType(type)
                 upsert("sessions", change.id, ContentValues().apply {
                     put("workoutId", workoutId)
                     put("startedAt", data.long("startedAt"))
                     putLongOrNull("finishedAt", data.longOrNull("finishedAt"))
                     put("type", type)
                     putDoubleOrNull("distanceMeters", data.doubleOrNull("distanceMeters"))
+                    put("activityTypeId", typeId)
+                    put("loggedManually", data.bool("loggedManually"))
+                    putIntOrNull("durationS", data.intOrNull("durationS"))
+                    putIntOrNull("calories", data.intOrNull("calories"))
+                    put("note", data.strOrNull("note"))
                 })
             }
             "entry" -> {
@@ -291,6 +325,11 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
                 db.execSQL("DELETE FROM sync_track_parts WHERE id = ?", arrayOf<Any?>(change.id))
                 rebuildTrack(session)
             }
+            SyncMigration.LIBRARY_EXERCISE -> {
+                db.execSQL("DELETE FROM exercise_names WHERE exerciseId = ? AND exerciseId IN (SELECT id FROM exercises WHERE source = 'CUSTOM')", arrayOf<Any?>(change.id))
+                db.execSQL("DELETE FROM exercise_muscles WHERE exerciseId = ? AND exerciseId IN (SELECT id FROM exercises WHERE source = 'CUSTOM')", arrayOf<Any?>(change.id))
+                db.execSQL("DELETE FROM exercises WHERE id = ? AND source = 'CUSTOM'", arrayOf<Any?>(change.id))
+            }
             "set" -> {
                 db.execSQL("DELETE FROM set_parts WHERE setId IN (SELECT id FROM sets WHERE uuid = ?)", arrayOf<Any?>(change.id))
                 db.execSQL("DELETE FROM sets WHERE uuid = ?", arrayOf<Any?>(change.id))
@@ -325,6 +364,45 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
         }
         // What the server holds for this session's track: kept in step for uploads.
         db.execSQL("INSERT OR REPLACE INTO sync_track_chunks VALUES (?, ?)", arrayOf<Any?>(sessionUuid, parts.size))
+    }
+
+    /** A user's own exercise, its names and muscles replaced by the server's. Never a built-in's id. */
+    private fun upsertLibraryExercise(id: String, data: JsonObject) {
+        val builtin = db.query("SELECT 1 FROM exercises WHERE id = ? AND source = 'BUILTIN'", arrayOf<Any?>(id)).use { it.moveToFirst() }
+        if (builtin) return
+        db.insert("exercises", SQLiteDatabase.CONFLICT_REPLACE, ContentValues().apply {
+            put("id", id)
+            putNull("slug")
+            put("source", "CUSTOM")
+            put("preset", data.str("preset"))
+            put("load", data.str("load"))
+            put("loadUnit", data.strOrNull("loadUnit"))
+            put("sides", data.str("sides"))
+            put("equipment", data.str("equipment"))
+            put("mechanics", data.strOrNull("mechanics"))
+            putDoubleOrNull("weightStepKg", data.doubleOrNull("weightStepKg"))
+            putNull("catalogueVersion")
+            putLongOrNull("archivedAt", data.longOrNull("archivedAt"))
+        })
+        db.execSQL("DELETE FROM exercise_names WHERE exerciseId = ?", arrayOf<Any?>(id))
+        db.execSQL("DELETE FROM exercise_muscles WHERE exerciseId = ?", arrayOf<Any?>(id))
+        data["names"]?.jsonArray?.forEach { n ->
+            val name = n.jsonObject
+            db.insert("exercise_names", SQLiteDatabase.CONFLICT_IGNORE, ContentValues().apply {
+                put("exerciseId", id)
+                put("lang", name.str("lang"))
+                put("name", name.str("name"))
+                put("isAlias", name.bool("isAlias"))
+            })
+        }
+        data["muscles"]?.jsonArray?.forEach { m ->
+            val muscle = m.jsonObject
+            db.insert("exercise_muscles", SQLiteDatabase.CONFLICT_IGNORE, ContentValues().apply {
+                put("exerciseId", id)
+                put("muscle", muscle.str("muscle"))
+                put("isPrimary", muscle.bool("isPrimary"))
+            })
+        }
     }
 
     /** By uuid, else by the plan's own key; a new item takes its key as its local id. */
@@ -404,11 +482,11 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
     companion object {
         /** Parents before children, so most items go in on the first try. */
         private val ORDER = listOf(
-            "program", "workout", "exercise", "route", "session", "entry", "set", "run", "pause", "song", "route_points", SyncPayloads.TRACK,
+            "activity_type", SyncMigration.LIBRARY_EXERCISE, "program", "workout", "exercise", "route", "session", "entry", "set", "run", "pause", "song", "route_points", SyncPayloads.TRACK,
         )
         private val DERIVED = setOf("route_points", SyncPayloads.TRACK)
         private val TABLE_OF = mapOf(
-            "program" to "programs", "workout" to "workouts", "exercise" to "exercise_definitions", "session" to "sessions",
+            "activity_type" to "activity_types", "program" to "programs", "workout" to "workouts", "exercise" to "exercise_definitions", "session" to "sessions",
             "entry" to "exercise_entries", "set" to "sets", "run" to "run_details",
             "pause" to "run_pauses", "route" to "routes", "song" to "track_log",
         )
@@ -416,6 +494,7 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
         fun localSessionType(server: String): String = when (server) {
             "RUN" -> "RUNNING"
             "WALK" -> "WALKING"
+            "OTHER" -> "OTHER"
             else -> "GYM"
         }
     }

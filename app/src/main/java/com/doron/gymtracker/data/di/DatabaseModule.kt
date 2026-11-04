@@ -5,7 +5,6 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.doron.gymtracker.data.db.GymDatabase
-import com.doron.gymtracker.data.db.SyncMigration
 import com.doron.gymtracker.data.db.dao.ExerciseEntryDao
 import com.doron.gymtracker.data.db.dao.ExerciseLibraryDao
 import com.doron.gymtracker.data.db.dao.LocationLogDao
@@ -35,7 +34,7 @@ object DatabaseModule {
             // A fresh install starts at the current version, so the migrations never run: install
             // what sync needs (change log, triggers) when Room creates the database.
             .addCallback(object : RoomDatabase.Callback() {
-                override fun onCreate(db: SupportSQLiteDatabase) = SyncMigration.installFresh(db)
+                override fun onCreate(db: SupportSQLiteDatabase) = GymDatabase.installFresh(db)
             })
             .build()
 
