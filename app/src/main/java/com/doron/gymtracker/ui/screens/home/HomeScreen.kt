@@ -30,14 +30,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -224,13 +225,14 @@ fun HomeScreen(
                         tint = Purple.copy(alpha = 0.6f)
                     )
                 }
-                IconButton(onClick = onSettingsClick) {
-                    Icon(
-                        Icons.Default.Settings,
-                        contentDescription = stringResource(R.string.settings),
-                        tint = Purple.copy(alpha = 0.6f)
-                    )
-                }
+                HomeMenu(
+                    onLogSession = onLogSession,
+                    onTrainingTypes = onTrainingTypes,
+                    onProgramsClick = onProgramsClick,
+                    onRoutesClick = onRoutesClick,
+                    onAchievementsClick = onAchievementsClick,
+                    onSettingsClick = onSettingsClick
+                )
             }
 
             // The active programme (tap to switch), its week: A/B variants and the next deload
@@ -322,23 +324,19 @@ fun HomeScreen(
 
             if (state.runShown || state.walkShown) {
                 CardioCard(
-                    routesCount = state.routesCount,
                     onRun = { startCardio("RUNNING") }.takeIf { state.runShown },
-                    onWalk = { startCardio("WALKING") }.takeIf { state.walkShown },
-                    onRoutes = onRoutesClick
+                    onWalk = { startCardio("WALKING") }.takeIf { state.walkShown }
                 )
             }
 
-            Spacer(Modifier.height(12.dp))
-            OtherTrainingCard(
-                types = state.timedTypes,
-                openTimer = state.openTimer,
-                openTimerType = state.openTimerType,
-                onTimer = onTimer,
-                onTrainingTypes = onTrainingTypes
-            )
-            TextButton(onClick = onLogSession, modifier = Modifier.fillMaxWidth()) {
-                Text("+ " + stringResource(R.string.log_title), color = Purple)
+            if (state.timedTypes.isNotEmpty() || state.openTimer != null) {
+                Spacer(Modifier.height(12.dp))
+                OtherTrainingCard(
+                    types = state.timedTypes,
+                    openTimer = state.openTimer,
+                    openTimerType = state.openTimerType,
+                    onTimer = onTimer
+                )
             }
 
             // Achievements: the distance badges, then the rest (climb, mileage, iron, regular,
@@ -358,9 +356,6 @@ fun HomeScreen(
                     if (achievements.isNotEmpty()) {
                         Spacer(Modifier.height(16.dp))
                         AchievementsStrip(achievements)
-                    }
-                    TextButton(onClick = onAchievementsClick, modifier = Modifier.align(Alignment.End)) {
-                        Text(stringResource(R.string.achievements_all) + " ›", color = Purple)
                     }
                     if (records.isNotEmpty()) {
                         Spacer(Modifier.height(16.dp))
@@ -597,25 +592,61 @@ private fun NextWorkoutCard(
     }
 }
 
-/** Running and walking, in the same green as cardio days in the history calendar, with the way to routes. */
+/** Running and walking, in the same green as cardio days in the history calendar. */
+/**
+ * The extra screens, out of the cards' way: logging a session done without the phone, training
+ * types, programmes, routes, achievements and settings.
+ */
+@Composable
+private fun HomeMenu(
+    onLogSession: () -> Unit,
+    onTrainingTypes: () -> Unit,
+    onProgramsClick: () -> Unit,
+    onRoutesClick: () -> Unit,
+    onAchievementsClick: () -> Unit,
+    onSettingsClick: () -> Unit
+) {
+    var open by remember { mutableStateOf(false) }
+    Box {
+        IconButton(onClick = { open = true }) {
+            Icon(
+                Icons.Default.MoreVert,
+                contentDescription = stringResource(R.string.home_menu),
+                tint = Purple.copy(alpha = 0.6f)
+            )
+        }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            listOf(
+                R.string.log_title to onLogSession,
+                R.string.types_title to onTrainingTypes,
+                R.string.programs_title to onProgramsClick,
+                R.string.routes_title to onRoutesClick,
+                R.string.achievements_all to onAchievementsClick,
+                R.string.settings to onSettingsClick
+            ).forEach { (label, onClick) ->
+                DropdownMenuItem(
+                    text = { Text(stringResource(label)) },
+                    onClick = {
+                        open = false
+                        onClick()
+                    }
+                )
+            }
+        }
+    }
+}
+
 /**
  * The training types timed rather than recorded (Pilates, football…), one button each; a timer
- * left running comes first. With none shown it is just the way to Settings → Training types.
+ * left running comes first. Shown only when there is one; the menu leads to the types.
  */
 @Composable
 private fun OtherTrainingCard(
     types: List<TrainingType>,
     openTimer: Session?,
     openTimerType: TrainingType?,
-    onTimer: (String) -> Unit,
-    onTrainingTypes: () -> Unit
+    onTimer: (String) -> Unit
 ) {
-    if (types.isEmpty() && openTimer == null) {
-        TextButton(onClick = onTrainingTypes, modifier = Modifier.fillMaxWidth()) {
-            Text("+ " + stringResource(R.string.home_more_types), color = Purple)
-        }
-        return
-    }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -629,9 +660,6 @@ private fun OtherTrainingCard(
         }
         types.filter { it.id != openTimerType?.id }.forEach { type ->
             TypeRow(type, stringResource(R.string.recorder_timer)) { onTimer(type.id) }
-        }
-        TextButton(onClick = onTrainingTypes, contentPadding = PaddingValues(0.dp)) {
-            Text(stringResource(R.string.home_edit_types), color = Purple, style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
@@ -657,10 +685,8 @@ private fun TypeRow(type: TrainingType, detail: String, onClick: () -> Unit) {
 
 @Composable
 private fun CardioCard(
-    routesCount: Int,
     onRun: (() -> Unit)?,
-    onWalk: (() -> Unit)?,
-    onRoutes: () -> Unit
+    onWalk: (() -> Unit)?
 ) {
     Column(
         modifier = Modifier
@@ -673,33 +699,6 @@ private fun CardioCard(
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             onRun?.let { CardioButton(Activity.RUN, stringResource(R.string.home_run), Modifier.weight(1f), it) }
             onWalk?.let { CardioButton(Activity.WALK, stringResource(R.string.home_walk), Modifier.weight(1f), it) }
-        }
-        Spacer(Modifier.height(8.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .clickable(onClick = onRoutes)
-                .padding(vertical = 10.dp, horizontal = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ActivityIcon(Activity.ROUTES, size = 28.dp)
-            Spacer(Modifier.width(10.dp))
-            Text(
-                stringResource(R.string.home_routes),
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold)
-            )
-            Text(
-                " · " + stringResource(R.string.home_routes_saved, routesCount),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f)
-            )
-            Icon(
-                Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }

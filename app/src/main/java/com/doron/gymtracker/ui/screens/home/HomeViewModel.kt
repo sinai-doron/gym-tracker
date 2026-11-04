@@ -8,7 +8,6 @@ import com.doron.gymtracker.data.WeatherRepository
 import com.doron.gymtracker.data.db.ActivityTypeMigration
 import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.data.prefs.WeekMode
-import com.doron.gymtracker.data.repository.RouteRepository
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.TrainingTypes
 import com.doron.gymtracker.data.repository.WorkoutRepository
@@ -82,7 +81,6 @@ data class HomeUiState(
     val weeklyStats: WeeklyStats = WeeklyStats(),
     /** This week's steps by day; null when Health Connect's steps can't be read. */
     val stepsWeek: StepsWeek? = null,
-    val routesCount: Int = 0,
     /** Run and walk, unless hidden in Settings → Training types. */
     val runShown: Boolean = true,
     val walkShown: Boolean = true,
@@ -106,7 +104,6 @@ class HomeViewModel @Inject constructor(
     private val weatherRepo: WeatherRepository,
     private val getProgramStatus: GetProgramStatusUseCase,
     private val settingsPrefs: SettingsPrefs,
-    private val routeRepo: RouteRepository,
     private val trainingTypes: TrainingTypes
 ) : ViewModel() {
 
@@ -168,7 +165,6 @@ class HomeViewModel @Inject constructor(
                 _uiState.update { it.copy(todaySteps = hcSteps.toInt()) }
             }
             loadWeeklyStats()
-            _uiState.update { it.copy(routesCount = routeRepo.getAll().size) }
             val shown = trainingTypes.shown()
             val openTimer = sessionRepo.getOpenTimedSession()
             _uiState.update {
