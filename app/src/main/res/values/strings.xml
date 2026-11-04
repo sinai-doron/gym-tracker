@@ -218,4 +218,6 @@
     <string name="achievement_progress_km">%1$s מתוך %2$s ק״מ</string>
     <string name="achievement_progress_t">%1$s מתוך %2$s טון</string>
     <string name="achievement_progress_weeks">%1$s מתוך %2$s שבועות</string>
+    <string name="privacy_policy">מדיניות פרטיות</string>
+    <string name="privacy_policy_read">למדיניות הפרטיות המלאה</string>
 </resources>

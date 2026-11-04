@@ -65,6 +65,8 @@ import com.doron.gymtracker.data.prefs.AudioFeedback
 import com.doron.gymtracker.data.prefs.WeekMode
 import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.ui.screens.account.AccountCard
+import androidx.compose.ui.platform.LocalUriHandler
+import com.doron.gymtracker.ui.components.PRIVACY_POLICY_URL
 
 data class LanguageOption(val code: String, val displayName: String)
 
@@ -96,6 +98,7 @@ fun SettingsScreen(
     val bodyWeightKg by viewModel.bodyWeightKg.collectAsState()
     val audioFeedback by viewModel.audioFeedback.collectAsState()
     val context = LocalContext.current
+    val uriHandler = LocalUriHandler.current
 
     val backupEvent by viewModel.backupEvent.collectAsState()
     var pendingRestore by remember { mutableStateOf<android.net.Uri?>(null) }
@@ -415,6 +418,10 @@ fun SettingsScreen(
                 Spacer(Modifier.height(8.dp))
                 OutlinedButton(onClick = onLicences, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.licences_title))
+                }
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(onClick = { uriHandler.openUri(PRIVACY_POLICY_URL) }, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.privacy_policy))
                 }
             }
         }
