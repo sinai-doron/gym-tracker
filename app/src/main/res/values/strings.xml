@@ -75,7 +75,7 @@
     <string name="restore_confirm_title">לשחזר מגיבוי?</string>
     <string name="restore_confirm_text">כל הנתונים הנוכחיים יוחלפו בתוכן הגיבוי, והאפליקציה תופעל מחדש.</string>
     <string name="cancel">ביטול</string>
-    <string name="edit_workout">עריכת %1$s · %2$s</string>
+    <string name="edit_workout">עריכת %1$s</string>
     <string name="add_exercise">הוסף תרגיל</string>
     <string name="edit_exercise">עריכת תרגיל</string>
     <string name="exercise_name">שם התרגיל</string>

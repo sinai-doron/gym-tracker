@@ -75,7 +75,7 @@
     <string name="restore_confirm_title">Restore from backup?</string>
     <string name="restore_confirm_text">All current data will be replaced by the backup, and the app will restart.</string>
     <string name="cancel">Cancel</string>
-    <string name="edit_workout">Edit %1$s · %2$s</string>
+    <string name="edit_workout">Edit %1$s</string>
     <string name="add_exercise">Add exercise</string>
     <string name="edit_exercise">Edit exercise</string>
     <string name="exercise_name">Exercise name</string>

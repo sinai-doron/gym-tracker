@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -49,7 +50,6 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import com.doron.gymtracker.R
 import com.doron.gymtracker.ui.components.ExercisePreviewList
 import com.doron.gymtracker.ui.components.WorkoutMetaRow
-import com.doron.gymtracker.ui.components.circleCode
 import com.doron.gymtracker.ui.components.localizedName
 import com.doron.gymtracker.ui.theme.Purple
 import kotlinx.coroutines.launch
@@ -112,7 +112,6 @@ fun WorkoutsScreen(
             ) {
                 state.previews.forEachIndexed { i, p ->
                     WorkoutChoiceCard(
-                        letter = circleCode(p.workout.code),
                         name = p.workout.localizedName(),
                         isSelected = i == state.selectedIndex,
                         isNext = p.workout.id == state.nextWorkoutId,
@@ -158,7 +157,6 @@ fun WorkoutsScreen(
 
 @Composable
 private fun WorkoutChoiceCard(
-    letter: String,
     name: String,
     isSelected: Boolean,
     isNext: Boolean,
@@ -177,16 +175,12 @@ private fun WorkoutChoiceCard(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            letter,
-            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold),
-            color = content
-        )
-        Text(
             name,
-            style = MaterialTheme.typography.labelMedium,
-            color = content.copy(alpha = 0.8f),
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            color = content,
             textAlign = TextAlign.Center,
-            maxLines = 1
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
         )
         // Keep all cards the same height; only the upcoming one shows the label
         Text(

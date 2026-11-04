@@ -40,9 +40,9 @@ class ProgramBuilderViewModel @Inject constructor(
 
     fun setStartDate(date: LocalDate) = change { programs.setStartDate(programId, date) }
 
-    fun addWorkout(code: String, name: String) = change { workouts.addWorkout(programId, code.trim(), name.trim().ifEmpty { null }) }
+    fun addWorkout(code: String, name: String?) = change { workouts.addWorkout(programId, code, name?.trim()?.ifEmpty { null }) }
 
-    fun editWorkout(id: String, code: String, name: String) = change { workouts.editWorkout(id, code.trim(), name.trim().ifEmpty { null }) }
+    fun editWorkout(id: String, code: String, name: String?) = change { workouts.editWorkout(id, code, name?.trim()?.ifEmpty { null }) }
 
     fun moveWorkout(id: String, direction: Int) = change { workouts.moveWorkout(programId, id, direction) }
 
