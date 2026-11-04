@@ -10,7 +10,6 @@ import androidx.health.connect.client.records.ElevationGainedRecord
 import androidx.health.connect.client.records.ExerciseLap
 import androidx.health.connect.client.records.ExerciseRoute
 import androidx.health.connect.client.records.ExerciseSessionRecord
-import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.metadata.Device
@@ -37,7 +36,6 @@ class HealthConnectManager @Inject constructor(
     companion object {
         val PERMISSIONS = setOf(
             HealthPermission.getReadPermission(StepsRecord::class),
-            HealthPermission.getReadPermission(ExerciseSessionRecord::class),
             HealthPermission.getWritePermission(ExerciseSessionRecord::class)
         )
 
@@ -46,9 +44,10 @@ class HealthConnectManager @Inject constructor(
             HealthPermission.PERMISSION_WRITE_EXERCISE_ROUTE,
             HealthPermission.getWritePermission(DistanceRecord::class),
             HealthPermission.getWritePermission(ActiveCaloriesBurnedRecord::class),
-            HealthPermission.getWritePermission(ElevationGainedRecord::class),
-            // A watch's heart rate during runs
-            HealthPermission.getReadPermission(HeartRateRecord::class)
+            HealthPermission.getWritePermission(ElevationGainedRecord::class)
+            // A watch's heart rate during runs is planned: it adds READ_HEART_RATE here and in the
+            // manifest, and Play's Health declaration then needs it described. Ask only for what
+            // the app reads; Play refuses permissions that aren't used.
         )
 
         val ALL_PERMISSIONS = PERMISSIONS + RUN_PERMISSIONS
