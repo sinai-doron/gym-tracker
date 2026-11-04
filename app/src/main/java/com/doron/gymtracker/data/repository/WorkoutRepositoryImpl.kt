@@ -1,5 +1,6 @@
 package com.doron.gymtracker.data.repository
 
+import com.doron.gymtracker.data.db.dao.ExerciseLibraryDao
 import com.doron.gymtracker.data.db.dao.ProgramDao
 import com.doron.gymtracker.data.db.dao.WorkoutDao
 import com.doron.gymtracker.data.db.entities.ExerciseDefinitionEntity
@@ -19,7 +20,8 @@ import kotlinx.coroutines.sync.withLock
 
 class WorkoutRepositoryImpl @Inject constructor(
     private val dao: WorkoutDao,
-    private val programDao: ProgramDao
+    private val programDao: ProgramDao,
+    private val libraryDao: ExerciseLibraryDao
 ) : WorkoutRepository {
 
     private val seedLock = Mutex()
@@ -70,9 +72,11 @@ class WorkoutRepositoryImpl @Inject constructor(
 
     private suspend fun WorkoutEntity.toDomain(): Workout {
         val rows = dao.getExercisesForWorkout(id)
+        val names = libraryNames(rows)
         val variantsByBase = rows.filter { it.variantOfId != null }.associateBy { it.variantOfId }
         val exercises = rows.filter { it.variantOfId == null }.map { base ->
-            base.toDomain(variantB = variantsByBase[base.id]?.toDomain())
+            val variant = variantsByBase[base.id]?.let { it.toDomain(names = names[it.id].orEmpty()) }
+            base.toDomain(variantB = variant, names = names[base.id].orEmpty())
         }
         return Workout(id, label, exercises, name = name, sortOrder = sortOrder)
     }
@@ -163,18 +167,37 @@ class WorkoutRepositoryImpl @Inject constructor(
         )
     }
 
-    private fun ExerciseDefinitionEntity.toDomain(variantB: ExerciseDefinition? = null): ExerciseDefinition = when (type) {
+    /**
+     * Each linked row's library names by language, when its saved name is one of that exercise's
+     * names or aliases in any language: a plan added in Hebrew then shows in English, while a name
+     * the user typed stays theirs. By row id.
+     */
+    private suspend fun libraryNames(rows: List<ExerciseDefinitionEntity>): Map<String, Map<String, String>> {
+        val linked = rows.filter { it.libraryExerciseId != null }
+        if (linked.isEmpty()) return emptyMap()
+        val byExercise = libraryDao.namesFor(linked.mapNotNull { it.libraryExerciseId }.distinct()).groupBy { it.exerciseId }
+        return linked.mapNotNull { row ->
+            val names = byExercise[row.libraryExerciseId].orEmpty()
+            if (names.none { it.name == row.name }) return@mapNotNull null
+            row.id to names.filter { !it.isAlias }.associate { it.lang to it.name }
+        }.toMap()
+    }
+
+    private fun ExerciseDefinitionEntity.toDomain(
+        variantB: ExerciseDefinition? = null,
+        names: Map<String, String> = emptyMap()
+    ): ExerciseDefinition = when (type) {
         "REP" -> RepExerciseDefinition(
             id, name, targetSets, restDurationSecs, targetReps!!, variantB = variantB,
-            isOptional = isOptional, isPerSide = isPerSide, isBodyweight = isBodyweight, targetRepsMin = targetRepsMin
+            isOptional = isOptional, isPerSide = isPerSide, names = names, isBodyweight = isBodyweight, targetRepsMin = targetRepsMin
         )
         "DISTANCE" -> DistanceExerciseDefinition(
             id, name, targetSets, restDurationSecs, targetDistanceM!!, variantB = variantB,
-            isOptional = isOptional, isPerSide = isPerSide
+            isOptional = isOptional, isPerSide = isPerSide, names = names
         )
         else -> TimedExerciseDefinition(
             id, name, targetSets, restDurationSecs, variantB = variantB,
-            isOptional = isOptional, isPerSide = isPerSide
+            isOptional = isOptional, isPerSide = isPerSide, names = names
         )
     }
 }

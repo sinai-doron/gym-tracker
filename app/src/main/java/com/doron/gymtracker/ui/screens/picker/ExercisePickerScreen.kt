@@ -1,5 +1,6 @@
 package com.doron.gymtracker.ui.screens.picker
 
+import com.doron.gymtracker.ui.components.appLanguage
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -73,7 +74,7 @@ fun ExercisePickerScreen(
     viewModel: ExercisePickerViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val lang = LocalConfiguration.current.locales[0].language.let { if (it == "iw") "he" else it }
+    val lang = appLanguage()
     LaunchedEffect(lang) { viewModel.load(lang) }
     var picked by remember { mutableStateOf<LibraryExercise?>(null) }
     var creating by remember { mutableStateOf<String?>(null) }

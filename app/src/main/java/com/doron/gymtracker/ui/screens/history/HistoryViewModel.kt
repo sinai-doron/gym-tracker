@@ -1,5 +1,8 @@
 package com.doron.gymtracker.ui.screens.history
 
+import java.text.DateFormat
+import com.doron.gymtracker.domain.model.nameIn
+import com.doron.gymtracker.AppLocale
 import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -68,9 +71,9 @@ class HistoryViewModel @Inject constructor(
     private val _selectedDaySessions = MutableStateFlow<DaySessionsUiState?>(null)
     val selectedDaySessions: StateFlow<DaySessionsUiState?> = _selectedDaySessions.asStateFlow()
 
-    private val heLocale = Locale("he")
-    private val timeFormat = SimpleDateFormat("HH:mm", heLocale)
-    private val dateFormat = SimpleDateFormat("dd בMMMM yyyy", heLocale) // hebrew-ok: dates follow the app language in phase 3
+    // Read on each use: the language can change while this view model lives
+    private val timeFormat get() = SimpleDateFormat("HH:mm", AppLocale.current())
+    private val dateFormat get() = DateFormat.getDateInstance(DateFormat.LONG, AppLocale.current())
     private val zone = ZoneId.systemDefault()
 
     init {
@@ -111,7 +114,7 @@ class HistoryViewModel @Inject constructor(
                 val entries = if (!isCardio) sessionRepo.getEntriesForSession(session.id) else emptyList()
 
                 val summaries = entries.mapNotNull { entry ->
-                    val name = workout?.exercises?.find { it.id == entry.exerciseId }?.name
+                    val name = workout?.exercises?.find { it.id == entry.exerciseId }?.nameIn(AppLocale.language())
                         ?: return@mapNotNull null
                     ExerciseSummary(name, entry.sets)
                 }

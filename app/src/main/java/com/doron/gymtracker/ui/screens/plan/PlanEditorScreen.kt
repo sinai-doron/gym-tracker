@@ -133,7 +133,7 @@ fun PlanEditorScreen(
     removing?.let { exercise ->
         AlertDialog(
             onDismissRequest = { removing = null },
-            title = { Text(stringResource(R.string.remove_exercise_title, exercise.name)) },
+            title = { Text(stringResource(R.string.remove_exercise_title, exercise.localizedName())) },
             text = { Text(stringResource(R.string.remove_exercise_text)) },
             confirmButton = {
                 TextButton(onClick = {
@@ -164,7 +164,7 @@ private fun PlanExerciseRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(exercise.name, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold))
+            Text(exercise.localizedName(), style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold))
             Text(
                 exerciseSummary(exercise) +
                     if (exercise.isOptional) " · " + stringResource(R.string.targets_optional_tag) else "",
@@ -173,7 +173,7 @@ private fun PlanExerciseRow(
             )
             exercise.variantB?.let { variant ->
                 Text(
-                    stringResource(R.string.targets_week_b, variant.name),
+                    stringResource(R.string.targets_week_b, variant.localizedName()),
                     style = MaterialTheme.typography.bodySmall,
                     color = Purple
                 )

@@ -109,6 +109,7 @@ fun RunMap(
         }
     }
 
+    val lang = appLanguage()
     LaunchedEffect(Unit) {
         mapView.getMapAsync { m ->
             m.uiSettings.apply {
@@ -121,7 +122,7 @@ fun RunMap(
             }
             // A short or stationary route would otherwise zoom in far past street level
             m.setMaxZoomPreference(MAX_ZOOM)
-            m.setStyle(Style.Builder().fromJson(loadStyle(context))) { s ->
+            m.setStyle(Style.Builder().fromJson(runMapStyle(context, lang).toString())) { s ->
                 addRunLayers(s)
                 map = m
                 style = s
@@ -219,9 +220,6 @@ private const val FOLLOW_ZOOM = 16.5
 private const val MAX_ZOOM = 17.5
 private const val FIT_PADDING_DP = 40
 private const val CAMERA_ANIMATION_MS = 600
-
-private fun loadStyle(context: Context): String =
-    context.assets.open("map_style_run.json").bufferedReader().use { it.readText() }
 
 private fun features(feature: Feature?): FeatureCollection =
     FeatureCollection.fromFeatures(listOfNotNull(feature))

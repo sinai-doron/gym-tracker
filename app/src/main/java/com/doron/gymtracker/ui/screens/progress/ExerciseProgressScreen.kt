@@ -1,5 +1,6 @@
 package com.doron.gymtracker.ui.screens.progress
 
+import com.doron.gymtracker.ui.components.localizedName
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -63,7 +64,7 @@ fun ExerciseProgressScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(progress?.exercise?.name ?: "", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(progress?.exercise?.localizedName() ?: "", maxLines = 1, overflow = TextOverflow.Ellipsis)
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
                 navigationIcon = {

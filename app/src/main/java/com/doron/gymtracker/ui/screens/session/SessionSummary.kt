@@ -1,5 +1,7 @@
 package com.doron.gymtracker.ui.screens.session
 
+import com.doron.gymtracker.domain.model.nameIn
+import com.doron.gymtracker.AppLocale
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -94,7 +96,7 @@ fun buildSummaryData(
         lines.add(
             ExerciseSummaryLine(
                 exerciseId = detail.exercise.id,
-                name = detail.exercise.name,
+                name = detail.exercise.nameIn(AppLocale.language()),
                 setsCompleted = sets.size,
                 setsTarget = target,
                 topWeight = topWeight

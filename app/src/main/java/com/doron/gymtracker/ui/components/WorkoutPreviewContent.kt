@@ -74,7 +74,7 @@ private fun ExercisePreviewRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            exercise.name,
+            exercise.localizedName(),
             style = MaterialTheme.typography.bodyLarge,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
