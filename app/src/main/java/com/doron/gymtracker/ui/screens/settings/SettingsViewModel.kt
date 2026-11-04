@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import android.net.Uri
 import android.content.Context
 import com.doron.gymtracker.account.Account
+import com.doron.gymtracker.account.SignInFeature
 import com.doron.gymtracker.sync.SyncRepository
 import com.doron.gymtracker.sync.SyncStatus
 import com.doron.gymtracker.sync.SyncWorker
@@ -32,8 +33,18 @@ class SettingsViewModel @Inject constructor(
     private val backupManager: BackupManager,
     private val account: Account,
     private val sync: SyncRepository,
+    private val signIn: SignInFeature,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
+
+    /** Whether Settings shows the Account section (see SignInFeature). */
+    val signInEnabled: StateFlow<Boolean> = signIn.enabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
+    /** Seven taps on the version line: sign-in on or off; [onDone] gets whether it is now on. */
+    fun toggleSignIn(onDone: (Boolean) -> Unit) {
+        viewModelScope.launch { onDone(signIn.toggle()) }
+    }
 
     val syncStatus: StateFlow<SyncStatus> = sync.status
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SyncStatus(null, null))
