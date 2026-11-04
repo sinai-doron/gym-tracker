@@ -91,4 +91,6 @@
     <string name="create_records">מה נרשם בכל סט</string>
     <string name="create_muscle">שריר עיקרי</string>
     <string name="create_save">שמור והוסף</string>
+    <string name="body_front">מלפנים</string>
+    <string name="body_back">מאחור</string>
 </resources>

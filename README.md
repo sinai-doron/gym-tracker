@@ -191,10 +191,14 @@ app/src/main/java/com/doron/gymtracker/
     └── theme/
 assets/map_style_run.json   The map style
 assets/exercises/           The exercise catalogue the app ships (built, don't edit)
+assets/body_map/            The picker's body figures and their MIT licence, copied from
+                            react-native-body-highlighter by scripts/build_body_map.py
 catalogue/            The built-in exercise catalogue: written by hand, built into
                       assets/exercises/ by build_catalogue.py (see its README)
 catalogue/wger/       Pinned snapshot of wger's exercise data, the upstream of our
                       exercise catalogue; how to refresh it and what we owe in its README
+scripts/              build_body_map.py (refreshes assets/body_map/; how is in the
+                      script), check-hebrew-literals.sh
 docs/
 ├── adr/               Architecture decision records
 └── superpowers/plans/ Implementation plans

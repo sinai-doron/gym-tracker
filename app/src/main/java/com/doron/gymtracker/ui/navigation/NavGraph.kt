@@ -23,6 +23,7 @@ import com.doron.gymtracker.ui.screens.plan.PlanEditorScreen
 import com.doron.gymtracker.ui.screens.progress.ExerciseProgressScreen
 import com.doron.gymtracker.ui.screens.session.SessionScreen
 import com.doron.gymtracker.ui.screens.session.SessionViewModel
+import com.doron.gymtracker.ui.screens.settings.LicencesScreen
 import com.doron.gymtracker.ui.screens.settings.SettingsScreen
 import com.doron.gymtracker.ui.screens.achievements.AchievementsScreen
 import com.doron.gymtracker.ui.screens.account.ConsentScreen
@@ -122,8 +123,12 @@ fun NavGraph(runToResume: CardioRun? = null, showOnboarding: Boolean = false) {
             SettingsScreen(
                 onBack = { navController.popBackStack() },
                 onReviewPermissions = { navController.navigate("onboarding") },
-                onSignIn = { navController.navigate("sync-consent") }
+                onSignIn = { navController.navigate("sync-consent") },
+                onLicences = { navController.navigate("licences") }
             )
+        }
+        composable("licences") {
+            LicencesScreen(onBack = { navController.popBackStack() })
         }
         composable("session/{sessionId}/{workoutId}") { backStackEntry ->
             val sessionId = backStackEntry.arguments?.getString("sessionId")?.toLongOrNull() ?: return@composable

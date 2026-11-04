@@ -83,4 +83,6 @@
     <string name="create_records">What a set records</string>
     <string name="create_muscle">Main muscle</string>
     <string name="create_save">Save and add</string>
+    <string name="body_front">Front</string>
+    <string name="body_back">Back</string>
 </resources>

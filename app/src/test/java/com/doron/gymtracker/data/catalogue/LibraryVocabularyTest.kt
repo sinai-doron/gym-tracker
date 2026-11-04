@@ -27,6 +27,19 @@ class LibraryVocabularyTest {
     }
 
     @Test
+    fun `muscle regions are the vocabulary's`() {
+        vocabulary.getValue("muscles").jsonObject.forEach { (slug, value) ->
+            val muscle = value.jsonObject
+            assertEquals(
+                slug,
+                MuscleRegion(muscle.getValue("region").jsonPrimitive.content, muscle.getValue("view").jsonPrimitive.content),
+                LibraryVocabulary.MUSCLE_REGIONS[slug]
+            )
+        }
+        assertEquals(LibraryVocabulary.MUSCLES, LibraryVocabulary.MUSCLE_REGIONS.keys.toList())
+    }
+
+    @Test
     fun `weight steps are the vocabulary's`() {
         vocabulary.getValue("equipment").jsonObject.forEach { (slug, value) ->
             val step = value.jsonObject.getValue("weightStepKg").let { if (it is JsonNull) null else it.jsonPrimitive.doubleOrNull }
