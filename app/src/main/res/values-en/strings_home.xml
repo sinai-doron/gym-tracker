@@ -16,8 +16,6 @@
     <string name="home_cardio_title">Run &amp; walk</string>
     <string name="home_run">Run</string>
     <string name="home_walk">Walk</string>
-    <string name="home_routes">Routes</string>
-    <string name="home_routes_saved">%1$d saved</string>
 
     <!-- Home: personal records -->
     <string name="home_records_title">🏆 Personal records</string>
@@ -62,6 +60,7 @@
     <string name="home_hc_granted">Permissions on</string>
     <string name="home_hc_autosave">Workouts are saved to Health Connect automatically</string>
     <string name="home_hc_sync">Sync workouts and steps with Health Connect</string>
+    <string name="home_menu">More options</string>
     <string name="home_hc_grant">Grant permissions</string>
 
     <!-- Music controls -->

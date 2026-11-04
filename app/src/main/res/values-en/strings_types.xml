@@ -34,7 +34,5 @@
     <string name="timer_note">Note (optional)</string>
     <string name="home_other_title">Other training</string>
     <string name="home_timer_running">In progress · tap to go back</string>
-    <string name="home_edit_types">Training types</string>
-    <string name="home_more_types">More training types</string>
     <string name="history_calories">Calories</string>
 </resources>

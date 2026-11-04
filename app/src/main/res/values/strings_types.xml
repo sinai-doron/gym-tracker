@@ -34,7 +34,5 @@
     <string name="timer_note">הערה (לא חובה)</string>
     <string name="home_other_title">אימונים נוספים</string>
     <string name="home_timer_running">בתהליך · הקש כדי לחזור</string>
-    <string name="home_edit_types">סוגי אימון</string>
-    <string name="home_more_types">סוגי אימון נוספים</string>
     <string name="history_calories">קלוריות</string>
 </resources>
