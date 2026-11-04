@@ -1,8 +1,5 @@
 package com.doron.gymtracker.ui.screens.home
 
-import com.doron.gymtracker.ui.components.appLanguage
-import com.doron.gymtracker.ui.components.templateNames
-import com.doron.gymtracker.ui.components.appLocale
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -75,23 +72,27 @@ import com.doron.gymtracker.domain.usecase.ProgramStatus
 import com.doron.gymtracker.ui.components.AchievementsStrip
 import com.doron.gymtracker.ui.components.Activity
 import com.doron.gymtracker.ui.components.BadgesRow
+import com.doron.gymtracker.ui.components.CardioCard
+import com.doron.gymtracker.ui.components.HomeOverflowMenu
+import com.doron.gymtracker.ui.components.IconLabel
+import com.doron.gymtracker.ui.components.NextWorkoutCard
+import com.doron.gymtracker.ui.components.SquareIconButton
 import com.doron.gymtracker.ui.components.TrainingTypeBadge
+import com.doron.gymtracker.ui.components.appLanguage
+import com.doron.gymtracker.ui.components.appLocale
 import com.doron.gymtracker.ui.components.dayColors
 import com.doron.gymtracker.ui.components.displayName
 import com.doron.gymtracker.ui.components.drawDay
 import com.doron.gymtracker.ui.components.label
 import com.doron.gymtracker.ui.components.localizedName
+import com.doron.gymtracker.ui.components.templateNames
 import com.doron.gymtracker.ui.components.valueText
-import com.doron.gymtracker.ui.theme.Purple
-import com.doron.gymtracker.ui.theme.PurpleLight
-import com.doron.gymtracker.ui.theme.SuccessGreen
-import com.doron.gymtracker.ui.components.CardioCard
-import com.doron.gymtracker.ui.components.HomeOverflowMenu
-import com.doron.gymtracker.ui.components.NextWorkoutCard
-import com.doron.gymtracker.ui.components.SquareIconButton
 import com.doron.gymtracker.ui.theme.AppColors
 import com.doron.gymtracker.ui.theme.AppShapes
 import com.doron.gymtracker.ui.theme.AppType
+import com.doron.gymtracker.ui.theme.Purple
+import com.doron.gymtracker.ui.theme.PurpleLight
+import com.doron.gymtracker.ui.theme.SuccessGreen
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -197,8 +198,9 @@ fun HomeScreen(
                 )
                 if (state.healthConnectNeedsPermission) {
                     TextButton(onClick = { healthConnectPermissionLauncher.launch(HealthConnectManager.PERMISSIONS) }) {
-                        Text(
-                            "👣 " + stringResource(R.string.connect_steps),
+                        IconLabel(
+                            R.drawable.ic_activity_walk,
+                            stringResource(R.string.connect_steps),
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                             color = Purple
                         )
@@ -209,8 +211,9 @@ fun HomeScreen(
                         onClick = { scope.launch { stepsCard.bringIntoView() } },
                         enabled = state.stepsWeek != null
                     ) {
-                        Text(
-                            "👣 %,d".format(state.todaySteps),
+                        IconLabel(
+                            R.drawable.ic_activity_walk,
+                            "%,d".format(state.todaySteps),
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                             color = Purple
                         )
@@ -258,10 +261,12 @@ fun HomeScreen(
                     onClick = { weatherLocationLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION) },
                     contentPadding = PaddingValues(0.dp)
                 ) {
-                    Text(
-                        "📍 " + stringResource(R.string.show_weather),
+                    IconLabel(
+                        R.drawable.ic_location_pin,
+                        stringResource(R.string.show_weather),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Purple
+                        color = Purple,
+                        iconSize = 16.dp
                     )
                 }
             }
@@ -353,7 +358,7 @@ fun HomeScreen(
                         .padding(16.dp)
                 ) {
                     val earned = badges.count { it.isEarned } + achievements.count { it.isEarned }
-                    CardTitle(stringResource(R.string.home_achievements_title), trailing = stringResource(R.string.home_achievements_earned, earned, badges.size + achievements.size))
+                    CardTitle(stringResource(R.string.home_achievements_title), icon = R.drawable.ic_home_award, trailing = stringResource(R.string.home_achievements_earned, earned, badges.size + achievements.size))
                     Spacer(Modifier.height(12.dp))
                     BadgesRow(badges)
                     if (achievements.isNotEmpty()) {
@@ -607,7 +612,12 @@ private fun WeeklyStatsRow(stats: WeeklyStats) {
             .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(24.dp))
             .padding(vertical = 16.dp, horizontal = 8.dp)
     ) {
-        CardTitle(stringResource(if (stats.rolling) R.string.home_week_rolling else R.string.home_week_calendar), Modifier.padding(horizontal = 8.dp), trailing = weekRange(stats.days))
+        CardTitle(
+            stringResource(if (stats.rolling) R.string.home_week_rolling else R.string.home_week_calendar),
+            Modifier.padding(horizontal = 8.dp),
+            trailing = weekRange(stats.days),
+            icon = R.drawable.ic_home_calendar
+        )
         Spacer(Modifier.height(12.dp))
         if (stats.days.isNotEmpty()) {
             WeekStrip(stats.days)

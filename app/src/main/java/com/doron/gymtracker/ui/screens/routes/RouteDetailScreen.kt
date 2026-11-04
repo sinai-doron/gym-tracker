@@ -47,14 +47,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.doron.gymtracker.R
 import com.doron.gymtracker.data.Slope
 import com.doron.gymtracker.ui.components.ElevationChart
+import com.doron.gymtracker.ui.components.IconLabel
 import com.doron.gymtracker.ui.components.RunMap
 import com.doron.gymtracker.ui.components.SlopeColors
 import com.doron.gymtracker.ui.theme.Purple
@@ -106,7 +107,7 @@ fun RouteDetailScreen(
                         .padding(horizontal = 16.dp, vertical = 12.dp)
                         .height(56.dp)
                 ) {
-                    Text(stringResource(R.string.routes_run_route), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                    IconLabel(R.drawable.ic_activity_run, stringResource(R.string.routes_run_route), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), iconSize = 20.dp)
                 }
             }
         }
@@ -133,7 +134,7 @@ fun RouteDetailScreen(
             ) {
                 Column(Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("🏃", fontSize = 28.sp)
+                        Icon(painterResource(R.drawable.ic_activity_run), contentDescription = null, tint = Purple, modifier = Modifier.size(28.dp))
                         Spacer(Modifier.width(12.dp))
                         Column(Modifier.weight(1f)) {
                             Text(

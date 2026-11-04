@@ -13,7 +13,7 @@
     <string name="routes_card_meta">%1$s ק״מ · נוסף %2$s</string>
     <string name="routes_rename">שינוי שם</string>
     <string name="routes_delete">מחיקה</string>
-    <string name="routes_run_route">🏃 רוץ במסלול</string>
+    <string name="routes_run_route">רוץ במסלול</string>
     <string name="routes_distance">מרחק</string>
     <string name="routes_unit_km">ק״מ</string>
     <string name="routes_unit_m">מ׳</string>

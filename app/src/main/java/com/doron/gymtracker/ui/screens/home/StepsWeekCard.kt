@@ -1,6 +1,6 @@
 package com.doron.gymtracker.ui.screens.home
 
-import com.doron.gymtracker.ui.components.appLocale
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +36,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -47,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import com.doron.gymtracker.R
 import com.doron.gymtracker.ui.components.Activity
 import com.doron.gymtracker.ui.components.ActivityIcon
+import com.doron.gymtracker.ui.components.appLocale
 import com.doron.gymtracker.ui.theme.Purple
 import com.doron.gymtracker.ui.theme.SuccessGreen
 import java.time.format.TextStyle as DateTextStyle
@@ -80,6 +83,7 @@ fun StepsWeekCard(week: StepsWeek, modifier: Modifier = Modifier) {
         val day = selected?.let { week.days[it] }
         CardTitle(
             stringResource(if (week.rolling) R.string.home_steps_title_rolling else R.string.home_steps_title_week),
+            icon = R.drawable.ic_activity_walk,
             trailing = if (day != null) {
                 val name = day.date.dayOfWeek.getDisplayName(DateTextStyle.FULL, locale)
                 if (day.workoutSteps > 0) stringResource(R.string.home_steps_day_workout, name, day.steps, day.workoutSteps)
@@ -180,10 +184,20 @@ fun StepsWeekCard(week: StepsWeek, modifier: Modifier = Modifier) {
 
 /** The title every home card with one shares: bold at the start, an optional summary at the end. */
 @Composable
-fun CardTitle(title: String, modifier: Modifier = Modifier, trailing: String? = null, activity: Activity? = null) {
+fun CardTitle(
+    title: String,
+    modifier: Modifier = Modifier,
+    trailing: String? = null,
+    activity: Activity? = null,
+    @DrawableRes icon: Int? = null
+) {
     Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         activity?.let {
             ActivityIcon(it, size = 28.dp)
+            Spacer(Modifier.width(8.dp))
+        }
+        icon?.let {
+            Icon(painterResource(it), contentDescription = null, tint = Purple, modifier = Modifier.size(20.dp))
             Spacer(Modifier.width(8.dp))
         }
         Text(
