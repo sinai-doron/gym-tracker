@@ -5,18 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.doron.gymtracker.R
 import com.doron.gymtracker.data.repository.SessionRepository
+import com.doron.gymtracker.data.repository.TrainingTypes
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.model.RepSetRecord
 import com.doron.gymtracker.domain.model.SetRecord
+import com.doron.gymtracker.ui.components.builtinTypeName
 import com.doron.gymtracker.ui.components.defaultNameRes
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
@@ -25,6 +20,13 @@ import java.time.ZoneId
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 data class ExerciseSummary(val exerciseName: String, val sets: List<SetRecord>)
 
@@ -55,7 +57,8 @@ enum class DayKind { GYM, CARDIO }
 @HiltViewModel
 class HistoryViewModel @Inject constructor(
     private val sessionRepo: SessionRepository,
-    private val workoutRepo: WorkoutRepository
+    private val workoutRepo: WorkoutRepository,
+    private val trainingTypes: TrainingTypes
 ) : ViewModel() {
 
     private val _currentMonth = MutableStateFlow(YearMonth.now())
@@ -105,6 +108,8 @@ class HistoryViewModel @Inject constructor(
 
             val items = daySessions.map { session ->
                 val isCardio = session.type != "GYM"
+                // A timed or logged session of another type is named by its type
+                val otherType = if (session.type == "OTHER") trainingTypes.get(session.activityTypeId) else null
                 val workout = if (!isCardio) workoutRepo.getById(session.workoutId) else null
                 val entries = if (!isCardio) sessionRepo.getEntriesForSession(session.id) else emptyList()
 
@@ -132,9 +137,10 @@ class HistoryViewModel @Inject constructor(
                 val workoutNameRes = when (session.type) {
                     "RUNNING" -> R.string.history_run
                     "WALKING" -> R.string.history_walk
+                    "OTHER" -> otherType?.takeIf { it.name == null }?.let { builtinTypeName(it.id) }
                     else -> workout?.takeIf { it.name == null }?.defaultNameRes()
                 }
-                val workoutName = workout?.name ?: session.workoutId
+                val workoutName = otherType?.name ?: workout?.name ?: session.workoutId
 
                 SessionSummaryItem(
                     sessionId = session.id,

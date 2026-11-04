@@ -5,12 +5,16 @@ import androidx.lifecycle.viewModelScope
 import com.doron.gymtracker.data.HealthConnectManager
 import com.doron.gymtracker.data.StepCounterManager
 import com.doron.gymtracker.data.WeatherRepository
+import com.doron.gymtracker.data.db.ActivityTypeMigration
 import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.data.prefs.WeekMode
 import com.doron.gymtracker.data.repository.RouteRepository
 import com.doron.gymtracker.data.repository.SessionRepository
+import com.doron.gymtracker.data.repository.TrainingTypes
 import com.doron.gymtracker.data.repository.WorkoutRepository
+import com.doron.gymtracker.domain.model.Recorder
 import com.doron.gymtracker.domain.model.Session
+import com.doron.gymtracker.domain.model.TrainingType
 import com.doron.gymtracker.domain.model.Weather
 import com.doron.gymtracker.domain.model.Workout
 import com.doron.gymtracker.domain.model.WorkoutPreview
@@ -75,7 +79,15 @@ data class HomeUiState(
     val weeklyStats: WeeklyStats = WeeklyStats(),
     /** This week's steps by day; null when Health Connect's steps can't be read. */
     val stepsWeek: StepsWeek? = null,
-    val routesCount: Int = 0
+    val routesCount: Int = 0,
+    /** Run and walk, unless hidden in Settings → Training types. */
+    val runShown: Boolean = true,
+    val walkShown: Boolean = true,
+    /** The timed types the user shows (Pilates, football…), each a button on home. */
+    val timedTypes: List<TrainingType> = emptyList(),
+    /** A timer left running, and its type. */
+    val openTimer: Session? = null,
+    val openTimerType: TrainingType? = null
 )
 
 @HiltViewModel
@@ -91,7 +103,8 @@ class HomeViewModel @Inject constructor(
     private val weatherRepo: WeatherRepository,
     private val getProgramStatus: GetProgramStatusUseCase,
     private val settingsPrefs: SettingsPrefs,
-    private val routeRepo: RouteRepository
+    private val routeRepo: RouteRepository,
+    private val trainingTypes: TrainingTypes
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -153,6 +166,17 @@ class HomeViewModel @Inject constructor(
             }
             loadWeeklyStats()
             _uiState.update { it.copy(routesCount = routeRepo.getAll().size) }
+            val shown = trainingTypes.shown()
+            val openTimer = sessionRepo.getOpenTimedSession()
+            _uiState.update {
+                it.copy(
+                    runShown = shown.any { t -> t.id == ActivityTypeMigration.RUN },
+                    walkShown = shown.any { t -> t.id == ActivityTypeMigration.WALK },
+                    timedTypes = shown.filter { t -> t.recorder == Recorder.DURATION },
+                    openTimer = openTimer,
+                    openTimerType = openTimer?.let { s -> trainingTypes.get(s.activityTypeId) }
+                )
+            }
         }
     }
 

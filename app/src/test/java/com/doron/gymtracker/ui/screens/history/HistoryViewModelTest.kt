@@ -48,7 +48,7 @@ class HistoryViewModelTest {
     private fun makeVm(): HistoryViewModel {
         coEvery { sessionRepo.observeAll() } returns flowOf(emptyList())
         coEvery { sessionRepo.getLastCompleted() } returns null
-        return HistoryViewModel(sessionRepo, workoutRepo)
+        return HistoryViewModel(sessionRepo, workoutRepo, mockk(relaxed = true))
     }
 
     @Test
@@ -86,7 +86,7 @@ class HistoryViewModelTest {
         val session = Session(1L, "workout_a", startedAt = 0L, finishedAt = 1000L)
         coEvery { sessionRepo.observeAll() } returns flowOf(listOf(session))
         coEvery { sessionRepo.getLastCompleted() } returns session
-        val vm = HistoryViewModel(sessionRepo, workoutRepo)
+        val vm = HistoryViewModel(sessionRepo, workoutRepo, mockk(relaxed = true))
         testDispatcher.scheduler.advanceUntilIdle()
         assertTrue(vm.sessionDates.value.isNotEmpty())
     }
@@ -98,7 +98,7 @@ class HistoryViewModelTest {
         val walk = Session(3L, "WALKING", startedAt = 2 * 86_400_000L, finishedAt = 2 * 86_400_000L + 1000, type = "WALKING")
         coEvery { sessionRepo.observeAll() } returns flowOf(listOf(gym, run, walk))
         coEvery { sessionRepo.getLastCompleted() } returns walk
-        val vm = HistoryViewModel(sessionRepo, workoutRepo)
+        val vm = HistoryViewModel(sessionRepo, workoutRepo, mockk(relaxed = true))
         testDispatcher.scheduler.advanceUntilIdle()
         val days = vm.sessionDates.value.values.toList()
         assertTrue(setOf(DayKind.GYM, DayKind.CARDIO) in days)
@@ -110,7 +110,7 @@ class HistoryViewModelTest {
         val run = Session(2L, "RUNNING", startedAt = 2000L, finishedAt = 3000L, type = "RUNNING")
         coEvery { sessionRepo.observeAll() } returns flowOf(listOf(run))
         coEvery { sessionRepo.getLastCompleted() } returns run
-        val vm = HistoryViewModel(sessionRepo, workoutRepo)
+        val vm = HistoryViewModel(sessionRepo, workoutRepo, mockk(relaxed = true))
         vm.loadDaySessions(Instant.ofEpochMilli(2000L).atZone(ZoneId.systemDefault()).toLocalDate())
         testDispatcher.scheduler.advanceUntilIdle()
         assertEquals(R.string.history_run, vm.selectedDaySessions.value?.sessions?.single()?.workoutNameRes)

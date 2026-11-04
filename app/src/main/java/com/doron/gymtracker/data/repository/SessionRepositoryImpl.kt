@@ -47,6 +47,24 @@ class SessionRepositoryImpl @Inject constructor(
     override suspend fun startCardioSession(type: String): Long =
         sessionDao.insert(SessionEntity(0, type, System.currentTimeMillis(), null, type = type))
 
+    override suspend fun startTimedSession(activityTypeId: String): Long = sessionDao.insert(
+        SessionEntity(0, TIMED, System.currentTimeMillis(), null, type = TIMED, activityTypeId = activityTypeId)
+    )
+
+    override suspend fun finishTimedSession(sessionId: Long, finishedAt: Long, calories: Int?, note: String?) {
+        val existing = sessionDao.getById(sessionId) ?: return
+        sessionDao.update(
+            existing.copy(
+                finishedAt = finishedAt,
+                durationS = ((finishedAt - existing.startedAt) / 1000).toInt(),
+                calories = calories,
+                note = note?.trim()?.takeIf { it.isNotEmpty() }
+            )
+        )
+    }
+
+    override suspend fun getOpenTimedSession(): Session? = sessionDao.getLatestUnfinishedTimed()?.toDomain()
+
     override suspend fun finishSession(sessionId: Long) {
         val existing = sessionDao.getById(sessionId) ?: return
         sessionDao.update(existing.copy(finishedAt = System.currentTimeMillis()))
@@ -222,7 +240,8 @@ class SessionRepositoryImpl @Inject constructor(
         return total
     }
 
-    private fun SessionEntity.toDomain() = Session(id, workoutId, startedAt, finishedAt, type, distanceMeters)
+    private fun SessionEntity.toDomain() =
+        Session(id, workoutId, startedAt, finishedAt, type, distanceMeters, activityTypeId, loggedManually, durationS, calories, note)
 
     // A set the app logs today has one part (ADR-0006). 0 kg on screen means no load, stored as null.
     private fun SetRecord.toParts(): List<SetPartEntity> = listOf(
@@ -241,5 +260,10 @@ class SessionRepositoryImpl @Inject constructor(
             part?.distanceM != null -> DistanceSetRecord(set.id, set.entryId, set.completedAt, part.distanceM)
             else -> TimedSetRecord(set.id, set.entryId, set.completedAt, part?.durationS ?: 0)
         }
+    }
+
+    private companion object {
+        /** A timed session's type, and its workoutId: it names no workout. */
+        const val TIMED = "OTHER"
     }
 }

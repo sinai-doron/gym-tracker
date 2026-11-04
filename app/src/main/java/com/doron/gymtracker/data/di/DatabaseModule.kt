@@ -5,6 +5,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.doron.gymtracker.data.db.GymDatabase
+import com.doron.gymtracker.data.db.dao.ActivityTypeDao
 import com.doron.gymtracker.data.db.dao.ExerciseEntryDao
 import com.doron.gymtracker.data.db.dao.ExerciseLibraryDao
 import com.doron.gymtracker.data.db.dao.LocationLogDao
@@ -48,4 +49,5 @@ object DatabaseModule {
     @Provides fun provideRouteDao(db: GymDatabase): RouteDao = db.routeDao()
     @Provides fun provideExerciseLibraryDao(db: GymDatabase): ExerciseLibraryDao = db.exerciseLibraryDao()
     @Provides fun provideProgramDao(db: GymDatabase): ProgramDao = db.programDao()
+    @Provides fun provideActivityTypeDao(db: GymDatabase): ActivityTypeDao = db.activityTypeDao()
 }

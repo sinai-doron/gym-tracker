@@ -80,6 +80,7 @@ fun SettingsScreen(
     onReviewPermissions: () -> Unit,
     onSignIn: () -> Unit,
     onAboutYou: () -> Unit,
+    onTrainingTypes: () -> Unit,
     onLicences: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
@@ -406,6 +407,10 @@ fun SettingsScreen(
                 Spacer(Modifier.height(12.dp))
                 OutlinedButton(onClick = onAboutYou, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.setup_about_title))
+                }
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(onClick = onTrainingTypes, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.types_title))
                 }
                 Spacer(Modifier.height(8.dp))
                 OutlinedButton(onClick = onLicences, modifier = Modifier.fillMaxWidth()) {

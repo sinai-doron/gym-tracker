@@ -27,6 +27,8 @@ import com.doron.gymtracker.ui.screens.settings.LicencesScreen
 import com.doron.gymtracker.ui.screens.settings.SettingsScreen
 import com.doron.gymtracker.ui.screens.setup.AboutYouScreen
 import com.doron.gymtracker.ui.screens.setup.TrainingScreen
+import com.doron.gymtracker.ui.screens.types.TimerScreen
+import com.doron.gymtracker.ui.screens.types.TrainingTypesScreen
 import com.doron.gymtracker.ui.screens.achievements.AchievementsScreen
 import com.doron.gymtracker.ui.screens.account.ConsentScreen
 import com.doron.gymtracker.ui.screens.routes.RouteDetailScreen
@@ -98,7 +100,9 @@ fun NavGraph(runToResume: CardioRun? = null, showOnboarding: Boolean = false) {
                 onSessionClick = { id -> navController.navigate("history/session/$id") },
                 onAchievementsClick = { navController.navigate("achievements") },
                 onProgramsClick = { navController.navigate("programs") },
-                onSetUpTraining = { navController.navigate("training/new") }
+                onSetUpTraining = { navController.navigate("training/new") },
+                onTimer = { typeId -> navController.navigate("timer/$typeId") },
+                onTrainingTypes = { navController.navigate("training-types") }
             )
         }
         composable("achievements") {
@@ -151,8 +155,15 @@ fun NavGraph(runToResume: CardioRun? = null, showOnboarding: Boolean = false) {
                 onReviewPermissions = { navController.navigate("onboarding") },
                 onSignIn = { navController.navigate("sync-consent") },
                 onAboutYou = { navController.navigate("about-you/edit") },
+                onTrainingTypes = { navController.navigate("training-types") },
                 onLicences = { navController.navigate("licences") }
             )
+        }
+        composable("training-types") {
+            TrainingTypesScreen(onBack = { navController.popBackStack() })
+        }
+        composable("timer/{typeId}") {
+            TimerScreen(onDone = { navController.popBackStack() })
         }
         composable("licences") {
             LicencesScreen(onBack = { navController.popBackStack() })

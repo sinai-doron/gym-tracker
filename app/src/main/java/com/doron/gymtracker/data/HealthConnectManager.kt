@@ -95,6 +95,49 @@ class HealthConnectManager @Inject constructor(
     }
 
     /**
+     * Saves a session of another training type (timed, or entered afterwards: [manual]) as
+     * [exerciseType], with its active calories and distance when there are any.
+     */
+    suspend fun writeOtherSession(
+        startedAt: Long,
+        finishedAt: Long,
+        title: String,
+        exerciseType: Int,
+        calories: Int?,
+        distanceMeters: Double? = null,
+        manual: Boolean = false
+    ) {
+        val c = client ?: return
+        val granted = granted()
+        if (HealthPermission.getWritePermission(ExerciseSessionRecord::class) !in granted) return
+        val start = Instant.ofEpochMilli(startedAt)
+        val end = Instant.ofEpochMilli(finishedAt)
+        val startOffset = ZoneId.systemDefault().rules.getOffset(start)
+        val endOffset = ZoneId.systemDefault().rules.getOffset(end)
+        fun metadata() = if (manual) Metadata.manualEntry() else Metadata.activelyRecorded(Device(type = Device.TYPE_PHONE))
+        try {
+            val records = buildList<Record> {
+                add(
+                    ExerciseSessionRecord(
+                        startTime = start, startZoneOffset = startOffset,
+                        endTime = end, endZoneOffset = endOffset,
+                        metadata = metadata(), exerciseType = exerciseType, title = title
+                    )
+                )
+                if (HealthPermission.getWritePermission(ActiveCaloriesBurnedRecord::class) in granted && (calories ?: 0) > 0) {
+                    add(ActiveCaloriesBurnedRecord(start, startOffset, end, endOffset, Energy.kilocalories(calories!!.toDouble()), metadata()))
+                }
+                if (HealthPermission.getWritePermission(DistanceRecord::class) in granted && (distanceMeters ?: 0.0) > 0) {
+                    add(DistanceRecord(start, startOffset, end, endOffset, Length.meters(distanceMeters!!), metadata()))
+                }
+            }
+            c.insertRecords(records)
+        } catch (e: Exception) {
+            Log.w("HealthConnect", "Failed to write session", e)
+        }
+    }
+
+    /**
      * Saves a run or walk: the session with its laps and route, plus distance, active
      * calories and climb. Steps are left out: the phone already reports them.
      */
