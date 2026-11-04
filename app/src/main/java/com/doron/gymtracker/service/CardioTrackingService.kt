@@ -11,6 +11,7 @@ import android.content.pm.ServiceInfo
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.core.app.ServiceCompat
 import com.doron.gymtracker.MainActivity
 import com.doron.gymtracker.R
@@ -204,6 +205,7 @@ class CardioTrackingService : Service() {
             .setShowWhen(clock != null && !paused)
             .setWhen(clock?.let { now - it.activeMs(now) } ?: now)
             .setSmallIcon(R.drawable.ic_notification)
+            .setColor(ContextCompat.getColor(this, R.color.notification_accent))
             .setContentIntent(tapIntent)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
@@ -222,6 +224,7 @@ class CardioTrackingService : Service() {
                     addAction(if (manual) R.drawable.ic_play else R.drawable.ic_pause, getString(if (manual) R.string.cardio_resume else R.string.cardio_pause), action)
                 }
             }
+            .requestLiveUpdate()
             .setSilent(true)
             .build()
     }

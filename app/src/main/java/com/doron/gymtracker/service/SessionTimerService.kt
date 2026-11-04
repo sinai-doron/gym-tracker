@@ -7,14 +7,10 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffXfermode
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.doron.gymtracker.MainActivity
 import com.doron.gymtracker.R
 import kotlinx.coroutines.CoroutineScope
@@ -24,6 +20,12 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+/**
+ * Keeps a workout alive while the phone is locked, and shows it as an ongoing notification that
+ * Android 16+ promotes to a Live Update (see [requestLiveUpdate]): the workout's clock in the
+ * status bar chip, or the rest countdown while resting. The system ticks both clocks, so the
+ * notification is posted again only when what it shows changes.
+ */
 class SessionTimerService : Service() {
 
     companion object {
@@ -31,17 +33,15 @@ class SessionTimerService : Service() {
         private const val NOTIFICATION_ID = 1001
 
         @Volatile private var sessionStartedAt = 0L
-        val sessionElapsedSecs: Long
-            get() = if (sessionStartedAt == 0L) 0L else (System.currentTimeMillis() - sessionStartedAt) / 1000
-        @Volatile var restRemainingSecs: Int? = null
+        /** When the running rest ends, in wall-clock millis; null when not resting. */
+        @Volatile private var restEndsAt: Long? = null
         @Volatile var workoutName: String = ""
         @Volatile var currentExercise: String = ""
-        @Volatile var setInfo: String = ""
 
         fun start(context: Context, name: String, startedAt: Long) {
             workoutName = name
             sessionStartedAt = startedAt
-            restRemainingSecs = null
+            restEndsAt = null
             context.startForegroundService(Intent(context, SessionTimerService::class.java))
         }
 
@@ -49,17 +49,24 @@ class SessionTimerService : Service() {
             context.stopService(Intent(context, SessionTimerService::class.java))
         }
 
-        fun updateExerciseInfo(exercise: String, sets: String) {
+        fun updateExercise(exercise: String) {
             currentExercise = exercise
-            setInfo = sets
         }
 
+        /** The rest's seconds left, every second while it runs; a jump of over a second (±30 s) moves its end. */
         fun updateRest(secs: Int?) {
-            restRemainingSecs = secs
+            if (secs == null || secs <= 0) {
+                restEndsAt = null
+                return
+            }
+            val endsAt = System.currentTimeMillis() + secs * 1000L
+            val current = restEndsAt
+            if (current == null || kotlin.math.abs(endsAt - current) > 1_500) restEndsAt = endsAt
         }
     }
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private var shown: List<Any?>? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -69,12 +76,17 @@ class SessionTimerService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        shown = content()
         startForeground(NOTIFICATION_ID, buildNotification())
 
         scope.launch {
             while (true) {
                 delay(1_000)
-                updateNotification()
+                val now = content()
+                if (now != shown) {
+                    shown = now
+                    getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, buildNotification())
+                }
             }
         }
 
@@ -84,9 +96,19 @@ class SessionTimerService : Service() {
     override fun onDestroy() {
         scope.cancel()
         sessionStartedAt = 0
-        restRemainingSecs = null
+        restEndsAt = null
+        currentExercise = ""
         super.onDestroy()
     }
+
+    /**
+     * Everything the notification shows, to post it again only when one of them changes; with
+     * whether notifications are allowed, so it appears as soon as the user allows them.
+     */
+    private fun content(): List<Any?> = listOf(
+        workoutName, currentExercise, sessionStartedAt, restEndsAt,
+        NotificationManagerCompat.from(this).areNotificationsEnabled()
+    )
 
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
@@ -108,58 +130,36 @@ class SessionTimerService : Service() {
             },
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
-
-        val sessionTime = formatTime(sessionElapsedSecs)
-        val rest = restRemainingSecs
-        val largeIcon = circularBitmap(BitmapFactory.decodeResource(resources, R.drawable.ic_app_logo))
-
-        val title: String
-        val text: String
-        if (rest != null && rest > 0) {
-            title = getString(R.string.rest_value, formatTime(rest.toLong()))
-            text = "$workoutName — $sessionTime"
-        } else {
-            title = "$workoutName — $sessionTime"
-            text = if (currentExercise.isNotEmpty()) {
-                if (setInfo.isNotEmpty()) "$currentExercise · $setInfo" else currentExercise
-            } else {
-                getString(R.string.session_active_workout)
-            }
-        }
+        val restEnd = restEndsAt
+        val exercise = currentExercise.ifEmpty { getString(R.string.session_active_workout) }
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(title)
-            .setContentText(text)
+            .apply {
+                if (restEnd != null) {
+                    // Resting: counts down to the rest's end, and says what's next
+                    setContentTitle(getString(R.string.rest_label))
+                    setContentText("$workoutName · $exercise")
+                    setWhen(restEnd)
+                    setChronometerCountDown(true)
+                } else {
+                    // Training: counts up from the session's start
+                    setContentTitle(workoutName.ifEmpty { getString(R.string.session_active_workout) })
+                    setContentText(exercise)
+                    setWhen(if (sessionStartedAt > 0) sessionStartedAt else System.currentTimeMillis())
+                }
+            }
+            .setUsesChronometer(true)
+            .setShowWhen(true)
             .setSmallIcon(R.drawable.ic_notification)
-            .setLargeIcon(largeIcon)
+            .setColor(ContextCompat.getColor(this, R.color.notification_accent))
             .setContentIntent(tapIntent)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setCategory(NotificationCompat.CATEGORY_WORKOUT)
+            .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+            .requestLiveUpdate()
             .setSilent(true)
             .build()
-    }
-
-    private fun updateNotification() {
-        getSystemService(NotificationManager::class.java)
-            .notify(NOTIFICATION_ID, buildNotification())
-    }
-
-    private fun circularBitmap(src: Bitmap): Bitmap {
-        val size = minOf(src.width, src.height)
-        val output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(output)
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-        canvas.drawCircle(size / 2f, size / 2f, size / 2f, paint)
-        paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
-        canvas.drawBitmap(src, 0f, 0f, paint)
-        return output
-    }
-
-    private fun formatTime(secs: Long): String {
-        val m = secs / 60
-        val s = secs % 60
-        return "%02d:%02d".format(m, s)
     }
 }

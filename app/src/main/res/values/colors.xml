@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#11141B</color>
+    <!-- The notification icon's tint: AppColors.accentStrength -->
+    <color name="notification_accent">#5B4BD6</color>
 </resources>

@@ -106,6 +106,12 @@ fun SessionScreen(
         SessionTimerService.updateRest(activeRestSecs)
     }
 
+    // The notification names the exercise last opened, and keeps it once its sheet closes
+    val openedExercise = state.workout?.exercises?.firstOrNull { it.id == state.selectedExerciseId }?.name
+    LaunchedEffect(openedExercise) {
+        if (openedExercise != null) SessionTimerService.updateExercise(openedExercise)
+    }
+
     // Show summary screen when finished
     if (state.isFinished) {
         SessionTimerService.stop(context)
