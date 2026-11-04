@@ -220,6 +220,7 @@ class SessionDetailViewModel @Inject constructor(
         return CardioUiState(
             type = session.type,
             startedAt = session.startedAt,
+            finishedAt = finishedAt,
             elapsedSecs = clock.activeMs(finishedAt) / 1000,
             distanceMeters = session.distanceMeters ?: RouteDistance.total(route, pauses),
             route = route,
