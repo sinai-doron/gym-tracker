@@ -59,7 +59,7 @@ fun NextWorkoutCard(
             }
             DesignChip(stringResource(R.string.exercises_count, preview.exercises.size), AppColors.ground, AppColors.textSecondary)
             preview.typicalMinutes?.let {
-                DesignChip(stringResource(R.string.home_typical_minutes, it), AppColors.ground, AppColors.textSecondary)
+                DesignChip(stringResource(R.string.typical_minutes, it), AppColors.ground, AppColors.textSecondary)
             }
         }
 
