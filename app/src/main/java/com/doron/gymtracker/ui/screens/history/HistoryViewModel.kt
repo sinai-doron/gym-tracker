@@ -34,8 +34,6 @@ data class ExerciseSummary(val exerciseName: String, val sets: List<SetRecord>)
 data class SessionSummaryItem(
     val sessionId: Long,
     val sessionType: String,
-    /** The workout's code (A, B…); null for a run or walk. */
-    val workoutLabel: String?,
     val workoutName: String,
     /** Shown in place of [workoutName] for a run, a walk or a known workout. */
     @StringRes val workoutNameRes: Int? = null,
@@ -144,7 +142,6 @@ class HistoryViewModel @Inject constructor(
                 SessionSummaryItem(
                     sessionId = session.id,
                     sessionType = session.type,
-                    workoutLabel = workout?.code,
                     workoutName = workoutName,
                     workoutNameRes = workoutNameRes,
                     timeRange = "$startTime – $endTime",

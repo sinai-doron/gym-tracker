@@ -31,9 +31,7 @@
     <string name="builder_no_workouts">No workouts yet. Add the first one, then fill it with exercises.</string>
     <string name="builder_add_workout">Add workout</string>
     <string name="builder_edit_workout">Edit workout</string>
-    <string name="builder_workout_code">Code</string>
-    <string name="builder_workout_code_hint">Shown on the workout\'s chip: A, B, Push…</string>
-    <string name="builder_workout_name">Name (optional)</string>
+    <string name="builder_workout_name">Name</string>
     <string name="builder_about_minutes">about %d min</string>
     <plurals name="builder_exercises">
         <item quantity="one">%d exercise</item>

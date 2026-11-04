@@ -650,21 +650,14 @@ private fun WeekStrip(days: List<WeekDay>) {
                 Spacer(Modifier.height(4.dp))
                 // Today gets an outer ring with a gap, so it stands out filled or empty
                 Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
+                    Modifier
                         .size(40.dp)
                         .border(2.dp, if (day.isToday) Purple else Color.Transparent, CircleShape)
                         .padding(4.dp)
                         .clip(CircleShape)
                         // Each training type in its colour, as in history
                         .drawBehind { drawDay(colors, Purple.copy(alpha = 0.08f)) }
-                ) {
-                    Text(
-                        day.mark ?: "",
-                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
+                )
             }
         }
     }

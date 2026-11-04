@@ -28,12 +28,4 @@ class DayColorsTest {
         assertEquals(listOf(Color(0xFF00B894)), dayColors(listOf(run, walk)))
         assertEquals(emptyList<Color>(), dayColors(emptyList()))
     }
-
-    @Test
-    fun `a workout's circle shows a short code, and nothing for a word`() {
-        assertEquals("A", circleCode("A"))
-        assertEquals("UA", circleCode("UA"))
-        assertEquals("", circleCode("Push"))
-        assertEquals("", circleCode("דחיפה"))
-    }
 }

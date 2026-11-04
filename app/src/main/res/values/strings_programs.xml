@@ -35,9 +35,7 @@
     <string name="builder_no_workouts">עדיין אין אימונים. הוסף את הראשון ומלא אותו בתרגילים.</string>
     <string name="builder_add_workout">הוסף אימון</string>
     <string name="builder_edit_workout">עריכת אימון</string>
-    <string name="builder_workout_code">קוד</string>
-    <string name="builder_workout_code_hint">מוצג על תג האימון: A, B, Push…</string>
-    <string name="builder_workout_name">שם (רשות)</string>
+    <string name="builder_workout_name">שם</string>
     <string name="builder_about_minutes">כ-%d דק׳</string>
     <plurals name="builder_exercises">
         <item quantity="one">תרגיל אחד</item>

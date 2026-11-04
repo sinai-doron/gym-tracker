@@ -23,7 +23,6 @@ import com.doron.gymtracker.domain.usecase.GetProgramStatusUseCase
 import com.doron.gymtracker.domain.usecase.GetWorkoutPreviewUseCase
 import com.doron.gymtracker.domain.usecase.ProgramStatus
 import com.doron.gymtracker.domain.usecase.StartSessionUseCase
-import com.doron.gymtracker.ui.components.circleCode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -50,11 +49,10 @@ data class WeeklyStats(
 
 /**
  * One day in the week strip, colored like the history calendar: purple for the gym, green
- * for runs and walks, half and half for both. [mark] is the gym workout's letter, or null.
+ * for runs and walks, half and half for both.
  */
 data class WeekDay(
     val date: LocalDate,
-    val mark: String?,
     val isToday: Boolean,
     val gym: Boolean = false,
     val cardio: Boolean = false,
@@ -213,8 +211,7 @@ class HomeViewModel @Inject constructor(
             }
         }.toSet()
         val streak = streakDays(datesWithSessions, today)
-        val labels = _uiState.value.allWorkouts.associate { it.id to circleCode(it.code) }
-        val days = weekDays(weekStart, today, sessions, labels, ZoneId.systemDefault(), trainingTypes.all().associateBy { it.id })
+        val days = weekDays(weekStart, today, sessions, ZoneId.systemDefault(), trainingTypes.all().associateBy { it.id })
 
         _uiState.update {
             it.copy(weeklyStats = WeeklyStats(
@@ -277,14 +274,12 @@ internal fun streakDays(datesWithSessions: Set<LocalDate>, today: LocalDate): In
 }
 
 /**
- * The seven days from [weekStart], each marked with what was trained that day: the gym workout's
- * letter if there was one, and the training types done, for the day's colours.
+ * The seven days from [weekStart], each marked with what was trained that day, for the day's colours.
  */
 internal fun weekDays(
     weekStart: LocalDate,
     today: LocalDate,
     sessions: List<Session>,
-    workoutLabels: Map<String, String>,
     zone: ZoneId,
     typesById: Map<String, TrainingType> = emptyMap()
 ): List<WeekDay> {
@@ -295,7 +290,6 @@ internal fun weekDays(
         val gym = daySessions.firstOrNull { it.type == "GYM" }
         WeekDay(
             date,
-            mark = gym?.let { workoutLabels[it.workoutId] },
             isToday = date == today,
             gym = gym != null,
             cardio = daySessions.any { it.type != "GYM" },

@@ -3,7 +3,6 @@ package com.doron.gymtracker.ui.screens.programs
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -56,10 +55,8 @@ import com.doron.gymtracker.R
 import com.doron.gymtracker.domain.model.Program
 import com.doron.gymtracker.domain.model.VariantRule
 import com.doron.gymtracker.domain.model.Workout
-import com.doron.gymtracker.ui.components.circleCode
 import com.doron.gymtracker.ui.components.localizedName
 import com.doron.gymtracker.ui.theme.Purple
-import com.doron.gymtracker.ui.theme.PurpleLight
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -267,17 +264,9 @@ private fun WorkoutRow(
             .padding(start = 12.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(36.dp)
-                .background(PurpleLight, RoundedCornerShape(10.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(circleCode(workout.code), color = Purple, style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
-        }
         Column(modifier = Modifier
             .weight(1f)
-            .padding(start = 12.dp)) {
+            .padding(start = 4.dp)) {
             Text(name, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold))
             val count = workout.exercises.size
             Text(
@@ -337,28 +326,26 @@ private fun rulesValue(program: Program): String = listOf(
     )
 ).joinToString(" · ")
 
-/** A workout's chip code and its optional name. */
+/**
+ * A workout's name. The code it is stored with is no longer shown: a new workout gets the next
+ * free letter, an edited one keeps its own.
+ */
 @Composable
 private fun WorkoutDialog(
     initial: Workout?,
     suggestedCode: String,
     onDismiss: () -> Unit,
-    onSave: (code: String, name: String) -> Unit
+    onSave: (code: String, name: String?) -> Unit
 ) {
-    var code by remember { mutableStateOf(initial?.code ?: suggestedCode) }
-    var name by remember { mutableStateOf(initial?.name ?: "") }
+    // A built-in workout's translated name stays unset, so it still follows the app's language
+    val current = initial?.localizedName()
+    val builtInName = current.takeIf { initial?.name == null }
+    var name by remember { mutableStateOf(current ?: "") }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(if (initial == null) R.string.builder_add_workout else R.string.builder_edit_workout)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
-                    value = code,
-                    onValueChange = { code = it.take(MAX_CODE) },
-                    label = { Text(stringResource(R.string.builder_workout_code)) },
-                    supportingText = { Text(stringResource(R.string.builder_workout_code_hint)) },
-                    singleLine = true
-                )
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
@@ -368,10 +355,12 @@ private fun WorkoutDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = { onSave(code, name) }, enabled = code.isNotBlank()) { Text(stringResource(R.string.save)) }
+            TextButton(
+                onClick = { onSave(initial?.code ?: suggestedCode, name.trim().takeIf { it != builtInName }) },
+                enabled = name.isNotBlank()
+            ) { Text(stringResource(R.string.save)) }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } }
     )
 }
 
-private const val MAX_CODE = 6

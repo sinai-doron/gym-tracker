@@ -125,7 +125,7 @@ fun LogSessionScreen(
                             FilterChip(
                                 selected = workout.id == s.workoutId,
                                 onClick = { viewModel.update { it.copy(workoutId = workout.id) } },
-                                label = { Text("${workout.code} · ${workout.localizedName()}") }
+                                label = { Text(workout.localizedName()) }
                             )
                         }
                     }
