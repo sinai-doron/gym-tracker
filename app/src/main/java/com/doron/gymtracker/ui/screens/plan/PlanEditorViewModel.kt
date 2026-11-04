@@ -24,9 +24,6 @@ class PlanEditorViewModel @Inject constructor(
     private val _workout = MutableStateFlow<Workout?>(null)
     val workout: StateFlow<Workout?> = _workout.asStateFlow()
 
-    init {
-        reload()
-    }
 
     fun save(exercise: ExerciseDefinition, isNew: Boolean) = change {
         if (isNew) workoutRepo.addExercise(workoutId, exercise) else workoutRepo.updateExercise(exercise)
@@ -43,5 +40,6 @@ class PlanEditorViewModel @Inject constructor(
         }
     }
 
-    private fun reload() = change {}
+    /** On opening, and on returning from the picker with an exercise added. */
+    fun reload() = change {}
 }

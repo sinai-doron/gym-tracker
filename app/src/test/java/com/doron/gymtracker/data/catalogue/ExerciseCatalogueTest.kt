@@ -50,4 +50,12 @@ class ExerciseCatalogueTest {
         assertTrue(benchNames.any { it.lang == "en" && !it.isAlias })
         assertTrue(muscles.any { it.exerciseId == bench.id && it.muscle == "chest" && it.isPrimary })
     }
+
+    @Test
+    fun `each exercise carries its default targets`() {
+        val bench = catalogue.exercises.first { it.slug == "barbell-bench-press" }.defaults
+        assertEquals(listOf(3, 6, 10, 120), listOf(bench.sets, bench.repsMin, bench.repsMax, bench.restS))
+        val plank = catalogue.exercises.first { it.slug == "plank" }.defaults
+        assertEquals(45, plank.durationS)
+    }
 }

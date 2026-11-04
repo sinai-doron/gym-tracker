@@ -108,8 +108,10 @@ class WorkoutRepositoryImpl @Inject constructor(
         dao.updateExercise(edited.copy(type = existing.type, libraryExerciseId = existing.libraryExerciseId))
     }
 
-    override suspend fun addExercise(workoutId: String, exercise: ExerciseDefinition) {
-        dao.insertExercise(exercise.toEntity(workoutId, sortOrder = dao.maxSortOrder(workoutId) + 1))
+    override suspend fun addExercise(workoutId: String, exercise: ExerciseDefinition, libraryExerciseId: String?) {
+        dao.insertExercise(
+            exercise.toEntity(workoutId, sortOrder = dao.maxSortOrder(workoutId) + 1).copy(libraryExerciseId = libraryExerciseId)
+        )
     }
 
     override suspend fun removeExercise(exerciseId: String) = dao.markRemoved(exerciseId)

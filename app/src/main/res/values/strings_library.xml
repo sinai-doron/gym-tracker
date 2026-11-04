@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The exercise library's words, copied from catalogue/vocabulary.json (LibraryVocabularyTest checks they match) -->
+    <string name="muscle_chest">חזה</string>
+    <string name="muscle_front_delts">כתף קדמית</string>
+    <string name="muscle_side_delts">כתף אמצעית</string>
+    <string name="muscle_rear_delts">כתף אחורית</string>
+    <string name="muscle_biceps">יד קדמית</string>
+    <string name="muscle_triceps">יד אחורית</string>
+    <string name="muscle_forearms">אמות</string>
+    <string name="muscle_abs">בטן</string>
+    <string name="muscle_obliques">אלכסוניים</string>
+    <string name="muscle_lats">רחב גבי</string>
+    <string name="muscle_traps">טרפז</string>
+    <string name="muscle_upper_back">גב עליון</string>
+    <string name="muscle_lower_back">גב תחתון</string>
+    <string name="muscle_glutes">ישבן</string>
+    <string name="muscle_quads">ארבע ראשי</string>
+    <string name="muscle_hamstrings">המסטרינג</string>
+    <string name="muscle_adductors">מקרבים</string>
+    <string name="muscle_calves">תאומים</string>
+    <string name="equipment_barbell">מוט</string>
+    <string name="equipment_ez_bar">מוט EZ</string>
+    <string name="equipment_dumbbell">משקולות יד</string>
+    <string name="equipment_kettlebell">קטלבל</string>
+    <string name="equipment_cable">כבל</string>
+    <string name="equipment_machine">מכונה</string>
+    <string name="equipment_smith_machine">סמית\'</string>
+    <string name="equipment_bodyweight">משקל גוף</string>
+    <string name="equipment_band">גומייה</string>
+    <string name="equipment_other">אחר</string>
+    <string name="preset_reps_load">חזרות × משקל</string>
+    <string name="preset_reps">חזרות</string>
+    <string name="preset_reps_assisted">חזרות בעזרה</string>
+    <string name="preset_time">זמן</string>
+    <string name="preset_distance_load">מרחק × משקל</string>
+    <string name="preset_distance_time">מרחק וזמן</string>
+    <string name="preset_calories_time">קלוריות וזמן</string>
+</resources>

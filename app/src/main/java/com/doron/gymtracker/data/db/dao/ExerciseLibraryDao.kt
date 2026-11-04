@@ -37,6 +37,31 @@ interface ExerciseLibraryDao {
     """)
     suspend fun search(text: String): List<ExerciseEntity>
 
+    /** Every exercise not archived, built-in or the user's own. */
+    @Query("SELECT * FROM exercises WHERE archivedAt IS NULL")
+    suspend fun allActive(): List<ExerciseEntity>
+
+    @Query("SELECT * FROM exercise_names")
+    suspend fun allNames(): List<ExerciseNameEntity>
+
+    @Query("SELECT * FROM exercise_muscles")
+    suspend fun allMuscles(): List<ExerciseMuscleEntity>
+
+    /** Library exercises in history, the most recently done first. */
+    @Query(
+        """SELECT e.libraryExerciseId FROM exercise_entries e JOIN sessions s ON s.id = e.sessionId
+           WHERE e.libraryExerciseId IS NOT NULL GROUP BY e.libraryExerciseId ORDER BY max(s.startedAt) DESC LIMIT :limit"""
+    )
+    suspend fun recentlyDone(limit: Int): List<String>
+
+    /** A user's own exercise with its names and muscles, in one go. */
+    @Transaction
+    suspend fun insertCustom(exercise: ExerciseEntity, names: List<ExerciseNameEntity>, muscles: List<ExerciseMuscleEntity>) {
+        upsertExercises(listOf(exercise))
+        insertNames(names)
+        insertMuscles(muscles)
+    }
+
     @Upsert
     suspend fun upsertExercises(exercises: List<ExerciseEntity>)
 

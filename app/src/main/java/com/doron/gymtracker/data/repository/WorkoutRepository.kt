@@ -24,7 +24,8 @@ interface WorkoutRepository {
     suspend fun updateTargetSets(exerciseId: String, sets: Int)
     /** Saves name, sets, reps/distance, rest and bodyweight; the exercise type can't change. */
     suspend fun updateExercise(exercise: ExerciseDefinition)
-    suspend fun addExercise(workoutId: String, exercise: ExerciseDefinition)
+    /** Adds an exercise at the end of the workout; [libraryExerciseId] links it to the library exercise it is. */
+    suspend fun addExercise(workoutId: String, exercise: ExerciseDefinition, libraryExerciseId: String? = null)
     suspend fun removeExercise(exerciseId: String)
     /** Moves an exercise one place up (-1) or down (+1) within its workout. */
     suspend fun moveExercise(workoutId: String, exerciseId: String, direction: Int)
