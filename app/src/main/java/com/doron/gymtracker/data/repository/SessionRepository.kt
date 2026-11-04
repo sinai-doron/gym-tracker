@@ -18,6 +18,20 @@ interface SessionRepository {
     suspend fun startTimedSession(activityTypeId: String): Long
     /** Stops a timed session at [finishedAt], with what the user added. */
     suspend fun finishTimedSession(sessionId: Long, finishedAt: Long, calories: Int?, note: String?)
+    /**
+     * A session entered afterwards ([loggedManually]), finished: a strength session of
+     * [workoutId], a run or walk ([type] RUNNING or WALKING), or another training type (OTHER).
+     */
+    suspend fun logSession(
+        type: String,
+        workoutId: String,
+        activityTypeId: String,
+        startedAt: Long,
+        durationS: Int,
+        distanceMeters: Double?,
+        calories: Int?,
+        note: String?
+    ): Long
     /** The timer still running, if one is. */
     suspend fun getOpenTimedSession(): Session?
     suspend fun finishCardioSession(sessionId: Long, distanceMeters: Double, finishedAt: Long = System.currentTimeMillis())

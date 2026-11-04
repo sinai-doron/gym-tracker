@@ -113,6 +113,7 @@ fun HomeScreen(
     onSetUpTraining: () -> Unit,
     onTimer: (typeId: String) -> Unit,
     onTrainingTypes: () -> Unit,
+    onLogSession: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
     badgesViewModel: BadgesViewModel = hiltViewModel()
 ) {
@@ -335,6 +336,9 @@ fun HomeScreen(
                 onTimer = onTimer,
                 onTrainingTypes = onTrainingTypes
             )
+            TextButton(onClick = onLogSession, modifier = Modifier.fillMaxWidth()) {
+                Text("+ " + stringResource(R.string.log_title), color = Purple)
+            }
 
             // Achievements: the distance badges, then the rest (climb, mileage, iron, regular,
             // specials) in a strip, newest first, then the nearest to earn; all of them a tap away.

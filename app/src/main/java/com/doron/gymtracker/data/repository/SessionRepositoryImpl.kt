@@ -63,10 +63,37 @@ class SessionRepositoryImpl @Inject constructor(
         )
     }
 
+    override suspend fun logSession(
+        type: String,
+        workoutId: String,
+        activityTypeId: String,
+        startedAt: Long,
+        durationS: Int,
+        distanceMeters: Double?,
+        calories: Int?,
+        note: String?
+    ): Long = sessionDao.insert(
+        SessionEntity(
+            id = 0,
+            workoutId = workoutId,
+            startedAt = startedAt,
+            finishedAt = startedAt + durationS * 1000L,
+            type = type,
+            distanceMeters = distanceMeters,
+            activityTypeId = activityTypeId,
+            loggedManually = true,
+            durationS = durationS,
+            calories = calories,
+            note = note?.trim()?.takeIf { it.isNotEmpty() }
+        )
+    )
+
     override suspend fun getOpenTimedSession(): Session? = sessionDao.getLatestUnfinishedTimed()?.toDomain()
 
     override suspend fun finishSession(sessionId: Long) {
         val existing = sessionDao.getById(sessionId) ?: return
+        // One logged by hand already ends when the user said it did
+        if (existing.loggedManually && existing.finishedAt != null) return
         sessionDao.update(existing.copy(finishedAt = System.currentTimeMillis()))
     }
 
@@ -98,7 +125,14 @@ class SessionRepositoryImpl @Inject constructor(
                 val newId = entryDao.insert(ExerciseEntryEntity(0, sessionId, exerciseId))
                 ExerciseEntryEntity(newId, sessionId, exerciseId)
             }
-        return setDao.insert(entry.id, record.completedAt, record.toParts())
+        return setDao.insert(entry.id, completedAt(sessionId, record.completedAt), record.toParts())
+    }
+
+    /** When a set counts as done: now, or for a session logged by hand, within its time. */
+    private suspend fun completedAt(sessionId: Long, at: Long): Long {
+        val session = sessionDao.getById(sessionId)
+        val end = session?.finishedAt
+        return if (session?.loggedManually == true && end != null) at.coerceIn(session.startedAt, end) else at
     }
 
     override suspend fun updateSetRecord(record: SetRecord) {

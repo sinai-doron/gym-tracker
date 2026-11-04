@@ -46,7 +46,8 @@ class GetPersonalRecordsUseCase @Inject constructor(
 
     private suspend fun facts(): List<RunFacts> =
         sessionRepo.getCompletedSince(0)
-            .filter { it.type == "RUNNING" && it.finishedAt != null }
+            // Logged by hand: no route or clock to trust, so no speed or distance records
+            .filter { it.type == "RUNNING" && it.finishedAt != null && !it.loggedManually }
             .map { session ->
                 val route = sessionRepo.getRouteForSession(session.id)
                 val pauses = sessionRepo.getPauses(session.id)

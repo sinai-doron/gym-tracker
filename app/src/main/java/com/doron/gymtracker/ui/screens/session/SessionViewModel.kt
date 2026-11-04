@@ -105,7 +105,10 @@ class SessionViewModel @AssistedInject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isDeloadWeek = isDeloadWeek()) }
             // A resumed session keeps its original start time and the sets already logged
-            val startedAt = sessionRepo.getById(sessionId)?.startedAt ?: System.currentTimeMillis()
+            val session = sessionRepo.getById(sessionId)
+            val startedAt = session?.startedAt ?: System.currentTimeMillis()
+            // A session logged by hand has its own end: its clock shows how long it was
+            val endedAt = session?.finishedAt?.takeIf { session.loggedManually }
             val loggedSets = sessionRepo.getEntriesForSession(sessionId).associate { it.exerciseId to it.sets }
             val raw = workoutRepo.getById(workoutId)
             // Resolve A/B variant by the week the session started in
@@ -115,7 +118,7 @@ class SessionViewModel @AssistedInject constructor(
             // Loaded together so exercise sheets are created with their logged sets
             _uiState.update { it.copy(workout = resolved, startedAt = startedAt, loggedSets = loggedSets) }
             while (!_uiState.value.isFinished) {
-                _uiState.update { it.copy(elapsedSecs = (System.currentTimeMillis() - startedAt) / 1000) }
+                _uiState.update { it.copy(elapsedSecs = ((endedAt ?: System.currentTimeMillis()) - startedAt) / 1000) }
                 delay(1_000)
             }
         }
