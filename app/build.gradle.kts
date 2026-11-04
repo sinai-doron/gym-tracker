@@ -27,8 +27,8 @@ android {
         // Play requires API 36 for new apps and updates since 2026-08-31. Not 37 yet: that would
         // take on Android 17's behaviour changes untested.
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

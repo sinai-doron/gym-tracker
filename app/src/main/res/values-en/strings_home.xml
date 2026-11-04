@@ -11,7 +11,6 @@
     <string name="home_hide_exercises">Hide exercises</string>
     <string name="home_show_exercises">Show exercises (%1$d)</string>
     <string name="home_swap_workout">Change workout</string>
-    <string name="home_typical_minutes">~%1$d min</string>
 
     <!-- Home: cardio card -->
     <string name="home_cardio_title">Cardio</string>
