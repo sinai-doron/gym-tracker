@@ -18,3 +18,4 @@ app/.cxx
 # Backups of real workout data, used by BackupMigrationTest
 gym-backup*.zip
 gym-tracker-backup-*.zip
+neonsheep-fitness-backup-*.zip

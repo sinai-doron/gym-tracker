@@ -343,7 +343,7 @@ fun SettingsScreen(
                         )
                         Spacer(Modifier.height(12.dp))
                         Button(
-                            onClick = { exportLauncher.launch("gym-tracker-backup-${java.time.LocalDate.now()}.zip") },
+                            onClick = { exportLauncher.launch("neonsheep-fitness-backup-${java.time.LocalDate.now()}.zip") },
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(stringResource(R.string.save_backup))

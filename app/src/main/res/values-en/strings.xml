@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Workout Tracker</string>
+    <string name="app_name">Neonsheep Fitness</string>
     <string name="select_workout">Select Workout</string>
     <string name="start_session">Start Session</string>
     <string name="finish_session">Finish Session</string>
@@ -70,7 +70,7 @@
     <string name="restore_backup">Restore from backup</string>
     <string name="backup_saved">Backup saved</string>
     <string name="backup_failed">Something went wrong</string>
-    <string name="backup_not_valid">This file is not a Workout Tracker backup</string>
+    <string name="backup_not_valid">This file is not a Neonsheep Fitness backup</string>
     <string name="backup_newer_version">This backup is from a newer app version — update the app first</string>
     <string name="restore_confirm_title">Restore from backup?</string>
     <string name="restore_confirm_text">All current data will be replaced by the backup, and the app will restart.</string>
@@ -133,7 +133,7 @@
     <string name="onboarding_health_text">Connecting Health Connect saves your workouts and runs, reads all-day steps and your watch\'s heart rate.</string>
     <string name="onboarding_health_button">Connect Health Connect</string>
     <string name="onboarding_music_title">Music is half the workout</string>
-    <string name="onboarding_music_text">Notification access lets me show what\'s playing and skip or pause without leaving the app. In the screen that opens, turn on Workout Tracker.</string>
+    <string name="onboarding_music_text">Notification access lets me show what\'s playing and skip or pause without leaving the app. In the screen that opens, turn on Neonsheep Fitness.</string>
     <string name="onboarding_music_button">Open settings</string>
     <string name="onboarding_ready_title">Ready to move!</string>
     <string name="onboarding_ready_text">All set. You can change permissions any time from Settings.</string>

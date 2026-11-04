@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">מעקב אימונים</string>
+    <string name="app_name">Neonsheep Fitness</string>
     <string name="select_workout">בחר אימון</string>
     <string name="start_session">התחל אימון</string>
     <string name="finish_session">סיים אימון</string>
@@ -133,7 +133,7 @@
     <string name="onboarding_health_text">חיבור ל-Health Connect שומר את האימונים והריצות שלך, קורא צעדים מכל היום ודופק מהשעון.</string>
     <string name="onboarding_health_button">חבר את Health Connect</string>
     <string name="onboarding_music_title">מוזיקה זה חצי אימון</string>
-    <string name="onboarding_music_text">גישה להתראות מאפשרת לי להציג את השיר שמתנגן ולתת לך לדלג או לעצור בלי לצאת מהאפליקציה. בחלון שייפתח, הפעל את \"מעקב אימונים\".</string>
+    <string name="onboarding_music_text">גישה להתראות מאפשרת לי להציג את השיר שמתנגן ולתת לך לדלג או לעצור בלי לצאת מהאפליקציה. בחלון שייפתח, הפעל את \"Neonsheep Fitness\".</string>
     <string name="onboarding_music_button">פתח הגדרות</string>
     <string name="onboarding_ready_title">מוכנים לזוז!</string>
     <string name="onboarding_ready_text">הכל מוכן. אפשר תמיד לשנות הרשאות דרך ההגדרות.</string>
