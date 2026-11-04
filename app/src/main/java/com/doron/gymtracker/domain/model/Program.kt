@@ -37,3 +37,19 @@ data class Program(
         const val WEEK_MS = 7L * 24 * 60 * 60 * 1000
     }
 }
+
+/** A programme as the programmes list shows it. */
+data class ProgramSummary(
+    val program: Program,
+    val isActive: Boolean,
+    /** When the user archived it; null when it isn't. */
+    val archivedAt: Long?,
+    /** Workouts in its rotation. */
+    val workoutCount: Int,
+    /** Sessions done in its workouts; a programme with any is archived, never deleted. */
+    val sessionCount: Int,
+    /** The plan the app seeds; it can be archived but not deleted, or the next start would seed it again. */
+    val isSeeded: Boolean
+) {
+    val canDelete: Boolean get() = !isActive && !isSeeded && sessionCount == 0
+}

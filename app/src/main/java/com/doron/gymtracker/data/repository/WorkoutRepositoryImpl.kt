@@ -2,7 +2,6 @@ package com.doron.gymtracker.data.repository
 
 import com.doron.gymtracker.data.db.dao.ProgramDao
 import com.doron.gymtracker.data.db.dao.WorkoutDao
-import com.doron.gymtracker.data.db.entities.ProgramEntity
 import com.doron.gymtracker.data.db.entities.ExerciseDefinitionEntity
 import com.doron.gymtracker.data.db.entities.WorkoutEntity
 import com.doron.gymtracker.data.seed.TrainingPlanData
@@ -11,9 +10,9 @@ import com.doron.gymtracker.domain.model.ExerciseDefinition
 import com.doron.gymtracker.domain.model.Program
 import com.doron.gymtracker.domain.model.RepExerciseDefinition
 import com.doron.gymtracker.domain.model.TimedExerciseDefinition
-import com.doron.gymtracker.domain.model.VariantRule
 import com.doron.gymtracker.domain.model.Workout
 import java.time.LocalDate
+import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -34,7 +33,7 @@ class WorkoutRepositoryImpl @Inject constructor(
         if (seeded) return
         seedLock.withLock {
             if (seeded) return
-            programDao.insert(TrainingPlanData.program(LocalDate.now()).toEntity())
+            programDao.insert(TrainingPlanData.program(LocalDate.now()).toEntity(isActive = true))
             val workoutEntities = TrainingPlanData.all.mapIndexed { i, w ->
                 WorkoutEntity(w.id, w.code, programId = TrainingPlanData.PROGRAM_ID, sortOrder = i + 1)
             }
@@ -54,21 +53,51 @@ class WorkoutRepositoryImpl @Inject constructor(
         return checkNotNull(programDao.getActive()) { "no active programme after seeding" }.toDomain()
     }
 
-    override suspend fun getAll(): List<Workout> {
-        val program = getActiveProgram()
-        val workoutEntities = dao.getForProgram(program.id)
-        return workoutEntities.map { entity ->
-            val rows = dao.getExercisesForWorkout(entity.id)
-            val variantsByBase = rows.filter { it.variantOfId != null }.associateBy { it.variantOfId }
-            val exercises = rows.filter { it.variantOfId == null }.map { base ->
-                base.toDomain(variantB = variantsByBase[base.id]?.toDomain())
-            }
-            Workout(entity.id, entity.label, exercises, name = entity.name, sortOrder = entity.sortOrder)
-        }
+    override suspend fun getAll(): List<Workout> = getForProgram(getActiveProgram().id)
+
+    override suspend fun getForProgram(programId: String): List<Workout> {
+        ensureSeeded()
+        return dao.getForProgram(programId).map { it.toDomain() }
     }
 
-    override suspend fun getById(id: String): Workout? =
-        getAll().firstOrNull { it.id == id }
+    override suspend fun getById(id: String): Workout? {
+        ensureSeeded()
+        return dao.getWorkout(id)?.toDomain()
+    }
+
+    private suspend fun WorkoutEntity.toDomain(): Workout {
+        val rows = dao.getExercisesForWorkout(id)
+        val variantsByBase = rows.filter { it.variantOfId != null }.associateBy { it.variantOfId }
+        val exercises = rows.filter { it.variantOfId == null }.map { base ->
+            base.toDomain(variantB = variantsByBase[base.id]?.toDomain())
+        }
+        return Workout(id, label, exercises, name = name, sortOrder = sortOrder)
+    }
+
+    override suspend fun addWorkout(programId: String, code: String, name: String?): String {
+        val id = UUID.randomUUID().toString()
+        dao.insertWorkout(WorkoutEntity(id, code, programId = programId, sortOrder = dao.maxWorkoutSortOrder(programId) + 1, name = name))
+        return id
+    }
+
+    override suspend fun editWorkout(id: String, code: String, name: String?) = dao.editWorkout(id, code, name)
+
+    override suspend fun moveWorkout(programId: String, workoutId: String, direction: Int) {
+        val workouts = dao.getForProgram(programId)
+        val from = workouts.indexOfFirst { it.id == workoutId }
+        val to = from + direction
+        if (from < 0 || to !in workouts.indices) return
+        workouts.toMutableList().apply { add(to, removeAt(from)) }
+            .forEachIndexed { i, w -> dao.setWorkoutSortOrder(w.id, i + 1) }
+    }
+
+    // A workout with history is hidden so its sessions still find it; so is one of the seeded
+    // plan, which ensureSeeded would otherwise put back. Any other goes, with its exercises.
+    override suspend fun removeWorkout(id: String) {
+        val seeded = TrainingPlanData.all.any { it.id == id }
+        if (seeded || dao.sessionCount(id) > 0) dao.hideWorkout(id, System.currentTimeMillis())
+        else dao.deleteWorkout(id)
+    }
 
     override suspend fun updateTargetSets(exerciseId: String, sets: Int) =
         dao.updateTargetSets(exerciseId, sets)
@@ -94,14 +123,6 @@ class WorkoutRepositoryImpl @Inject constructor(
         val reordered = bases.toMutableList().apply { add(to, removeAt(from)) }
         reordered.forEachIndexed { i, row -> dao.setSortOrder(row.id, i + 1) }
     }
-
-    private fun Program.toEntity() =
-        ProgramEntity(id, name, startDate.toEpochDay(), deloadEveryWeeks, variantRule.name, isActive = true)
-
-    private fun ProgramEntity.toDomain() = Program(
-        id, name, LocalDate.ofEpochDay(startEpochDay), deloadEveryWeeks,
-        runCatching { VariantRule.valueOf(variantRule) }.getOrDefault(VariantRule.NONE)
-    )
 
     private fun ExerciseDefinition.toEntity(workoutId: String, variantOfId: String? = null, sortOrder: Int = 0) = when (this) {
         is RepExerciseDefinition -> ExerciseDefinitionEntity(

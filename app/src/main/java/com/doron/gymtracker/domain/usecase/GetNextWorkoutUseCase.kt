@@ -7,14 +7,16 @@ import javax.inject.Inject
 
 /**
  * The workout after the last one finished, in the active programme's order; the first when none
- * of its workouts has been done. Read from history, so a deleted session moves it back.
+ * of its workouts has been done; null while the programme has none. Read from history, so a
+ * deleted session moves it back.
  */
 class GetNextWorkoutUseCase @Inject constructor(
     private val sessionRepo: SessionRepository,
     private val repo: WorkoutRepository
 ) {
-    suspend operator fun invoke(): Workout {
+    suspend operator fun invoke(): Workout? {
         val workouts = repo.getAll()
+        if (workouts.isEmpty()) return null
         val ids = workouts.map { it.id }
         val last = sessionRepo.getCompletedSince(0).firstOrNull { it.type == "GYM" && it.workoutId in ids }
             ?: return workouts.first()

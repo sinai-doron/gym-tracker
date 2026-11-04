@@ -23,9 +23,44 @@ interface WorkoutDao {
         insertAllExercises(exercises)
     }
 
-    /** A programme's workouts, in the order they rotate. */
-    @Query("SELECT * FROM workouts WHERE programId = :programId ORDER BY sortOrder, rowid")
+    /** A programme's workouts, in the order they rotate; hidden ones left out. */
+    @Query("SELECT * FROM workouts WHERE programId = :programId AND hiddenAt IS NULL ORDER BY sortOrder, rowid")
     suspend fun getForProgram(programId: String): List<WorkoutEntity>
+
+    /** One workout, hidden or not, in any programme. */
+    @Query("SELECT * FROM workouts WHERE id = :id")
+    suspend fun getWorkout(id: String): WorkoutEntity?
+
+    @Insert
+    suspend fun insertWorkout(workout: WorkoutEntity)
+
+    @Query("UPDATE workouts SET label = :code, name = :name WHERE id = :id")
+    suspend fun editWorkout(id: String, code: String, name: String?)
+
+    @Query("UPDATE workouts SET sortOrder = :sortOrder WHERE id = :id")
+    suspend fun setWorkoutSortOrder(id: String, sortOrder: Int)
+
+    @Query("SELECT COALESCE(MAX(sortOrder), 0) FROM workouts WHERE programId = :programId")
+    suspend fun maxWorkoutSortOrder(programId: String): Int
+
+    @Query("UPDATE workouts SET hiddenAt = :at WHERE id = :id")
+    suspend fun hideWorkout(id: String, at: Long)
+
+    @Query("SELECT count(*) FROM sessions WHERE workoutId = :id")
+    suspend fun sessionCount(id: String): Int
+
+    @Query("DELETE FROM exercise_definitions WHERE workoutId = :id")
+    suspend fun deleteExercisesOf(id: String)
+
+    @Query("DELETE FROM workouts WHERE id = :id")
+    suspend fun deleteWorkoutRow(id: String)
+
+    /** A workout no session was done in: its exercises go with it. */
+    @Transaction
+    suspend fun deleteWorkout(id: String) {
+        deleteExercisesOf(id)
+        deleteWorkoutRow(id)
+    }
 
     @Query("UPDATE exercise_definitions SET targetSets = :sets WHERE id = :exerciseId")
     suspend fun updateTargetSets(exerciseId: String, sets: Int)

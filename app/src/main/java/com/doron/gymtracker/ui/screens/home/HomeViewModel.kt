@@ -128,7 +128,7 @@ class HomeViewModel @Inject constructor(
             val suggested = getNextWorkout()
             val all = workoutRepo.getAll()
             val openSession = sessionRepo.getOpenGymSession()
-            val preview = getWorkoutPreview(suggested)
+            val preview = suggested?.let { getWorkoutPreview(it) }
             val hcHasPerms = healthConnect.isAvailable && healthConnect.hasPermissions()
             // Permission may have just been granted, so try starting the sensor on every refresh
             stepCounter.start()

@@ -90,6 +90,7 @@ import com.doron.gymtracker.ui.components.localizedName
 import com.doron.gymtracker.ui.components.label
 import com.doron.gymtracker.ui.components.valueText
 import com.doron.gymtracker.ui.theme.Purple
+import com.doron.gymtracker.ui.theme.PurpleLight
 import com.doron.gymtracker.ui.theme.SuccessGreen
 import kotlinx.coroutines.launch
 
@@ -105,6 +106,7 @@ fun HomeScreen(
     onSettingsClick: () -> Unit,
     onSessionClick: (Long) -> Unit,
     onAchievementsClick: () -> Unit,
+    onProgramsClick: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
     badgesViewModel: BadgesViewModel = hiltViewModel()
 ) {
@@ -223,8 +225,12 @@ fun HomeScreen(
                 }
             }
 
-            // Programme week: A/B variants and the next deload
-            state.programStatus?.let { ProgramStatusLine(it) }
+            // The active programme (tap to switch), its week: A/B variants and the next deload
+            state.programStatus?.let {
+                ProgramChip(it, onProgramsClick)
+                Spacer(Modifier.height(4.dp))
+                ProgramStatusLine(it)
+            }
             Spacer(Modifier.height(8.dp))
 
             // Weather
@@ -327,10 +333,24 @@ fun HomeScreen(
 }
 
 @Composable
+private fun ProgramChip(status: ProgramStatus, onClick: () -> Unit) {
+    val name = status.programName ?: stringResource(R.string.program_default_name)
+    Text(
+        "$name ▾",
+        style = MaterialTheme.typography.labelLarge,
+        color = Purple,
+        modifier = Modifier
+            .background(PurpleLight, RoundedCornerShape(50))
+            .clickable(onClickLabel = stringResource(R.string.program_choose, name), onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 4.dp)
+    )
+}
+
+@Composable
 private fun ProgramStatusLine(status: ProgramStatus) {
     val parts = listOfNotNull(
         stringResource(R.string.program_week, status.weekNumber),
-        stringResource(if (status.isWeekB) R.string.week_b else R.string.week_a),
+        if (status.hasVariants) stringResource(if (status.isWeekB) R.string.week_b else R.string.week_a) else null,
         when (status.weeksUntilDeload) {
             null -> null
             0 -> stringResource(R.string.deload_now)

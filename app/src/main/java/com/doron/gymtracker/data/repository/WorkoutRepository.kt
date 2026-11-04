@@ -10,7 +10,17 @@ interface WorkoutRepository {
     suspend fun getActiveProgram(): Program
     /** The active programme's workouts, in the order they rotate. */
     suspend fun getAll(): List<Workout>
+    /** Any programme's workouts, in the order they rotate; hidden ones left out. */
+    suspend fun getForProgram(programId: String): List<Workout>
+    /** A workout in any programme, hidden or not. */
     suspend fun getById(id: String): Workout?
+    /** Adds a workout at the end of the programme's rotation; returns its id. */
+    suspend fun addWorkout(programId: String, code: String, name: String?): String
+    suspend fun editWorkout(id: String, code: String, name: String?)
+    /** Moves a workout one place earlier (-1) or later (+1) in its programme's rotation. */
+    suspend fun moveWorkout(programId: String, workoutId: String, direction: Int)
+    /** Takes a workout out of the rotation: hidden when it has history, deleted otherwise. */
+    suspend fun removeWorkout(id: String)
     suspend fun updateTargetSets(exerciseId: String, sets: Int)
     /** Saves name, sets, reps/distance, rest and bodyweight; the exercise type can't change. */
     suspend fun updateExercise(exercise: ExerciseDefinition)

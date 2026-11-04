@@ -99,10 +99,56 @@ class WorkoutRepositoryTest {
 
     @Test
     fun `getById returns null for unknown id`() = runTest {
-        val seededEntities = TrainingPlanData.all.map { WorkoutEntity(it.id, it.code, programId = "program_abc") }
-        coEvery { dao.getForProgram("program_abc") } returns seededEntities
-        coEvery { dao.getExercisesForWorkout(any()) } returns emptyList()
+        coEvery { dao.getWorkout("nonexistent") } returns null
         assertNull(repo.getById("nonexistent"))
+    }
+
+    /** The plan editor opens workouts of any programme, not only the active one's. */
+    @Test
+    fun `getById finds a workout of another programme`() = runTest {
+        coEvery { dao.getWorkout("w") } returns WorkoutEntity("w", "UA", programId = "other", name = "Upper A")
+        coEvery { dao.getExercisesForWorkout("w") } returns emptyList()
+        assertEquals("Upper A", repo.getById("w")?.name)
+    }
+
+    @Test
+    fun `addWorkout goes to the end of the rotation`() = runTest {
+        coEvery { dao.maxWorkoutSortOrder("p") } returns 3
+        val id = repo.addWorkout("p", "D", null)
+        coVerify { dao.insertWorkout(match { it.id == id && it.programId == "p" && it.label == "D" && it.sortOrder == 4 }) }
+    }
+
+    @Test
+    fun `moveWorkout swaps neighbours and renumbers`() = runTest {
+        coEvery { dao.getForProgram("p") } returns listOf("a", "b", "c").map { WorkoutEntity(it, it, programId = "p") }
+        repo.moveWorkout("p", "c", -1)
+        coVerify { dao.setWorkoutSortOrder("a", 1) }
+        coVerify { dao.setWorkoutSortOrder("c", 2) }
+        coVerify { dao.setWorkoutSortOrder("b", 3) }
+    }
+
+    @Test
+    fun `a workout with history is hidden, not deleted`() = runTest {
+        coEvery { dao.sessionCount("w") } returns 2
+        repo.removeWorkout("w")
+        coVerify { dao.hideWorkout("w", any()) }
+        coVerify(exactly = 0) { dao.deleteWorkout(any()) }
+    }
+
+    @Test
+    fun `a seeded workout is hidden even without history, so seeding can't bring it back`() = runTest {
+        coEvery { dao.sessionCount("workout_c") } returns 0
+        repo.removeWorkout("workout_c")
+        coVerify { dao.hideWorkout("workout_c", any()) }
+        coVerify(exactly = 0) { dao.deleteWorkout(any()) }
+    }
+
+    @Test
+    fun `a workout of the user's own never done is deleted with its exercises`() = runTest {
+        coEvery { dao.sessionCount("w") } returns 0
+        repo.removeWorkout("w")
+        coVerify { dao.deleteWorkout("w") }
+        coVerify(exactly = 0) { dao.hideWorkout(any(), any()) }
     }
 
     private fun row(id: String, order: Int, variantOf: String? = null) =

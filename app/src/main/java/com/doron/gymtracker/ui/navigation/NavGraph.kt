@@ -27,6 +27,8 @@ import com.doron.gymtracker.ui.screens.settings.SettingsScreen
 import com.doron.gymtracker.ui.screens.achievements.AchievementsScreen
 import com.doron.gymtracker.ui.screens.account.ConsentScreen
 import com.doron.gymtracker.ui.screens.routes.RouteDetailScreen
+import com.doron.gymtracker.ui.screens.programs.ProgramBuilderScreen
+import com.doron.gymtracker.ui.screens.programs.ProgramsScreen
 import com.doron.gymtracker.ui.screens.routes.RoutesScreen
 import com.doron.gymtracker.ui.screens.workouts.WorkoutsScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -68,7 +70,8 @@ fun NavGraph(runToResume: CardioRun? = null, showOnboarding: Boolean = false) {
                 onRoutesClick = { navController.navigate("routes") },
                 onSettingsClick = { navController.navigate("settings") },
                 onSessionClick = { id -> navController.navigate("history/session/$id") },
-                onAchievementsClick = { navController.navigate("achievements") }
+                onAchievementsClick = { navController.navigate("achievements") },
+                onProgramsClick = { navController.navigate("programs") }
             )
         }
         composable("achievements") {
@@ -85,6 +88,18 @@ fun NavGraph(runToResume: CardioRun? = null, showOnboarding: Boolean = false) {
                         popUpTo("workouts") { inclusive = true }
                     }
                 }
+            )
+        }
+        composable("programs") {
+            ProgramsScreen(
+                onBack = { navController.popBackStack() },
+                onOpen = { programId -> navController.navigate("program/$programId") }
+            )
+        }
+        composable("program/{programId}") {
+            ProgramBuilderScreen(
+                onBack = { navController.popBackStack() },
+                onOpenWorkout = { workoutId -> navController.navigate("plan/$workoutId") }
             )
         }
         composable("plan/{workoutId}") {

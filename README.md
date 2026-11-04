@@ -139,6 +139,11 @@ the day it is first opened.
 
 Every session has a training type, also a row: Strength, Run and Walk are built in.
 
+A user can keep several programmes, one active. The programme chip on home opens the list:
+make one active, archive or restore one, or start a new one. A programme's builder adds,
+renames, reorders and removes its workouts, and sets when week 1 starts. Tapping a workout opens its
+exercises. A workout or programme with history is hidden or archived, never deleted.
+
 ## Tech stack
 
 | | |
