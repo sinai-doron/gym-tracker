@@ -243,38 +243,26 @@ gitignored and must stay out of this public repository.
 ### Release builds for Play
 
 Play takes an Android App Bundle (`.aab`) signed with an **upload key**. With Play App Signing,
-Google keeps the key that signs what phones install. The upload key only proves an upload is
+Google keeps the key that signs what phones install; the upload key only proves an upload is
 yours, and Google can replace it if it is lost.
 
-1. Make the upload key once, outside the repository, and keep it and its password in your
-   password manager (keytool asks for the password, so it never lands in your shell history):
+The upload key lives in two places and nowhere else: two secrets in GCP Secret Manager in
+`symbio-shared` (`gym-tracker-upload-key`, the key file, and `gym-tracker-upload-key-password`),
+and an entry in the owner's Strongbox database with the file attached.
 
-   ```sh
-   mkdir -p ~/keys
-   keytool -genkeypair -keystore ~/keys/gym-tracker-upload.jks -storetype PKCS12 \
-     -alias upload -keyalg RSA -keysize 4096 -validity 10000 -dname "CN=neonsheep"
-   ```
+- **Make it, once:** `scripts/make-upload-key.sh`, in a terminal. It asks for a password (typed
+  at a prompt, so it is in neither the shell history nor the process list), makes the key in a
+  private temporary folder, saves both secrets, then waits while you add the Strongbox entry and
+  deletes the file. It refuses to run if the secrets already exist.
+- **Build an upload:** raise `versionCode` in `app/build.gradle.kts` (Play refuses a code it has
+  seen), then `scripts/bundle-release.sh`. It fetches the key into a private temporary folder,
+  runs `bundleRelease`, checks the bundle is signed and deletes the key, whatever happens. The
+  bundle is `app/build/outputs/bundle/release/app-release.aab`.
 
-2. Point `local.properties` at it:
-
-   ```properties
-   release.storeFile=/Users/<you>/keys/gym-tracker-upload.jks
-   release.storePassword=<the password>
-   ```
-
-   (`release.keyAlias` defaults to `upload`, `release.keyPassword` to the store password.) CI can
-   take the same values as `RELEASE_STOREFILE`, `RELEASE_STOREPASSWORD`, `RELEASE_KEYALIAS` and
-   `RELEASE_KEYPASSWORD`.
-
-3. Raise `versionCode` in `app/build.gradle.kts` (Play refuses a code it has seen), then build:
-
-   ```sh
-   ./gradlew bundleRelease   # app/build/outputs/bundle/release/app-release.aab
-   ```
-
-Without the key the bundle is built unsigned, which is what CI does to prove a release still
-builds; Play refuses an unsigned upload. The release build isn't shrunk yet (no R8): Room, Hilt,
-serialization and MapLibre each need keep rules first.
+The build itself reads the key from `RELEASE_STOREFILE` and `RELEASE_STOREPASSWORD` (or
+`release.*` in `local.properties`); without them the bundle is built unsigned, which is what CI
+does to prove a release still builds, and what Play refuses. The release build isn't shrunk yet
+(no R8): Room, Hilt, serialization and MapLibre each need keep rules first.
 
 ### Running on a phone
 
