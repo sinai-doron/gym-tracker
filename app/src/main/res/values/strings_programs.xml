@@ -12,7 +12,6 @@
     <string name="program_delete_title">למחוק את %s?</string>
     <string name="program_delete_text">לא בוצע בה אף אימון, כך ששום דבר מההיסטוריה לא נמחק איתה.</string>
     <string name="program_new">תוכנית חדשה</string>
-    <string name="program_new_name">תוכנית חדשה</string>
     <string name="program_since">מאז %s</string>
     <string name="program_switch_note">החלפת תוכנית שומרת את כל האימונים והשיאים. גרפי ההתקדמות שייכים לתרגיל, לא לתוכנית.</string>
     <string name="program_more">אפשרויות נוספות ל%s</string>

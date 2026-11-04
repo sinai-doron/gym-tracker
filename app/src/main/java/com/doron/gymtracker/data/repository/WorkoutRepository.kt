@@ -6,14 +6,19 @@ import com.doron.gymtracker.domain.model.Workout
 
 interface WorkoutRepository {
     suspend fun ensureSeeded()
-    /** The programme being followed: its weeks, deloads and variants. */
-    suspend fun getActiveProgram(): Program
-    /** The active programme's workouts, in the order they rotate. */
+    /** The programme being followed: its weeks, deloads and variants; null until the user has one. */
+    suspend fun getActiveProgram(): Program?
+    /** The active programme's workouts, in the order they rotate; none without a programme. */
     suspend fun getAll(): List<Workout>
     /** Any programme's workouts, in the order they rotate; hidden ones left out. */
     suspend fun getForProgram(programId: String): List<Workout>
     /** A workout in any programme, hidden or not. */
     suspend fun getById(id: String): Workout?
+    /**
+     * Writes [program] whole, in one transaction, and makes it the active one: [workouts] in
+     * rotation order, each with its exercises.
+     */
+    suspend fun installProgram(program: Program, workouts: List<NewWorkout>)
     /** Adds a workout at the end of the programme's rotation; returns its id. */
     suspend fun addWorkout(programId: String, code: String, name: String?): String
     suspend fun editWorkout(id: String, code: String, name: String?)
@@ -30,3 +35,10 @@ interface WorkoutRepository {
     /** Moves an exercise one place up (-1) or down (+1) within its workout. */
     suspend fun moveExercise(workoutId: String, exerciseId: String, direction: Int)
 }
+
+/** A workout of a programme written at once (a template): its exercises, each with the library exercise it is. */
+data class NewWorkout(
+    val code: String,
+    val name: String?,
+    val exercises: List<Pair<ExerciseDefinition, String?>>
+)

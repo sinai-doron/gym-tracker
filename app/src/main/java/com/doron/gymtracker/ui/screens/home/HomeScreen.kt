@@ -107,6 +107,7 @@ fun HomeScreen(
     onSessionClick: (Long) -> Unit,
     onAchievementsClick: () -> Unit,
     onProgramsClick: () -> Unit,
+    onSetUpTraining: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
     badgesViewModel: BadgesViewModel = hiltViewModel()
 ) {
@@ -275,6 +276,26 @@ fun HomeScreen(
             }
 
             Spacer(Modifier.height(12.dp))
+
+            // No next workout: no programme yet (skipped on first launch), or one with no workouts
+            if (!state.isLoading && state.nextWorkoutPreview == null && openSession == null) {
+                val status = state.programStatus
+                if (status == null) {
+                    SetUpCard(
+                        title = stringResource(R.string.home_setup_title),
+                        text = stringResource(R.string.home_setup_text),
+                        button = stringResource(R.string.home_setup_button),
+                        onClick = onSetUpTraining
+                    )
+                } else {
+                    SetUpCard(
+                        title = stringResource(R.string.home_no_workouts_title, status.programName ?: stringResource(R.string.program_default_name)),
+                        text = stringResource(R.string.home_no_workouts_text),
+                        button = stringResource(R.string.home_no_workouts_button),
+                        onClick = onProgramsClick
+                    )
+                }
+            }
 
             state.nextWorkoutPreview?.let { preview ->
                 NextWorkoutCard(
@@ -448,6 +469,29 @@ private fun WeatherCondition.labelRes(): Int = when (this) {
 }
 
 private val WEATHER_ROW_HEIGHT = 56.dp
+
+@Composable
+private fun SetUpCard(title: String, text: String, button: String, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(24.dp))
+            .padding(16.dp)
+    ) {
+        CardTitle(title, activity = Activity.LIFT)
+        Spacer(Modifier.height(8.dp))
+        Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(12.dp))
+        Button(
+            onClick = onClick,
+            shape = RoundedCornerShape(28.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Purple),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(button)
+        }
+    }
+}
 
 @Composable
 private fun NextWorkoutCard(

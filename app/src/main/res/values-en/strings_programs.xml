@@ -12,7 +12,6 @@
     <string name="program_delete_title">Delete %s?</string>
     <string name="program_delete_text">Nothing was done in it, so nothing in your history goes with it.</string>
     <string name="program_new">New programme</string>
-    <string name="program_new_name">New programme</string>
     <string name="program_since">since %s</string>
     <string name="program_switch_note">Switching keeps every session and record. Progress charts follow the exercise, not the programme.</string>
     <string name="program_more">More for %s</string>

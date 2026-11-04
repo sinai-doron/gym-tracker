@@ -3,6 +3,7 @@ package com.doron.gymtracker.data.db
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.doron.gymtracker.data.db.entities.ExerciseDefinitionEntity
 import com.doron.gymtracker.data.db.entities.ProgramEntity
 import com.doron.gymtracker.data.db.entities.SessionEntity
 import com.doron.gymtracker.data.db.entities.WorkoutEntity
@@ -72,4 +73,34 @@ class ProgramDaoTest {
         assertEquals(1, db.programDao().workoutCount("abc"))
         assertEquals(9L, db.workoutDao().getWorkout("a")?.hiddenAt)
     }
+
+    @Test
+    fun installingAProgrammeWritesItWholeAndMakesItActive() = runTest {
+        db.programDao().install(
+            ProgramEntity("fb", "Full body", 20760, null, "NONE", isActive = false),
+            listOf(WorkoutEntity("fa", "A", programId = "fb", sortOrder = 1), WorkoutEntity("fbb", "B", programId = "fb", sortOrder = 2)),
+            listOf(exercise("e1", "fa"), exercise("e2", "fbb"))
+        )
+        assertEquals("fb", db.programDao().getActive()?.id)
+        assertEquals(2, db.programDao().workoutCount("fb"))
+        assertEquals(listOf("e2"), db.workoutDao().getExercisesForWorkout("fbb").map { it.id })
+    }
+
+    @Test
+    fun aProgrammeThatFailsHalfwayLeavesNothingBehind() = runTest {
+        runCatching {
+            db.programDao().install(
+                ProgramEntity("fb", "Full body", 20760, null, "NONE", isActive = false),
+                listOf(WorkoutEntity("fa", "A", programId = "fb", sortOrder = 1)),
+                // The same id twice: the second insert fails
+                listOf(exercise("e1", "fa"), exercise("e1", "fa"))
+            )
+        }
+        assertNull(db.programDao().get("fb"))
+        assertNull(db.workoutDao().getWorkout("fa"))
+        assertEquals("abc", db.programDao().getActive()?.id)
+    }
+
+    private fun exercise(id: String, workoutId: String) =
+        ExerciseDefinitionEntity(id, workoutId, id, "REP", 3, 90, targetReps = 10, targetDistanceM = null)
 }

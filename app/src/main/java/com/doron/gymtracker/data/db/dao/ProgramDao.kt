@@ -4,7 +4,10 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
+import com.doron.gymtracker.data.db.entities.ExerciseDefinitionEntity
 import com.doron.gymtracker.data.db.entities.ProgramEntity
+import com.doron.gymtracker.data.db.entities.WorkoutEntity
 
 @Dao
 interface ProgramDao {
@@ -40,6 +43,21 @@ interface ProgramDao {
     /** Sessions done in the programme's workouts, hidden ones included. */
     @Query("SELECT count(*) FROM sessions s JOIN workouts w ON w.id = s.workoutId WHERE w.programId = :id")
     suspend fun sessionCount(id: String): Int
+
+    @Insert
+    suspend fun insertWorkouts(workouts: List<WorkoutEntity>)
+
+    @Insert
+    suspend fun insertExercises(exercises: List<ExerciseDefinitionEntity>)
+
+    /** A whole programme at once, made the active one: all of it is written or none. */
+    @Transaction
+    suspend fun install(program: ProgramEntity, workouts: List<WorkoutEntity>, exercises: List<ExerciseDefinitionEntity>) {
+        insert(program)
+        insertWorkouts(workouts)
+        insertExercises(exercises)
+        makeActive(program.id)
+    }
 
     /** The programme's workouts that are in its rotation. */
     @Query("SELECT count(*) FROM workouts WHERE programId = :id AND hiddenAt IS NULL")

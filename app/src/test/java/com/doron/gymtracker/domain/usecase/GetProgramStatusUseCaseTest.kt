@@ -16,7 +16,7 @@ class GetProgramStatusUseCaseTest {
 
     @Test
     fun `first week is week A, five weeks before deload`() = runTest {
-        val status = useCase(inWeek(1))
+        val status = useCase(inWeek(1))!!
         assertEquals(1, status.weekNumber)
         assertFalse(status.isWeekB)
         assertFalse(status.isDeloadWeek)
@@ -24,23 +24,29 @@ class GetProgramStatusUseCaseTest {
     }
 
     @Test
-    fun `second week is week B`() = runTest { assertTrue(useCase(inWeek(2)).isWeekB) }
+    fun `second week is week B`() = runTest { assertTrue(useCase(inWeek(2))!!.isWeekB) }
 
     @Test
     fun `sixth week is a deload week`() = runTest {
-        val status = useCase(inWeek(6))
+        val status = useCase(inWeek(6))!!
         assertTrue(status.isDeloadWeek)
         assertEquals(0, status.weeksUntilDeload)
     }
 
     @Test
-    fun `countdown restarts after a deload`() = runTest { assertEquals(5, useCase(inWeek(7)).weeksUntilDeload) }
+    fun `countdown restarts after a deload`() = runTest { assertEquals(5, useCase(inWeek(7))!!.weeksUntilDeload) }
 
     @Test
     fun `a programme without deloads has no countdown`() = runTest {
         coEvery { repo.getActiveProgram() } returns ProgramFixture.program.copy(deloadEveryWeeks = null)
-        val status = useCase(inWeek(6))
+        val status = useCase(inWeek(6))!!
         assertFalse(status.isDeloadWeek)
         assertNull(status.weeksUntilDeload)
+    }
+
+    @Test
+    fun `no programme, no status`() = runTest {
+        coEvery { repo.getActiveProgram() } returns null
+        assertNull(useCase(inWeek(1)))
     }
 }

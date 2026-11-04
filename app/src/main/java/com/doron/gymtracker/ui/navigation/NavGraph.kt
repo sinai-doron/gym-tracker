@@ -25,6 +25,8 @@ import com.doron.gymtracker.ui.screens.session.SessionScreen
 import com.doron.gymtracker.ui.screens.session.SessionViewModel
 import com.doron.gymtracker.ui.screens.settings.LicencesScreen
 import com.doron.gymtracker.ui.screens.settings.SettingsScreen
+import com.doron.gymtracker.ui.screens.setup.AboutYouScreen
+import com.doron.gymtracker.ui.screens.setup.TrainingScreen
 import com.doron.gymtracker.ui.screens.achievements.AchievementsScreen
 import com.doron.gymtracker.ui.screens.account.ConsentScreen
 import com.doron.gymtracker.ui.screens.routes.RouteDetailScreen
@@ -48,14 +50,36 @@ fun NavGraph(runToResume: CardioRun? = null, showOnboarding: Boolean = false) {
         composable("onboarding") {
             OnboardingScreen(
                 onFinished = {
-                    // From Settings, go back there; on first launch, replace the wizard with home
+                    // From Settings, go back there; on first launch, go on to "About you"
                     if (navController.previousBackStackEntry != null) {
                         navController.popBackStack()
                     } else {
-                        navController.navigate("home") { popUpTo("onboarding") { inclusive = true } }
+                        navController.navigate("about-you") { popUpTo("onboarding") { inclusive = true } }
                     }
                 },
                 onSignIn = { navController.navigate("sync-consent") }
+            )
+        }
+        // First launch, after the permissions: units and details, then a programme, then home
+        composable("about-you") {
+            AboutYouScreen(onDone = {
+                navController.navigate("training/first") { popUpTo("about-you") { inclusive = true } }
+            })
+        }
+        composable("about-you/edit") {
+            AboutYouScreen(onDone = { navController.popBackStack() }, onBack = { navController.popBackStack() })
+        }
+        composable("training/{mode}") { backStackEntry ->
+            val firstLaunch = backStackEntry.arguments?.getString("mode") == "first"
+            fun home() = navController.navigate("home") { popUpTo(0) { inclusive = true } }
+            TrainingScreen(
+                firstLaunch = firstLaunch,
+                onLeave = { if (firstLaunch) home() else navController.popBackStack() },
+                onTemplate = { if (firstLaunch) home() else navController.popBackStack() },
+                onEmpty = { programId ->
+                    if (firstLaunch) home() else navController.popBackStack()
+                    navController.navigate("program/$programId")
+                }
             )
         }
         composable("home") {
@@ -73,7 +97,8 @@ fun NavGraph(runToResume: CardioRun? = null, showOnboarding: Boolean = false) {
                 onSettingsClick = { navController.navigate("settings") },
                 onSessionClick = { id -> navController.navigate("history/session/$id") },
                 onAchievementsClick = { navController.navigate("achievements") },
-                onProgramsClick = { navController.navigate("programs") }
+                onProgramsClick = { navController.navigate("programs") },
+                onSetUpTraining = { navController.navigate("training/new") }
             )
         }
         composable("achievements") {
@@ -95,7 +120,8 @@ fun NavGraph(runToResume: CardioRun? = null, showOnboarding: Boolean = false) {
         composable("programs") {
             ProgramsScreen(
                 onBack = { navController.popBackStack() },
-                onOpen = { programId -> navController.navigate("program/$programId") }
+                onOpen = { programId -> navController.navigate("program/$programId") },
+                onNew = { navController.navigate("training/new") }
             )
         }
         composable("program/{programId}") {
@@ -124,6 +150,7 @@ fun NavGraph(runToResume: CardioRun? = null, showOnboarding: Boolean = false) {
                 onBack = { navController.popBackStack() },
                 onReviewPermissions = { navController.navigate("onboarding") },
                 onSignIn = { navController.navigate("sync-consent") },
+                onAboutYou = { navController.navigate("about-you/edit") },
                 onLicences = { navController.navigate("licences") }
             )
         }

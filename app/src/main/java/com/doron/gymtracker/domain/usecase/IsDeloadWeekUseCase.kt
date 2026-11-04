@@ -7,5 +7,5 @@ class IsDeloadWeekUseCase @Inject constructor(
     private val repo: WorkoutRepository
 ) {
     suspend operator fun invoke(sessionDateMs: Long = System.currentTimeMillis()): Boolean =
-        repo.getActiveProgram().isDeloadWeek(sessionDateMs)
+        repo.getActiveProgram()?.isDeloadWeek(sessionDateMs) == true
 }

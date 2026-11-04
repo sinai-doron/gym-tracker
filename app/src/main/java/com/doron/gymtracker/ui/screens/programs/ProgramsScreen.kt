@@ -62,10 +62,10 @@ import java.time.format.FormatStyle
 fun ProgramsScreen(
     onBack: () -> Unit,
     onOpen: (programId: String) -> Unit,
+    onNew: () -> Unit,
     viewModel: ProgramsViewModel = hiltViewModel()
 ) {
     val programs by viewModel.programs.collectAsState()
-    var naming by remember { mutableStateOf(false) }
     var deleting by remember { mutableStateOf<ProgramSummary?>(null) }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.reload() }
 
@@ -125,7 +125,7 @@ fun ProgramsScreen(
             }
             item(key = "new") {
                 OutlinedButton(
-                    onClick = { naming = true },
+                    onClick = onNew,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 4.dp)
@@ -146,19 +146,6 @@ fun ProgramsScreen(
         }
     }
 
-    if (naming) {
-        val default = stringResource(R.string.program_new_name)
-        NameDialog(
-            title = stringResource(R.string.program_new),
-            label = stringResource(R.string.builder_program_name),
-            initial = default,
-            onDismiss = { naming = false },
-            onSave = { name ->
-                naming = false
-                viewModel.create(name.trim().ifEmpty { default }, onOpen)
-            }
-        )
-    }
 
     deleting?.let { summary ->
         AlertDialog(

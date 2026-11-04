@@ -13,6 +13,6 @@ class ResolveExerciseVariantUseCase @Inject constructor(
         sessionDateMs: Long = System.currentTimeMillis()
     ): ExerciseDefinition {
         val variantB = exercise.variantB ?: return exercise
-        return if (repo.getActiveProgram().usesVariants(sessionDateMs)) variantB else exercise
+        return if (repo.getActiveProgram()?.usesVariants(sessionDateMs) == true) variantB else exercise
     }
 }

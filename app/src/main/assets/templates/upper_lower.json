@@ -1,0 +1,132 @@
+{
+ "id": "upper_lower",
+ "order": 2,
+ "badge": "UL",
+ "names": {
+  "en": "Upper / Lower",
+  "he": "עליון / תחתון"
+ },
+ "summary": {
+  "en": "4 days · upper A, lower A, upper B, lower B",
+  "he": "4 ימים · עליון A, תחתון A, עליון B, תחתון B"
+ },
+ "workouts": [
+  {
+   "code": {
+    "en": "UA",
+    "he": "UA"
+   },
+   "names": {
+    "en": "Upper A",
+    "he": "עליון A"
+   },
+   "exercises": [
+    {
+     "exercise": "barbell-bench-press"
+    },
+    {
+     "exercise": "wide-grip-lat-pulldown"
+    },
+    {
+     "exercise": "overhead-press"
+    },
+    {
+     "exercise": "seated-cable-row-v-handle"
+    },
+    {
+     "exercise": "dumbbell-lateral-raise"
+    },
+    {
+     "exercise": "triceps-pushdown-rope"
+    }
+   ]
+  },
+  {
+   "code": {
+    "en": "LA",
+    "he": "LA"
+   },
+   "names": {
+    "en": "Lower A",
+    "he": "תחתון A"
+   },
+   "exercises": [
+    {
+     "exercise": "barbell-back-squat"
+    },
+    {
+     "exercise": "barbell-romanian-deadlift"
+    },
+    {
+     "exercise": "leg-press"
+    },
+    {
+     "exercise": "lying-leg-curl"
+    },
+    {
+     "exercise": "machine-calf-raise"
+    },
+    {
+     "exercise": "plank"
+    }
+   ]
+  },
+  {
+   "code": {
+    "en": "UB",
+    "he": "UB"
+   },
+   "names": {
+    "en": "Upper B",
+    "he": "עליון B"
+   },
+   "exercises": [
+    {
+     "exercise": "incline-dumbbell-press"
+    },
+    {
+     "exercise": "chest-supported-dumbbell-row"
+    },
+    {
+     "exercise": "seated-dumbbell-shoulder-press"
+    },
+    {
+     "exercise": "close-grip-lat-pulldown"
+    },
+    {
+     "exercise": "dumbbell-curl"
+    },
+    {
+     "exercise": "cable-face-pull"
+    }
+   ]
+  },
+  {
+   "code": {
+    "en": "LB",
+    "he": "LB"
+   },
+   "names": {
+    "en": "Lower B",
+    "he": "תחתון B"
+   },
+   "exercises": [
+    {
+     "exercise": "deadlift"
+    },
+    {
+     "exercise": "bulgarian-split-squat"
+    },
+    {
+     "exercise": "leg-extension"
+    },
+    {
+     "exercise": "seated-leg-curl"
+    },
+    {
+     "exercise": "hanging-knee-raise"
+    }
+   ]
+  }
+ ]
+}

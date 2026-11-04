@@ -1,0 +1,211 @@
+{
+ "id": "abc_split",
+ "order": 4,
+ "badge": "A",
+ "names": {
+  "en": "A / B / C split",
+  "he": "חלוקה A / B / C"
+ },
+ "summary": {
+  "en": "3 days · chest and back, legs, shoulders and arms",
+  "he": "3 ימים · חזה וגב, רגליים, כתפיים וידיים"
+ },
+ "workouts": [
+  {
+   "code": {
+    "en": "A",
+    "he": "A"
+   },
+   "names": {
+    "en": "Chest & back",
+    "he": "חזה וגב"
+   },
+   "exercises": [
+    {
+     "exercise": "barbell-bench-press",
+     "sets": 4,
+     "repsMin": 6,
+     "repsMax": 6,
+     "restS": 180
+    },
+    {
+     "exercise": "wide-grip-lat-pulldown",
+     "sets": 4,
+     "repsMin": 6,
+     "repsMax": 6,
+     "restS": 120
+    },
+    {
+     "exercise": "incline-dumbbell-press",
+     "sets": 3,
+     "repsMin": 10,
+     "repsMax": 10,
+     "restS": 90
+    },
+    {
+     "exercise": "chest-supported-barbell-row",
+     "sets": 3,
+     "repsMin": 8,
+     "repsMax": 8,
+     "restS": 120
+    },
+    {
+     "exercise": "machine-chest-fly",
+     "sets": 3,
+     "repsMin": 12,
+     "repsMax": 12,
+     "restS": 60
+    },
+    {
+     "exercise": "seated-cable-row-v-handle",
+     "sets": 3,
+     "repsMin": 10,
+     "repsMax": 10,
+     "restS": 90
+    },
+    {
+     "exercise": "plank",
+     "sets": 3,
+     "restS": 60
+    }
+   ]
+  },
+  {
+   "code": {
+    "en": "B",
+    "he": "B"
+   },
+   "names": {
+    "en": "Legs",
+    "he": "רגליים"
+   },
+   "exercises": [
+    {
+     "exercise": "barbell-back-squat",
+     "sets": 4,
+     "repsMin": 6,
+     "repsMax": 6,
+     "restS": 180
+    },
+    {
+     "exercise": "barbell-romanian-deadlift",
+     "sets": 3,
+     "repsMin": 8,
+     "repsMax": 8,
+     "restS": 120
+    },
+    {
+     "exercise": "bulgarian-split-squat",
+     "sets": 3,
+     "repsMin": 10,
+     "repsMax": 10,
+     "restS": 90
+    },
+    {
+     "exercise": "leg-extension",
+     "sets": 3,
+     "repsMin": 12,
+     "repsMax": 12,
+     "restS": 60
+    },
+    {
+     "exercise": "machine-leg-curl",
+     "sets": 3,
+     "repsMin": 12,
+     "repsMax": 12,
+     "restS": 60
+    },
+    {
+     "exercise": "hip-adduction-machine",
+     "sets": 3,
+     "repsMin": 15,
+     "repsMax": 15,
+     "restS": 60,
+     "optional": true
+    },
+    {
+     "exercise": "smith-machine-calf-raise",
+     "sets": 3,
+     "repsMin": 15,
+     "repsMax": 15,
+     "restS": 60
+    },
+    {
+     "exercise": "crunch",
+     "sets": 3,
+     "repsMin": 12,
+     "repsMax": 12,
+     "restS": 60
+    }
+   ]
+  },
+  {
+   "code": {
+    "en": "C",
+    "he": "C"
+   },
+   "names": {
+    "en": "Shoulders & arms",
+    "he": "כתפיים וידיים"
+   },
+   "exercises": [
+    {
+     "exercise": "seated-dumbbell-shoulder-press",
+     "sets": 4,
+     "repsMin": 8,
+     "repsMax": 8,
+     "restS": 120
+    },
+    {
+     "exercise": "dumbbell-lateral-raise",
+     "sets": 3,
+     "repsMin": 12,
+     "repsMax": 12,
+     "restS": 60
+    },
+    {
+     "exercise": "reverse-machine-fly",
+     "sets": 3,
+     "repsMin": 12,
+     "repsMax": 12,
+     "restS": 60
+    },
+    {
+     "exercise": "barbell-curl",
+     "sets": 3,
+     "repsMin": 8,
+     "repsMax": 8,
+     "restS": 90
+    },
+    {
+     "exercise": "triceps-pushdown-bar",
+     "sets": 3,
+     "repsMin": 10,
+     "repsMax": 10,
+     "restS": 90
+    },
+    {
+     "exercise": "cable-curl",
+     "sets": 3,
+     "repsMin": 12,
+     "repsMax": 12,
+     "restS": 60
+    },
+    {
+     "exercise": "overhead-dumbbell-triceps-extension",
+     "sets": 3,
+     "repsMin": 12,
+     "repsMax": 12,
+     "restS": 60,
+     "optional": true
+    },
+    {
+     "exercise": "farmers-walk",
+     "sets": 3,
+     "restS": 90,
+     "distanceM": 35
+    }
+   ]
+  }
+ ]
+}

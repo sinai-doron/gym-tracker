@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- First launch: About you and Your training; home's set-up card -->
+    <string name="setup_about_title">About you</string>
+    <string name="setup_about_text">Used for weights, calories and your week. Change any of it in Settings.</string>
+    <string name="setup_weights_in">Weights in</string>
+    <string name="setup_distances_in">Distances in</string>
+    <string name="setup_week_starts">Week starts on</string>
+    <string name="unit_kg">kg</string>
+    <string name="unit_lb">lb</string>
+    <string name="unit_km">km</string>
+    <string name="unit_mi">mi</string>
+    <string name="day_sunday">Sunday</string>
+    <string name="day_monday">Monday</string>
+    <string name="setup_optional">Optional</string>
+    <string name="setup_body_weight_kg">Body weight (kg)</string>
+    <string name="setup_body_weight_lb">Body weight (lb)</string>
+    <string name="setup_steps_goal">Daily steps goal</string>
+    <string name="setup_birth_year">Birth year</string>
+    <string name="setup_sex">Sex</string>
+    <string name="sex_female">Female</string>
+    <string name="sex_male">Male</string>
+    <string name="setup_optional_note">Body weight, birth year and sex only improve calorie estimates.</string>
+    <string name="setup_training_title">How do you train?</string>
+    <string name="setup_training_text">Pick a starting point. You can change everything later.</string>
+    <string name="setup_skip">Skip for now</string>
+    <string name="setup_week1_starts">Week 1 starts %s</string>
+    <string name="setup_empty_title">Start empty</string>
+    <string name="setup_empty_text">Build your own workouts</string>
+    <string name="setup_empty_name">My programme</string>
+    <string name="setup_create">Create programme</string>
+    <string name="home_setup_title">Set up your training</string>
+    <string name="home_setup_text">Pick a programme to start from, or build your own.</string>
+    <string name="home_setup_button">Set up</string>
+    <string name="home_no_workouts_title">%s has no workouts yet</string>
+    <string name="home_no_workouts_text">Add workouts to the programme, or switch to another one.</string>
+    <string name="home_no_workouts_button">Programmes</string>
+</resources>
