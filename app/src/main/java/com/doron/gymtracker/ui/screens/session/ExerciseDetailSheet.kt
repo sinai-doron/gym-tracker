@@ -1,5 +1,6 @@
 package com.doron.gymtracker.ui.screens.session
 
+import com.doron.gymtracker.ui.components.localizedName
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -64,7 +65,7 @@ fun ExerciseDetailSheet(
         Spacer(Modifier.height(12.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                state.exercise.name,
+                state.exercise.localizedName(),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.weight(1f)
             )

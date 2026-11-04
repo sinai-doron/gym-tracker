@@ -1,12 +1,15 @@
 package com.doron.gymtracker.data.repository
 
+import com.doron.gymtracker.data.db.dao.ExerciseLibraryDao
 import com.doron.gymtracker.data.db.dao.ProgramDao
 import com.doron.gymtracker.data.db.dao.WorkoutDao
 import com.doron.gymtracker.data.db.entities.ProgramEntity
 import com.doron.gymtracker.data.db.entities.ExerciseDefinitionEntity
+import com.doron.gymtracker.data.db.entities.ExerciseNameEntity
 import com.doron.gymtracker.data.db.entities.WorkoutEntity
 import com.doron.gymtracker.data.seed.TrainingPlanData
 import com.doron.gymtracker.domain.model.RepExerciseDefinition
+import com.doron.gymtracker.domain.model.nameIn
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -21,6 +24,7 @@ class WorkoutRepositoryTest {
 
     private lateinit var dao: WorkoutDao
     private lateinit var programs: ProgramDao
+    private lateinit var library: ExerciseLibraryDao
     private lateinit var repo: WorkoutRepository
     private val abc = ProgramEntity("program_abc", null, LocalDate.of(2026, 10, 26).toEpochDay(), 6, "ALTERNATE_WEEKLY", isActive = true)
 
@@ -28,9 +32,10 @@ class WorkoutRepositoryTest {
     fun setup() {
         dao = mockk(relaxed = true)
         programs = mockk(relaxed = true)
+        library = mockk(relaxed = true)
         coEvery { programs.getActive() } returns abc
         coEvery { programs.get("program_abc") } returns abc
-        repo = WorkoutRepositoryImpl(dao, programs)
+        repo = WorkoutRepositoryImpl(dao, programs, library)
     }
 
     @Test
@@ -97,6 +102,43 @@ class WorkoutRepositoryTest {
         val exercises = repo.getAll().single().exercises
         assertEquals(listOf("d1_e3a"), exercises.map { it.id })
         assertEquals("d1_e3b", exercises.single().variantB?.id)
+    }
+
+    private val benchNames = listOf(
+        ExerciseNameEntity("lib_bench", "en", "Barbell bench press", isAlias = false),
+        ExerciseNameEntity("lib_bench", "he", "לחיצת חזה עם מוט", isAlias = false),
+        ExerciseNameEntity("lib_bench", "en", "bench", isAlias = true)
+    )
+
+    /** The owner's plan was added in Hebrew: in English it shows the library's English names. */
+    @Test
+    fun `an exercise saved under a library name shows that exercise's name in each language`() = runTest {
+        coEvery { dao.getForProgram("program_abc") } returns listOf(WorkoutEntity("workout_a", "A", programId = "program_abc"))
+        coEvery { dao.getExercisesForWorkout("workout_a") } returns listOf(
+            ExerciseDefinitionEntity("e1", "workout_a", "לחיצת חזה עם מוט", "REP", 3, 90, 10, null, libraryExerciseId = "lib_bench"),
+            ExerciseDefinitionEntity("e1b", "workout_a", "bench", "REP", 3, 90, 10, null, variantOfId = "e1", libraryExerciseId = "lib_bench")
+        )
+        coEvery { library.namesFor(listOf("lib_bench")) } returns benchNames
+        val bench = repo.getAll().single().exercises.single()
+        assertEquals("Barbell bench press", bench.nameIn("en"))
+        assertEquals("לחיצת חזה עם מוט", bench.nameIn("he"))
+        // An alias counts as the library's name too
+        assertEquals("Barbell bench press", bench.variantB?.nameIn("en"))
+        // A language the catalogue lacks falls back to the saved name
+        assertEquals("לחיצת חזה עם מוט", bench.nameIn("fr"))
+    }
+
+    @Test
+    fun `a name the user gave a library exercise is never translated`() = runTest {
+        coEvery { dao.getForProgram("program_abc") } returns listOf(WorkoutEntity("workout_a", "A", programId = "program_abc"))
+        coEvery { dao.getExercisesForWorkout("workout_a") } returns listOf(
+            ExerciseDefinitionEntity("e1", "workout_a", "My heavy bench", "REP", 3, 90, 10, null, libraryExerciseId = "lib_bench"),
+            ExerciseDefinitionEntity("e2", "workout_a", "Stretching", "TIMED", 1, 0, null, null)
+        )
+        coEvery { library.namesFor(listOf("lib_bench")) } returns benchNames
+        val (bench, stretch) = repo.getAll().single().exercises
+        assertEquals("My heavy bench", bench.nameIn("en"))
+        assertEquals("Stretching", stretch.nameIn("he"))
     }
 
     @Test

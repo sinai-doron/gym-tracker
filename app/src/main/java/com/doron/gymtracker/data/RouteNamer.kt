@@ -1,5 +1,6 @@
 package com.doron.gymtracker.data
 
+import com.doron.gymtracker.AppLocale
 import android.content.Context
 import android.location.Address
 import android.location.Geocoder
@@ -38,7 +39,8 @@ class RouteNamer @Inject constructor(
      * lifetime, so opening a route again doesn't ask OpenStreetMap again.
      */
     suspend fun streetName(p: RoutePoint): String? {
-        val key = "%.4f,%.4f".format(Locale.US, p.latitude, p.longitude)
+        // In the language it was asked in: after a change of language, ask again
+        val key = "%.4f,%.4f,%s".format(Locale.US, p.latitude, p.longitude, AppLocale.language())
         streets[key]?.let { return it }
         val name = withContext(Dispatchers.IO) {
             runCatching {
@@ -61,7 +63,7 @@ class RouteNamer @Inject constructor(
     @Volatile private var lastRequestAt = 0L
 
     /**
-     * A big city's name if the start is in one (a route in Westminster is "לונדון"), else the
+     * A big city's name if the start is in one (a route in Westminster is "London", in the app's language), else the
      * town or village (Zichron Ya'akov rather than its district).
      */
     private suspend fun openStreetMapName(p: RoutePoint): String? = withContext(Dispatchers.IO) {
@@ -78,7 +80,7 @@ class RouteNamer @Inject constructor(
         // ~100 m is plenty to name a place (a street needs ~10 m)
         val lat = "%.${decimals}f".format(Locale.US, p.latitude)
         val lon = "%.${decimals}f".format(Locale.US, p.longitude)
-        val url = URL("https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=$lat&lon=$lon&zoom=$zoom&accept-language=he")
+        val url = URL("https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=$lat&lon=$lon&zoom=$zoom&accept-language=${AppLocale.language()}")
         val connection = url.openConnection() as HttpURLConnection
         return try {
             connection.connectTimeout = HTTP_TIMEOUT_MS
@@ -93,7 +95,7 @@ class RouteNamer @Inject constructor(
 
     private suspend fun geocoderName(start: RoutePoint): String? {
         if (!Geocoder.isPresent()) return null
-        val geocoder = Geocoder(context, Locale.forLanguageTag("he"))
+        val geocoder = Geocoder(context, AppLocale.current())
         val addresses = withTimeoutOrNull(TIMEOUT_MS) { lookup(geocoder, start) }.orEmpty()
         // A town or city from any of the matches beats a county or region ("Greater London")
         fun first(of: (Address) -> String?) = addresses.firstNotNullOfOrNull { of(it)?.takeIf(String::isNotBlank) }

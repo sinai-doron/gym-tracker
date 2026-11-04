@@ -1,5 +1,6 @@
 package com.doron.gymtracker.ui.screens.setup
 
+import com.doron.gymtracker.ui.components.appLanguage
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -75,7 +76,7 @@ fun TrainingScreen(
     viewModel: TrainingViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val lang = LocalConfiguration.current.locales[0].language.let { if (it == "iw") "he" else it }
+    val lang = appLanguage()
     val emptyName = stringResource(R.string.setup_empty_name)
     var pickingDate by remember { mutableStateOf(false) }
     LaunchedEffect(state.hasProgramme) { if (firstLaunch && state.hasProgramme) onLeave() }

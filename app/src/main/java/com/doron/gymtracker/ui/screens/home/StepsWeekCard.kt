@@ -1,5 +1,6 @@
 package com.doron.gymtracker.ui.screens.home
 
+import com.doron.gymtracker.ui.components.appLocale
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -58,6 +59,7 @@ import kotlin.math.abs
  */
 @Composable
 fun StepsWeekCard(week: StepsWeek, modifier: Modifier = Modifier) {
+    val locale = appLocale()
     var selected by remember(week) { mutableStateOf<Int?>(null) }
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val textMeasurer = rememberTextMeasurer()
@@ -79,7 +81,7 @@ fun StepsWeekCard(week: StepsWeek, modifier: Modifier = Modifier) {
         CardTitle(
             stringResource(if (week.rolling) R.string.home_steps_title_rolling else R.string.home_steps_title_week),
             trailing = if (day != null) {
-                val name = day.date.dayOfWeek.getDisplayName(DateTextStyle.FULL, Locale("he"))
+                val name = day.date.dayOfWeek.getDisplayName(DateTextStyle.FULL, locale)
                 if (day.workoutSteps > 0) stringResource(R.string.home_steps_day_workout, name, day.steps, day.workoutSteps)
                 else stringResource(R.string.home_steps_day, name, day.steps)
             } else stringResource(R.string.home_steps_average, week.average)
@@ -134,7 +136,7 @@ fun StepsWeekCard(week: StepsWeek, modifier: Modifier = Modifier) {
                     )
                 }
                 val label = textMeasurer.measure(
-                    day.date.dayOfWeek.getDisplayName(DateTextStyle.NARROW, Locale("he")),
+                    day.date.dayOfWeek.getDisplayName(DateTextStyle.NARROW, locale),
                     if (day.isToday) todayStyle else labelStyle
                 )
                 drawText(label, topLeft = Offset(cx - label.size.width / 2, bottom + 4.dp.toPx()))

@@ -67,7 +67,7 @@ fun ExerciseCard(
             Column(modifier = Modifier.padding(16.dp).weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        exercise.name,
+                        exercise.localizedName(),
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.weight(1f)
                     )

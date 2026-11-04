@@ -27,6 +27,9 @@ interface ExerciseLibraryDao {
     @Query("SELECT * FROM exercise_names WHERE exerciseId = :id")
     suspend fun names(id: String): List<ExerciseNameEntity>
 
+    @Query("SELECT * FROM exercise_names WHERE exerciseId IN (:ids)")
+    suspend fun namesFor(ids: List<String>): List<ExerciseNameEntity>
+
     @Query("SELECT * FROM exercise_muscles WHERE exerciseId = :id")
     suspend fun muscles(id: String): List<ExerciseMuscleEntity>
 

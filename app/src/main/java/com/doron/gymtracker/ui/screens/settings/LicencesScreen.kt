@@ -1,5 +1,6 @@
 package com.doron.gymtracker.ui.screens.settings
 
+import com.doron.gymtracker.ui.components.appLanguage
 import android.content.res.AssetManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -57,7 +58,7 @@ import kotlinx.coroutines.withContext
 fun LicencesScreen(onBack: () -> Unit) {
     val assets = LocalContext.current.assets
     val content by produceState<Licences?>(null) { value = withContext(Dispatchers.IO) { Licences.read(assets) } }
-    val lang = LocalConfiguration.current.locales[0].language.let { if (it == "iw") "he" else it }
+    val lang = appLanguage()
     val uri = LocalUriHandler.current
 
     Scaffold(

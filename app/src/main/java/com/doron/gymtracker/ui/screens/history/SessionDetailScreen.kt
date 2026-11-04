@@ -1,5 +1,8 @@
 package com.doron.gymtracker.ui.screens.history
 
+import java.text.DateFormat
+import com.doron.gymtracker.domain.model.nameIn
+import com.doron.gymtracker.AppLocale
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -128,9 +131,9 @@ class SessionDetailViewModel @Inject constructor(
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
 
-    private val heLocale = Locale("he")
-    private val dateFormat = SimpleDateFormat("dd בMMMM yyyy", heLocale) // hebrew-ok: dates follow the app language in phase 3
-    private val timeFormat = SimpleDateFormat("HH:mm", heLocale)
+    // Read on each use: the language can change while this view model lives
+    private val dateFormat get() = DateFormat.getDateInstance(DateFormat.LONG, AppLocale.current())
+    private val timeFormat get() = SimpleDateFormat("HH:mm", AppLocale.current())
 
     fun load(sessionId: Long) {
         viewModelScope.launch {
@@ -154,7 +157,7 @@ class SessionDetailViewModel @Inject constructor(
 
             entries.forEach { entry ->
                 val exercise = allExercises.find { it.id == entry.exerciseId }
-                val name = exercise?.name ?: entry.exerciseId
+                val name = exercise?.nameIn(AppLocale.language()) ?: entry.exerciseId
                 val target = exercise?.targetSets ?: entry.sets.size
                 val sets = entry.sets
                 totalSets += sets.size

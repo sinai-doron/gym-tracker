@@ -1,5 +1,8 @@
 package com.doron.gymtracker.ui.screens.settings
 
+import java.util.Locale
+import com.doron.gymtracker.ui.components.appLanguage
+import com.doron.gymtracker.AppLocale
 import android.app.LocaleManager
 import android.content.Intent
 import android.os.Build
@@ -218,30 +221,18 @@ fun SettingsScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(modifier = Modifier.padding(8.dp)) {
-                        languages.forEach { lang ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
-                            ) {
-                                RadioButton(
-                                    selected = currentLanguage == lang.code,
-                                    onClick = {
-                                        viewModel.setLanguage(lang.code)
-                                        // Apply locale via API 33+ LocaleManager
-                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                            context.getSystemService(LocaleManager::class.java)
-                                                ?.applicationLocales = LocaleList.forLanguageTags(lang.code)
-                                        }
-                                    }
-                                )
-                                Text(
-                                    lang.displayName,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.padding(start = 8.dp)
-                                )
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        LanguageDropdown(
+                            savedCode = currentLanguage,
+                            onSelect = { code ->
+                                viewModel.setLanguage(code)
+                                // Apply locale via API 33+ LocaleManager
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    context.getSystemService(LocaleManager::class.java)
+                                        ?.applicationLocales = LocaleList.forLanguageTags(code)
+                                }
                             }
-                        }
+                        )
                     }
                 }
 
@@ -467,6 +458,44 @@ private fun VersionLine(onSevenTaps: () -> Unit) {
             }
             .padding(vertical = 8.dp)
     )
+}
+
+/**
+ * The app's language, each listed by its own name. Shows the language the app is in (it can also
+ * be changed in Android's settings for the app), else the saved choice.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LanguageDropdown(savedCode: String, onSelect: (String) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    val shown = appLanguage()
+    val selected = languages.firstOrNull { AppLocale.language(Locale.forLanguageTag(it.code)) == shown }
+        ?: languages.firstOrNull { it.code == savedCode }
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        OutlinedTextField(
+            value = selected?.displayName.orEmpty(),
+            onValueChange = {},
+            readOnly = true,
+            singleLine = true,
+            label = { Text(stringResource(R.string.language)) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            shape = MaterialTheme.shapes.large,
+            modifier = Modifier
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                .fillMaxWidth()
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            languages.forEach { lang ->
+                DropdownMenuItem(
+                    text = { Text(lang.displayName) },
+                    onClick = {
+                        expanded = false
+                        if (lang != selected) onSelect(lang.code)
+                    }
+                )
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

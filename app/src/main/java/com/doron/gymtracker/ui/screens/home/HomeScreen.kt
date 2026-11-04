@@ -1,5 +1,6 @@
 package com.doron.gymtracker.ui.screens.home
 
+import com.doron.gymtracker.ui.components.appLocale
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
@@ -631,7 +632,7 @@ private fun weekRange(days: List<WeekDay>): String? {
     else "${first.dayOfMonth}.${first.monthValue}–${last.dayOfMonth}.${last.monthValue}"
     val isolated = "\u2066$range\u2069"
     return if (first.month == last.month) {
-        stringResource(R.string.home_week_range_month, isolated, first.month.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale("he")))
+        stringResource(R.string.home_week_range_month, isolated, first.month.getDisplayName(java.time.format.TextStyle.FULL, appLocale()))
     } else isolated
 }
 

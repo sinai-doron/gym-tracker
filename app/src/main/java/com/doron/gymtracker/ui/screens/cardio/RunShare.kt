@@ -1,5 +1,6 @@
 package com.doron.gymtracker.ui.screens.cardio
 
+import com.doron.gymtracker.ui.components.runMapStyle
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -410,7 +411,7 @@ private fun paceColor(t: Double): String {
  * sources to a style given as text.
  */
 private fun styleWithRoute(context: Context, route: List<LocationPoint>, gradient: JSONArray?): String {
-    val style = JSONObject(context.assets.open("map_style_run.json").bufferedReader().use { it.readText() })
+    val style = runMapStyle(context)
     val line = Feature.fromGeometry(LineString.fromLngLats(route.map { Point.fromLngLat(it.longitude, it.latitude) }))
     fun dot(p: LocationPoint, end: String) =
         Feature.fromGeometry(Point.fromLngLat(p.longitude, p.latitude)).apply { addStringProperty("end", end) }

@@ -1,5 +1,6 @@
 package com.doron.gymtracker.ui.screens.history
 
+import com.doron.gymtracker.ui.components.appLocale
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -71,7 +72,6 @@ import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
 
-private val heLocale = Locale("he")
 
 private val weekDayOrder = listOf(
     DayOfWeek.SUNDAY, DayOfWeek.MONDAY, DayOfWeek.TUESDAY,
@@ -142,7 +142,7 @@ private fun MonthHeader(month: YearMonth, onPrev: () -> Unit, onNext: () -> Unit
             IconButton(onClick = onPrev) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.history_prev_month))
             }
-            val monthName = month.month.getDisplayName(TextStyle.FULL_STANDALONE, heLocale)
+            val monthName = month.month.getDisplayName(TextStyle.FULL_STANDALONE, appLocale())
             Text(
                 "$monthName ${month.year}",
                 style = MaterialTheme.typography.titleLarge,

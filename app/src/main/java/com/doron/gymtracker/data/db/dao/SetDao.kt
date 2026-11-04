@@ -64,13 +64,20 @@ interface SetDao {
     @Query("SELECT s.* FROM sets s JOIN exercise_entries e ON s.entryId = e.id WHERE e.sessionId = :sessionId")
     suspend fun getForSession(sessionId: Long): List<SetWithParts>
 
-    /** Every set ever logged for an exercise in a finished session, oldest first. */
+    /**
+     * Every set ever logged in a finished session for the plan exercise [exerciseId], oldest first:
+     * under that plan row, or under any row of the same library exercise (its week-B twin, another
+     * workout or programme, the plan before an edit), which the entry names too.
+     */
     @Transaction
     @Query("""
         SELECT st.*, s.id AS sessionId, s.startedAt AS sessionStartedAt FROM sets st
         JOIN exercise_entries ee ON st.entryId = ee.id
         JOIN sessions s ON s.id = ee.sessionId
-        WHERE ee.exerciseId = :exerciseId AND s.finishedAt IS NOT NULL
+        WHERE s.finishedAt IS NOT NULL AND (
+            ee.exerciseId = :exerciseId OR
+            ee.libraryExerciseId = (SELECT libraryExerciseId FROM exercise_definitions WHERE id = :exerciseId)
+        )
         ORDER BY s.startedAt, st.completedAt
     """)
     suspend fun getHistoryForExercise(exerciseId: String): List<SetWithSession>
