@@ -16,8 +16,9 @@ fun Workout.defaultNameRes(): Int? = when (id) {
 }
 
 /**
- * The name the user gave the workout, else its built-in name, else its code: a workout made
- * before names took the code's place may have only the code.
+ * The name the user gave the workout (a template's in the app's language), else its built-in
+ * name, else its code: a workout made before names took the code's place may have only the code.
  */
 @Composable
-fun Workout.localizedName(): String = name ?: defaultNameRes()?.let { stringResource(it) } ?: code
+fun Workout.localizedName(): String =
+    name?.let { templateNames().workout(it, appLanguage()) } ?: defaultNameRes()?.let { stringResource(it) } ?: code

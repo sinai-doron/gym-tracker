@@ -1,5 +1,7 @@
 package com.doron.gymtracker.ui.screens.programs
 
+import com.doron.gymtracker.ui.components.appLanguage
+import com.doron.gymtracker.ui.components.templateNames
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -163,9 +165,10 @@ fun ProgramsScreen(
     }
 }
 
-/** The name the user gave it, else the seeded plan's. */
+/** The name the user gave it (a template's in the app's language), else the seeded plan's. */
 @Composable
-fun Program.displayName(): String = name ?: stringResource(R.string.program_default_name)
+fun Program.displayName(): String =
+    name?.let { templateNames().program(it, appLanguage()) } ?: stringResource(R.string.program_default_name)
 
 /** Null actions aren't offered: a programme is archived or restored, made active or not. */
 @Composable
