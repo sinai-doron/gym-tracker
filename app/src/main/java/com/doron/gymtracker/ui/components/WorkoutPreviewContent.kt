@@ -117,7 +117,7 @@ private fun MetaChip(text: String) {
 }
 
 @Composable
-private fun lastDoneText(lastDoneAt: Long?): String {
+internal fun lastDoneText(lastDoneAt: Long?): String {
     if (lastDoneAt == null) return stringResource(R.string.never_done)
     val zone = ZoneId.systemDefault()
     val day = Instant.ofEpochMilli(lastDoneAt).atZone(zone).toLocalDate()

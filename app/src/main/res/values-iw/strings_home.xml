@@ -10,10 +10,12 @@
     <!-- Home: next workout card -->
     <string name="home_hide_exercises">הסתר תרגילים</string>
     <string name="home_show_exercises">הצג תרגילים (%1$d)</string>
-    <string name="home_switch_workout">החלף</string>
+    <string name="home_swap_workout">החלף אימון</string>
+    <string name="home_typical_minutes">~%1$d דק׳</string>
 
     <!-- Home: cardio card -->
     <string name="home_cardio_title">ריצה והליכה</string>
+    <string name="home_cardio_label">קרדיו</string>
     <string name="home_run">ריצה</string>
     <string name="home_walk">הליכה</string>
 
@@ -61,6 +63,7 @@
     <string name="home_hc_autosave">אימונים נשמרים אוטומטית ב-Health Connect</string>
     <string name="home_hc_sync">סנכרן אימונים וצעדים עם Health Connect</string>
     <string name="home_menu">אפשרויות נוספות</string>
+    <string name="home_menu_log_hint">הוסף אימון שלא נרשם</string>
     <string name="home_hc_grant">אשר הרשאות</string>
 
     <!-- Music controls -->
