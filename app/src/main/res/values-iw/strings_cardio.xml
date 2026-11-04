@@ -74,9 +74,9 @@
     <!-- Sharing a run -->
     <string name="cardio_share_run">שיתוף הריצה</string>
     <string name="cardio_share_walk">שיתוף ההליכה</string>
-    <string name="cardio_share_image">🖼 שתף תמונה</string>
-    <string name="cardio_share_gpx">📄 קובץ GPX</string>
-    <string name="cardio_share_image_send">📤 שתף תמונה</string>
+    <string name="cardio_share_image">שתף תמונה</string>
+    <string name="cardio_share_gpx">קובץ GPX</string>
+    <string name="cardio_share_image_send">שתף תמונה</string>
     <string name="cardio_climb">עלייה</string>
     <string name="cardio_date">תאריך</string>
     <string name="cardio_records">שיאים</string>
