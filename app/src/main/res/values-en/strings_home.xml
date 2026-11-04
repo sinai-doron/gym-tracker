@@ -10,10 +10,11 @@
     <!-- Home: next workout card -->
     <string name="home_hide_exercises">Hide exercises</string>
     <string name="home_show_exercises">Show exercises (%1$d)</string>
-    <string name="home_switch_workout">Change</string>
+    <string name="home_swap_workout">Change workout</string>
+    <string name="home_typical_minutes">~%1$d min</string>
 
     <!-- Home: cardio card -->
-    <string name="home_cardio_title">Run &amp; walk</string>
+    <string name="home_cardio_title">Cardio</string>
     <string name="home_run">Run</string>
     <string name="home_walk">Walk</string>
 
@@ -61,6 +62,7 @@
     <string name="home_hc_autosave">Workouts are saved to Health Connect automatically</string>
     <string name="home_hc_sync">Sync workouts and steps with Health Connect</string>
     <string name="home_menu">More options</string>
+    <string name="home_menu_log_hint">Add a session that wasn’t recorded</string>
     <string name="home_hc_grant">Grant permissions</string>
 
     <!-- Music controls -->
