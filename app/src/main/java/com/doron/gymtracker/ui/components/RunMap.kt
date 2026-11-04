@@ -1,6 +1,5 @@
 package com.doron.gymtracker.ui.components
 
-import android.content.Context
 import android.view.MotionEvent
 import android.view.Gravity
 import androidx.compose.runtime.Composable
@@ -69,7 +68,12 @@ fun RunMap(
     /** Color [plannedRoute] by slope, where it has altitudes; see [SlopeColors]. */
     slopeColors: Boolean = false,
     /** Mark where [plannedRoute] starts and finishes. */
-    showEnds: Boolean = false
+    showEnds: Boolean = false,
+    routeColor: Color = Purple,
+    /** A fixed width for [route], in dp; null widens it with the zoom. */
+    routeWidth: Float? = null,
+    /** Mark where [route] started: a white dot ringed in [routeColor]. */
+    markStart: Boolean = false
 ) {
     val context = LocalContext.current
     val mapView = remember {
@@ -134,7 +138,7 @@ fun RunMap(
     // Fit again when a different planned route is shown
     val fitted = remember(plannedRoute) { booleanArrayOf(false) }
     val centered = remember { booleanArrayOf(false) }
-    LaunchedEffect(style, position, route, plannedRoute, dotColor) {
+    LaunchedEffect(style, position, route, plannedRoute, dotColor, routeColor, routeWidth, markStart) {
         val s = style ?: return@LaunchedEffect
         val m = map ?: return@LaunchedEffect
         s.getSourceAs<GeoJsonSource>(ROUTE_SOURCE)?.setGeoJson(
@@ -163,6 +167,15 @@ fun RunMap(
         s.getSourceAs<GeoJsonSource>(ACCURACY_SOURCE)?.setGeoJson(
             features(position?.accuracy?.let { Feature.fromGeometry(circle(position, it.toDouble())) })
         )
+        s.getSourceAs<GeoJsonSource>(START_SOURCE)?.setGeoJson(
+            features(if (markStart && route.isNotEmpty()) Feature.fromGeometry(route.first().toPoint()) else null)
+        )
+        s.getLayer(START_LAYER)?.setProperties(PropertyFactory.circleStrokeColor(routeColor.toArgb()))
+        s.getLayer(ROUTE_LAYER)?.setProperties(PropertyFactory.lineColor(routeColor.toArgb()))
+        routeWidth?.let { w ->
+            s.getLayer(ROUTE_LAYER)?.setProperties(PropertyFactory.lineWidth(w))
+            s.getLayer(ROUTE_CASING_LAYER)?.setProperties(PropertyFactory.lineWidth(w + 3f))
+        }
         s.getLayer(DOT_LAYER)?.setProperties(PropertyFactory.circleColor(dotColor.toArgb()))
         s.getLayer(ACCURACY_FILL_LAYER)?.setProperties(PropertyFactory.fillColor(dotColor.toArgb()))
         s.getLayer(ACCURACY_EDGE_LAYER)?.setProperties(PropertyFactory.lineColor(dotColor.toArgb()))
@@ -214,6 +227,10 @@ private const val PLANNED_SOURCE = "run-planned"
 private const val DOT_SOURCE = "run-position"
 private const val ACCURACY_SOURCE = "run-accuracy"
 private const val DOT_LAYER = "run-position-dot"
+private const val ROUTE_LAYER = "run-route"
+private const val ROUTE_CASING_LAYER = "run-route-casing"
+private const val START_SOURCE = "run-start"
+private const val START_LAYER = "run-start-dot"
 private const val ACCURACY_FILL_LAYER = "run-accuracy-fill"
 private const val ACCURACY_EDGE_LAYER = "run-accuracy-edge"
 private const val FOLLOW_ZOOM = 16.5
@@ -234,6 +251,7 @@ private fun addRunLayers(style: Style) {
     style.addSource(GeoJsonSource(ROUTE_SOURCE))
     style.addSource(GeoJsonSource(ACCURACY_SOURCE))
     style.addSource(GeoJsonSource(DOT_SOURCE))
+    style.addSource(GeoJsonSource(START_SOURCE))
 
     // Zoom-based widths must be a top-level interpolate, so the casing gets its own
     fun widthByZoom(atZoom12: Float, atZoom18: Float) = Expression.interpolate(
@@ -278,7 +296,7 @@ private fun addRunLayers(style: Style) {
         )
     )
     style.addLayer(
-        LineLayer("run-route-casing", ROUTE_SOURCE).withProperties(
+        LineLayer(ROUTE_CASING_LAYER, ROUTE_SOURCE).withProperties(
             PropertyFactory.lineColor(android.graphics.Color.WHITE),
             PropertyFactory.lineWidth(widthByZoom(7f, 12f)),
             PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
@@ -286,11 +304,19 @@ private fun addRunLayers(style: Style) {
         )
     )
     style.addLayer(
-        LineLayer("run-route", ROUTE_SOURCE).withProperties(
+        LineLayer(ROUTE_LAYER, ROUTE_SOURCE).withProperties(
             PropertyFactory.lineColor(Purple.toArgb()),
             PropertyFactory.lineWidth(widthByZoom(3f, 8f)),
             PropertyFactory.lineCap(Property.LINE_CAP_ROUND),
             PropertyFactory.lineJoin(Property.LINE_JOIN_ROUND)
+        )
+    )
+    style.addLayer(
+        CircleLayer(START_LAYER, START_SOURCE).withProperties(
+            PropertyFactory.circleColor(android.graphics.Color.WHITE),
+            PropertyFactory.circleRadius(7f),
+            PropertyFactory.circleStrokeColor(Purple.toArgb()),
+            PropertyFactory.circleStrokeWidth(3f)
         )
     )
     style.addLayer(

@@ -94,24 +94,18 @@ import org.maplibre.geojson.FeatureCollection
 import org.maplibre.geojson.LineString
 import org.maplibre.geojson.Point
 
-/** "📤 שתף": the run as an image card (WhatsApp, Instagram…) or as a GPX file (Strava, Garmin…). */
+/**
+ * Sharing a run, once [open]: a choice of the run as an image card (WhatsApp, Instagram…) or as
+ * a GPX file (Strava, Garmin…), then the image's preview. The caller draws the button.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShareRunButton(state: CardioUiState, records: List<PersonalRecord>, modifier: Modifier = Modifier) {
+fun ShareRunFlow(state: CardioUiState, records: List<PersonalRecord>, open: Boolean, onClose: () -> Unit) {
     val context = LocalContext.current
-    var choosing by remember { mutableStateOf(false) }
     var previewing by remember { mutableStateOf(false) }
 
-    OutlinedButton(
-        onClick = { choosing = true },
-        shape = MaterialTheme.shapes.large,
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Text(stringResource(R.string.cardio_share), color = Purple)
-    }
-
-    if (choosing) {
-        ModalBottomSheet(onDismissRequest = { choosing = false }) {
+    if (open) {
+        ModalBottomSheet(onDismissRequest = onClose) {
             Column(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 32.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -124,13 +118,13 @@ fun ShareRunButton(state: CardioUiState, records: List<PersonalRecord>, modifier
                 )
                 Spacer(Modifier.height(4.dp))
                 Button(
-                    onClick = { choosing = false; previewing = true },
+                    onClick = { onClose(); previewing = true },
                     colors = ButtonDefaults.buttonColors(containerColor = Purple),
                     shape = MaterialTheme.shapes.large,
                     modifier = Modifier.fillMaxWidth().height(52.dp)
                 ) { Text(stringResource(R.string.cardio_share_image)) }
                 OutlinedButton(
-                    onClick = { choosing = false; shareGpx(context, state) },
+                    onClick = { onClose(); shareGpx(context, state) },
                     enabled = state.route.size >= 2,
                     shape = MaterialTheme.shapes.large,
                     modifier = Modifier.fillMaxWidth().height(52.dp)

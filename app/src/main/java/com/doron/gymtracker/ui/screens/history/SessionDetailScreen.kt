@@ -58,13 +58,12 @@ import com.doron.gymtracker.domain.usecase.GetPersonalRecordsUseCase
 import com.doron.gymtracker.ui.components.builtinTypeName
 import com.doron.gymtracker.ui.components.defaultNameRes
 import com.doron.gymtracker.ui.screens.cardio.CardioUiState
-import com.doron.gymtracker.ui.screens.cardio.RunReport
+import com.doron.gymtracker.ui.screens.cardio.RunSummaryScreen
 import com.doron.gymtracker.ui.theme.Purple
 import com.doron.gymtracker.ui.theme.SuccessGreen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -231,7 +230,8 @@ class SessionDetailViewModel @Inject constructor(
             moves = RouteDistance.marks(route, pauses),
             steps = details?.steps,
             elevationGainM = details?.elevationGainM ?: Elevation.gain(route),
-            weather = details?.weatherCondition?.let { Weather(details.weatherTempC ?: 0, 0, 0, it) },
+            // No temperature saved: no weather, rather than a made-up 0°
+            weather = details?.weatherTempC?.let { temp -> details.weatherCondition?.let { Weather(temp, 0, 0, it) } },
             calories = details?.calories,
             heldRecords = if (session.type == "RUNNING") getPersonalRecords().filter { it.sessionId == session.id } else emptyList(),
             isFinished = true
@@ -248,6 +248,18 @@ fun SessionDetailScreen(
     val data by viewModel.state.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val savedRouteName by viewModel.savedRouteName.collectAsState()
+
+    // A run or walk has a page of its own, as when it ended
+    data?.run?.let { run ->
+        RunSummaryScreen(
+            state = run,
+            title = data?.let { d -> d.workoutNameRes?.let { stringResource(it) } ?: d.workoutName }.orEmpty(),
+            onBack = onBack,
+            savedRouteName = savedRouteName,
+            onSaveAsRoute = viewModel::saveAsRoute
+        )
+        return
+    }
 
     Scaffold(
         topBar = {
@@ -315,8 +327,6 @@ fun SessionDetailScreen(
                         Modifier.weight(1f)
                     )
                 }
-            } else if (d.run != null) {
-                RunReport(d.run, savedRouteName = savedRouteName, onSaveAsRoute = viewModel::saveAsRoute)
             } else {
                 // Another training type: how long, and what was entered with it
                 Row(

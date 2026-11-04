@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The end-of-run summary (also a run opened from History) -->
+<resources>
+    <string name="run_summary_title_run">Run complete</string>
+    <string name="run_summary_title_walk">Walk complete</string>
+    <string name="run_summary_subtitle">%1$s · %2$s</string>
+    <string name="run_summary_back">Back</string>
+    <string name="run_summary_temp_at_start">%1$d° at start</string>
+    <string name="run_summary_temp_value">%1$d°</string>
+    <string name="run_summary_temp_label">Temp at start</string>
+    <string name="run_summary_expand_map">Expand map</string>
+    <string name="run_summary_close_map">Close map</string>
+    <string name="run_summary_map_description">Map of the route, %1$s km from start to finish</string>
+    <string name="run_summary_section_summary">Run summary</string>
+    <string name="run_summary_section_details">Details</string>
+    <string name="run_summary_cadence">Cadence</string>
+    <string name="run_summary_unit_km">km</string>
+    <string name="run_summary_unit_per_km">/km</string>
+    <string name="run_summary_unit_kmh">km/h</string>
+    <string name="run_summary_unit_spm">spm</string>
+    <string name="run_summary_unit_m">m</string>
+    <string name="run_summary_unit_kcal">kcal</string>
+    <string name="run_summary_save_route">Save route</string>
+    <string name="run_summary_saved_route">Saved as %1$s</string>
+    <string name="run_summary_share_run">Share run</string>
+    <string name="run_summary_share_walk">Share walk</string>
+    <string name="run_summary_laps_every">Every %1$s km</string>
+    <string name="run_summary_lap">Lap</string>
+    <string name="run_summary_lap_time">Time</string>
+    <string name="run_summary_lap_pace">Pace /km</string>
+    <string name="run_summary_lap_climb">Climb</string>
+    <string name="run_summary_lap_partial">%1$s km</string>
+    <string name="run_summary_fastest_lap">Fastest lap</string>
+    <string name="run_summary_soundtrack">Workout soundtrack</string>
+</resources>

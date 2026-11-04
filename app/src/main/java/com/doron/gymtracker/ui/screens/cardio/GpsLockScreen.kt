@@ -451,9 +451,6 @@ private fun targetTypeLabel(type: RunTargetType): Int = when (type) {
     RunTargetType.ROUTE -> R.string.cardio_route
 }
 
-private fun formatKm(km: Float): String =
-    if (km == km.toInt().toFloat()) km.toInt().toString() else "%.1f".format(km)
-
 @Composable
 private fun SearchingIndicator() {
     val transition = rememberInfiniteTransition(label = "pulse")

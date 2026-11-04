@@ -35,26 +35,13 @@
     <string name="cardio_kcal_extra">🔥 %1$d kcal</string>
 
     <!-- Run report -->
-    <string name="cardio_run_complete">Run complete!</string>
-    <string name="cardio_walk_complete">Walk complete!</string>
-    <string name="cardio_close">Close</string>
-    <string name="cardio_weather_run_start">%1$s %2$d° at the start of the run</string>
-    <string name="cardio_weather_walk_start">%1$s %2$d° at the start of the walk</string>
     <string name="cardio_duration">Duration</string>
     <string name="cardio_avg_speed">Avg speed</string>
     <string name="cardio_steps">Steps</string>
-    <string name="cardio_avg_cadence">Avg cadence</string>
-    <string name="cardio_cadence_value">%1$d steps/min</string>
     <string name="cardio_elevation_gain">Total climb</string>
     <string name="cardio_calories">Calories</string>
-    <string name="cardio_kcal_value">%1$d kcal</string>
-    <string name="cardio_set_weight">Set your weight</string>
-    <string name="cardio_saved_as_route">✓ Saved as route \"%1$s\"</string>
-    <string name="cardio_save_as_route">🗺 Save as route</string>
     <string name="cardio_elevation">Elevation</string>
-    <string name="cardio_soundtrack">♫ Workout soundtrack</string>
     <string name="cardio_laps">Laps</string>
-    <string name="cardio_lap_row">%1$d · %2$s km</string>
     <string name="cardio_chart_point">%1$.2f km · %2$s</string>
     <string name="cardio_badges_ok">Nice!</string>
     <plurals name="cardio_new_badges">
@@ -90,7 +77,6 @@
     <string name="cardio_manage_routes">Manage routes and import GPX</string>
 
     <!-- Sharing a run -->
-    <string name="cardio_share">📤 Share</string>
     <string name="cardio_share_run">Share run</string>
     <string name="cardio_share_walk">Share walk</string>
     <string name="cardio_share_image">🖼 Share image</string>
