@@ -27,6 +27,7 @@ import com.doron.gymtracker.data.db.entities.RouteEntity
 import com.doron.gymtracker.data.db.entities.RoutePointEntity
 import com.doron.gymtracker.data.db.entities.RunDetailsEntity
 import com.doron.gymtracker.data.db.entities.RunPauseEntity
+import com.doron.gymtracker.data.db.entities.RunStepEntity
 import com.doron.gymtracker.data.db.entities.SessionEntity
 import com.doron.gymtracker.data.db.entities.SetEntity
 import com.doron.gymtracker.data.db.entities.SetPartEntity
@@ -51,9 +52,10 @@ import com.doron.gymtracker.data.db.entities.WorkoutEntity
         ExerciseNameEntity::class,
         ExerciseMuscleEntity::class,
         ProgramEntity::class,
-        ActivityTypeEntity::class
+        ActivityTypeEntity::class,
+        RunStepEntity::class
     ],
-    version = 17,
+    version = 18,
     // Each version's schema is written to app/schemas/ (see app/build.gradle.kts) for the migration tests
     exportSchema = true
 )
@@ -200,12 +202,24 @@ abstract class GymDatabase : RoomDatabase() {
             }
         }
 
+        // A run's steps as it went, so the run summary can show cadence over the run and by lap.
+        // A table of its own, outside sync: a synced track is rebuilt from the server's copy.
+        val MIGRATION_17_18 = object : Migration(17, 18) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `run_steps` (`sessionId` INTEGER NOT NULL, `timestamp` INTEGER NOT NULL, " +
+                        "`steps` INTEGER NOT NULL, PRIMARY KEY(`sessionId`, `timestamp`))"
+                )
+            }
+        }
+
         /** Every migration, oldest first. The app and the migration tests open the database with this one list. */
         val MIGRATIONS: Array<Migration> = arrayOf(
             MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
             MIGRATION_8_9, MIGRATION_9_10, SyncMigration.MIGRATION_10_11, SyncMigration.MIGRATION_11_12,
             SyncMigration.MIGRATION_12_13, LibraryMigration.MIGRATION_13_14,
-            SetsMigration.MIGRATION_14_15, ProgramMigration.MIGRATION_15_16, ActivityTypeMigration.MIGRATION_16_17
+            SetsMigration.MIGRATION_14_15, ProgramMigration.MIGRATION_15_16, ActivityTypeMigration.MIGRATION_16_17,
+            MIGRATION_17_18
         )
 
         /**

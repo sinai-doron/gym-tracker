@@ -5,6 +5,7 @@ import androidx.room.Query
 import androidx.room.Upsert
 import com.doron.gymtracker.data.db.entities.RunDetailsEntity
 import com.doron.gymtracker.data.db.entities.RunPauseEntity
+import com.doron.gymtracker.data.db.entities.RunStepEntity
 
 @Dao
 interface RunDetailsDao {
@@ -25,4 +26,13 @@ interface RunDetailsDao {
 
     @Query("DELETE FROM run_pauses WHERE sessionId = :sessionId")
     suspend fun deletePauses(sessionId: Long)
+
+    @Upsert
+    suspend fun upsertSteps(entity: RunStepEntity)
+
+    @Query("SELECT * FROM run_steps WHERE sessionId = :sessionId ORDER BY timestamp")
+    suspend fun getSteps(sessionId: Long): List<RunStepEntity>
+
+    @Query("DELETE FROM run_steps WHERE sessionId = :sessionId")
+    suspend fun deleteSteps(sessionId: Long)
 }

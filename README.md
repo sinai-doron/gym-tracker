@@ -88,8 +88,8 @@ English available in Settings.
 - **Voice feedback** (optional, in Hebrew): laps, the target, pause and resume.
 - **Run report.**
   - The map colored by slope.
-  - Elevation and pace charts.
-  - Laps, climb and descent, calories and steps/cadence.
+  - Elevation, pace and cadence charts.
+  - Laps with their time, pace, climb and cadence; climb and descent, calories and steps.
   - New personal records are announced when you finish.
 - **Share.**
   - A square image of the route colored by pace. You choose which numbers it shows.
@@ -160,7 +160,7 @@ exercises. A workout or programme with history is hidden or archived, never dele
 | UI | Jetpack Compose, Material 3 |
 | Architecture | MVVM with a use-case layer (`ui` → `domain` → `data`) |
 | Dependency injection | Hilt |
-| Database | Room (schema version 17, with migrations) |
+| Database | Room (schema version 18, with migrations) |
 | Maps | MapLibre, with OpenFreeMap tiles |
 | Health data | Health Connect |
 | Settings | DataStore |
@@ -342,6 +342,9 @@ The app talks to a few services, and only for these things:
   given a permission, so runs older than that may show no heart rate.
 - **Samsung Health** doesn't share exercise routes through Health Connect, so its runs
   can't be imported. A run can be added by hand from a GPX export.
+- **Cadence over a run** needs the steps saved as the run goes, which started with database
+  version 18. They stay on the phone and don't sync, so older runs, and runs that reach a phone
+  through sign-in, show only the average.
 
 ## Design decisions
 

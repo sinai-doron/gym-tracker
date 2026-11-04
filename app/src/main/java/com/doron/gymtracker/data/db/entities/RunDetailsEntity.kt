@@ -23,6 +23,17 @@ data class RunDetailsEntity(
     val uuid: String? = null
 )
 
+/**
+ * A run's steps so far at a moment while it was recorded, for its cadence over the run and by
+ * lap. Never synced: it stays on the phone, like the step counter's baseline.
+ */
+@Entity(tableName = "run_steps", primaryKeys = ["sessionId", "timestamp"])
+data class RunStepEntity(
+    val sessionId: Long,
+    val timestamp: Long,
+    val steps: Int
+)
+
 /** A pause the runner asked for during a run; [endedAt] is null while it lasts. */
 @Entity(tableName = "run_pauses", primaryKeys = ["sessionId", "startedAt"], indices = [Index(value = ["uuid"], unique = true)])
 data class RunPauseEntity(

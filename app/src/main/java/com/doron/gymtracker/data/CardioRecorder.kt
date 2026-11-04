@@ -41,6 +41,8 @@ data class CardioRun(
     val steps: Int? = null,
     /** Steps per minute over the last half minute. */
     val cadence: Int? = null,
+    /** The steps as the run went, for cadence over the run. */
+    val stepMarks: List<StepMark> = emptyList(),
     val elevationGainM: Double = 0.0,
     val weather: Weather? = null,
     /** For calories; null until set in settings. */
@@ -136,6 +138,7 @@ class CardioRecorder @Inject constructor(
                     ActiveClock(session.startedAt, moves, pauses), pauses = pauses
                 ),
                 steps = details.steps,
+                stepMarks = sessionRepo.getSteps(sessionId),
                 elevationGainM = Elevation.gain(saved),
                 weather = details.weatherCondition?.let { Weather(details.weatherTempC ?: 0, 0, 0, it) },
                 bodyWeightKg = settingsPrefs.bodyWeightKg.first(),
@@ -251,8 +254,18 @@ class CardioRecorder @Inject constructor(
             while (stepSamples.isNotEmpty() && now - stepSamples.first().timestamp > Cadence.WINDOW_MS) {
                 stepSamples.removeFirst()
             }
+            val steps = (counter - start).toInt()
+            // Every few seconds is plenty for cadence by the minute
+            val mark = StepMark(now, steps).takeIf { m ->
+                _run.value?.stepMarks?.lastOrNull()?.let { m.timestamp - it.timestamp >= STEP_MARK_MS } ?: true
+            }
+            mark?.let { sessionRepo.saveSteps(sessionId, it) }
             _run.update {
-                it?.copy(steps = (counter - start).toInt(), cadence = Cadence.current(stepSamples.toList(), now))
+                it?.copy(
+                    steps = steps,
+                    cadence = Cadence.current(stepSamples.toList(), now),
+                    stepMarks = mark?.let { m -> it.stepMarks + m } ?: it.stepMarks
+                )
             }
         }
     }
@@ -286,5 +299,6 @@ class CardioRecorder @Inject constructor(
         const val TAG = "CardioRecorder"
         const val RESUME_WINDOW_MS = 30 * 60_000L
         const val BACK_ON_ROUTE_M = 30.0
+        const val STEP_MARK_MS = 5_000L
     }
 }

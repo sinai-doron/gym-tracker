@@ -14,6 +14,7 @@ import com.doron.gymtracker.data.Laps
 import com.doron.gymtracker.data.LocationPoint
 import com.doron.gymtracker.data.Pause
 import com.doron.gymtracker.data.RunRecord
+import com.doron.gymtracker.data.StepMark
 import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.data.repository.RouteRepository
 import com.doron.gymtracker.data.repository.SessionRepository
@@ -67,6 +68,8 @@ data class CardioUiState(
     val heldRecords: List<PersonalRecord> = emptyList(),
     /** When each fix that moved the run happened, for auto-pause. */
     val moves: List<DistanceMark> = emptyList(),
+    /** The steps as the run went; empty for runs recorded before they were saved. */
+    val stepMarks: List<StepMark> = emptyList(),
     /** Stopped for long enough that the clock has stopped too. */
     val isPaused: Boolean = false,
     /** Pauses the runner asked for; the last is open while paused by hand. */
@@ -164,6 +167,7 @@ class CardioSessionViewModel @AssistedInject constructor(
                         laps = run.laps,
                         steps = run.steps,
                         cadence = run.cadence,
+                        stepMarks = run.stepMarks,
                         elevationGainM = run.elevationGainM,
                         weather = run.weather,
                         calories = run.calories,
@@ -213,6 +217,7 @@ class CardioSessionViewModel @AssistedInject constructor(
                 laps = run?.let { Laps.split(it.startedAt, it.route, it.lapMeters.toDouble(), it.clock, finishedAt = now, pauses = it.pauses) }
                     ?: state.laps,
                 steps = run?.steps ?: state.steps,
+                stepMarks = run?.stepMarks ?: state.stepMarks,
                 elevationGainM = run?.elevationGainM ?: state.elevationGainM,
                 calories = run?.calories ?: state.calories,
                 moves = run?.moves ?: state.moves,

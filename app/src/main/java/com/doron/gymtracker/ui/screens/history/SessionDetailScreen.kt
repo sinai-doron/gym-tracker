@@ -231,6 +231,7 @@ class SessionDetailViewModel @Inject constructor(
             pauses = pauses,
             // What the report's clock (and so the pace chart) is worked out from
             moves = RouteDistance.marks(route, pauses),
+            stepMarks = sessionRepo.getSteps(session.id),
             steps = details?.steps,
             elevationGainM = details?.elevationGainM ?: Elevation.gain(route),
             // No temperature saved: no weather, rather than a made-up 0°

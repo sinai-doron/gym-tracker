@@ -335,6 +335,10 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
                 db.execSQL("DELETE FROM sets WHERE uuid = ?", arrayOf<Any?>(change.id))
             }
             else -> TABLE_OF[change.entity]?.let { table ->
+                // A run's steps as it went never sync, so nothing else would clear them
+                if (table == "sessions") {
+                    db.execSQL("DELETE FROM run_steps WHERE sessionId IN (SELECT id FROM sessions WHERE uuid = ?)", arrayOf<Any?>(change.id))
+                }
                 db.execSQL("DELETE FROM `$table` WHERE uuid = ?", arrayOf<Any?>(change.id))
             }
         }

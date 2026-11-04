@@ -39,4 +39,6 @@
     <string name="run_summary_connect_heart_rate">Show heart rate from your watch</string>
     <!-- %1$d: beats a minute -->
     <string name="heart_rate_bpm_value">%1$d bpm</string>
+    <string name="cadence_spm_value">%1$d spm</string>
+    <string name="run_summary_cadence_avg">Avg %1$d spm</string>
 </resources>
