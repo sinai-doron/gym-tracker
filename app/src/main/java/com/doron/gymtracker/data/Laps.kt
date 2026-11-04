@@ -58,6 +58,22 @@ object Laps {
         return laps
     }
 
+    /**
+     * Each lap's climb, in [laps] order: the climb ([Elevation.climb]) of the fixes from the lap
+     * before's end to this one's, with the fix on either side so no rise between laps is lost.
+     * Null when the route has no altitudes.
+     */
+    fun climbs(laps: List<Lap>, route: List<LocationPoint>): List<Double>? {
+        if (route.none { it.altitude != null }) return null
+        var from = Long.MIN_VALUE
+        return laps.map { lap ->
+            val first = route.indexOfFirst { it.timestamp >= from }.let { if (it > 0) it - 1 else 0 }
+            val last = route.indexOfLast { it.timestamp <= lap.endedAt }.let { (it + 1).coerceAtMost(route.lastIndex) }
+            from = lap.endedAt
+            if (last <= first) 0.0 else Elevation.climb(route.subList(first, last + 1).mapNotNull { it.altitude })
+        }
+    }
+
     /** A last stretch shorter than this isn't worth a row of its own. */
     private const val MIN_PARTIAL_M = 10.0
 }

@@ -1,6 +1,7 @@
 package com.doron.gymtracker.data
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -68,4 +69,22 @@ class LapsTest {
 
     private fun assertEquals(expected: Long, actual: Long, tolerance: Long) =
         assertTrue("expected $expected±$tolerance but was $actual", kotlin.math.abs(expected - actual) <= tolerance)
+
+    @Test
+    fun `each lap gets the climb run in it`() {
+        // Just over 1,000 m at 4 m/s, so two full 500 m laps: flat, then a steady 12 m rise
+        // well inside the second (fixes 130 to 250; it starts at fix 125)
+        val route = run(260, 4.0).mapIndexed { i, p -> p.copy(altitude = 50.0 + (i - 130).coerceIn(0, 120) * 0.1) }
+        val laps = Laps.split(start, route, lapMeters = 500.0)
+        val climbs = Laps.climbs(laps, route)!!
+        assertEquals(2, climbs.size)
+        assertEquals(0.0, climbs[0], 0.5)
+        assertEquals(12.0, climbs[1], 1.0)
+    }
+
+    @Test
+    fun `no altitudes, no climbs`() {
+        val route = run(250, 4.0)
+        assertNull(Laps.climbs(Laps.split(start, route, lapMeters = 500.0), route))
+    }
 }

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The end-of-run summary (also a run opened from History) -->
+<resources>
+    <string name="run_summary_title_run">הריצה הושלמה</string>
+    <string name="run_summary_title_walk">ההליכה הושלמה</string>
+    <string name="run_summary_subtitle">%1$s · %2$s</string>
+    <string name="run_summary_back">חזרה</string>
+    <string name="run_summary_temp_at_start">%1$d° בהתחלה</string>
+    <string name="run_summary_temp_value">%1$d°</string>
+    <string name="run_summary_temp_label">טמפ׳ בהתחלה</string>
+    <string name="run_summary_expand_map">הגדלת המפה</string>
+    <string name="run_summary_close_map">סגירת המפה</string>
+    <string name="run_summary_map_description">מפת המסלול, %1$s ק״מ מההתחלה ועד הסוף</string>
+    <string name="run_summary_section_summary">סיכום הריצה</string>
+    <string name="run_summary_section_details">פרטים</string>
+    <string name="run_summary_cadence">קדנס</string>
+    <string name="run_summary_unit_km">ק״מ</string>
+    <string name="run_summary_unit_per_km">/ק״מ</string>
+    <string name="run_summary_unit_kmh">קמ״ש</string>
+    <string name="run_summary_unit_spm">צעדים/ד׳</string>
+    <string name="run_summary_unit_m">מ׳</string>
+    <string name="run_summary_unit_kcal">קק״ל</string>
+    <string name="run_summary_save_route">שמירת מסלול</string>
+    <string name="run_summary_saved_route">נשמר כ־%1$s</string>
+    <string name="run_summary_share_run">שיתוף הריצה</string>
+    <string name="run_summary_share_walk">שיתוף ההליכה</string>
+    <string name="run_summary_laps_every">כל %1$s ק״מ</string>
+    <string name="run_summary_lap">הקפה</string>
+    <string name="run_summary_lap_time">זמן</string>
+    <string name="run_summary_lap_pace">קצב /ק״מ</string>
+    <string name="run_summary_lap_climb">טיפוס</string>
+    <string name="run_summary_lap_partial">%1$s ק״מ</string>
+    <string name="run_summary_fastest_lap">ההקפה המהירה</string>
+    <string name="run_summary_soundtrack">פסקול האימון</string>
+</resources>
