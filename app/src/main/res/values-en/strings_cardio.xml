@@ -57,15 +57,10 @@
 
     <!-- GPS lock and target -->
     <string name="cardio_back">Back</string>
-    <string name="cardio_gps_ready">GPS ready!</string>
-    <string name="cardio_gps_searching">Looking for GPS...</string>
-    <string name="cardio_gps_accuracy">Accuracy: %1$.0f m</string>
-    <string name="cardio_gps_waiting">Waiting for a signal...</string>
-    <string name="cardio_gps_go_outside">Step outside for a better signal</string>
-    <string name="cardio_at_route_start">📍 You\'re at the start of the route</string>
-    <string name="cardio_route_starts_away">📍 The route starts %1$s away</string>
-    <string name="cardio_start_run">🏃 Start run</string>
-    <string name="cardio_start_walk">🚶 Start walk</string>
+    <string name="cardio_at_route_start">You\'re at the start of the route</string>
+    <string name="cardio_route_starts_away">The route starts %1$s away</string>
+    <string name="cardio_start_run">Start run</string>
+    <string name="cardio_start_walk">Start walk</string>
     <string name="cardio_target">Target</string>
     <string name="cardio_target_none">No target</string>
     <string name="cardio_time">Time</string>

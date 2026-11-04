@@ -1,18 +1,23 @@
 package com.doron.gymtracker.ui.screens.cardio
 
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.LayoutDirection
 import android.annotation.SuppressLint
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,51 +27,71 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.RadioButtonColors
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -83,10 +108,13 @@ import com.doron.gymtracker.domain.model.RunTarget
 import com.doron.gymtracker.domain.model.RunTargetType
 import com.doron.gymtracker.domain.model.SavedRoute
 import com.doron.gymtracker.ui.components.RunMap
-import com.doron.gymtracker.ui.theme.Purple
-import com.doron.gymtracker.ui.theme.SuccessGreen
+import com.doron.gymtracker.ui.components.reducedMotion
+import com.doron.gymtracker.ui.theme.BeforeRunColors
+import com.doron.gymtracker.ui.theme.BeforeRunShapes
+import com.doron.gymtracker.ui.theme.BeforeRunType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlin.math.roundToInt
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -101,6 +129,24 @@ data class GpsLockState(
     val isLocked: Boolean = false
 ) {
     val accuracy: Float? get() = position?.accuracy
+
+    /** Bars of signal, 1 to 4, for how precise the fix is; 1 before there is one. */
+    val signalBars: Int get() = signalBars(accuracy)
+
+    companion object {
+        /** Precise enough to start: a fix to within this many metres. */
+        const val LOCK_ACCURACY_M = 20f
+        private const val STRONG_ACCURACY_M = 10f
+        private const val FAIR_ACCURACY_M = 50f
+
+        fun signalBars(accuracy: Float?): Int = when {
+            accuracy == null -> 1
+            accuracy <= STRONG_ACCURACY_M -> 4
+            accuracy < LOCK_ACCURACY_M -> 3
+            accuracy < FAIR_ACCURACY_M -> 2
+            else -> 1
+        }
+    }
 }
 
 @HiltViewModel
@@ -149,7 +195,7 @@ class GpsLockViewModel @Inject constructor(
                 val acc = point.accuracy
                 _state.value = GpsLockState(
                     position = point,
-                    isLocked = acc != null && acc < LOCK_ACCURACY_M
+                    isLocked = acc != null && acc < GpsLockState.LOCK_ACCURACY_M
                 )
             }
         }
@@ -158,13 +204,16 @@ class GpsLockViewModel @Inject constructor(
     suspend fun createSession(type: String): Long {
         return sessionRepo.startCardioSession(type)
     }
-
-    private companion object {
-        const val LOCK_ACCURACY_M = 20f
-    }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+/** What the start button can do: wait for GPS, wait for a route to follow, or start. */
+private enum class StartState { WAITING_FOR_GPS, NEEDS_ROUTE, READY }
+
+/**
+ * Before a run or walk: the map over the whole screen, and one panel at the bottom with where
+ * GPS is up to, the target, and the start button. Until the fix is precise enough the map is
+ * veiled, rings pulse where you are expected, and the button says what it is waiting for.
+ */
 @Composable
 fun GpsLockScreen(
     type: String,
@@ -181,243 +230,531 @@ fun GpsLockScreen(
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.loadRoutes() }
     val needsRoute = target.type == RunTargetType.ROUTE && selectedRoute == null
     val scope = rememberCoroutineScope()
-    val typeName = stringResource(if (type == "RUNNING") R.string.cardio_run else R.string.cardio_walk)
+    val locked = gpsState.isLocked
+    var choosingTarget by remember { mutableStateOf(false) }
+    var recenter by remember { mutableIntStateOf(0) }
+    // The map shows above the panel: the dot, the rings and the map's buttons stay there
+    var panelHeight by remember { mutableStateOf(0.dp) }
+    val density = LocalDensity.current
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(typeName) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cardio_back))
-                    }
-                }
+    Box(Modifier.fillMaxSize().background(BeforeRunColors.mapGround)) {
+        gpsState.position?.let { position ->
+            val description = position.accuracy?.let { stringResource(R.string.before_run_map_description, accuracyText(it)) }
+            RunMap(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .semantics { description?.let { contentDescription = it } },
+                position = position,
+                plannedRoute = selectedRoute?.points ?: emptyList(),
+                dotColor = BeforeRunColors.accent,
+                // With a route, show all of it; otherwise follow the runner
+                follow = selectedRoute == null,
+                interactive = true,
+                bottomInset = panelHeight,
+                recenter = recenter
             )
         }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // The map, with a dot that settles as the fix gets precise; a pulse until the first fix
-            Box(
+        // Veiled until GPS is ready, then the map comes up in full colour
+        val veil by animateFloatAsState(if (locked) 0f else BeforeRunShapes.veilAlpha, tween(FADE_MS), label = "veil")
+        Box(Modifier.fillMaxSize().drawBehind { drawRect(BeforeRunColors.softSurface, alpha = veil) })
+
+        Box(Modifier.fillMaxSize().padding(bottom = panelHeight)) {
+            AnimatedVisibility(!locked, enter = fadeIn(tween(FADE_MS)), exit = fadeOut(tween(FADE_MS))) {
+                SearchingRings()
+            }
+            AnimatedVisibility(
+                locked,
+                enter = fadeIn(tween(FADE_MS)),
+                exit = fadeOut(tween(FADE_MS)),
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(Purple.copy(alpha = 0.06f)),
-                contentAlignment = Alignment.Center
+                    .align(Alignment.BottomEnd)
+                    .padding(end = BeforeRunShapes.sideInset, bottom = BeforeRunShapes.mapButtonGap)
             ) {
-                val position = gpsState.position
-                if (position == null) {
-                    SearchingIndicator()
-                } else {
-                    RunMap(
-                        modifier = Modifier.fillMaxSize(),
-                        position = position,
-                        plannedRoute = selectedRoute?.points ?: emptyList(),
-                        dotColor = if (gpsState.isLocked) SuccessGreen else Purple,
-                        // With a route, show all of it; otherwise follow the runner
-                        follow = selectedRoute == null
-                    )
-                }
+                RoundMapButton(R.drawable.ic_locate, BeforeRunShapes.mapButtonIcon, stringResource(R.string.before_run_recentre), onClick = { recenter++ })
             }
+        }
 
-            Spacer(Modifier.height(20.dp))
+        // Points to the start side: mirrored in right-to-left
+        RoundMapButton(
+            R.drawable.ic_back,
+            BeforeRunShapes.backIcon,
+            stringResource(R.string.cardio_back),
+            onBack,
+            Modifier
+                .align(Alignment.TopStart)
+                .statusBarsPadding()
+                .padding(start = BeforeRunShapes.sideInset, top = BeforeRunShapes.backTop)
+        )
 
-            Text(
-                stringResource(if (gpsState.isLocked) R.string.cardio_gps_ready else R.string.cardio_gps_searching),
-                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                color = if (gpsState.isLocked) SuccessGreen else MaterialTheme.colorScheme.onBackground
+        val panelShape = RoundedCornerShape(topStart = BeforeRunShapes.panelRadius, topEnd = BeforeRunShapes.panelRadius)
+        Column(
+            verticalArrangement = Arrangement.spacedBy(BeforeRunShapes.panelGap),
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .onSizeChanged { panelHeight = with(density) { it.height.toDp() } }
+                .shadow(BeforeRunShapes.panelShadow, panelShape, ambientColor = BeforeRunColors.shadow, spotColor = BeforeRunColors.shadow)
+                .background(BeforeRunColors.panel, panelShape)
+                // Touches on the panel stay on the panel, not the map under it
+                .pointerInput(Unit) { awaitPointerEventScope { while (true) awaitPointerEvent() } }
+                .padding(start = BeforeRunShapes.sideInset, end = BeforeRunShapes.sideInset, top = BeforeRunShapes.panelPaddingTop)
+                .navigationBarsPadding()
+                .padding(bottom = BeforeRunShapes.panelPaddingBottom)
+        ) {
+            StatusRow(gpsState)
+            TargetRow(
+                value = targetValue(target, selectedRoute),
+                note = routeStartNote(selectedRoute, gpsState.position),
+                onClick = { choosingTarget = true }
             )
-
-            Spacer(Modifier.height(6.dp))
-
-            val accuracyText = gpsState.accuracy?.let { stringResource(R.string.cardio_gps_accuracy, it) }
-                ?: stringResource(R.string.cardio_gps_waiting)
-            Text(
-                accuracyText,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
-
-            if (!gpsState.isLocked && gpsState.accuracy != null) {
-                Text(
-                    stringResource(R.string.cardio_gps_go_outside),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                    textAlign = TextAlign.Center
-                )
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            RunTargetPicker(
-                target = target,
-                routes = routes,
-                selectedRoute = selectedRoute,
-                onChange = viewModel::setTarget,
-                onManageRoutes = onManageRoutes
-            )
-            val start = selectedRoute?.points?.firstOrNull()
-            val here = gpsState.position
-            if (start != null && here != null) {
-                val away = RouteFollower.meters(start, RoutePoint(here.latitude, here.longitude))
-                Text(
-                    if (away < 50) stringResource(R.string.cardio_at_route_start)
-                    else stringResource(R.string.cardio_route_starts_away, formatAway(away)),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 6.dp)
-                )
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            Button(
-                onClick = {
+            StartButton(
+                state = when {
+                    !locked -> StartState.WAITING_FOR_GPS
+                    needsRoute -> StartState.NEEDS_ROUTE
+                    else -> StartState.READY
+                },
+                startLabel = stringResource(if (type == "RUNNING") R.string.cardio_start_run else R.string.cardio_start_walk),
+                onStart = {
                     scope.launch {
                         val sessionId = viewModel.createSession(type)
                         onReady(sessionId, type)
                     }
-                },
-                enabled = gpsState.isLocked && !needsRoute,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = MaterialTheme.shapes.large,
-                colors = ButtonDefaults.buttonColors(containerColor = Purple)
-            ) {
-                Text(
-                    stringResource(if (type == "RUNNING") R.string.cardio_start_run else R.string.cardio_start_walk),
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
+                }
+            )
+        }
+    }
+
+    if (choosingTarget) {
+        TargetSheet(
+            target = target,
+            routes = routes,
+            selectedRoute = selectedRoute,
+            onChange = viewModel::setTarget,
+            onManageRoutes = {
+                choosingTarget = false
+                onManageRoutes()
+            },
+            onDismiss = { choosingTarget = false }
+        )
+    }
+}
+
+/** A white circle over the map: back, and centre on me. */
+@Composable
+private fun RoundMapButton(@DrawableRes icon: Int, iconSize: Dp, label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .size(BeforeRunShapes.tapTarget)
+            .shadow(BeforeRunShapes.buttonShadow, CircleShape, ambientColor = BeforeRunColors.shadow, spotColor = BeforeRunColors.shadow)
+            .background(BeforeRunColors.panel, CircleShape)
+            .clip(CircleShape)
+            .clickable(role = Role.Button, onClickLabel = label, onClick = onClick)
+            .semantics { contentDescription = label }
+    ) {
+        Icon(painterResource(icon), null, tint = BeforeRunColors.text, modifier = Modifier.size(iconSize))
+    }
+}
+
+/** Three rings pulsing out from a pin where you are expected; still when animations are off. */
+@Composable
+private fun SearchingRings() {
+    val phase = loop(PULSE_MS, "rings")
+    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+        Canvas(Modifier.fillMaxSize()) {
+            val step = BeforeRunShapes.ringStep.toPx()
+            // Each beat every ring moves out a step and takes on the look of the ring it replaces;
+            // a new one grows from the middle and the outermost fades away
+            val alphas = listOf(0f) + BeforeRunShapes.ringAlphas + 0f
+            val strokes = BeforeRunShapes.ringStrokes.map { it.toPx() }.let { listOf(it.first()) + it + it.last() }
+            for (ring in 0 until alphas.size - 1) {
+                val at = ring + phase.value
+                drawCircle(
+                    BeforeRunColors.accent,
+                    radius = step * at,
+                    alpha = along(alphas, at),
+                    style = Stroke(along(strokes, at))
                 )
             }
-
-            Spacer(Modifier.height(24.dp))
+        }
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.size(BeforeRunShapes.pinCircle).background(BeforeRunColors.panel, CircleShape)
+        ) {
+            Icon(painterResource(R.drawable.ic_location_pin), null, tint = BeforeRunColors.accent, modifier = Modifier.size(BeforeRunShapes.pinIcon))
         }
     }
 }
 
-/** Dropdown for the kind of target, with a +/- stepper for its value next to it. */
+/** [values] at a point [at] between their indexes. */
+private fun along(values: List<Float>, at: Float): Float {
+    val i = at.toInt().coerceIn(0, values.size - 2)
+    return values[i] + (values[i + 1] - values[i]) * (at - i)
+}
+
+/** 0 to 1 over and over, every [periodMs]; held at 0 when animations are off. */
+@Composable
+private fun loop(periodMs: Int, label: String): State<Float> {
+    if (reducedMotion()) return remember { mutableFloatStateOf(0f) }
+    return rememberInfiniteTransition(label).animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(periodMs, easing = LinearEasing)),
+        label = label
+    )
+}
+
+/** Where GPS is up to; read out when it changes from finding to ready. */
+@Composable
+private fun StatusRow(state: GpsLockState) {
+    val locked = state.isLocked
+    val signal = stringResource(signalLabel(state.signalBars))
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(BeforeRunShapes.statusGap),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        AnimatedContent(
+            targetState = locked,
+            transitionSpec = { fadeIn(tween(FADE_MS)) togetherWith fadeOut(tween(FADE_MS)) using SizeTransform(clip = false) },
+            contentAlignment = Alignment.CenterStart,
+            label = "status",
+            modifier = Modifier.weight(1f)
+        ) { ready ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(BeforeRunShapes.statusGap)
+            ) {
+                StatusIcon(ready)
+                Column(verticalArrangement = Arrangement.spacedBy(BeforeRunShapes.titleGap)) {
+                    Text(
+                        stringResource(if (ready) R.string.before_run_ready_title else R.string.before_run_finding_title),
+                        style = BeforeRunType.statusTitle,
+                        // Only the title is live: the accuracy changes every second
+                        modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }
+                    )
+                    Text(
+                        state.accuracy?.takeIf { ready }?.let { stringResource(R.string.before_run_accuracy, accuracyText(it)) }
+                            ?: stringResource(R.string.before_run_finding_hint),
+                        style = BeforeRunType.statusSubtitle
+                    )
+                }
+            }
+        }
+        SignalBars(
+            bars = state.signalBars,
+            filled = if (locked) BeforeRunColors.success else BeforeRunColors.accent,
+            modifier = Modifier.semantics { contentDescription = signal }
+        )
+    }
+}
+
+@Composable
+private fun StatusIcon(ready: Boolean) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(BeforeRunShapes.statusIcon)
+            .background(if (ready) BeforeRunColors.successTint else BeforeRunColors.accentTint, CircleShape)
+    ) {
+        if (ready) {
+            Icon(painterResource(R.drawable.ic_check), null, tint = BeforeRunColors.success, modifier = Modifier.size(BeforeRunShapes.checkIcon))
+        } else {
+            Spinner(
+                color = BeforeRunColors.accent,
+                track = BeforeRunColors.track,
+                size = BeforeRunShapes.spinner,
+                stroke = BeforeRunShapes.spinnerStroke,
+                radius = STATUS_SPINNER_RADIUS,
+                sweep = STATUS_SPINNER_SWEEP
+            )
+        }
+    }
+}
+
+/** An arc going round, as the design draws it: [radius] is a share of [size], [sweep] in degrees. */
+@Composable
+private fun Spinner(color: Color, size: Dp, stroke: Dp, radius: Float, sweep: Float, track: Color? = null) {
+    val turn = loop(SPIN_MS, "spinner")
+    Canvas(Modifier.size(size)) {
+        val r = this.size.minDimension * radius
+        val width = stroke.toPx()
+        track?.let { drawCircle(it, r, style = Stroke(width)) }
+        rotate(turn.value * 360f) {
+            drawArc(
+                color,
+                startAngle = -90f,
+                sweepAngle = sweep,
+                useCenter = false,
+                topLeft = center - Offset(r, r),
+                size = Size(r * 2, r * 2),
+                style = Stroke(width, cap = StrokeCap.Round)
+            )
+        }
+    }
+}
+
+/** Four bars growing from the start side, [bars] of them filled. */
+@Composable
+private fun SignalBars(bars: Int, filled: Color, modifier: Modifier = Modifier) {
+    val color by animateColorAsState(filled, tween(FADE_MS), label = "bars")
+    val heights = BeforeRunShapes.barHeights
+    val width = BeforeRunShapes.barWidth * heights.size + BeforeRunShapes.barGap * (heights.size - 1)
+    Canvas(modifier.size(width, heights.last())) {
+        val barWidth = BeforeRunShapes.barWidth.toPx()
+        val step = barWidth + BeforeRunShapes.barGap.toPx()
+        val corner = CornerRadius(BeforeRunShapes.barRadius.toPx())
+        heights.forEachIndexed { i, height ->
+            val x = step * i
+            val h = height.toPx()
+            drawRoundRect(
+                if (i < bars) color else BeforeRunColors.track,
+                topLeft = Offset(if (layoutDirection == LayoutDirection.Rtl) size.width - x - barWidth else x, size.height - h),
+                size = Size(barWidth, h),
+                cornerRadius = corner
+            )
+        }
+    }
+}
+
+@StringRes
+private fun signalLabel(bars: Int): Int = when (bars) {
+    4 -> R.string.before_run_signal_4
+    3 -> R.string.before_run_signal_3
+    2 -> R.string.before_run_signal_2
+    else -> R.string.before_run_signal_1
+}
+
+/** "±5", left to right in every language; the unit goes with the words around it. */
+private fun accuracyText(meters: Float): String = LTR_ISOLATE + "±" + meters.roundToInt() + POP_ISOLATE
+
+/** The target, in a row that opens the picker. */
+@Composable
+private fun TargetRow(value: String, note: String?, onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(BeforeRunShapes.statusGap),
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = BeforeRunShapes.targetMinHeight)
+            .clip(RoundedCornerShape(BeforeRunShapes.buttonRadius))
+            .background(BeforeRunColors.softSurface)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = BeforeRunShapes.sideInset, vertical = BeforeRunShapes.targetPaddingVertical)
+    ) {
+        Icon(painterResource(R.drawable.ic_target), null, tint = BeforeRunColors.textMuted, modifier = Modifier.size(BeforeRunShapes.targetIcon))
+        Column(verticalArrangement = Arrangement.spacedBy(BeforeRunShapes.targetLineGap), modifier = Modifier.weight(1f)) {
+            Text(stringResource(R.string.cardio_target), style = BeforeRunType.targetLabel)
+            Text(value, style = BeforeRunType.targetValue, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            note?.let { Text(it, style = BeforeRunType.targetNote) }
+        }
+        // Points to the end side: mirrored in right-to-left
+        Icon(painterResource(R.drawable.ic_chevron), null, tint = BeforeRunColors.textMuted, modifier = Modifier.size(BeforeRunShapes.chevron))
+    }
+}
+
+@Composable
+private fun targetValue(target: RunTarget, route: SavedRoute?): String = when (target.type) {
+    RunTargetType.NONE -> stringResource(R.string.cardio_target_none)
+    RunTargetType.DISTANCE -> stringResource(
+        R.string.before_run_target_value,
+        stringResource(R.string.cardio_distance),
+        stringResource(R.string.km_value, formatKm(target.distanceKm))
+    )
+    RunTargetType.DURATION -> stringResource(
+        R.string.before_run_target_value,
+        stringResource(R.string.cardio_time),
+        stringResource(R.string.cardio_minutes_value, target.durationMin)
+    )
+    RunTargetType.ROUTE -> route?.let { stringResource(R.string.cardio_route_name_km, it.name, it.distanceMeters / 1000) }
+        ?: stringResource(R.string.cardio_choose_route)
+}
+
+/** How far the route to follow starts from here, once there is a fix. */
+@Composable
+private fun routeStartNote(route: SavedRoute?, here: LocationPoint?): String? {
+    val start = route?.points?.firstOrNull() ?: return null
+    if (here == null) return null
+    val away = RouteFollower.meters(start, RoutePoint(here.latitude, here.longitude))
+    return if (away < 50) stringResource(R.string.cardio_at_route_start)
+    else stringResource(R.string.cardio_route_starts_away, formatAway(away))
+}
+
+/** Start, or what it waits for; it changes colour rather than fading, so it reads either way. */
+@Composable
+private fun StartButton(state: StartState, startLabel: String, onStart: () -> Unit) {
+    val enabled = state == StartState.READY
+    val background by animateColorAsState(if (enabled) BeforeRunColors.accent else BeforeRunColors.disabledButton, tween(FADE_MS), label = "button")
+    val content by animateColorAsState(if (enabled) BeforeRunColors.panel else BeforeRunColors.disabledButtonText, tween(FADE_MS), label = "buttonText")
+    val reason = when (state) {
+        StartState.WAITING_FOR_GPS -> stringResource(R.string.before_run_waiting_reason)
+        StartState.NEEDS_ROUTE -> stringResource(R.string.before_run_needs_route_reason)
+        StartState.READY -> null
+    }
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(BeforeRunShapes.buttonHeight)
+            .clip(RoundedCornerShape(BeforeRunShapes.buttonRadius))
+            .background(background)
+            .clickable(enabled = enabled, role = Role.Button, onClick = onStart)
+            // Announced as unavailable, and why
+            .semantics { reason?.let { stateDescription = it } }
+    ) {
+        AnimatedContent(
+            targetState = state,
+            transitionSpec = { fadeIn(tween(FADE_MS)) togetherWith fadeOut(tween(FADE_MS)) },
+            label = "buttonLabel"
+        ) { shown ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(BeforeRunShapes.buttonIconGap)
+            ) {
+                when (shown) {
+                    StartState.WAITING_FOR_GPS -> Spinner(
+                        color = content,
+                        size = BeforeRunShapes.buttonIcon,
+                        stroke = BeforeRunShapes.buttonSpinnerStroke,
+                        radius = BUTTON_SPINNER_RADIUS,
+                        sweep = BUTTON_SPINNER_SWEEP
+                    )
+                    StartState.NEEDS_ROUTE ->
+                        Icon(painterResource(R.drawable.ic_route), null, tint = content, modifier = Modifier.size(BeforeRunShapes.buttonIcon))
+                    StartState.READY ->
+                        Icon(painterResource(R.drawable.ic_play), null, tint = content, modifier = Modifier.size(BeforeRunShapes.buttonIcon))
+                }
+                Text(
+                    when (shown) {
+                        StartState.WAITING_FOR_GPS -> stringResource(R.string.before_run_waiting)
+                        StartState.NEEDS_ROUTE -> stringResource(R.string.cardio_choose_route)
+                        StartState.READY -> startLabel
+                    },
+                    style = BeforeRunType.button.copy(color = content),
+                    maxLines = 1
+                )
+            }
+        }
+    }
+}
+
+/** The kind of target, its distance or time, or the route to follow. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun RunTargetPicker(
+private fun TargetSheet(
     target: RunTarget,
     routes: List<SavedRoute>,
     selectedRoute: SavedRoute?,
     onChange: (RunTarget) -> Unit,
-    onManageRoutes: () -> Unit
+    onManageRoutes: () -> Unit,
+    onDismiss: () -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    var choosingRoute by remember { mutableStateOf(false) }
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = it },
-            modifier = Modifier.weight(1f)
+    val radioColors = RadioButtonDefaults.colors(selectedColor = BeforeRunColors.accent)
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = BeforeRunColors.panel) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = BeforeRunShapes.sideInset)
+                .padding(bottom = BeforeRunShapes.panelGap)
         ) {
-            OutlinedTextField(
-                value = stringResource(targetTypeLabel(target.type)),
-                onValueChange = {},
-                readOnly = true,
-                singleLine = true,
-                label = { Text(stringResource(R.string.cardio_target)) },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                shape = MaterialTheme.shapes.large,
-                modifier = Modifier
-                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                    .fillMaxWidth()
+            Text(
+                stringResource(R.string.cardio_target),
+                style = BeforeRunType.sheetTitle,
+                modifier = Modifier.padding(bottom = 8.dp).semantics { heading() }
             )
-            ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            Column(Modifier.selectableGroup()) {
                 RunTargetType.entries.forEach { type ->
-                    DropdownMenuItem(
-                        text = { Text(stringResource(targetTypeLabel(type))) },
-                        onClick = {
-                            onChange(target.copy(type = type))
-                            expanded = false
-                        }
-                    )
-                }
-            }
-        }
-        when (target.type) {
-            RunTargetType.DISTANCE -> ValueStepper(
-                text = stringResource(R.string.km_value, formatKm(target.distanceKm)),
-                onMinus = {
-                    onChange(target.copy(distanceKm = (target.distanceKm - RunTarget.DISTANCE_STEP_KM).coerceAtLeast(RunTarget.DISTANCE_STEP_KM)))
-                },
-                onPlus = { onChange(target.copy(distanceKm = target.distanceKm + RunTarget.DISTANCE_STEP_KM)) }
-            )
-            RunTargetType.DURATION -> ValueStepper(
-                text = stringResource(R.string.cardio_minutes_value, target.durationMin),
-                onMinus = {
-                    onChange(target.copy(durationMin = (target.durationMin - RunTarget.DURATION_STEP_MIN).coerceAtLeast(RunTarget.DURATION_STEP_MIN)))
-                },
-                onPlus = { onChange(target.copy(durationMin = target.durationMin + RunTarget.DURATION_STEP_MIN)) }
-            )
-            RunTargetType.ROUTE -> OutlinedButton(
-                onClick = { choosingRoute = true },
-                shape = MaterialTheme.shapes.large,
-                modifier = Modifier.weight(1f).height(56.dp)
-            ) {
-                Text(
-                    selectedRoute?.let { stringResource(R.string.cardio_route_name_km, it.name, it.distanceMeters / 1000) }
-                        ?: stringResource(R.string.cardio_choose_route),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    color = Purple
-                )
-            }
-            RunTargetType.NONE -> Unit
-        }
-    }
-
-    if (choosingRoute) {
-        ModalBottomSheet(onDismissRequest = { choosingRoute = false }) {
-            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 24.dp)) {
-                Text(stringResource(R.string.cardio_choose_route), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(bottom = 8.dp))
-                if (routes.isEmpty()) {
-                    Text(
-                        stringResource(R.string.cardio_no_routes),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                routes.forEach { route ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                onChange(target.copy(type = RunTargetType.ROUTE, routeId = route.id))
-                                choosingRoute = false
-                            }
-                            .padding(vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    val selected = target.type == type
+                    SheetOption(
+                        label = stringResource(targetTypeLabel(type)),
+                        selected = selected,
+                        radioColors = radioColors,
+                        onClick = { onChange(target.copy(type = type)) }
                     ) {
-                        RadioButton(selected = route.id == selectedRoute?.id, onClick = null)
-                        Spacer(Modifier.width(12.dp))
-                        Text(route.name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-                        Text(
-                            stringResource(R.string.cardio_km_1dp, route.distanceMeters / 1000),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        if (selected) when (type) {
+                            RunTargetType.DISTANCE -> ValueStepper(
+                                text = stringResource(R.string.km_value, formatKm(target.distanceKm)),
+                                onMinus = {
+                                    onChange(target.copy(distanceKm = (target.distanceKm - RunTarget.DISTANCE_STEP_KM).coerceAtLeast(RunTarget.DISTANCE_STEP_KM)))
+                                },
+                                onPlus = { onChange(target.copy(distanceKm = target.distanceKm + RunTarget.DISTANCE_STEP_KM)) }
+                            )
+                            RunTargetType.DURATION -> ValueStepper(
+                                text = stringResource(R.string.cardio_minutes_value, target.durationMin),
+                                onMinus = {
+                                    onChange(target.copy(durationMin = (target.durationMin - RunTarget.DURATION_STEP_MIN).coerceAtLeast(RunTarget.DURATION_STEP_MIN)))
+                                },
+                                onPlus = { onChange(target.copy(durationMin = target.durationMin + RunTarget.DURATION_STEP_MIN)) }
+                            )
+                            RunTargetType.ROUTE, RunTargetType.NONE -> Unit
+                        }
                     }
                 }
-                TextButton(onClick = { choosingRoute = false; onManageRoutes() }) {
-                    Text(stringResource(R.string.cardio_manage_routes), color = Purple)
+            }
+
+            if (target.type == RunTargetType.ROUTE) {
+                Text(
+                    stringResource(R.string.cardio_choose_route),
+                    style = BeforeRunType.statusTitle,
+                    modifier = Modifier.padding(top = BeforeRunShapes.panelGap, bottom = 4.dp).semantics { heading() }
+                )
+                if (routes.isEmpty()) {
+                    Text(stringResource(R.string.cardio_no_routes), style = BeforeRunType.statusSubtitle)
+                }
+                Column(Modifier.selectableGroup()) {
+                    routes.forEach { route ->
+                        SheetOption(
+                            label = route.name,
+                            selected = route.id == selectedRoute?.id,
+                            radioColors = radioColors,
+                            onClick = { onChange(target.copy(type = RunTargetType.ROUTE, routeId = route.id)) }
+                        ) {
+                            Text(stringResource(R.string.cardio_km_1dp, route.distanceMeters / 1000), style = BeforeRunType.statusSubtitle)
+                        }
+                    }
+                }
+                TextButton(onClick = onManageRoutes) {
+                    Text(stringResource(R.string.cardio_manage_routes), color = BeforeRunColors.accent)
                 }
             }
+
+            Spacer(Modifier.height(BeforeRunShapes.panelGap))
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(BeforeRunShapes.buttonHeight)
+                    .clip(RoundedCornerShape(BeforeRunShapes.buttonRadius))
+                    .background(BeforeRunColors.accent)
+                    .clickable(role = Role.Button, onClick = onDismiss)
+            ) {
+                Text(stringResource(R.string.before_run_target_done), style = BeforeRunType.button.copy(color = BeforeRunColors.panel))
+            }
         }
+    }
+}
+
+/** A radio row in the target sheet, with room at the end for its value. */
+@Composable
+private fun SheetOption(
+    label: String,
+    selected: Boolean,
+    radioColors: RadioButtonColors,
+    onClick: () -> Unit,
+    end: @Composable () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = BeforeRunShapes.sheetOptionHeight)
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
+    ) {
+        RadioButton(selected = selected, onClick = null, colors = radioColors)
+        Spacer(Modifier.width(BeforeRunShapes.statusGap))
+        Text(label, style = BeforeRunType.option, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+        end()
     }
 }
 
@@ -451,55 +788,13 @@ private fun targetTypeLabel(type: RunTargetType): Int = when (type) {
     RunTargetType.ROUTE -> R.string.cardio_route
 }
 
-@Composable
-private fun SearchingIndicator() {
-    val transition = rememberInfiniteTransition(label = "pulse")
-    val scale by transition.animateFloat(
-        initialValue = 0.8f,
-        targetValue = 1.3f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "scale"
-    )
-    val alpha by transition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.8f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "alpha"
-    )
-
-    Box(contentAlignment = Alignment.Center) {
-        Box(
-            modifier = Modifier
-                .size(140.dp)
-                .scale(scale)
-                .alpha(alpha)
-                .border(3.dp, Purple.copy(alpha = 0.4f), CircleShape)
-        )
-        Box(
-            modifier = Modifier
-                .size(100.dp)
-                .background(Purple.copy(alpha = 0.15f), CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("📡", fontSize = 40.sp)
-        }
-    }
-}
-
-@Composable
-private fun LockedIndicator() {
-    Box(
-        modifier = Modifier
-            .size(100.dp)
-            .background(SuccessGreen.copy(alpha = 0.15f), CircleShape),
-        contentAlignment = Alignment.Center
-    ) {
-        Text("✅", fontSize = 40.sp)
-    }
-}
+private const val FADE_MS = 300
+private const val PULSE_MS = 2400
+private const val SPIN_MS = 1000
+// The design's arcs: a quarter turn at 8 of 24 in the status circle, three quarters at 9 of 24 in the button
+private const val STATUS_SPINNER_RADIUS = 8f / 24
+private const val STATUS_SPINNER_SWEEP = 90f
+private const val BUTTON_SPINNER_RADIUS = 9f / 24
+private const val BUTTON_SPINNER_SWEEP = 270f
+private const val LTR_ISOLATE = "\u2066"
+private const val POP_ISOLATE = "\u2069"
