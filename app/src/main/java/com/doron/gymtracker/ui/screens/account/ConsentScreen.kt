@@ -44,6 +44,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.doron.gymtracker.R
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.foundation.layout.PaddingValues
+import com.doron.gymtracker.ui.components.PRIVACY_POLICY_URL
 
 /**
  * Shown before Google's account picker: what syncs, what never does, why, who sees it and how to
@@ -57,6 +60,7 @@ fun ConsentScreen(onDone: () -> Unit, viewModel: ConsentViewModel = hiltViewMode
     var routes by rememberSaveable { mutableStateOf(false) }
     var music by rememberSaveable { mutableStateOf(false) }
     val activity = LocalContext.current.findActivity()
+    val uriHandler = LocalUriHandler.current
 
     LaunchedEffect(state) { if (state is ConsentViewModel.State.Done) onDone() }
 
@@ -86,6 +90,9 @@ fun ConsentScreen(onDone: () -> Unit, viewModel: ConsentViewModel = hiltViewMode
             Point(R.string.consent_why_title, R.string.consent_why)
             Point(R.string.consent_who_title, R.string.consent_who)
             Point(R.string.consent_stop_title, R.string.consent_stop)
+            TextButton(onClick = { uriHandler.openUri(PRIVACY_POLICY_URL) }, contentPadding = PaddingValues(0.dp)) {
+                Text(stringResource(R.string.privacy_policy_read))
+            }
 
             Spacer(Modifier.height(8.dp))
             Card(
