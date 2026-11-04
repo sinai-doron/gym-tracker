@@ -240,6 +240,42 @@ Debug builds are signed with a fixed key named in `local.properties`, so install
 new build updates the app in place instead of wiping its data. The key files are
 gitignored and must stay out of this public repository.
 
+### Release builds for Play
+
+Play takes an Android App Bundle (`.aab`) signed with an **upload key**. With Play App Signing,
+Google keeps the key that signs what phones install. The upload key only proves an upload is
+yours, and Google can replace it if it is lost.
+
+1. Make the upload key once, outside the repository, and keep it and its password in your
+   password manager (keytool asks for the password, so it never lands in your shell history):
+
+   ```sh
+   mkdir -p ~/keys
+   keytool -genkeypair -keystore ~/keys/gym-tracker-upload.jks -storetype PKCS12 \
+     -alias upload -keyalg RSA -keysize 4096 -validity 10000 -dname "CN=neonsheep"
+   ```
+
+2. Point `local.properties` at it:
+
+   ```properties
+   release.storeFile=/Users/<you>/keys/gym-tracker-upload.jks
+   release.storePassword=<the password>
+   ```
+
+   (`release.keyAlias` defaults to `upload`, `release.keyPassword` to the store password.) CI can
+   take the same values as `RELEASE_STOREFILE`, `RELEASE_STOREPASSWORD`, `RELEASE_KEYALIAS` and
+   `RELEASE_KEYPASSWORD`.
+
+3. Raise `versionCode` in `app/build.gradle.kts` (Play refuses a code it has seen), then build:
+
+   ```sh
+   ./gradlew bundleRelease   # app/build/outputs/bundle/release/app-release.aab
+   ```
+
+Without the key the bundle is built unsigned, which is what CI does to prove a release still
+builds; Play refuses an unsigned upload. The release build isn't shrunk yet (no R8): Room, Hilt,
+serialization and MapLibre each need keep rules first.
+
 ### Running on a phone
 
 1. **Settings → About phone** — tap **Build number** seven times to enable developer
@@ -267,7 +303,7 @@ it on an emulator. See [docs/testing/database-migrations.md](docs/testing/databa
 GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs on every push to
 `main` and every pull request:
 
-- **Build and unit tests:** `assembleDebug` and `testDebugUnitTest`. It fails if the build
+- **Build and unit tests:** `assembleDebug`, `testDebugUnitTest` and an unsigned `bundleRelease`. It fails if the build
   changed a Room schema in `app/schemas/` that wasn't committed; the generated schemas are
   attached to the run as the `room-schemas` artifact. It also fails when the exercise
   catalogue breaks a rule or wasn't rebuilt after a change

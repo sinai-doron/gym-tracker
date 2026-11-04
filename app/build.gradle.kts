@@ -61,10 +61,26 @@ android {
                 keyPassword = localProps.getProperty("signing.keyPassword", "android")
             }
         }
+        // The upload key for Play. Play App Signing keeps the key that signs what phones install;
+        // this one only proves an upload is ours, and Google can replace it if it is lost. It never
+        // goes in the repo: release.* in local.properties, or RELEASE_* environment variables for CI.
+        // Without it the release bundle is built unsigned, which Play refuses.
+        val release = { key: String -> localProps.getProperty("release.$key") ?: System.getenv("RELEASE_${key.uppercase()}") }
+        release("storeFile")?.let { path ->
+            create("release") {
+                storeFile = file(path)
+                storePassword = release("storePassword")
+                keyAlias = release("keyAlias") ?: "upload"
+                keyPassword = release("keyPassword") ?: release("storePassword")
+            }
+        }
     }
 
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("release")
+            // Not shrunk yet: Room, Hilt, serialization and MapLibre each need keep rules, and a
+            // shrinker mistake shows only at run time. Turn it on with those rules and a test pass.
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
