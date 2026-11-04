@@ -67,6 +67,12 @@ import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.ui.screens.account.AccountCard
 import androidx.compose.ui.platform.LocalUriHandler
 import com.doron.gymtracker.ui.components.PRIVACY_POLICY_URL
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.ui.text.style.TextAlign
+import com.doron.gymtracker.BuildConfig
 
 data class LanguageOption(val code: String, val displayName: String)
 
@@ -90,6 +96,7 @@ fun SettingsScreen(
     val consent by viewModel.consent.collectAsState()
     val syncStatus by viewModel.syncStatus.collectAsState()
     val deleteFailed by viewModel.deleteFailed.collectAsState()
+    val signInEnabled by viewModel.signInEnabled.collectAsState()
     val currentLanguage by viewModel.languageCode.collectAsState()
     val healthConnectGranted by viewModel.healthConnectGranted.collectAsState()
     val lapDistanceM by viewModel.lapDistanceM.collectAsState()
@@ -183,22 +190,24 @@ fun SettingsScreen(
             modifier = Modifier.fillMaxSize().padding(padding)
         ) {
             Column(modifier = Modifier.verticalScroll(rememberScrollState()).padding(16.dp)) {
-                Text(stringResource(R.string.account_title), style = MaterialTheme.typography.titleLarge)
-                Spacer(Modifier.height(12.dp))
-                AccountCard(
-                    user = user,
-                    consent = consent,
-                    syncStatus = syncStatus,
-                    onSyncNow = viewModel::syncNow,
-                    onSignIn = onSignIn,
-                    onRoutesChange = viewModel::setSyncRoutes,
-                    onMusicChange = viewModel::setSyncMusic,
-                    onSignOut = viewModel::signOut,
-                    onDeleteServerData = viewModel::deleteServerData,
-                    deleteFailed = deleteFailed
-                )
-
-                Spacer(Modifier.height(24.dp))
+                // Google sign-in is behind a flag for now (SignInFeature)
+                if (signInEnabled) {
+                    Text(stringResource(R.string.account_title), style = MaterialTheme.typography.titleLarge)
+                    Spacer(Modifier.height(12.dp))
+                    AccountCard(
+                        user = user,
+                        consent = consent,
+                        syncStatus = syncStatus,
+                        onSyncNow = viewModel::syncNow,
+                        onSignIn = onSignIn,
+                        onRoutesChange = viewModel::setSyncRoutes,
+                        onMusicChange = viewModel::setSyncMusic,
+                        onSignOut = viewModel::signOut,
+                        onDeleteServerData = viewModel::deleteServerData,
+                        deleteFailed = deleteFailed
+                    )
+                    Spacer(Modifier.height(24.dp))
+                }
                 Text(
                     stringResource(R.string.language),
                     style = MaterialTheme.typography.titleLarge
@@ -423,9 +432,41 @@ fun SettingsScreen(
                 OutlinedButton(onClick = { uriHandler.openUri(PRIVACY_POLICY_URL) }, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.privacy_policy))
                 }
+                VersionLine(onSevenTaps = {
+                    viewModel.toggleSignIn { on ->
+                        Toast.makeText(context, if (on) R.string.sign_in_switched_on else R.string.sign_in_switched_off, Toast.LENGTH_SHORT).show()
+                    }
+                })
             }
         }
     }
+}
+
+/** The app's version; seven taps in a row switch Google sign-in on or off (SignInFeature). */
+@Composable
+private fun VersionLine(onSevenTaps: () -> Unit) {
+    var taps by remember { mutableIntStateOf(0) }
+    var lastTap by remember { mutableLongStateOf(0L) }
+    Text(
+        stringResource(R.string.settings_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        textAlign = TextAlign.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 24.dp)
+            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
+                val now = System.currentTimeMillis()
+                // In a row: a pause of more than two seconds starts the count again
+                taps = if (now - lastTap > 2_000) 1 else taps + 1
+                lastTap = now
+                if (taps == 7) {
+                    taps = 0
+                    onSevenTaps()
+                }
+            }
+            .padding(vertical = 8.dp)
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

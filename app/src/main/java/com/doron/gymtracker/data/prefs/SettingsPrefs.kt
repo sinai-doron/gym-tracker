@@ -33,6 +33,7 @@ private val BODY_WEIGHT_KG = floatPreferencesKey("body_weight_kg")
 private val AUDIO_FEEDBACK = stringPreferencesKey("audio_feedback")
 private val RUN_TARGET_ROUTE_ID = longPreferencesKey("run_target_route_id")
 private val ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
+private val SIGN_IN_SWITCHED_ON = booleanPreferencesKey("sign_in_switched_on")
 private val WEEK_MODE = stringPreferencesKey("week_mode")
 private val WEIGHT_UNIT = stringPreferencesKey("weight_unit")
 private val DISTANCE_UNIT = stringPreferencesKey("distance_unit")
@@ -69,6 +70,14 @@ class SettingsPrefs @Inject constructor(
 
     suspend fun setOnboardingDone() {
         context.settingsDataStore.edit { prefs -> prefs[ONBOARDING_DONE] = true }
+    }
+
+    /** Google sign-in switched on by hand (see SignInFeature); off on a fresh install. */
+    val signInSwitchedOn: Flow<Boolean> = context.settingsDataStore.data
+        .map { prefs -> prefs[SIGN_IN_SWITCHED_ON] ?: false }
+
+    suspend fun setSignInSwitchedOn(on: Boolean) {
+        context.settingsDataStore.edit { prefs -> prefs[SIGN_IN_SWITCHED_ON] = on }
     }
 
     /** The last run target chosen, so the next run starts with it. */

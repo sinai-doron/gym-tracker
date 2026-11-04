@@ -71,6 +71,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.doron.gymtracker.account.SignInFeature
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import androidx.compose.runtime.collectAsState
 
 /** One page of the wizard. The welcome and ready pages ask for nothing. */
 enum class OnboardingStep(
@@ -96,18 +101,31 @@ enum class OnboardingStep(
 class OnboardingViewModel @Inject constructor(
     private val settingsPrefs: SettingsPrefs,
     val healthConnect: HealthConnectManager,
-    private val account: Account
+    private val account: Account,
+    private val signIn: SignInFeature
 ) : ViewModel() {
 
     suspend fun signedIn(): Boolean = account.user.first() != null
 
-    /** The pages that apply to this phone: older Androids grant some permissions at install. */
-    val steps: List<OnboardingStep> = OnboardingStep.entries.filter { step ->
-        when (step) {
-            OnboardingStep.NOTIFICATIONS -> Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-            OnboardingStep.ACTIVITY -> Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
-            OnboardingStep.HEALTH -> healthConnect.isAvailable
-            else -> true
+    /**
+     * The pages that apply to this phone, null until known: older Androids grant some permissions
+     * at install, and the account page needs sign-in switched on (SignInFeature).
+     */
+    private val _steps = MutableStateFlow<List<OnboardingStep>?>(null)
+    val steps: StateFlow<List<OnboardingStep>?> = _steps.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            val signInOn = signIn.enabled.first()
+            _steps.value = OnboardingStep.entries.filter { step ->
+                when (step) {
+                    OnboardingStep.NOTIFICATIONS -> Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                    OnboardingStep.ACTIVITY -> Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+                    OnboardingStep.HEALTH -> healthConnect.isAvailable
+                    OnboardingStep.ACCOUNT -> signInOn
+                    else -> true
+                }
+            }
         }
     }
 
@@ -130,7 +148,7 @@ fun OnboardingScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val steps = viewModel.steps
+    val steps = viewModel.steps.collectAsState().value ?: return
     val pagerState = rememberPagerState { steps.size }
     val granted = remember { mutableStateMapOf<OnboardingStep, Boolean>() }
     // Bumped on resume so grants made in system settings show up
