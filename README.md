@@ -240,6 +240,30 @@ Debug builds are signed with a fixed key named in `local.properties`, so install
 new build updates the app in place instead of wiping its data. The key files are
 gitignored and must stay out of this public repository.
 
+### Release builds for Play
+
+Play takes an Android App Bundle (`.aab`) signed with an **upload key**. With Play App Signing,
+Google keeps the key that signs what phones install; the upload key only proves an upload is
+yours, and Google can replace it if it is lost.
+
+The upload key lives in two places and nowhere else: two secrets in GCP Secret Manager in
+`symbio-shared` (`gym-tracker-upload-key`, the key file, and `gym-tracker-upload-key-password`),
+and an entry in the owner's Strongbox database with the file attached.
+
+- **Make it, once:** `scripts/make-upload-key.sh`, in a terminal. It asks for a password (typed
+  at a prompt, so it is in neither the shell history nor the process list), makes the key in a
+  private temporary folder, saves both secrets, then waits while you add the Strongbox entry and
+  deletes the file. It refuses to run if the secrets already exist.
+- **Build an upload:** raise `versionCode` in `app/build.gradle.kts` (Play refuses a code it has
+  seen), then `scripts/bundle-release.sh`. It fetches the key into a private temporary folder,
+  runs `bundleRelease`, checks the bundle is signed and deletes the key, whatever happens. The
+  bundle is `app/build/outputs/bundle/release/app-release.aab`.
+
+The build itself reads the key from `RELEASE_STOREFILE` and `RELEASE_STOREPASSWORD` (or
+`release.*` in `local.properties`); without them the bundle is built unsigned, which is what CI
+does to prove a release still builds, and what Play refuses. The release build isn't shrunk yet
+(no R8): Room, Hilt, serialization and MapLibre each need keep rules first.
+
 ### Running on a phone
 
 1. **Settings → About phone** — tap **Build number** seven times to enable developer
@@ -267,7 +291,7 @@ it on an emulator. See [docs/testing/database-migrations.md](docs/testing/databa
 GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs on every push to
 `main` and every pull request:
 
-- **Build and unit tests:** `assembleDebug` and `testDebugUnitTest`. It fails if the build
+- **Build and unit tests:** `assembleDebug`, `testDebugUnitTest` and an unsigned `bundleRelease`. It fails if the build
   changed a Room schema in `app/schemas/` that wasn't committed; the generated schemas are
   attached to the run as the `room-schemas` artifact. It also fails when the exercise
   catalogue breaks a rule or wasn't rebuilt after a change

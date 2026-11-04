@@ -34,6 +34,11 @@ jobs:
       - name: Build and run unit tests
         run: ./gradlew verifyComposeVersions assembleDebug testDebugUnitTest
 
+      # The bundle Play takes, built the way an upload is (unsigned here: the upload key never
+      # leaves the owner's computer). Release-only checks, such as lintVital, run here too.
+      - name: Build the release bundle
+        run: ./gradlew bundleRelease
+
       # Room writes each database version's schema while building. A schema that changed without
       # being committed means a migration nobody can test against later.
       - name: Upload Room schemas
