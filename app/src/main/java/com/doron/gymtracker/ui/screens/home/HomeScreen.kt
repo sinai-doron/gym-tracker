@@ -1,5 +1,7 @@
 package com.doron.gymtracker.ui.screens.home
 
+import com.doron.gymtracker.ui.components.appLanguage
+import com.doron.gymtracker.ui.components.templateNames
 import com.doron.gymtracker.ui.components.appLocale
 import android.Manifest
 import android.content.pm.PackageManager
@@ -299,7 +301,7 @@ fun HomeScreen(
                     )
                 } else {
                     SetUpCard(
-                        title = stringResource(R.string.home_no_workouts_title, status.programName ?: stringResource(R.string.program_default_name)),
+                        title = stringResource(R.string.home_no_workouts_title, status.programName?.let { templateNames().program(it, appLanguage()) } ?: stringResource(R.string.program_default_name)),
                         text = stringResource(R.string.home_no_workouts_text),
                         button = stringResource(R.string.home_no_workouts_button),
                         onClick = onProgramsClick
@@ -372,7 +374,7 @@ fun HomeScreen(
 
 @Composable
 private fun ProgramChip(status: ProgramStatus, onClick: () -> Unit) {
-    val name = status.programName ?: stringResource(R.string.program_default_name)
+    val name = status.programName?.let { templateNames().program(it, appLanguage()) } ?: stringResource(R.string.program_default_name)
     Text(
         "$name ▾",
         style = MaterialTheme.typography.labelLarge,

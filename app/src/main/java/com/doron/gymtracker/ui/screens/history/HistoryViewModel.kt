@@ -1,5 +1,6 @@
 package com.doron.gymtracker.ui.screens.history
 
+import com.doron.gymtracker.data.templates.TemplateNames
 import java.text.DateFormat
 import com.doron.gymtracker.domain.model.nameIn
 import com.doron.gymtracker.AppLocale
@@ -58,7 +59,8 @@ data class DaySessionsUiState(
 class HistoryViewModel @Inject constructor(
     private val sessionRepo: SessionRepository,
     private val workoutRepo: WorkoutRepository,
-    private val trainingTypes: TrainingTypes
+    private val trainingTypes: TrainingTypes,
+    private val templateNames: TemplateNames
 ) : ViewModel() {
 
     private val _currentMonth = MutableStateFlow(YearMonth.now())
@@ -140,7 +142,7 @@ class HistoryViewModel @Inject constructor(
                     "OTHER" -> otherType?.takeIf { it.name == null }?.let { builtinTypeName(it.id) }
                     else -> workout?.takeIf { it.name == null }?.defaultNameRes()
                 }
-                val workoutName = otherType?.name ?: workout?.name ?: session.workoutId
+                val workoutName = otherType?.name ?: workout?.name?.let { templateNames.workout(it, AppLocale.language()) } ?: session.workoutId
 
                 SessionSummaryItem(
                     sessionId = session.id,

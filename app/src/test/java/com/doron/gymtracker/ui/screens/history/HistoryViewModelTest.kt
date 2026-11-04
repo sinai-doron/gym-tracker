@@ -1,5 +1,7 @@
 package com.doron.gymtracker.ui.screens.history
 
+import io.mockk.every
+import com.doron.gymtracker.data.templates.TemplateNames
 import com.doron.gymtracker.R
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.TrainingTypes
@@ -32,6 +34,13 @@ import java.time.ZoneId
 @OptIn(ExperimentalCoroutinesApi::class)
 class HistoryViewModelTest {
 
+    // Names come back as saved: these tests aren't about translating template names
+    private val sameNames = mockk<TemplateNames> {
+        every { workout(any(), any()) } answers { firstArg() }
+        every { program(any(), any()) } answers { firstArg() }
+    }
+
+
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var sessionRepo: SessionRepository
     private lateinit var workoutRepo: WorkoutRepository
@@ -51,7 +60,7 @@ class HistoryViewModelTest {
     private fun makeVm(): HistoryViewModel {
         coEvery { sessionRepo.observeAll() } returns flowOf(emptyList())
         coEvery { sessionRepo.getLastCompleted() } returns null
-        return HistoryViewModel(sessionRepo, workoutRepo, mockk(relaxed = true))
+        return HistoryViewModel(sessionRepo, workoutRepo, mockk(relaxed = true), sameNames)
     }
 
     @Test
@@ -89,7 +98,7 @@ class HistoryViewModelTest {
         val session = Session(1L, "workout_a", startedAt = 0L, finishedAt = 1000L)
         coEvery { sessionRepo.observeAll() } returns flowOf(listOf(session))
         coEvery { sessionRepo.getLastCompleted() } returns session
-        val vm = HistoryViewModel(sessionRepo, workoutRepo, mockk(relaxed = true))
+        val vm = HistoryViewModel(sessionRepo, workoutRepo, mockk(relaxed = true), sameNames)
         testDispatcher.scheduler.advanceUntilIdle()
         assertTrue(vm.sessionDates.value.isNotEmpty())
     }
@@ -103,7 +112,7 @@ class HistoryViewModelTest {
         coEvery { sessionRepo.getLastCompleted() } returns pilates
         val types = mockk<TrainingTypes>()
         coEvery { types.all() } returns listOf(type("strength", 1), type("run", 2), type("pilates", 10))
-        val vm = HistoryViewModel(sessionRepo, workoutRepo, types)
+        val vm = HistoryViewModel(sessionRepo, workoutRepo, types, sameNames)
         testDispatcher.scheduler.advanceUntilIdle()
         val days = vm.sessionDates.value.values.map { day -> day.map { it.id }.toSet() }
         assertTrue(setOf("strength", "run") in days)
@@ -118,7 +127,7 @@ class HistoryViewModelTest {
         val run = Session(2L, "RUNNING", startedAt = 2000L, finishedAt = 3000L, type = "RUNNING")
         coEvery { sessionRepo.observeAll() } returns flowOf(listOf(run))
         coEvery { sessionRepo.getLastCompleted() } returns run
-        val vm = HistoryViewModel(sessionRepo, workoutRepo, mockk(relaxed = true))
+        val vm = HistoryViewModel(sessionRepo, workoutRepo, mockk(relaxed = true), sameNames)
         vm.loadDaySessions(Instant.ofEpochMilli(2000L).atZone(ZoneId.systemDefault()).toLocalDate())
         testDispatcher.scheduler.advanceUntilIdle()
         assertEquals(R.string.history_run, vm.selectedDaySessions.value?.sessions?.single()?.workoutNameRes)
