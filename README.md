@@ -1,4 +1,7 @@
-# Gym Tracker
+# Neonsheep Fitness
+
+Published as **Neonsheep Fitness** (package `dev.neonsheep.gymtracker`); this repository keeps its
+first name, gym-tracker.
 
 A personal Android app for training: strength workouts in the gym, and runs and walks
 outside. Log every set with a rest timer between them, record runs with GPS, and follow
