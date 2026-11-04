@@ -14,8 +14,7 @@
     <string name="home_typical_minutes">~%1$d דק׳</string>
 
     <!-- Home: cardio card -->
-    <string name="home_cardio_title">ריצה והליכה</string>
-    <string name="home_cardio_label">קרדיו</string>
+    <string name="home_cardio_title">קרדיו</string>
     <string name="home_run">ריצה</string>
     <string name="home_walk">הליכה</string>
 

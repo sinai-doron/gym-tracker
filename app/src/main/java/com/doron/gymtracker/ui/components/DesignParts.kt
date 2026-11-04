@@ -58,20 +58,20 @@ fun DesignCard(
     )
 }
 
-/** A card's header: the icon tile, the label over the title, and an optional action at the end. */
+/** A card's header: the icon tile, the label (if any) over the title, and an optional action at the end. */
 @Composable
 fun DesignCardHeader(
     @DrawableRes icon: Int,
     tile: Color,
     iconColor: Color,
-    label: String,
+    label: String?,
     title: String,
     action: (@Composable () -> Unit)? = null
 ) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AppShapes.headerGap)) {
         IconTile(icon, tile, iconColor, AppShapes.iconTile, AppShapes.iconTileRadius, AppShapes.iconTileIcon)
         Column(verticalArrangement = Arrangement.spacedBy(AppShapes.labelTitleGap), modifier = Modifier.weight(1f)) {
-            Text(label, style = AppType.label)
+            label?.let { Text(it, style = AppType.label) }
             Text(title, style = AppType.cardTitle)
         }
         action?.invoke()

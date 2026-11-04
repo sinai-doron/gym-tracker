@@ -93,7 +93,7 @@ fun NextWorkoutCard(
     }
 }
 
-/** Running and walking: Run filled, Walk tinted, side by side; either one alone when the other is hidden. */
+/** Cardio: Run filled, Walk tinted, side by side; either one alone when the other is hidden. */
 @Composable
 fun CardioCard(onRun: (() -> Unit)?, onWalk: (() -> Unit)?) {
     DesignCard(shadow = AppShapes.cardioCardShadow) {
@@ -101,7 +101,7 @@ fun CardioCard(onRun: (() -> Unit)?, onWalk: (() -> Unit)?) {
             icon = R.drawable.ic_activity_run,
             tile = AppColors.tintCardio,
             iconColor = AppColors.accentCardio,
-            label = stringResource(R.string.home_cardio_label),
+            label = null,
             title = stringResource(R.string.home_cardio_title)
         )
         DesignButtonRow {

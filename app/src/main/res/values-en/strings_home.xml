@@ -14,8 +14,7 @@
     <string name="home_typical_minutes">~%1$d min</string>
 
     <!-- Home: cardio card -->
-    <string name="home_cardio_title">Run &amp; walk</string>
-    <string name="home_cardio_label">Cardio</string>
+    <string name="home_cardio_title">Cardio</string>
     <string name="home_run">Run</string>
     <string name="home_walk">Walk</string>
 
