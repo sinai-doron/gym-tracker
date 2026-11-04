@@ -42,6 +42,8 @@ import kotlinx.coroutines.launch
 data class CardioUiState(
     val type: String = "RUNNING",
     val startedAt: Long? = null,
+    /** When the run was finished; null while it's under way. */
+    val finishedAt: Long? = null,
     val elapsedSecs: Long = 0,
     val distanceMeters: Double = 0.0,
     val currentSpeed: Float = 0f,
@@ -203,6 +205,7 @@ class CardioSessionViewModel @AssistedInject constructor(
         _uiState.update { state ->
             state.copy(
                 isFinished = true,
+                finishedAt = now,
                 distanceMeters = run?.distanceMeters ?: state.distanceMeters,
                 route = run?.route ?: state.route,
                 tracks = run?.tracks ?: state.tracks,

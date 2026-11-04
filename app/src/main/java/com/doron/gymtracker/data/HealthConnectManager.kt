@@ -10,12 +10,14 @@ import androidx.health.connect.client.records.ElevationGainedRecord
 import androidx.health.connect.client.records.ExerciseLap
 import androidx.health.connect.client.records.ExerciseRoute
 import androidx.health.connect.client.records.ExerciseSessionRecord
+import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.metadata.Device
 import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.request.AggregateRequest
+import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.health.connect.client.units.Energy
 import androidx.health.connect.client.units.Length
@@ -39,15 +41,16 @@ class HealthConnectManager @Inject constructor(
             HealthPermission.getWritePermission(ExerciseSessionRecord::class)
         )
 
+        /** A watch's heart rate, shown with a run. Described in Play's Health declaration. */
+        val READ_HEART_RATE = HealthPermission.getReadPermission(HeartRateRecord::class)
+
         /** What a run adds beyond the session itself. Each is optional: a run saves what's allowed. */
         val RUN_PERMISSIONS = setOf(
             HealthPermission.PERMISSION_WRITE_EXERCISE_ROUTE,
             HealthPermission.getWritePermission(DistanceRecord::class),
             HealthPermission.getWritePermission(ActiveCaloriesBurnedRecord::class),
-            HealthPermission.getWritePermission(ElevationGainedRecord::class)
-            // A watch's heart rate during runs is planned: it adds READ_HEART_RATE here and in the
-            // manifest, and Play's Health declaration then needs it described. Ask only for what
-            // the app reads; Play refuses permissions that aren't used.
+            HealthPermission.getWritePermission(ElevationGainedRecord::class),
+            READ_HEART_RATE
         )
 
         val ALL_PERMISSIONS = PERMISSIONS + RUN_PERMISSIONS
@@ -188,6 +191,39 @@ class HealthConnectManager @Inject constructor(
             c.insertRecords(records)
         } catch (e: Exception) {
             Log.w("HealthConnect", "Failed to write run", e)
+        }
+    }
+
+    /** Health Connect is there, but heart rate may not be read yet: worth asking. */
+    suspend fun canAskForHeartRate(): Boolean = client != null && READ_HEART_RATE !in granted()
+
+    /**
+     * Heart rate readings between [from] and [to], from any app that wrote them (a watch's).
+     * Null when they can't be read at all: no Health Connect, or no permission.
+     */
+    suspend fun readHeartRate(from: Long, to: Long): List<HeartRateSample>? {
+        val c = client ?: return null
+        if (READ_HEART_RATE !in granted()) return null
+        return try {
+            val samples = mutableListOf<HeartRateSample>()
+            var pageToken: String? = null
+            do {
+                val response = c.readRecords(
+                    ReadRecordsRequest(
+                        recordType = HeartRateRecord::class,
+                        timeRangeFilter = TimeRangeFilter.between(Instant.ofEpochMilli(from), Instant.ofEpochMilli(to)),
+                        pageToken = pageToken
+                    )
+                )
+                response.records.forEach { record ->
+                    record.samples.mapTo(samples) { HeartRateSample(it.time.toEpochMilli(), it.beatsPerMinute.toInt()) }
+                }
+                pageToken = response.pageToken
+            } while (pageToken != null)
+            samples
+        } catch (e: Exception) {
+            Log.w("HealthConnect", "Failed to read heart rate", e)
+            null
         }
     }
 

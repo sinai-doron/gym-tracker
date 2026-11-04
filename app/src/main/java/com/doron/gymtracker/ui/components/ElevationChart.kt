@@ -67,6 +67,21 @@ fun PaceChart(points: List<PacePoint>, modifier: Modifier = Modifier) {
     )
 }
 
+/** A watch's heart rate along the run; touch or drag to read it at a point. */
+@Composable
+fun HeartRateChart(points: List<Pair<Double, Double>>, modifier: Modifier = Modifier) {
+    val resources = LocalContext.current.resources
+    DistanceChart(
+        points = points,
+        format = { resources.getString(R.string.heart_rate_bpm_value, it.roundToInt()) },
+        // 20 bpm at least, so a steady effort reads as steady
+        minRange = 20.0,
+        modifier = modifier,
+        // The unit is in the header: "bpm" in Hebrew is too wide for the axis
+        axisLabel = { "${it.roundToInt()}" }
+    )
+}
+
 /**
  * A value against distance (left to right, also in RTL), filled below the line. Touch or
  * drag to read the distance and value at a point; with nothing touched the header shows
@@ -78,7 +93,9 @@ private fun DistanceChart(
     format: (Double) -> String,
     minRange: Double,
     modifier: Modifier = Modifier,
-    faster: Boolean = false
+    faster: Boolean = false,
+    /** A value as written by the y axis; [format] without its unit for pace. */
+    axisLabel: (Double) -> String = { if (faster) format(it).substringBefore(" ") else format(it) }
 ) {
     var selected by remember(points) { mutableStateOf<Pair<Double, Double>?>(null) }
     val textMeasurer = rememberTextMeasurer()
@@ -141,7 +158,7 @@ private fun DistanceChart(
                 listOf(minValue, maxValue).distinct().forEach { v ->
                     drawLine(axisColor, Offset(left, y(v)), Offset(size.width - right, y(v)), 1.dp.toPx(),
                         pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 6f)))
-                    val label = textMeasurer.measure(if (faster) format(v).substringBefore(" ") else format(v), labelStyle)
+                    val label = textMeasurer.measure(axisLabel(v), labelStyle)
                     drawText(label, topLeft = Offset(0f, y(v) - label.size.height / 2))
                 }
                 val start = textMeasurer.measure("0", labelStyle)

@@ -1,5 +1,6 @@
 package com.doron.gymtracker.ui.screens.cardio
 
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -27,6 +29,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,12 +61,19 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.health.connect.client.PermissionController
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.doron.gymtracker.R
 import com.doron.gymtracker.data.Elevation
+import com.doron.gymtracker.data.HealthConnectManager
+import com.doron.gymtracker.data.HeartRateSummary
 import com.doron.gymtracker.data.Lap
 import com.doron.gymtracker.data.Laps
 import com.doron.gymtracker.data.Pace
 import com.doron.gymtracker.ui.components.ElevationChart
+import com.doron.gymtracker.ui.components.HeartRateChart
 import com.doron.gymtracker.ui.components.PaceChart
 import com.doron.gymtracker.ui.components.RunMap
 import com.doron.gymtracker.ui.components.appLocale
@@ -94,6 +105,7 @@ fun RunSummaryScreen(
     var mapExpanded by remember { mutableStateOf(false) }
     var sharing by remember { mutableStateOf(false) }
     val hasRoute = state.route.size >= 2
+    val heartRate = runHeartRate(state)
 
     Box(Modifier.fillMaxSize().background(RunSummaryColors.ground)) {
         Column(
@@ -114,8 +126,9 @@ fun RunSummaryScreen(
             ) {
                 if (hasRoute) MapCard(state, onExpand = { mapExpanded = true })
                 SummaryCard(state)
-                DetailsGrid(details(state))
-                ChartCards(state)
+                DetailsGrid(details(state, (heartRate.value as? RunHeartRate.Shown)?.summary))
+                if (heartRate.value == RunHeartRate.CanAsk) ConnectHeartRate(onConnect = heartRate.connect)
+                ChartCards(state, (heartRate.value as? RunHeartRate.Shown)?.summary)
                 if (state.laps.isNotEmpty()) LapsCard(state)
                 if (state.tracks.isNotEmpty()) SoundtrackCard(state)
             }
@@ -339,7 +352,7 @@ private data class Detail(val value: String, val unit: String?, val label: Strin
 
 /** Only what this run recorded: a missing figure is left out, never shown as 0 or a dash. */
 @Composable
-private fun details(state: CardioUiState): List<Detail> {
+private fun details(state: CardioUiState, heartRate: HeartRateSummary?): List<Detail> {
     val locale = appLocale()
     val hours = state.elapsedSecs / 3600.0
     return listOfNotNull(
@@ -349,6 +362,8 @@ private fun details(state: CardioUiState): List<Detail> {
         state.avgCadence?.takeIf { it > 0 }?.let {
             Detail("$it", stringResource(R.string.run_summary_unit_spm), stringResource(R.string.run_summary_cadence))
         },
+        heartRate?.let { Detail("${it.avgBpm}", stringResource(R.string.run_summary_unit_bpm), stringResource(R.string.run_summary_avg_heart_rate)) },
+        heartRate?.let { Detail("${it.maxBpm}", stringResource(R.string.run_summary_unit_bpm), stringResource(R.string.run_summary_max_heart_rate)) },
         state.steps?.takeIf { it > 0 }?.let { Detail("%,d".format(locale, it), null, stringResource(R.string.cardio_steps)) },
         state.elevationGainM.roundToInt().takeIf { it > 0 }?.let {
             Detail("$it", stringResource(R.string.run_summary_unit_m), stringResource(R.string.cardio_elevation_gain))
@@ -435,7 +450,7 @@ private fun SectionCard(
 }
 
 @Composable
-private fun ChartCards(state: CardioUiState) {
+private fun ChartCards(state: CardioUiState, heartRate: HeartRateSummary?) {
     val pace = remember(state.route, state.pauses) {
         state.clock?.let { Pace.profile(state.route, it, state.pauses) }.orEmpty()
     }
@@ -445,6 +460,51 @@ private fun ChartCards(state: CardioUiState) {
     val profile = remember(state.route) { Elevation.profile(state.route, state.pauses) }
     if (profile.size >= 2) {
         SectionCard(stringResource(R.string.cardio_elevation)) { ElevationChart(points = profile, modifier = Modifier.fillMaxWidth()) }
+    }
+    if ((heartRate?.profile?.size ?: 0) >= 2) {
+        SectionCard(stringResource(R.string.run_summary_heart_rate)) {
+            HeartRateChart(points = heartRate!!.profile, modifier = Modifier.fillMaxWidth())
+        }
+    }
+}
+
+/** The run's heart rate from Health Connect, and how to ask for it. */
+private class HeartRateHolder(val value: RunHeartRate, val connect: () -> Unit)
+
+/**
+ * Reads the run's heart rate when it's shown, and again on coming back: a watch often syncs
+ * minutes after the run ends, or the user has just allowed it in Health Connect.
+ */
+@Composable
+private fun runHeartRate(state: CardioUiState): HeartRateHolder {
+    val viewModel = hiltViewModel<RunHeartRateViewModel>()
+    val value by viewModel.state.collectAsState()
+    val startedAt = state.startedAt
+    val finishedAt = state.finishedAt
+    LaunchedEffect(startedAt, finishedAt, state.moves) {
+        if (startedAt != null && finishedAt != null) viewModel.load(startedAt, finishedAt, state.moves)
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refresh() }
+    val launcher = rememberLauncherForActivityResult(PermissionController.createRequestPermissionResultContract()) {
+        viewModel.refresh()
+    }
+    return HeartRateHolder(value) { launcher.launch(setOf(HealthConnectManager.READ_HEART_RATE)) }
+}
+
+/** A quiet line under the details: heart rate is there to have, if a watch records it. */
+@Composable
+private fun ConnectHeartRate(onConnect: () -> Unit) {
+    val label = stringResource(R.string.run_summary_connect_heart_rate)
+    Box(
+        contentAlignment = Alignment.CenterStart,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = RunSummaryShapes.tapTarget)
+            .clip(RoundedCornerShape(RunSummaryShapes.buttonRadius))
+            .clickable(role = Role.Button, onClick = onConnect)
+            .padding(horizontal = RunSummaryShapes.cellPaddingHorizontal)
+    ) {
+        Text(label, style = RunSummaryType.sectionNote.copy(color = RunSummaryColors.secondaryButtonText))
     }
 }
 

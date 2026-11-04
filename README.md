@@ -100,6 +100,11 @@ English available in Settings.
   - Each route has a details page you can start or edit it from.
 - **Health Connect.** Finished runs and walks are written with their route, distance,
   calories and elevation. Steps are read from it.
+- **Heart rate from a watch.** A run's summary shows the average and highest heart rate,
+  and a chart along the distance, from whatever a watch wrote to Health Connect during the
+  run. It is read each time the run is shown and never stored or synced, and read again on
+  coming back to the screen, since watches often sync late. Without the permission, the
+  summary offers to connect it.
 
 ### History
 
@@ -311,7 +316,7 @@ GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs on 
 | Physical activity | The step counter, and steps on runs |
 | Vibrate | The end-of-rest countdown |
 | Internet | Map tiles, weather and street names |
-| Health Connect | Write runs (exercise, route, distance, calories, elevation); read steps, exercise and heart rate |
+| Health Connect | Write runs (exercise, route, distance, calories, elevation); read steps, and heart rate for runs |
 | Notification access *(optional)* | Lets the now-playing bar read and control music in other apps. The app asks once and remembers if you dismiss it. |
 
 ## Data and privacy
@@ -330,9 +335,11 @@ The app talks to a few services, and only for these things:
 ## Known limits
 
 - **Heart rate.** The CMF Watch Pro 2, through Nothing X, writes heart rate to Health
-  Connect only once every 5 minutes, about 15 minutes late. That isn't enough for a
-  heart-rate chart or zones on a run. It is still to be checked whether a workout started
-  on the watch writes more often.
+  Connect only once every 5 minutes, about 15 minutes late. A run then shows its heart
+  rate a while after it ends, as a coarse chart; zones would need more. It is still to be
+  checked whether a workout started on the watch writes more often.
+- **Older runs.** Health Connect lets an app read only 30 days back from when it was first
+  given a permission, so runs older than that may show no heart rate.
 - **Samsung Health** doesn't share exercise routes through Health Connect, so its runs
   can't be imported. A run can be added by hand from a GPX export.
 
