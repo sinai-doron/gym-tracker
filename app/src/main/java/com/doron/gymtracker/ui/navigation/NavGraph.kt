@@ -42,8 +42,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @Composable
-fun NavGraph(runToResume: CardioRun? = null, showOnboarding: Boolean = false) {
+fun NavGraph(
+    runToResume: CardioRun? = null,
+    showOnboarding: Boolean = false,
+    onFirstScreenReady: () -> Unit = {}
+) {
     val navController = rememberNavController()
+    // The wizard has nothing to load; home says when it has
+    if (showOnboarding) LaunchedEffect(Unit) { onFirstScreenReady() }
     LaunchedEffect(runToResume) {
         runToResume?.let { run ->
             navController.navigate("cardio/${run.sessionId}/${run.type}") { launchSingleTop = true }
@@ -87,6 +93,7 @@ fun NavGraph(runToResume: CardioRun? = null, showOnboarding: Boolean = false) {
         }
         composable("home") {
             HomeScreen(
+                onLoaded = onFirstScreenReady,
                 onSessionStart = { sessionId, workoutId ->
                     navController.navigate("session/$sessionId/$workoutId")
                 },
