@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.GymTracker" parent="android:Theme.DeviceDefault.NoActionBar" />
+
+    <!-- The launch screen: the icon's sheep on its own dark ground, until home has loaded.
+         The disc is 70 of the foreground's 108 units, inside the 72 the splash keeps. -->
+    <style name="Theme.GymTracker.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/ic_launcher_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.GymTracker</item>
+    </style>
 </resources>

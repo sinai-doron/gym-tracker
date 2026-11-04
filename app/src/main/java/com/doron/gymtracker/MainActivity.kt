@@ -9,6 +9,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.doron.gymtracker.data.CardioRecorder
 import com.doron.gymtracker.data.CardioRun
@@ -36,7 +37,14 @@ class MainActivity : ComponentActivity() {
     // Null until read, so neither home nor the wizard flashes up first
     private val showOnboarding = mutableStateOf<Boolean?>(null)
 
+    // The splash stays until the first screen has its data, or 3 s at most
+    @Volatile private var firstScreenReady = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashUntil = System.currentTimeMillis() + 3_000
+        installSplashScreen().setKeepOnScreenCondition {
+            !firstScreenReady && System.currentTimeMillis() < splashUntil
+        }
         super.onCreate(savedInstanceState)
         if (applyDefaultLocale()) return  // recreated in Hebrew straight away
         enableEdgeToEdge()
@@ -58,7 +66,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             GymTrackerTheme {
                 showOnboarding.value?.let { onboarding ->
-                    NavGraph(runToResume = runToResume.value, showOnboarding = onboarding)
+                    NavGraph(
+                        runToResume = runToResume.value,
+                        showOnboarding = onboarding,
+                        onFirstScreenReady = { firstScreenReady = true }
+                    )
                 }
             }
         }

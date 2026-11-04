@@ -108,10 +108,13 @@ fun HomeScreen(
     onTimer: (typeId: String) -> Unit,
     onTrainingTypes: () -> Unit,
     onLogSession: () -> Unit,
+    onLoaded: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
     badgesViewModel: BadgesViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
+    // Lets the launch splash go once home has its data
+    LaunchedEffect(state.isLoading) { if (!state.isLoading) onLoaded() }
     val badges by badgesViewModel.badges.collectAsState()
     val records by badgesViewModel.records.collectAsState()
     val achievements by badgesViewModel.achievements.collectAsState()
