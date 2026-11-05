@@ -17,6 +17,8 @@ interface ProgramRepository {
     suspend fun create(name: String, startDate: LocalDate): String
     suspend fun rename(id: String, name: String)
     suspend fun setStartDate(id: String, date: LocalDate)
+    /** Saves its deload and variant settings, as [rules] has them; the rest of [rules] is ignored. */
+    suspend fun setRules(id: String, rules: Program)
     /** The next workout comes from this programme from now on. */
     suspend fun makeActive(id: String)
     /** Only a programme that isn't active can be archived. */
@@ -56,6 +58,10 @@ class ProgramRepositoryImpl @Inject constructor(
     override suspend fun rename(id: String, name: String) = dao.rename(id, name)
 
     override suspend fun setStartDate(id: String, date: LocalDate) = dao.setStart(id, date.toEpochDay())
+
+    override suspend fun setRules(id: String, rules: Program) = with(rules) {
+        dao.setRules(id, deloadEveryWeeks, deloadLoadPercent, deloadSets, variantRule.name, variantEveryWeeks)
+    }
 
     override suspend fun makeActive(id: String) = dao.makeActive(id)
 

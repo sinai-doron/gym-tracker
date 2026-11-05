@@ -62,3 +62,10 @@ data class DistanceExerciseDefinition(
 
 /** The name to show in [lang] ("en", "he"): the library's, else the saved one. */
 fun ExerciseDefinition.nameIn(lang: String): String = names[lang] ?: name
+
+/** The same exercise planned for [sets] sets. */
+fun ExerciseDefinition.withTargetSets(sets: Int): ExerciseDefinition = when (this) {
+    is RepExerciseDefinition -> copy(targetSets = sets)
+    is TimedExerciseDefinition -> copy(targetSets = sets)
+    is DistanceExerciseDefinition -> copy(targetSets = sets)
+}

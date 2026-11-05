@@ -66,8 +66,12 @@ English on any other, and Settings can change it.
   - Reorder, add and remove exercises.
   - Removal is soft, so history stays.
 - **Programme logic.**
-  - Weekly exercise variants that alternate on A/B weeks.
-  - A deload week every sixth week: 60% of the last weight, 2 sets.
+  - Set per programme (tap the rules line in the programme): a deload every 3 to 12 weeks,
+    at a share of the usual weight (40–90%) and with at most so many sets; and week B, when
+    exercises switch to their variant, every week or every 2 to 4 weeks.
+  - In a deload week the session caps each exercise's sets and pre-fills the weight at that
+    share, rounded down to a plate (2.5 kg or 5 lb), with no hint to add weight. The plan keeps
+    its own sets, and later weeks start again from the usual weight.
   - Progression hints from your last three sessions: *increase*, *stalled* or *on
     track*.
 - **Exercise progress.** For each exercise: its personal record, a chart of the best set
@@ -154,7 +158,7 @@ built-in exercise it is in the exercise library, which the app fills from the ca
 | C | Shoulders and arms |
 
 The plan belongs to a programme, a row in the database: its start date drives the A/B weeks
-and the deload weeks (every sixth). The owner's started on 2026-10-26; a fresh install's starts
+and the deload weeks (every sixth in the owner's plan, which keeps 60% and 2 sets). The owner's started on 2026-10-26; a fresh install's starts
 the day it is first opened.
 
 Every session has a training type, also a row: Strength, Run and Walk are built in.

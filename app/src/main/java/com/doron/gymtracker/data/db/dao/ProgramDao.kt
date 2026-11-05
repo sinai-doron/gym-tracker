@@ -30,6 +30,14 @@ interface ProgramDao {
     @Query("UPDATE programs SET startEpochDay = :epochDay WHERE id = :id")
     suspend fun setStart(id: String, epochDay: Long)
 
+    @Query(
+        "UPDATE programs SET deloadEveryWeeks = :deloadEveryWeeks, deloadLoadPercent = :deloadLoadPercent, " +
+            "deloadSets = :deloadSets, variantRule = :variantRule, variantEveryWeeks = :variantEveryWeeks WHERE id = :id"
+    )
+    suspend fun setRules(
+        id: String, deloadEveryWeeks: Int?, deloadLoadPercent: Int, deloadSets: Int, variantRule: String, variantEveryWeeks: Int
+    )
+
     /** Makes [id] the only active programme; an archived one comes back with it. */
     @Query("UPDATE programs SET isActive = (id = :id), archivedAt = CASE WHEN id = :id THEN NULL ELSE archivedAt END")
     suspend fun makeActive(id: String)

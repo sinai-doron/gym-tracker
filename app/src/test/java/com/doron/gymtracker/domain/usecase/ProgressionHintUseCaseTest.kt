@@ -21,7 +21,7 @@ class ProgressionHintUseCaseTest {
     @Before
     fun setup() {
         repo = mockk()
-        useCase = ProgressionHintUseCase(repo)
+        useCase = ProgressionHintUseCase(repo, mockk { coEvery { getActiveProgram() } returns null })
     }
 
     private fun repSet(id: Long, reps: Int, weight: Float) = RepSetRecord(id, id, 0L, reps, weight)
@@ -88,6 +88,18 @@ class ProgressionHintUseCaseTest {
         coEvery { repo.getExerciseHistory("d1_e1") } returns listOf(
             history(1, 8 to 60f), history(3, 8 to 60f), history(5, 8 to 60f)
         )
+        val hint = useCase("d1_e1", targetReps = 8)
+        assertTrue("Expected Increase but got $hint", hint is ProgressionHint.Increase)
+    }
+
+    @Test
+    fun `a deload week's sessions say nothing about progress`() = runTest {
+        // Weeks 4, 5 and 7 hit the target; week 6, the deload, was lighter and shorter on purpose
+        useCase = ProgressionHintUseCase(repo, ProgramFixture.repo())
+        coEvery { repo.getExerciseHistory("d1_e1") } returns listOf(4, 5, 6, 7).map { week ->
+            val (reps, weight) = if (week == 6) 5 to 36f else 8 to 60f
+            ExerciseSessionSets(week.toLong(), ProgramFixture.inWeek(week), listOf(repSet(week.toLong(), reps, weight)))
+        }
         val hint = useCase("d1_e1", targetReps = 8)
         assertTrue("Expected Increase but got $hint", hint is ProgressionHint.Increase)
     }

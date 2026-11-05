@@ -51,11 +51,10 @@
     <string name="builder_start_value">%1$s · שבוע %2$d</string>
     <string name="builder_rules">סבב · הורדת עומס · שבועות מתחלפים</string>
     <string name="builder_rules_in_order">לפי הסדר</string>
-    <string name="builder_rules_deload_every">הורדת עומס כל %d שבועות</string>
     <string name="builder_rules_no_deload">בלי הורדת עומס</string>
     <string name="builder_rules_alternate">שבוע B בשבועות הזוגיים</string>
     <string name="builder_rules_no_variants">בלי שבועות מתחלפים</string>
-    <string name="builder_rules_later">הסבב הולך לפי ימי השבוע ברגע שלאימון יש יום. ההגדרות להורדת עומס ולשבועות מתחלפים יגיעו בהמשך.</string>
+    <string name="builder_rules_later">הסבב הולך לפי ימי השבוע ברגע שלאימון יש יום.</string>
     <string name="builder_open_workout">עריכת התרגילים של %s</string>
     <!-- An exercise's targets in a workout (the sheet in the workout editor) -->
     <string name="targets_reps_from">חזרות, מ-</string>
@@ -95,4 +94,17 @@
     <string name="builder_workout_no_day">בלי יום</string>
     <string name="builder_workout_day_help">כשלאימונים יש יום, התוכנית הולכת לפי ימי השבוע. בלי ימים, הם מתחלפים לפי הסדר.</string>
     <string name="builder_rules_by_weekday">לפי ימי השבוע</string>
+    <string name="builder_rules_edit_title">הורדת עומס ושבועות מתחלפים</string>
+    <string name="builder_deload">הורדת עומס</string>
+    <string name="builder_off">כבוי</string>
+    <string name="builder_every_week">כל שבוע</string>
+    <string name="builder_every_n_weeks">כל %d שבועות</string>
+    <string name="builder_deload_load">משקל</string>
+    <string name="builder_percent_of_usual">%d%% מהרגיל</string>
+    <string name="builder_deload_sets">סטים לתרגיל</string>
+    <string name="builder_at_most_sets">עד %d</string>
+    <string name="builder_alternate">שבוע B (וריאציות)</string>
+    <string name="builder_alternate_help">תרגילים עם וריאציה עוברים אליה בשבוע B: התרגיל לפרק הזמן הזה, ואז הווריאציה לאותו זמן.</string>
+    <string name="builder_rules_alternate_every">שבוע B כל %d שבועות</string>
+    <string name="builder_rules_deload_detail">הורדת עומס כל %1$d שבועות ב-%2$d%%</string>
 </resources>

@@ -1,8 +1,10 @@
 package com.doron.gymtracker.data.db.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.doron.gymtracker.domain.model.Program
 
 @Entity(tableName = "programs", indices = [Index(value = ["uuid"], unique = true)])
 data class ProgramEntity(
@@ -18,5 +20,11 @@ data class ProgramEntity(
     /** Archived by the user: kept, since its sessions point at its workouts. */
     val archivedAt: Long? = null,
     /** The training type it's for (`activity_types.id`); null is a strength programme. */
-    val activityTypeId: String? = null
+    val activityTypeId: String? = null,
+    /** A deload week's weight, as a percentage of the usual one (version 19). */
+    @ColumnInfo(defaultValue = "60") val deloadLoadPercent: Int = Program.DEFAULT_DELOAD_LOAD_PERCENT,
+    /** A deload week's sets per exercise, at most the plan's (version 19). */
+    @ColumnInfo(defaultValue = "2") val deloadSets: Int = Program.DEFAULT_DELOAD_SETS,
+    /** How many weeks each side of the variant rule lasts (version 19). */
+    @ColumnInfo(defaultValue = "1") val variantEveryWeeks: Int = 1
 )

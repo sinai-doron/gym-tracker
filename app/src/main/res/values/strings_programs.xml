@@ -45,11 +45,10 @@
     <string name="builder_start_value">%1$s · week %2$d</string>
     <string name="builder_rules">Rotation · deload · alternate weeks</string>
     <string name="builder_rules_in_order">In order</string>
-    <string name="builder_rules_deload_every">deload every %d weeks</string>
     <string name="builder_rules_no_deload">no deload</string>
     <string name="builder_rules_alternate">week B on even weeks</string>
     <string name="builder_rules_no_variants">no alternate weeks</string>
-    <string name="builder_rules_later">The rotation follows the week once a workout has a day. Settings for deload and alternate weeks are coming.</string>
+    <string name="builder_rules_later">The rotation follows the week once a workout has a day.</string>
     <string name="builder_open_workout">Edit exercises of %s</string>
     <!-- An exercise's targets in a workout (the sheet in the workout editor) -->
     <string name="targets_reps_from">Reps from</string>
@@ -87,4 +86,17 @@
     <string name="builder_workout_no_day">No day</string>
     <string name="builder_workout_day_help">Give workouts a day and the programme follows the week. Without days, they rotate in order.</string>
     <string name="builder_rules_by_weekday">By weekday</string>
+    <string name="builder_rules_edit_title">Deload and alternate weeks</string>
+    <string name="builder_deload">Deload</string>
+    <string name="builder_off">Off</string>
+    <string name="builder_every_week">Every week</string>
+    <string name="builder_every_n_weeks">Every %d weeks</string>
+    <string name="builder_deload_load">Weight</string>
+    <string name="builder_percent_of_usual">%d%% of usual</string>
+    <string name="builder_deload_sets">Sets per exercise</string>
+    <string name="builder_at_most_sets">At most %d</string>
+    <string name="builder_alternate">Week B (variants)</string>
+    <string name="builder_alternate_help">Exercises with a variant switch to it in week B: the exercise for this long, then its variant for as long.</string>
+    <string name="builder_rules_alternate_every">week B every %d weeks</string>
+    <string name="builder_rules_deload_detail">deload every %1$d weeks at %2$d%%</string>
 </resources>

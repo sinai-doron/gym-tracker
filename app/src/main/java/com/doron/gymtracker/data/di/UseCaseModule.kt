@@ -47,12 +47,12 @@ object UseCaseModule {
         IsDeloadWeekUseCase(repo)
 
     @Provides
-    fun provideProgressionHintUseCase(repo: SessionRepository) =
-        ProgressionHintUseCase(repo)
+    fun provideProgressionHintUseCase(repo: SessionRepository, workouts: WorkoutRepository) =
+        ProgressionHintUseCase(repo, workouts)
 
     @Provides
-    fun provideGetLastWeightUseCase(repo: SessionRepository) =
-        GetLastWeightUseCase(repo)
+    fun provideGetLastWeightUseCase(repo: SessionRepository, workouts: WorkoutRepository) =
+        GetLastWeightUseCase(repo, workouts)
 
     @Provides
     fun provideGetWorkoutPreviewUseCase(

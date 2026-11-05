@@ -116,6 +116,9 @@ class SyncPayloads(private val db: SupportSQLiteDatabase) {
                 put("isActive", c.bool("isActive"))
                 put("archivedAt", c.longOrNull("archivedAt"))
                 put("activityTypeId", c.strOrNull("type_uuid"))
+                put("deloadLoadPercent", c.int("deloadLoadPercent"))
+                put("deloadSets", c.int("deloadSets"))
+                put("variantEveryWeeks", c.int("variantEveryWeeks"))
             }
         }
         "workout" -> row(
