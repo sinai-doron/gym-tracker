@@ -1,18 +1,24 @@
 package com.doron.gymtracker.domain.usecase
 
 import com.doron.gymtracker.data.repository.SessionRepository
+import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.domain.model.ProgressionHint
 import com.doron.gymtracker.domain.model.RepSetRecord
 import javax.inject.Inject
 
 class ProgressionHintUseCase @Inject constructor(
-    private val sessionRepo: SessionRepository
+    private val sessionRepo: SessionRepository,
+    private val workouts: WorkoutRepository
 ) {
     suspend operator fun invoke(exerciseId: String, targetReps: Int): ProgressionHint {
         // The last 3 finished sessions that had this exercise, oldest first. Not the last 3 sessions
         // overall: with an A/B/C rotation and runs in between, those almost never all include it,
         // and the hint could only ever say "on track".
-        val last3 = sessionRepo.getExerciseHistory(exerciseId).takeLast(3)
+        // Deload weeks are left out: lighter on purpose, they say nothing about progress
+        val program = workouts.getActiveProgram()
+        val last3 = sessionRepo.getExerciseHistory(exerciseId)
+            .filterNot { program?.isDeloadWeek(it.startedAt) == true }
+            .takeLast(3)
         if (last3.size < 3) return ProgressionHint.OnTrack
 
         // Collect per-session: max reps achieved and weight used

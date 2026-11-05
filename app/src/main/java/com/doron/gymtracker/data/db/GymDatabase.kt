@@ -55,7 +55,7 @@ import com.doron.gymtracker.data.db.entities.WorkoutEntity
         ActivityTypeEntity::class,
         RunStepEntity::class
     ],
-    version = 18,
+    version = 19,
     // Each version's schema is written to app/schemas/ (see app/build.gradle.kts) for the migration tests
     exportSchema = true
 )
@@ -213,13 +213,23 @@ abstract class GymDatabase : RoomDatabase() {
             }
         }
 
+        // A programme's deload load and sets, and how long its variant weeks last, set by the user.
+        // The defaults are what the app did until now: 60% and 2 sets, variants every other week.
+        val MIGRATION_18_19 = object : Migration(18, 19) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `programs` ADD COLUMN `deloadLoadPercent` INTEGER NOT NULL DEFAULT 60")
+                db.execSQL("ALTER TABLE `programs` ADD COLUMN `deloadSets` INTEGER NOT NULL DEFAULT 2")
+                db.execSQL("ALTER TABLE `programs` ADD COLUMN `variantEveryWeeks` INTEGER NOT NULL DEFAULT 1")
+            }
+        }
+
         /** Every migration, oldest first. The app and the migration tests open the database with this one list. */
         val MIGRATIONS: Array<Migration> = arrayOf(
             MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
             MIGRATION_8_9, MIGRATION_9_10, SyncMigration.MIGRATION_10_11, SyncMigration.MIGRATION_11_12,
             SyncMigration.MIGRATION_12_13, LibraryMigration.MIGRATION_13_14,
             SetsMigration.MIGRATION_14_15, ProgramMigration.MIGRATION_15_16, ActivityTypeMigration.MIGRATION_16_17,
-            MIGRATION_17_18
+            MIGRATION_17_18, MIGRATION_18_19
         )
 
         /**

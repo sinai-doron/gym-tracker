@@ -241,9 +241,9 @@ fun SessionScreen(
         }
 
         // Deload week banner
-        if (state.isDeloadWeek) {
+        state.deload?.let { deload ->
             Text(
-                stringResource(R.string.deload_week_banner),
+                stringResource(R.string.deload_week_banner, deload.deloadLoadPercent, deload.deloadSets),
                 style = MaterialTheme.typography.bodyMedium,
                 color = androidx.compose.ui.graphics.Color(0xFF1A1035),
                 modifier = Modifier

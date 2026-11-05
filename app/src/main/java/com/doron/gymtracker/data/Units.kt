@@ -116,3 +116,13 @@ fun WeightUnit.format(kg: Float): String = when (this) {
         if (tenths % 10 == 0) "${tenths / 10}" else "${tenths / 10}.${abs(tenths % 10)}"
     }
 }
+
+/**
+ * [kg] rounded down to what plates make in this unit: 2.5 kg, or 5 lb. A deload's share of the
+ * usual weight (60% of 62.5 kg is 37.5; of 135 lb, 81) becomes a weight the lifter can load.
+ */
+fun WeightUnit.floorToPlate(kg: Float): Float {
+    val plate = if (this == WeightUnit.KG) 2.5 else 5.0
+    // A hair over, so a weight already on a plate step isn't knocked down by float error
+    return toKg(floor(of(kg) / plate + 1e-6) * plate)
+}

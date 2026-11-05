@@ -136,6 +136,10 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
                     put("isActive", data.bool("isActive"))
                     putLongOrNull("archivedAt", data.longOrNull("archivedAt"))
                     put("activityTypeId", typeId)
+                    // Sent from version 19; an older app's programme keeps the defaults
+                    data.intOrNull("deloadLoadPercent")?.let { put("deloadLoadPercent", it) }
+                    data.intOrNull("deloadSets")?.let { put("deloadSets", it) }
+                    data.intOrNull("variantEveryWeeks")?.let { put("variantEveryWeeks", it) }
                 })
             }
             "workout" -> {

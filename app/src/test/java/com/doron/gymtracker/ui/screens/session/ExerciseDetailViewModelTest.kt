@@ -185,4 +185,21 @@ class ExerciseDetailViewModelTest {
         advanceTimeBy(100)
         assertEquals(42.5f, vm.uiState.value.lastWeight)
     }
+
+    @Test
+    fun `a deload week pre-fills a share of the usual weight, with no hint to add more`() = runTest(testDispatcher) {
+        val getLastWeight = mockk<GetLastWeightUseCase>()
+        coEvery { getLastWeight(any()) } returns 65f
+        val progressionHint = mockk<ProgressionHintUseCase>()
+        coEvery { progressionHint(any(), any()) } returns ProgressionHint.Increase(2.5f)
+        val vm = ExerciseDetailViewModel(
+            1L, repExercise, logSet,
+            progressionHint = progressionHint, getLastWeight = getLastWeight, deloadLoadPercent = 60
+        )
+        advanceTimeBy(100)
+        val state = vm.uiState.value
+        assertEquals(39f, state.lastWeight!!, 1e-4f)
+        assertTrue(state.deloadPrefill)
+        assertEquals(ProgressionHint.OnTrack, state.progressionHint)
+    }
 }
