@@ -28,6 +28,7 @@
     <string name="builder_rename">Rename</string>
     <string name="builder_program_name">Programme name</string>
     <string name="builder_workouts_header">Workouts · done in this order</string>
+    <string name="builder_workouts_header_weekly">Workouts · done on their days</string>
     <string name="builder_no_workouts">No workouts yet. Add the first one, then fill it with exercises.</string>
     <string name="builder_add_workout">Add workout</string>
     <string name="builder_edit_workout">Edit workout</string>
@@ -48,7 +49,7 @@
     <string name="builder_rules_no_deload">no deload</string>
     <string name="builder_rules_alternate">week B on even weeks</string>
     <string name="builder_rules_no_variants">no alternate weeks</string>
-    <string name="builder_rules_later">Settings for these are coming.</string>
+    <string name="builder_rules_later">The rotation follows the week once a workout has a day. Settings for deload and alternate weeks are coming.</string>
     <string name="builder_open_workout">Edit exercises of %s</string>
     <!-- An exercise's targets in a workout (the sheet in the workout editor) -->
     <string name="targets_reps_from">Reps from</string>
@@ -82,4 +83,8 @@
     <string name="create_save">Save and add</string>
     <string name="body_front">Front</string>
     <string name="body_back">Back</string>
+    <string name="builder_workout_day">Day</string>
+    <string name="builder_workout_no_day">No day</string>
+    <string name="builder_workout_day_help">Give workouts a day and the programme follows the week. Without days, they rotate in order.</string>
+    <string name="builder_rules_by_weekday">By weekday</string>
 </resources>

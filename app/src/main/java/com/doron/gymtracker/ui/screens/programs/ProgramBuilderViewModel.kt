@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -19,7 +20,10 @@ data class ProgramBuilderUiState(
     val program: Program? = null,
     /** Its workouts in rotation order, hidden ones left out. */
     val workouts: List<Workout> = emptyList()
-)
+) {
+    /** The rotation follows the week once any workout has a day (GetNextWorkoutUseCase). */
+    val byWeekday: Boolean get() = workouts.any { it.weekday != null }
+}
 
 @HiltViewModel
 class ProgramBuilderViewModel @Inject constructor(
@@ -40,9 +44,11 @@ class ProgramBuilderViewModel @Inject constructor(
 
     fun setStartDate(date: LocalDate) = change { programs.setStartDate(programId, date) }
 
-    fun addWorkout(code: String, name: String?) = change { workouts.addWorkout(programId, code, name?.trim()?.ifEmpty { null }) }
+    fun addWorkout(code: String, name: String?, weekday: DayOfWeek?) =
+        change { workouts.addWorkout(programId, code, name?.trim()?.ifEmpty { null }, weekday) }
 
-    fun editWorkout(id: String, code: String, name: String?) = change { workouts.editWorkout(id, code, name?.trim()?.ifEmpty { null }) }
+    fun editWorkout(id: String, code: String, name: String?, weekday: DayOfWeek?) =
+        change { workouts.editWorkout(id, code, name?.trim()?.ifEmpty { null }, weekday) }
 
     fun moveWorkout(id: String, direction: Int) = change { workouts.moveWorkout(programId, id, direction) }
 

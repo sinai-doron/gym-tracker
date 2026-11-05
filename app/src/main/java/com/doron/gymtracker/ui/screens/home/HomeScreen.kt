@@ -317,6 +317,7 @@ fun HomeScreen(
             state.nextWorkoutPreview?.let { preview ->
                 NextWorkoutCard(
                     preview = preview,
+                    day = state.suggestedDay,
                     onSwap = onChooseWorkout,
                     onExerciseClick = onExerciseProgress,
                     onStart = {

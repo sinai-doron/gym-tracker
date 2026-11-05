@@ -34,8 +34,8 @@ interface WorkoutDao {
     @Insert
     suspend fun insertWorkout(workout: WorkoutEntity)
 
-    @Query("UPDATE workouts SET label = :code, name = :name WHERE id = :id")
-    suspend fun editWorkout(id: String, code: String, name: String?)
+    @Query("UPDATE workouts SET label = :code, name = :name, weekday = :weekday WHERE id = :id")
+    suspend fun editWorkout(id: String, code: String, name: String?, weekday: Int?)
 
     @Query("UPDATE workouts SET sortOrder = :sortOrder WHERE id = :id")
     suspend fun setWorkoutSortOrder(id: String, sortOrder: Int)

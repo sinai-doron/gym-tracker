@@ -62,6 +62,8 @@ data class WeekDay(
 
 data class HomeUiState(
     val suggestedWorkout: Workout? = null,
+    /** The day [suggestedWorkout] falls on when the programme follows the week; null when it rotates in order. */
+    val suggestedDay: LocalDate? = null,
     val selectedWorkout: Workout? = null,
     val nextWorkoutPreview: WorkoutPreview? = null,
     val allWorkouts: List<Workout> = emptyList(),
@@ -136,7 +138,8 @@ class HomeViewModel @Inject constructor(
         }
         viewModelScope.launch {
             closeStaleSessions()
-            val suggested = getNextWorkout()
+            val next = getNextWorkout.next()
+            val suggested = next?.workout
             val all = workoutRepo.getAll()
             val openSession = sessionRepo.getOpenGymSession()
             val preview = suggested?.let { getWorkoutPreview(it) }
@@ -147,6 +150,7 @@ class HomeViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     suggestedWorkout = suggested,
+                    suggestedDay = next?.day,
                     selectedWorkout = suggested,
                     nextWorkoutPreview = preview,
                     openSession = openSession,

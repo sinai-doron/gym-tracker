@@ -3,6 +3,7 @@ package com.doron.gymtracker.data.repository
 import com.doron.gymtracker.domain.model.ExerciseDefinition
 import com.doron.gymtracker.domain.model.Program
 import com.doron.gymtracker.domain.model.Workout
+import java.time.DayOfWeek
 
 interface WorkoutRepository {
     suspend fun ensureSeeded()
@@ -19,9 +20,9 @@ interface WorkoutRepository {
      * rotation order, each with its exercises.
      */
     suspend fun installProgram(program: Program, workouts: List<NewWorkout>)
-    /** Adds a workout at the end of the programme's rotation; returns its id. */
-    suspend fun addWorkout(programId: String, code: String, name: String?): String
-    suspend fun editWorkout(id: String, code: String, name: String?)
+    /** Adds a workout at the end of the programme's rotation, on [weekday] if given; returns its id. */
+    suspend fun addWorkout(programId: String, code: String, name: String?, weekday: DayOfWeek? = null): String
+    suspend fun editWorkout(id: String, code: String, name: String?, weekday: DayOfWeek? = null)
     /** Moves a workout one place earlier (-1) or later (+1) in its programme's rotation. */
     suspend fun moveWorkout(programId: String, workoutId: String, direction: Int)
     /** Takes a workout out of the rotation: hidden when it has history, deleted otherwise. */

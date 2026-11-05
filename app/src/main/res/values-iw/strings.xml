@@ -25,6 +25,9 @@
     <string name="settings">הגדרות</string>
     <string name="language">שפה</string>
     <string name="next_workout">האימון הבא</string>
+    <string name="next_workout_today">האימון של היום</string>
+    <string name="next_workout_tomorrow">האימון של מחר</string>
+    <string name="next_workout_on">האימון הבא · %1$s</string>
     <string name="choose_other_workout">בחר אימון אחר</string>
     <string name="workouts">אימונים</string>
     <string name="up_next">הבא בתור</string>

@@ -13,6 +13,8 @@ import com.doron.gymtracker.R
 import com.doron.gymtracker.domain.model.WorkoutPreview
 import com.doron.gymtracker.ui.theme.AppColors
 import com.doron.gymtracker.ui.theme.AppShapes
+import java.time.LocalDate
+import java.time.format.TextStyle
 
 /**
  * The next workout: its name under a dumbbell tile, a button to pick another, chips for when it
@@ -22,6 +24,8 @@ import com.doron.gymtracker.ui.theme.AppShapes
 @Composable
 fun NextWorkoutCard(
     preview: WorkoutPreview,
+    /** The day it falls on, when the programme follows the week. */
+    day: LocalDate?,
     onStart: () -> Unit,
     onSwap: () -> Unit,
     onExerciseClick: (exerciseId: String) -> Unit
@@ -33,7 +37,7 @@ fun NextWorkoutCard(
             icon = R.drawable.ic_home_dumbbell,
             tile = AppColors.tintStrength,
             iconColor = AppColors.accentStrength,
-            label = stringResource(R.string.next_workout),
+            label = nextWorkoutLabel(day),
             title = preview.workout.localizedName(),
             action = {
                 SquareIconButton(
@@ -126,5 +130,17 @@ fun CardioCard(onRun: (() -> Unit)?, onWalk: (() -> Unit)?) {
                 )
             }
         }
+    }
+}
+
+/** "Next workout"; by weekday "Today's workout", "Tomorrow's workout" or "Next workout · Monday". */
+@Composable
+private fun nextWorkoutLabel(day: LocalDate?): String {
+    val today = LocalDate.now()
+    return when (day) {
+        null -> stringResource(R.string.next_workout)
+        today -> stringResource(R.string.next_workout_today)
+        today.plusDays(1) -> stringResource(R.string.next_workout_tomorrow)
+        else -> stringResource(R.string.next_workout_on, day.dayOfWeek.getDisplayName(TextStyle.FULL, appLocale()))
     }
 }
