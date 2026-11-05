@@ -59,7 +59,11 @@ import com.doron.gymtracker.ui.components.IconLabel
 import com.doron.gymtracker.ui.components.RunMap
 import com.doron.gymtracker.ui.components.SlopeColors
 import com.doron.gymtracker.ui.theme.Purple
-import kotlin.math.roundToInt
+import com.doron.gymtracker.ui.components.distanceNumber
+import com.doron.gymtracker.ui.components.distanceUnitLabel
+import com.doron.gymtracker.ui.components.heightUnitLabel
+import com.doron.gymtracker.ui.components.heightNumber
+import com.doron.gymtracker.ui.components.paceText
 
 /** One route: its map by slope, distance, climb and expected time; run, renamed or deleted from here. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -170,22 +174,22 @@ fun RouteDetailScreen(
                         MapLegend(s, Modifier.align(Alignment.TopStart).padding(10.dp))
                     }
                     Spacer(Modifier.height(16.dp))
-                    StatTile(stringResource(R.string.routes_distance), "%.2f".format(s.route.distanceMeters / 1000), stringResource(R.string.routes_unit_km), Modifier.fillMaxWidth())
+                    StatTile(stringResource(R.string.routes_distance), distanceNumber(s.route.distanceMeters), distanceUnitLabel(), Modifier.fillMaxWidth())
                     Spacer(Modifier.height(12.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        StatTile(stringResource(R.string.routes_climb), meters(s.climbM), stringResource(R.string.routes_unit_m), Modifier.weight(1f))
-                        StatTile(stringResource(R.string.routes_descent), meters(s.descentM), stringResource(R.string.routes_unit_m), Modifier.weight(1f))
+                        StatTile(stringResource(R.string.routes_climb), height(s.climbM), heightUnitLabel(), Modifier.weight(1f))
+                        StatTile(stringResource(R.string.routes_descent), height(s.descentM), heightUnitLabel(), Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(12.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        StatTile(stringResource(R.string.routes_highest), meters(s.highestM), stringResource(R.string.routes_unit_m), Modifier.weight(1f))
+                        StatTile(stringResource(R.string.routes_highest), height(s.highestM), heightUnitLabel(), Modifier.weight(1f))
                         StatTile(stringResource(R.string.routes_estimated_time), formatTime(s.estimatedSecs), null, Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(8.dp))
                     Text(
                         stringResource(
-                            if (s.paceFromRuns) R.string.routes_estimate_from_runs else R.string.routes_estimate_from_pace,
-                            formatPace(s.paceSecsPerKm)
+                            if (s.paceFromRuns) R.string.routes_estimate_from_runs_pace else R.string.routes_estimate_from_pace_unit,
+                            paceText(s.paceSecsPerKm)
                         ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -303,9 +307,9 @@ private fun StatTile(label: String, value: String, unit: String?, modifier: Modi
     }
 }
 
-private fun meters(m: Double?): String = m?.roundToInt()?.toString() ?: "—"
-
-private fun formatPace(secsPerKm: Long): String = "%d:%02d".format(secsPerKm / 60, secsPerKm % 60)
+/** Climb, descent or height in metres or feet, or a dash when the route has no altitude. */
+@Composable
+private fun height(m: Double?): String = m?.let { heightNumber(it) } ?: "—"
 
 private fun formatTime(totalSecs: Long): String {
     val h = totalSecs / 3600

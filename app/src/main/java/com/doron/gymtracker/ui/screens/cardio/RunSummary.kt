@@ -87,6 +87,19 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
+import com.doron.gymtracker.ui.components.distanceText
+import com.doron.gymtracker.ui.components.distanceNumber
+import com.doron.gymtracker.ui.components.distanceUnitLabel
+import com.doron.gymtracker.ui.components.paceNumber
+import com.doron.gymtracker.ui.components.paceText
+import com.doron.gymtracker.ui.components.paceUnitLabel
+import com.doron.gymtracker.ui.components.speedUnitLabel
+import com.doron.gymtracker.ui.components.heightNumber
+import com.doron.gymtracker.ui.components.heightText
+import com.doron.gymtracker.ui.components.heightUnitLabel
+import com.doron.gymtracker.ui.components.lapLengthText
+import com.doron.gymtracker.ui.components.LocalDistanceUnit
+import com.doron.gymtracker.data.speed
 
 /**
  * A finished run or walk, top to bottom: where (the map), how far (the distance, then time and
@@ -197,7 +210,7 @@ private fun Header(title: String, subtitle: String?, onBack: () -> Unit) {
 
 @Composable
 private fun MapCard(state: CardioUiState, onExpand: () -> Unit) {
-    val description = stringResource(R.string.run_summary_map_description, km2(state.distanceMeters))
+    val description = stringResource(R.string.run_summary_map_description_distance, distanceText(state.distanceMeters))
     Box(
         Modifier
             .fillMaxWidth()
@@ -302,8 +315,8 @@ private fun SummaryCard(state: CardioUiState) {
             // The figure, then its unit, in Hebrew too
             CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                 Row(horizontalArrangement = Arrangement.spacedBy(RunSummaryShapes.distanceUnitGap)) {
-                    Text(km2(state.distanceMeters), style = RunSummaryType.distance, modifier = Modifier.alignByBaseline())
-                    Text(stringResource(R.string.run_summary_unit_km), style = RunSummaryType.distanceUnit, modifier = Modifier.alignByBaseline())
+                    Text(distanceNumber(state.distanceMeters), style = RunSummaryType.distance, modifier = Modifier.alignByBaseline())
+                    Text(distanceUnitLabel(), style = RunSummaryType.distanceUnit, modifier = Modifier.alignByBaseline())
                 }
             }
         }
@@ -318,7 +331,7 @@ private fun SummaryCard(state: CardioUiState) {
             val pace = paceSecsPerKm(state)
             if (pace != null) {
                 LabelledValue(
-                    stringResource(R.string.cardio_avg_pace), formatPace(pace), stringResource(R.string.run_summary_unit_per_km),
+                    stringResource(R.string.cardio_avg_pace), paceNumber(pace), paceUnitLabel(),
                     Modifier.weight(1f)
                 )
             } else Spacer(Modifier.weight(1f))
@@ -359,7 +372,7 @@ private fun details(state: CardioUiState, heartRate: HeartRateSummary?): List<De
     val hours = state.elapsedSecs / 3600.0
     return listOfNotNull(
         if (hours > 0 && state.distanceMeters > 0) {
-            Detail("%.1f".format(locale, state.distanceMeters / 1000 / hours), stringResource(R.string.run_summary_unit_kmh), stringResource(R.string.cardio_avg_speed))
+            Detail("%.1f".format(locale, LocalDistanceUnit.current.speed(state.distanceMeters / 1000 / hours)), speedUnitLabel(), stringResource(R.string.cardio_avg_speed))
         } else null,
         state.avgCadence?.takeIf { it > 0 }?.let {
             Detail("$it", stringResource(R.string.run_summary_unit_spm), stringResource(R.string.run_summary_cadence))
@@ -367,8 +380,8 @@ private fun details(state: CardioUiState, heartRate: HeartRateSummary?): List<De
         heartRate?.let { Detail("${it.avgBpm}", stringResource(R.string.run_summary_unit_bpm), stringResource(R.string.run_summary_avg_heart_rate)) },
         heartRate?.let { Detail("${it.maxBpm}", stringResource(R.string.run_summary_unit_bpm), stringResource(R.string.run_summary_max_heart_rate)) },
         state.steps?.takeIf { it > 0 }?.let { Detail("%,d".format(locale, it), null, stringResource(R.string.cardio_steps)) },
-        state.elevationGainM.roundToInt().takeIf { it > 0 }?.let {
-            Detail("$it", stringResource(R.string.run_summary_unit_m), stringResource(R.string.cardio_elevation_gain))
+        state.elevationGainM.takeIf { it.roundToInt() > 0 }?.let {
+            Detail(heightNumber(it), heightUnitLabel(), stringResource(R.string.cardio_elevation_gain))
         },
         state.calories?.takeIf { it > 0 }?.let {
             Detail("$it", stringResource(R.string.run_summary_unit_kcal), stringResource(R.string.cardio_calories))
@@ -529,14 +542,14 @@ private fun LapsCard(state: CardioUiState) {
     }
     // A short last stretch isn't a fair race against the full laps
     val fastest = laps.filterNot { it.partial }.takeIf { it.size > 1 }?.minByOrNull { it.paceSecsPerKm }
-    val every = state.lapMeters.takeIf { it > 0 }?.let { stringResource(R.string.run_summary_laps_every, formatKm(it / 1000f)) }
+    val every = state.lapMeters.takeIf { it > 0 }?.let { stringResource(R.string.run_summary_laps_every_distance, lapLengthText(it)) }
     SectionCard(stringResource(R.string.cardio_laps), note = every, horizontalPadding = 0.dp) {
         Column(Modifier.fillMaxWidth()) {
             LapRow(
                 height = null,
                 cells = listOfNotNull(
                     stringResource(R.string.run_summary_lap), stringResource(R.string.run_summary_lap_time),
-                    stringResource(R.string.run_summary_lap_pace), climbs?.let { stringResource(R.string.run_summary_lap_climb) },
+                    stringResource(R.string.run_summary_lap_pace_unit, paceUnitLabel()), climbs?.let { stringResource(R.string.run_summary_lap_climb) },
                     cadences?.let { stringResource(R.string.run_summary_cadence) }
                 ).map { { Text(it, style = RunSummaryType.tableHeader) } }
             )
@@ -552,6 +565,7 @@ private fun LapLine(lap: Lap, climb: Double?, cadence: Int?, cadenceColumn: Bool
     val color = if (lap.partial) RunSummaryColors.textMuted else RunSummaryColors.text
     val cell = RunSummaryType.tableCell.copy(color = color)
     val fastestLabel = stringResource(R.string.run_summary_fastest_lap)
+    val paceSpoken = paceText(lap.paceSecsPerKm)
     LapRow(
         height = if (lap.partial) RunSummaryShapes.partialLapRowHeight else RunSummaryShapes.lapRowHeight,
         background = if (best) RunSummaryColors.ground else null,
@@ -561,7 +575,7 @@ private fun LapLine(lap: Lap, climb: Double?, cadence: Int?, cadenceColumn: Bool
                 Column {
                     Text("${lap.number}", style = cell.copy(fontWeight = FontWeight.Medium))
                     if (lap.partial) {
-                        Text(stringResource(R.string.run_summary_lap_partial, "%.2f".format(appLocale(), lap.distanceMeters / 1000)), style = RunSummaryType.tableNote.copy(color = color))
+                        Text(distanceText(lap.distanceMeters), style = RunSummaryType.tableNote.copy(color = color))
                     }
                 }
             },
@@ -571,16 +585,16 @@ private fun LapLine(lap: Lap, climb: Double?, cadence: Int?, cadenceColumn: Bool
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(RunSummaryShapes.fastestIconGap),
-                        modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = "$fastestLabel, ${formatPace(lap.paceSecsPerKm)}" }
+                        modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = "$fastestLabel, $paceSpoken" }
                     ) {
                         Icon(painterResource(R.drawable.ic_bolt), null, tint = RunSummaryColors.accent, modifier = Modifier.size(RunSummaryShapes.fastestIcon))
-                        Text(formatPace(lap.paceSecsPerKm), style = cell.copy(fontWeight = FontWeight.Bold, color = RunSummaryColors.accent))
+                        Text(paceNumber(lap.paceSecsPerKm), style = cell.copy(fontWeight = FontWeight.Bold, color = RunSummaryColors.accent))
                     }
                 } else {
-                    Text(formatPace(lap.paceSecsPerKm), style = cell.copy(fontWeight = FontWeight.SemiBold))
+                    Text(paceNumber(lap.paceSecsPerKm), style = cell.copy(fontWeight = FontWeight.SemiBold))
                 }
             },
-            climb?.let { { Text(stringResource(R.string.meters_value, it.roundToInt()), style = cell) } },
+            climb?.let { { Text(heightText(it), style = cell) } },
             // A lap without a believable figure leaves its cell empty
             if (cadenceColumn) ({ cadence?.let { Text("$it", style = cell) } }) else null
         )
@@ -704,9 +718,6 @@ private fun paceSecsPerKm(state: CardioUiState): Long? {
     if (kmh <= 0.5) return null
     return (state.elapsedSecs * 1000 / state.distanceMeters).roundToLong()
 }
-
-@Composable
-private fun km2(meters: Double): String = "%.2f".format(appLocale(), meters / 1000)
 
 private const val COLUMNS = 3
 private const val LTR_ISOLATE = "\u2066"

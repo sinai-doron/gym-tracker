@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.doron.gymtracker.data.lapIn
 import com.doron.gymtracker.domain.model.RunTarget
 import com.doron.gymtracker.domain.model.RunTargetType
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -99,9 +100,9 @@ class SettingsPrefs @Inject constructor(
         }
     }
 
-    /** Lap length for runs, in meters; 0 turns laps off. */
+    /** Lap length for runs, in meters; 0 turns laps off. Unset, it is one of the runner's units. */
     val lapDistanceM: Flow<Int> = context.settingsDataStore.data
-        .map { prefs -> prefs[LAP_DISTANCE_M] ?: DEFAULT_LAP_DISTANCE_M }
+        .map { prefs -> prefs[LAP_DISTANCE_M] ?: defaultLap(prefs.distanceUnit()) }
 
     suspend fun setLapDistanceM(meters: Int) {
         context.settingsDataStore.edit { prefs -> prefs[LAP_DISTANCE_M] = meters }
@@ -138,7 +139,7 @@ class SettingsPrefs @Inject constructor(
         val region = Profile.defaultsFor(Locale.getDefault())
         Profile(
             weightUnit = prefs[WEIGHT_UNIT].enumOr(region.weightUnit),
-            distanceUnit = prefs[DISTANCE_UNIT].enumOr(region.distanceUnit),
+            distanceUnit = prefs.distanceUnit(),
             weekStart = prefs[WEEK_START].enumOr(region.weekStart),
             birthYear = prefs[BIRTH_YEAR],
             sex = prefs[SEX]?.let { runCatching { Sex.valueOf(it) }.getOrNull() }
@@ -147,6 +148,9 @@ class SettingsPrefs @Inject constructor(
 
     suspend fun setProfile(profile: Profile) {
         context.settingsDataStore.edit { prefs ->
+            // A lap of 1 km becomes 1 mi when the runner moves to miles, and back
+            val was = prefs.distanceUnit()
+            prefs[LAP_DISTANCE_M]?.let { prefs[LAP_DISTANCE_M] = was.lapIn(profile.distanceUnit, it) }
             prefs[WEIGHT_UNIT] = profile.weightUnit.name
             prefs[DISTANCE_UNIT] = profile.distanceUnit.name
             prefs[WEEK_START] = profile.weekStart.name
@@ -166,11 +170,17 @@ class SettingsPrefs @Inject constructor(
 
     companion object {
         const val DEFAULT_LAP_DISTANCE_M = 1000
-        val LAP_DISTANCE_OPTIONS_M = listOf(0, 200, 400, 500, 1000, 2000, 5000)
+
+        /** A lap of one kilometre, or one mile. */
+        fun defaultLap(unit: DistanceUnit): Int = DistanceUnit.KM.lapIn(unit, DEFAULT_LAP_DISTANCE_M)
         const val DEFAULT_STEP_GOAL = 10_000
         val STEP_GOAL_OPTIONS = listOf(5_000, 6_000, 7_000, 8_000, 10_000, 12_000, 15_000, 20_000)
     }
 }
+
+/** Kilometres or miles: as chosen, else what the phone's region uses. */
+private fun Preferences.distanceUnit(): DistanceUnit =
+    this[DISTANCE_UNIT].enumOr(Profile.defaultsFor(Locale.getDefault()).distanceUnit)
 
 private inline fun <reified E : Enum<E>> String?.enumOr(default: E): E =
     this?.let { name -> enumValues<E>().firstOrNull { it.name == name } } ?: default

@@ -13,8 +13,9 @@ enum class WeekStart { SUNDAY, MONDAY }
 enum class Sex { FEMALE, MALE }
 
 /**
- * What first launch asks in "About you", kept on the phone. Units are saved for now; showing
- * pounds and miles everywhere is roadmap phase 3. Birth year and sex only refine calorie estimates.
+ * What first launch asks in "About you", kept on the phone. Distances show in the chosen unit
+ * (ui/components/Units.kt); pounds are still only saved, not shown. Birth year and sex only refine
+ * calorie estimates.
  */
 data class Profile(
     val weightUnit: WeightUnit,

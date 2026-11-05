@@ -66,6 +66,7 @@ import com.doron.gymtracker.ui.theme.Purple
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.doron.gymtracker.ui.components.distanceText
 
 /** Saved routes, each with a little map, opening its details; GPX files are imported here. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -255,7 +256,7 @@ private fun RouteCard(route: SavedRoute, onClick: () -> Unit) {
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    stringResource(R.string.routes_card_meta, "%.1f".format(route.distanceMeters / 1000), dateFormat.format(Date(route.createdAt))),
+                    stringResource(R.string.routes_card_meta_distance, distanceText(route.distanceMeters, 1), dateFormat.format(Date(route.createdAt))),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

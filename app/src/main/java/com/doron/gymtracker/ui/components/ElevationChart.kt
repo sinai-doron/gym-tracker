@@ -33,6 +33,8 @@ import androidx.compose.ui.unit.sp
 import com.doron.gymtracker.R
 import com.doron.gymtracker.data.ElevationPoint
 import com.doron.gymtracker.data.PacePoint
+import com.doron.gymtracker.data.height
+import com.doron.gymtracker.data.pace
 import com.doron.gymtracker.ui.theme.Purple
 import kotlin.math.roundToInt
 
@@ -44,11 +46,14 @@ import kotlin.math.roundToInt
 @Composable
 fun ElevationChart(points: List<ElevationPoint>, modifier: Modifier = Modifier) {
     val resources = LocalContext.current.resources
+    val unit = LocalDistanceUnit.current
+    val heightUnit = heightUnitLabel()
     DistanceChart(
-        points = points.map { it.meters to it.altitudeM },
-        format = { resources.getString(R.string.meters_value, it.roundToInt()) },
-        // The chart shows at least this much height, so a 2 m wobble isn't drawn as a cliff
-        minRange = 20.0,
+        // Altitude in metres or feet, so the range and the axis read in the runner's unit
+        points = points.map { it.meters to unit.height(it.altitudeM) },
+        format = { resources.getString(R.string.units_value, "${it.roundToInt()}", heightUnit) },
+        // The chart shows at least this much height (20 m, or 65 ft), so a 2 m wobble isn't drawn as a cliff
+        minRange = unit.height(20.0),
         modifier = modifier
     )
 }
@@ -57,11 +62,14 @@ fun ElevationChart(points: List<ElevationPoint>, modifier: Modifier = Modifier) 
 @Composable
 fun PaceChart(points: List<PacePoint>, modifier: Modifier = Modifier) {
     val resources = LocalContext.current.resources
+    val unit = LocalDistanceUnit.current
+    val paceUnit = paceUnitLabel()
     DistanceChart(
-        points = points.map { it.meters to it.secsPerKm },
-        format = { secs -> resources.getString(R.string.cardio_pace_min_sec, secs.roundToInt() / 60, secs.roundToInt() % 60) },
+        // Seconds per km or per mile
+        points = points.map { it.meters to unit.pace(it.secsPerKm) },
+        format = { secs -> resources.getString(R.string.units_value, "%d:%02d".format(secs.roundToInt() / 60, secs.roundToInt() % 60), paceUnit) },
         // A minute a km at least, so steady running reads as steady
-        minRange = 60.0,
+        minRange = unit.pace(60.0),
         faster = true,
         modifier = modifier
     )
@@ -120,7 +128,7 @@ private fun DistanceChart(
     val minValue = points.minOf { it.second }
     val maxValue = points.maxOf { it.second }
     val totalM = points.last().first.coerceAtLeast(1.0)
-    val totalLabel = stringResource(R.string.cardio_km_1dp, totalM / 1000)
+    val totalLabel = distanceText(totalM, 1)
 
     fun nearest(x: Float, width: Float, left: Float, right: Float): Pair<Double, Double> {
         val meters = ((x - left) / (width - left - right)).coerceIn(0f, 1f) * totalM
@@ -129,7 +137,7 @@ private fun DistanceChart(
 
     Column(modifier) {
         Text(
-            selected?.let { stringResource(R.string.cardio_chart_point, it.first / 1000, format(it.second)) }
+            selected?.let { stringResource(R.string.cardio_chart_point_at, distanceText(it.first), format(it.second)) }
                 // The range isolated left to right, or Hebrew around it shows "50–20"
                 ?: if (format(minValue) == format(maxValue)) format(minValue)
                 else "\u2066${format(minValue).substringBefore(" ")}–${format(maxValue).substringBefore(" ")}\u2069 " +

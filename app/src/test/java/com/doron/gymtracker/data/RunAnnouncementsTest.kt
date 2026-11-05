@@ -1,5 +1,6 @@
 package com.doron.gymtracker.data
 
+import com.doron.gymtracker.data.prefs.DistanceUnit
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -76,5 +77,31 @@ class RunAnnouncementsTest {
         assertEquals(VoiceLanguage.HEBREW, VoiceLanguage.of("he"))
         assertEquals(VoiceLanguage.ENGLISH, VoiceLanguage.of("en"))
         assertEquals(VoiceLanguage.ENGLISH, VoiceLanguage.of("fr"))
+    }
+
+    @Test
+    fun `in miles, laps are miles and the pace is per mile`() {
+        val miles = run.copy(lapMeters = 1_609)
+        val lap = Lap(1, 1_609.0, 515, 8 * 60_000L)
+        // 16 minutes over 3 km is 8:35 a mile
+        assertEquals(
+            "Mile 1. Lap time 8 minutes and 35 seconds. Average pace 8 minutes and 35 seconds per mile",
+            RunAnnouncements.text(RunMilestone.LapDone(lap), miles, 16 * 60_000L, VoiceLanguage.ENGLISH, DistanceUnit.MI)
+        )
+        assertEquals(
+            "מייל 1. זמן הקפה 8 דקות ו-35 שניות. קצב ממוצע 8 דקות ו-35 שניות למייל",
+            RunAnnouncements.text(RunMilestone.LapDone(lap), miles, 16 * 60_000L, VoiceLanguage.HEBREW, DistanceUnit.MI)
+        )
+        assertEquals(
+            "Target reached! 1.9 miles in 16 minutes",
+            RunAnnouncements.text(RunMilestone.TargetReached, run, 16 * 60_000L, VoiceLanguage.ENGLISH, DistanceUnit.MI)
+        )
+    }
+
+    @Test
+    fun `a kilometre lap is numbered as a lap for a runner in miles`() {
+        val lap = Lap(2, 1_000.0, 320, 0)
+        val text = RunAnnouncements.text(RunMilestone.LapDone(lap), run, 16 * 60_000L, VoiceLanguage.ENGLISH, DistanceUnit.MI)
+        assertEquals(true, text.startsWith("Lap 2. "))
     }
 }

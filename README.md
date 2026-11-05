@@ -77,9 +77,14 @@ English available in Settings.
   - A map with the route so far.
   - Distance, moving time, current and average pace.
   - Progress towards a target.
+- **Kilometres or miles**, as chosen in About you (Settings): distance, pace, speed, laps,
+  targets, the notification and the voice. Climb and elevation go with them, in metres or
+  feet. Everything is still stored in metres. The fastest 1, 5 and 10 km records and the
+  badges stay metric, as do GPS accuracy and gym exercises measured in metres.
 - **Targets.** None, a distance, a duration, or a saved route to follow. Following a
   route warns you when you're off it and counts shortcuts.
-- **Laps** of a length set in Settings. A final partial lap is shown when the rest is
+- **Laps** of a length set in Settings (from 200 m to 5 km, or ⅛ to 5 mi; changing units
+  moves 1 km to 1 mi and back). A past run keeps the lap unit it was recorded in. A final partial lap is shown when the rest is
   10 m or more.
 - **Pausing.**
   - **Auto-pause.** The run pauses after 10 seconds without moving.

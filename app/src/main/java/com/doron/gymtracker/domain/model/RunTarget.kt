@@ -27,7 +27,6 @@ data class RunTarget(
     companion object {
         const val DEFAULT_DISTANCE_KM = 5f
         const val DEFAULT_DURATION_MIN = 30
-        const val DISTANCE_STEP_KM = 0.5f
         const val DURATION_STEP_MIN = 5
     }
 }

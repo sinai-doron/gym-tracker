@@ -57,6 +57,7 @@ import java.time.LocalTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import com.doron.gymtracker.ui.components.distanceUnitLabel
 
 /**
  * A session done without the phone: a class, a game, a run with the phone in the locker. Saved as
@@ -144,7 +145,7 @@ fun LogSessionScreen(
             }
 
             if (s.type?.hasDistance == true) {
-                Number(stringResource(R.string.log_distance), s.distance, Modifier.fillMaxWidth(), decimal = true) { v ->
+                Number(stringResource(R.string.log_distance_in, distanceUnitLabel()), s.distance, Modifier.fillMaxWidth(), decimal = true) { v ->
                     viewModel.update { it.copy(distance = v.take(6)) }
                 }
             }

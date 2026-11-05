@@ -71,6 +71,7 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
+import com.doron.gymtracker.ui.components.distanceText
 
 
 private val weekDayOrder = listOf(
@@ -365,7 +366,7 @@ private fun SessionCard(
                         }
                     } else {
                         session.distanceKm?.let { km ->
-                            StatChip(stringResource(R.string.km_value, "%.2f".format(km)))
+                            StatChip(distanceText(km * 1000))
                         }
                     }
                 }

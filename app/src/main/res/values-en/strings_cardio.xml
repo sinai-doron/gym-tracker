@@ -7,20 +7,13 @@
     <string name="cardio_paused_auto">⏸ Paused – resumes when you move</string>
     <string name="cardio_off_route">↩ You\'re off the route</string>
     <string name="cardio_distance">Distance</string>
-    <string name="cardio_km_2dp">%1$.2f km</string>
-    <string name="cardio_km_1dp">%1$.1f km</string>
     <string name="cardio_pace">Pace</string>
-    <string name="cardio_pace_value">%1$s /km</string>
-    <string name="cardio_pace_min_sec">%1$d:%2$02d /km</string>
     <string name="cardio_avg_pace">Avg pace</string>
-    <string name="cardio_current_lap">Lap %1$d · %2$.2f km</string>
     <string name="cardio_speed">Speed</string>
-    <string name="cardio_kmh_1dp">%1$.1f km/h</string>
     <string name="cardio_resume">Resume</string>
     <string name="cardio_pause">Pause</string>
     <string name="cardio_finish">Finish</string>
     <string name="cardio_finish_title">Finish workout?</string>
-    <string name="cardio_finish_text">%1$.2f km in %2$s</string>
     <string name="cardio_finish_confirm">Finish</string>
     <string name="cardio_discard">Discard</string>
     <string name="cardio_keep_going">Keep going</string>
@@ -28,10 +21,7 @@
     <string name="cardio_target_reached">Target reached!</string>
     <string name="cardio_route_heading">Route</string>
     <string name="cardio_target_heading">Target</string>
-    <string name="cardio_route_progress">%1$.2f / %2$.1f km</string>
-    <string name="cardio_distance_progress">%1$.2f / %2$s km</string>
     <string name="cardio_steps_cadence_extra">%1$,d · %2$d/min</string>
-    <string name="cardio_climb_extra">%1$d m</string>
     <string name="cardio_kcal_extra">%1$d kcal</string>
 
     <!-- Run report -->
@@ -42,7 +32,6 @@
     <string name="cardio_calories">Calories</string>
     <string name="cardio_elevation">Elevation</string>
     <string name="cardio_laps">Laps</string>
-    <string name="cardio_chart_point">%1$.2f km · %2$s</string>
     <string name="cardio_badges_ok">Nice!</string>
     <plurals name="cardio_new_badges">
         <item quantity="one">New achievement!</item>
@@ -66,7 +55,6 @@
     <string name="cardio_time">Time</string>
     <string name="cardio_route">Route</string>
     <string name="cardio_minutes_value">%1$d min</string>
-    <string name="cardio_route_name_km">%1$s · %2$.1f km</string>
     <string name="cardio_choose_route">Choose a route</string>
     <string name="cardio_no_routes">No routes yet: save a run as a route or import a GPX file.</string>
     <string name="cardio_manage_routes">Manage routes and import GPX</string>
@@ -81,10 +69,7 @@
     <string name="cardio_date">Date</string>
     <string name="cardio_records">Records</string>
     <string name="cardio_pace_colors">Pace colors</string>
-    <string name="cardio_unit_km">km</string>
     <string name="cardio_unit_time">time</string>
-    <string name="cardio_unit_pace">min/km</string>
-    <string name="cardio_unit_climb">m climb</string>
     <string name="cardio_unit_kcal">kcal</string>
     <string name="cardio_unit_steps">steps</string>
     <!-- SimpleDateFormat pattern and the locale for its month names -->

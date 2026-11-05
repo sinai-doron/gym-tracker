@@ -123,6 +123,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import com.doron.gymtracker.ui.components.LocalDistanceUnit
+import com.doron.gymtracker.ui.components.distanceText
+import com.doron.gymtracker.ui.components.heightUnitLabel
+import com.doron.gymtracker.ui.components.targetText
+import com.doron.gymtracker.data.prefs.DistanceUnit
+import com.doron.gymtracker.data.Units
+import com.doron.gymtracker.data.height
+import com.doron.gymtracker.data.stepTargetKm
 
 data class GpsLockState(
     val position: LocationPoint? = null,
@@ -559,14 +567,14 @@ private fun targetValue(target: RunTarget, route: SavedRoute?): String = when (t
     RunTargetType.DISTANCE -> stringResource(
         R.string.before_run_target_value,
         stringResource(R.string.cardio_distance),
-        stringResource(R.string.km_value, formatKm(target.distanceKm))
+        targetText(target)
     )
     RunTargetType.DURATION -> stringResource(
         R.string.before_run_target_value,
         stringResource(R.string.cardio_time),
         stringResource(R.string.cardio_minutes_value, target.durationMin)
     )
-    RunTargetType.ROUTE -> route?.let { stringResource(R.string.cardio_route_name_km, it.name, it.distanceMeters / 1000) }
+    RunTargetType.ROUTE -> route?.let { stringResource(R.string.cardio_route_name_distance, it.name, distanceText(it.distanceMeters, 1)) }
         ?: stringResource(R.string.cardio_choose_route)
 }
 
@@ -650,6 +658,7 @@ private fun TargetSheet(
     onDismiss: () -> Unit
 ) {
     val radioColors = RadioButtonDefaults.colors(selectedColor = BeforeRunColors.accent)
+    val unit = LocalDistanceUnit.current
     ModalBottomSheet(onDismissRequest = onDismiss, containerColor = BeforeRunColors.panel) {
         Column(
             modifier = Modifier
@@ -674,11 +683,10 @@ private fun TargetSheet(
                     ) {
                         if (selected) when (type) {
                             RunTargetType.DISTANCE -> ValueStepper(
-                                text = stringResource(R.string.km_value, formatKm(target.distanceKm)),
-                                onMinus = {
-                                    onChange(target.copy(distanceKm = (target.distanceKm - RunTarget.DISTANCE_STEP_KM).coerceAtLeast(RunTarget.DISTANCE_STEP_KM)))
-                                },
-                                onPlus = { onChange(target.copy(distanceKm = target.distanceKm + RunTarget.DISTANCE_STEP_KM)) }
+                                text = targetText(target),
+                                // Half a km or half a mile at a time
+                                onMinus = { onChange(target.copy(distanceKm = unit.stepTargetKm(target.distanceKm, -1))) },
+                                onPlus = { onChange(target.copy(distanceKm = unit.stepTargetKm(target.distanceKm, 1))) }
                             )
                             RunTargetType.DURATION -> ValueStepper(
                                 text = stringResource(R.string.cardio_minutes_value, target.durationMin),
@@ -710,7 +718,7 @@ private fun TargetSheet(
                             radioColors = radioColors,
                             onClick = { onChange(target.copy(type = RunTargetType.ROUTE, routeId = route.id)) }
                         ) {
-                            Text(stringResource(R.string.cardio_km_1dp, route.distanceMeters / 1000), style = BeforeRunType.statusSubtitle)
+                            Text(distanceText(route.distanceMeters, 1), style = BeforeRunType.statusSubtitle)
                         }
                     }
                 }
@@ -776,9 +784,13 @@ private fun ValueStepper(text: String, onMinus: () -> Unit, onPlus: () -> Unit) 
 }
 
 @Composable
-private fun formatAway(meters: Double): String =
-    if (meters < 1000) stringResource(R.string.meters_value, (meters / 10).toInt() * 10)
-    else stringResource(R.string.cardio_km_1dp, meters / 1000)
+private fun formatAway(meters: Double): String = when {
+    LocalDistanceUnit.current == DistanceUnit.KM && meters < 1000 -> stringResource(R.string.meters_value, (meters / 10).toInt() * 10)
+    // Under a tenth of a mile, in feet to the nearest 10
+    LocalDistanceUnit.current == DistanceUnit.MI && meters < Units.METERS_PER_MILE / 10 ->
+        stringResource(R.string.units_value, "${(DistanceUnit.MI.height(meters) / 10).toInt() * 10}", heightUnitLabel())
+    else -> distanceText(meters, 1)
+}
 
 @StringRes
 private fun targetTypeLabel(type: RunTargetType): Int = when (type) {

@@ -63,6 +63,13 @@ import com.doron.gymtracker.ui.components.valueText
 import com.doron.gymtracker.ui.theme.Purple
 import com.doron.gymtracker.ui.theme.SuccessGreen
 import kotlin.math.roundToInt
+import com.doron.gymtracker.ui.components.distanceText
+import com.doron.gymtracker.ui.components.distanceNumber
+import com.doron.gymtracker.ui.components.distanceUnitLabel
+import com.doron.gymtracker.ui.components.paceText
+import com.doron.gymtracker.ui.components.speedText
+import com.doron.gymtracker.ui.components.heightText
+import com.doron.gymtracker.ui.components.targetNumber
 
 @Composable
 fun CardioSessionScreen(
@@ -152,12 +159,12 @@ fun CardioSessionScreen(
         ) {
             StatBox(
                 label = stringResource(R.string.cardio_distance),
-                value = stringResource(R.string.cardio_km_2dp, state.distanceMeters / 1000.0),
+                value = distanceText(state.distanceMeters),
                 modifier = Modifier.weight(1f)
             )
             StatBox(
                 label = stringResource(R.string.cardio_pace),
-                value = if (state.currentPace.isNotEmpty()) stringResource(R.string.cardio_pace_value, state.currentPace) else "—",
+                value = state.currentPaceSecsPerKm?.let { paceText(it) } ?: "—",
                 modifier = Modifier.weight(1f)
             )
         }
@@ -170,19 +177,19 @@ fun CardioSessionScreen(
         ) {
             StatBox(
                 label = stringResource(R.string.cardio_avg_pace),
-                value = state.avgPaceSecsPerKm?.let { stringResource(R.string.cardio_pace_value, formatPace(it)) } ?: "—",
+                value = state.avgPaceSecsPerKm?.let { paceText(it) } ?: "—",
                 modifier = Modifier.weight(1f)
             )
             if (state.lapMeters > 0) {
                 StatBox(
-                    label = stringResource(R.string.cardio_current_lap, state.currentLapNumber, state.currentLapMeters / 1000.0),
+                    label = stringResource(R.string.cardio_current_lap_distance, state.currentLapNumber, distanceText(state.currentLapMeters)),
                     value = formatTime(state.currentLapSecs),
                     modifier = Modifier.weight(1f)
                 )
             } else {
                 StatBox(
                     label = stringResource(R.string.cardio_speed),
-                    value = if (state.currentSpeed > 0.3f) stringResource(R.string.cardio_kmh_1dp, state.currentSpeed * 3.6f) else "—",
+                    value = if (state.currentSpeed > 0.3f) speedText(state.currentSpeed * 3.6) else "—",
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -239,8 +246,8 @@ fun CardioSessionScreen(
             text = {
                 Text(
                     stringResource(
-                        R.string.cardio_finish_text,
-                        state.distanceMeters / 1000.0,
+                        R.string.cardio_finish_distance,
+                        distanceText(state.distanceMeters),
                         formatTime(state.elapsedSecs)
                     )
                 )
@@ -353,7 +360,7 @@ private fun RunExtras(state: CardioUiState) {
         state.steps?.let { steps ->
             R.drawable.ic_activity_walk to (state.cadence?.let { stringResource(R.string.cardio_steps_cadence_extra, steps, it) } ?: "%,d".format(steps))
         },
-        R.drawable.ic_climb to stringResource(R.string.cardio_climb_extra, state.elevationGainM.roundToInt()),
+        R.drawable.ic_climb to heightText(state.elevationGainM),
         state.calories?.let { R.drawable.ic_flame to stringResource(R.string.cardio_kcal_extra, it) },
         state.weather?.let { R.drawable.ic_cloud to "${it.temperatureC}°" }
     )
@@ -376,14 +383,14 @@ private fun RunExtras(state: CardioUiState) {
     }
 }
 
-/** "2.30 / 5 ק״מ" or "12:40 / 30:00" with a bar; green once the target is reached. */
+/** "2.30 / 5 km" (or miles) or "12:40 / 30:00" with a bar; green once the target is reached. */
 @Composable
 private fun TargetProgress(state: CardioUiState, progress: Float) {
     val reached = progress >= 1f
     val color = if (reached) SuccessGreen else Purple
     val text = when (state.target.type) {
-        RunTargetType.ROUTE -> stringResource(R.string.cardio_route_progress, state.routeAlongM / 1000.0, state.routeLengthM / 1000.0)
-        RunTargetType.DISTANCE -> stringResource(R.string.cardio_distance_progress, state.distanceMeters / 1000.0, formatKm(state.target.distanceKm))
+        RunTargetType.ROUTE -> stringResource(R.string.cardio_progress_of, distanceNumber(state.routeAlongM), distanceNumber(state.routeLengthM, 1), distanceUnitLabel())
+        RunTargetType.DISTANCE -> stringResource(R.string.cardio_progress_of, distanceNumber(state.distanceMeters), targetNumber(state.target), distanceUnitLabel())
         else -> "${formatTime(state.elapsedSecs)} / ${formatTime(state.target.durationMin * 60L)}"
     }
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -457,11 +464,6 @@ private fun StatBox(label: String, value: String, modifier: Modifier = Modifier)
         }
     }
 }
-
-internal fun formatPace(secsPerKm: Long): String = "%d:%02d".format(secsPerKm / 60, secsPerKm % 60)
-
-internal fun formatKm(km: Float): String =
-    if (km == km.toInt().toFloat()) km.toInt().toString() else "%.1f".format(km)
 
 internal fun formatTime(totalSecs: Long): String {
     val h = totalSecs / 3600
