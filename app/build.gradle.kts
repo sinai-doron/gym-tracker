@@ -79,9 +79,11 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.findByName("release")
-            // Not shrunk yet: Room, Hilt, serialization and MapLibre each need keep rules, and a
-            // shrinker mistake shows only at run time. Turn it on with those rules and a test pass.
-            isMinifyEnabled = false
+            // Shrunk and obfuscated by R8 (Play flags a bundle under 25% obfuscation). The libraries
+            // bring their own keep rules; a shrinker mistake shows only at run time, so a change
+            // here needs a pass through the release build on a device.
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
