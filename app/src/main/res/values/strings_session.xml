@@ -24,10 +24,10 @@
         <item quantity="one">%1$d rep</item>
         <item quantity="other">%1$d reps</item>
     </plurals>
-    <string name="session_reps_times_weight">%1$d × %2$s kg</string>
-    <plurals name="session_reps_weight">
-        <item quantity="one">%1$d rep × %2$s kg</item>
-        <item quantity="other">%1$d reps × %2$s kg</item>
+    <string name="session_reps_times_weight_unit">%1$d × %2$s</string>
+    <plurals name="session_reps_weight_unit">
+        <item quantity="one">%1$d rep × %2$s</item>
+        <item quantity="other">%1$d reps × %2$s</item>
     </plurals>
     <plurals name="session_meters">
         <item quantity="one">%1$d meter</item>
@@ -37,7 +37,7 @@
 
     <!-- Exercise sheet -->
     <string name="session_per_side_hint">Per side – enter each side separately</string>
-    <string name="session_hint_increase">All sets hit the top of the range 3× in a row — add %1$s kg</string>
+    <string name="session_hint_increase_by">All sets hit the top of the range 3× in a row — add %1$s</string>
     <string name="session_hint_stalled" formatted="false">3 workouts without progress — drop 10% and build back up</string>
     <string name="session_delete_set">Delete set</string>
     <string name="session_update_set">Update set</string>
@@ -50,7 +50,7 @@
     <string name="session_total_volume">Total volume</string>
     <string name="session_exercise_breakdown">Exercise breakdown</string>
     <string name="session_breakdown_sets">%1$d/%2$d sets</string>
-    <string name="session_breakdown_sets_weight">%1$d/%2$d sets · %3$s kg</string>
+    <string name="session_breakdown_sets_weight_unit">%1$d/%2$d sets · %3$s</string>
     <string name="session_delete_exercise">Delete exercise</string>
     <string name="session_soundtrack">♫ Workout soundtrack</string>
     <string name="session_go_home">Back to home</string>

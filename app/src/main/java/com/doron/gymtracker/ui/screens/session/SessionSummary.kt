@@ -45,6 +45,8 @@ import com.doron.gymtracker.domain.model.SetRecord
 import com.doron.gymtracker.domain.model.TrackLog
 import com.doron.gymtracker.ui.theme.Purple
 import com.doron.gymtracker.ui.theme.SuccessGreen
+import com.doron.gymtracker.ui.components.weightText
+import com.doron.gymtracker.ui.components.volumeText
 
 data class SessionSummaryData(
     val workoutName: String,
@@ -192,7 +194,7 @@ fun SessionSummaryScreen(
             )
             StatCard(
                 label = stringResource(R.string.session_total_volume),
-                value = if (data.totalVolumeKg > 0) stringResource(R.string.weight_value, "%,.0f".format(data.totalVolumeKg)) else "—",
+                value = if (data.totalVolumeKg > 0) volumeText(data.totalVolumeKg) else "—",
                 modifier = Modifier.weight(1f)
             )
         }
@@ -226,8 +228,8 @@ fun SessionSummaryScreen(
                     )
                     val detail = if (line.topWeight != null && line.topWeight > 0f) {
                         stringResource(
-                            R.string.session_breakdown_sets_weight,
-                            line.setsCompleted, line.setsTarget, formatWeight(line.topWeight)
+                            R.string.session_breakdown_sets_weight_unit,
+                            line.setsCompleted, line.setsTarget, weightText(line.topWeight)
                         )
                     } else {
                         stringResource(R.string.session_breakdown_sets, line.setsCompleted, line.setsTarget)
@@ -379,6 +381,3 @@ private fun formatDuration(totalSecs: Long): String {
     return if (h > 0) "%d:%02d:%02d".format(h, m, s)
     else "%02d:%02d".format(m, s)
 }
-
-private fun formatWeight(w: Float): String =
-    if (w == w.toLong().toFloat()) w.toLong().toString() else "%.1f".format(w)

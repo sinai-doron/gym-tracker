@@ -33,10 +33,9 @@ fun SetLogRow(setNumber: Int, record: SetRecord, isEditing: Boolean = false, onC
         Text(stringResource(R.string.session_set_number, setNumber), style = MaterialTheme.typography.bodyLarge)
         val label = when (record) {
             is RepSetRecord -> {
-                val w = if (record.weightKg == record.weightKg.toLong().toFloat())
-                    record.weightKg.toLong().toString() else record.weightKg.toString()
+                val w = weightText(record.weightKg)
                 if (record.weightKg == 0f) pluralStringResource(R.plurals.session_reps, record.reps, record.reps)
-                else pluralStringResource(R.plurals.session_reps_weight, record.reps, record.reps, w)
+                else pluralStringResource(R.plurals.session_reps_weight_unit, record.reps, record.reps, w)
             }
             is TimedSetRecord -> {
                 val m = record.durationSecs / 60

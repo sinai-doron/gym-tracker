@@ -70,6 +70,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import com.doron.gymtracker.ui.components.weightText
+import com.doron.gymtracker.ui.components.volumeText
 
 data class SessionDetailData(
     val sessionType: String = "GYM",
@@ -327,7 +329,7 @@ fun SessionDetailScreen(
                     StatCard(stringResource(R.string.sets_label), "${d.totalSets}", Modifier.weight(1f))
                     StatCard(
                         stringResource(R.string.history_total_volume),
-                        if (d.totalVolumeKg > 0) stringResource(R.string.weight_value, "%,.0f".format(d.totalVolumeKg)) else "—",
+                        if (d.totalVolumeKg > 0) volumeText(d.totalVolumeKg) else "—",
                         Modifier.weight(1f)
                     )
                 }
@@ -376,9 +378,7 @@ fun SessionDetailScreen(
                                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
                             )
                             val detail = if (line.topWeight != null && line.topWeight > 0f) {
-                                val w = if (line.topWeight == line.topWeight.toLong().toFloat())
-                                    line.topWeight.toLong().toString() else "%.1f".format(line.topWeight)
-                                stringResource(R.string.history_line_sets_weight, line.setsCompleted, line.setsTarget, w)
+                                stringResource(R.string.history_line_sets_weight_unit, line.setsCompleted, line.setsTarget, weightText(line.topWeight))
                             } else {
                                 stringResource(R.string.history_line_sets, line.setsCompleted, line.setsTarget)
                             }

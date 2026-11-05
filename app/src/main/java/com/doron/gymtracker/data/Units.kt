@@ -1,6 +1,7 @@
 package com.doron.gymtracker.data
 
 import com.doron.gymtracker.data.prefs.DistanceUnit
+import com.doron.gymtracker.data.prefs.WeightUnit
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -81,4 +82,37 @@ fun DistanceUnit.stepTargetKm(km: Float, steps: Int): Float {
     val snapped = if (steps > 0) floor(halves + 1e-4) else ceil(halves - 1e-4)
     val next = (snapped + steps).coerceAtLeast(1.0)
     return (toMeters(next / 2) / 1000).toFloat()
+}
+
+/** Weights are kept in kg; these show them, and read what is typed, in kg or pounds. */
+const val KG_PER_LB = 0.45359237
+
+/** [kg] in this unit. */
+fun WeightUnit.of(kg: Float): Double = when (this) {
+    WeightUnit.KG -> kg.toDouble()
+    WeightUnit.LB -> kg / KG_PER_LB
+}
+
+/** A weight typed in this unit, in kg as it is kept. */
+fun WeightUnit.toKg(value: Double): Float = when (this) {
+    WeightUnit.KG -> value.toFloat()
+    WeightUnit.LB -> (value * KG_PER_LB).toFloat()
+}
+
+/**
+ * The step a lifter in this unit adds for an equipment step kept in kg: plates in pounds go up by
+ * 2.5 lb at the least, so 2.5 kg is 5 lb and 1.25 kg is 2.5 lb, not 5.51 and 2.76.
+ */
+fun WeightUnit.step(kgStep: Double): Double = when (this) {
+    WeightUnit.KG -> kgStep
+    WeightUnit.LB -> ((kgStep / KG_PER_LB) / 2.5).roundToInt().coerceAtLeast(1) * 2.5
+}
+
+/** A weight in this unit as it reads: kg as entered ("62.5", "1.25"), pounds to a tenth ("135", "137.5"). */
+fun WeightUnit.format(kg: Float): String = when (this) {
+    WeightUnit.KG -> if (kg == kg.toLong().toFloat()) kg.toLong().toString() else kg.toString()
+    WeightUnit.LB -> {
+        val tenths = (of(kg) * 10).roundToInt()
+        if (tenths % 10 == 0) "${tenths / 10}" else "${tenths / 10}.${abs(tenths % 10)}"
+    }
 }

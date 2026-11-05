@@ -79,6 +79,10 @@ import com.doron.gymtracker.BuildConfig
 import com.doron.gymtracker.ui.components.LocalDistanceUnit
 import com.doron.gymtracker.ui.components.lapLengthText
 import com.doron.gymtracker.data.lapOptions
+import com.doron.gymtracker.ui.components.LocalWeightUnit
+import com.doron.gymtracker.data.format
+import com.doron.gymtracker.data.toKg
+import com.doron.gymtracker.data.prefs.WeightUnit
 
 data class LanguageOption(val code: String, val displayName: String)
 
@@ -606,14 +610,18 @@ private fun audioFeedbackLabel(feedback: AudioFeedback): String = stringResource
 /** Saved as you type; anything that isn't a sensible weight clears it. */
 @Composable
 private fun BodyWeightField(weightKg: Float?, onChange: (Float?) -> Unit) {
-    var text by remember(weightKg == null) { mutableStateOf(weightKg?.let(::formatWeight) ?: "") }
+    // Typed in kg or pounds, kept in kg
+    val unit = LocalWeightUnit.current
+    var text by remember(weightKg == null, unit) { mutableStateOf(weightKg?.let { unit.format(it) } ?: "") }
     OutlinedTextField(
         value = text,
         onValueChange = { input ->
             text = input.filter { it.isDigit() || it == '.' }.take(5)
-            onChange(text.toFloatOrNull()?.takeIf { it in 25f..300f })
+            onChange(text.toDoubleOrNull()?.let { unit.toKg(it) }?.takeIf { it in 25f..300f })
         },
-        label = { Text(stringResource(R.string.body_weight)) },
+        label = {
+            Text(stringResource(if (unit == WeightUnit.LB) R.string.setup_body_weight_lb else R.string.setup_body_weight_kg))
+        },
         supportingText = { Text(stringResource(R.string.body_weight_hint)) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -621,9 +629,6 @@ private fun BodyWeightField(weightKg: Float?, onChange: (Float?) -> Unit) {
         modifier = Modifier.fillMaxWidth()
     )
 }
-
-private fun formatWeight(kg: Float): String =
-    if (kg == kg.toInt().toFloat()) kg.toInt().toString() else kg.toString()
 
 @Composable
 private fun lapLengthLabel(meters: Int): String =

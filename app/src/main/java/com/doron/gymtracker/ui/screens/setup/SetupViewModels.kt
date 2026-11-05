@@ -20,7 +20,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
+import com.doron.gymtracker.data.format
+import com.doron.gymtracker.data.toKg
 
 /** "About you": the profile and the two details Settings already had, body weight and steps goal. */
 data class AboutYouState(
@@ -73,16 +74,10 @@ class AboutYouViewModel @Inject constructor(
     }
 
     companion object {
-        private const val KG_PER_LB = 0.45359237f
-
         fun parseWeightKg(text: String, unit: WeightUnit): Float? =
-            text.replace(',', '.').toFloatOrNull()?.let { if (unit == WeightUnit.LB) it * KG_PER_LB else it }
+            text.replace(',', '.').toDoubleOrNull()?.let { unit.toKg(it) }
 
-        fun formatWeight(kg: Float, unit: WeightUnit): String {
-            val value = if (unit == WeightUnit.LB) kg / KG_PER_LB else kg
-            val tenths = (value * 10).roundToInt()
-            return if (tenths % 10 == 0) (tenths / 10).toString() else "%.1f".format(java.util.Locale.ROOT, tenths / 10f)
-        }
+        fun formatWeight(kg: Float, unit: WeightUnit): String = unit.format(kg)
     }
 }
 

@@ -9,6 +9,9 @@ import com.doron.gymtracker.data.height
 import com.doron.gymtracker.data.of
 import com.doron.gymtracker.data.pace
 import com.doron.gymtracker.data.prefs.DistanceUnit
+import com.doron.gymtracker.data.prefs.WeightUnit
+import com.doron.gymtracker.data.format
+import com.doron.gymtracker.data.step
 import com.doron.gymtracker.data.speed
 import com.doron.gymtracker.domain.model.RunTarget
 import kotlin.math.roundToInt
@@ -16,6 +19,36 @@ import com.doron.gymtracker.data.lapOptions
 
 /** Kilometres or miles, as chosen in About you; provided once at the root (MainActivity). */
 val LocalDistanceUnit = staticCompositionLocalOf { DistanceUnit.KM }
+
+/** Kilograms or pounds, as chosen in About you; provided with [LocalDistanceUnit]. */
+val LocalWeightUnit = staticCompositionLocalOf { WeightUnit.KG }
+
+/** "kg" or "lb". */
+@Composable
+fun weightUnitLabel(): String =
+    stringResource(if (LocalWeightUnit.current == WeightUnit.KG) R.string.units_kg else R.string.units_lb)
+
+/** A weight kept in kg, as a number in the lifter's unit: "62.5", "137.5". */
+@Composable
+fun weightNumber(kg: Float): String = LocalWeightUnit.current.format(kg)
+
+/** A weight kept in kg, with the lifter's unit: "62.5 kg", "137.5 lb". */
+@Composable
+fun weightText(kg: Float): String = stringResource(R.string.units_value, weightNumber(kg), weightUnitLabel())
+
+/** A weight to add, kept in kg, as the step a lifter in this unit adds: "2.5 kg", "5 lb". */
+@Composable
+fun weightStepText(kg: Float): String {
+    val step = LocalWeightUnit.current.step(kg.toDouble())
+    val number = if (step == step.toLong().toDouble()) "${step.toLong()}" else "$step"
+    return stringResource(R.string.units_value, number, weightUnitLabel())
+}
+
+/** A session's volume kept in kg, whole and grouped, with the unit: "4,250 kg", "9,370 lb". */
+@Composable
+fun volumeText(kg: Float): String = stringResource(
+    R.string.units_value, "%,.0f".format(appLocale(), LocalWeightUnit.current.of(kg)), weightUnitLabel()
+)
 
 /** "km" or "mi". */
 @Composable

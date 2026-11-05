@@ -49,6 +49,10 @@ import com.doron.gymtracker.ui.theme.Purple
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.doron.gymtracker.ui.components.LocalWeightUnit
+import com.doron.gymtracker.ui.components.weightUnitLabel
+import com.doron.gymtracker.data.format
+import com.doron.gymtracker.data.prefs.WeightUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -154,6 +158,7 @@ private fun Card(content: @Composable () -> Unit) {
 
 @Composable
 private fun SessionRow(session: ExerciseSessionSets, date: String) {
+    val unit = LocalWeightUnit.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -168,7 +173,7 @@ private fun SessionRow(session: ExerciseSessionSets, date: String) {
         )
         Text(
             // LTR isolate keeps "10×40" readable inside RTL text
-            session.sets.joinToString("  ·  ") { "⁦${it.short()}⁩" },
+            session.sets.joinToString("  ·  ") { "⁦${it.short(unit)}⁩" },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f)
@@ -176,8 +181,8 @@ private fun SessionRow(session: ExerciseSessionSets, date: String) {
     }
 }
 
-private fun SetRecord.short(): String = when (this) {
-    is RepSetRecord -> if (weightKg == 0f) "$reps" else "$reps×${formatNumber(weightKg)}"
+private fun SetRecord.short(unit: WeightUnit): String = when (this) {
+    is RepSetRecord -> if (weightKg == 0f) "$reps" else "$reps×${unit.format(weightKg)}"
     is TimedSetRecord -> "%d:%02d".format(durationSecs / 60, durationSecs % 60)
     is DistanceSetRecord -> "${distanceM}m"
 }
@@ -185,8 +190,11 @@ private fun SetRecord.short(): String = when (this) {
 @Composable
 private fun metricFormatter(metric: ProgressMetric): (Float) -> String {
     val res = LocalContext.current.resources
+    val unit = LocalWeightUnit.current
+    val unitLabel = weightUnitLabel()
     return when (metric) {
-        ProgressMetric.WEIGHT -> { v -> res.getString(R.string.weight_value, formatNumber(v)) }
+        // Charted in kg; the scale is the same in pounds, so only the labels change
+        ProgressMetric.WEIGHT -> { v -> res.getString(R.string.units_value, unit.format(v), unitLabel) }
         ProgressMetric.REPS -> { v -> res.getString(R.string.reps_value, v.toInt()) }
         ProgressMetric.DURATION -> { v -> "%d:%02d".format(v.toInt() / 60, v.toInt() % 60) }
         ProgressMetric.DISTANCE -> { v -> res.getString(R.string.distance_value, v.toInt()) }
@@ -199,6 +207,3 @@ private fun metricTitle(metric: ProgressMetric): Int = when (metric) {
     ProgressMetric.DURATION -> R.string.metric_longest_set
     ProgressMetric.DISTANCE -> R.string.metric_longest_distance
 }
-
-private fun formatNumber(v: Float): String =
-    if (v == v.toLong().toFloat()) v.toLong().toString() else v.toString()
