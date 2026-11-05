@@ -35,6 +35,8 @@ import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.doron.gymtracker.data.prefs.DistanceUnit
+import com.doron.gymtracker.data.of
 
 /**
  * Keeps a run recording while the screen is off or the app is in the background. The
@@ -74,6 +76,7 @@ class CardioTrackingService : Service() {
     private var milestonesJob: Job? = null
     private val milestones = RunMilestones()
     @Volatile private var audioFeedback = AudioFeedback.VOICE
+    @Volatile private var distanceUnit = DistanceUnit.KM
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -117,6 +120,7 @@ class CardioTrackingService : Service() {
                     if (it == AudioFeedback.VOICE) voice.warmUp()
                 }
             }
+            scope.launch { settingsPrefs.profile.collect { distanceUnit = it.distanceUnit } }
             // Polled rather than event-driven: a duration target is reached by the clock, not a fix
             milestonesJob = scope.launch {
                 var wasPaused = false to false
@@ -144,7 +148,7 @@ class CardioTrackingService : Service() {
         when (audioFeedback) {
             AudioFeedback.OFF -> Unit
             AudioFeedback.VOICE -> if (voice.unavailable) tone(milestone) else {
-                voice.speak(RunAnnouncements.text(milestone, run, now, voice.language))
+                voice.speak(RunAnnouncements.text(milestone, run, now, voice.language, distanceUnit))
                 if (milestone is RunMilestone.LapDone || milestone == RunMilestone.TargetReached || milestone == RunMilestone.OffRoute) {
                     RestTimerBeepPlayer.vibrate()
                 }
@@ -191,14 +195,15 @@ class CardioTrackingService : Service() {
         )
 
         val typeName = getString(if (run?.type == "WALKING") R.string.cardio_walk else R.string.cardio_run)
-        val distKm = (run?.distanceMeters ?: 0.0) / 1000.0
+        val distance = "%.2f".format(distanceUnit.of(run?.distanceMeters ?: 0.0))
+        val unitLabel = getString(if (distanceUnit == DistanceUnit.KM) R.string.units_km else R.string.units_mi)
         val now = System.currentTimeMillis()
         val clock = run?.clock
         val paused = clock?.isPaused(now) == true
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(if (paused) getString(R.string.cardio_notification_paused, typeName) else typeName)
-            .setContentText(getString(R.string.cardio_km_2dp, distKm))
+            .setContentText(getString(R.string.units_value, distance, unitLabel))
             // The system ticks the clock itself, so the notification needn't update every second;
             // it counts moving time, so it starts as far back as the run has been moving
             .setUsesChronometer(clock != null && !paused)

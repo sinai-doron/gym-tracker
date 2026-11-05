@@ -8,7 +8,11 @@ import android.os.LocaleList
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.doron.gymtracker.data.CardioRecorder
@@ -16,10 +20,12 @@ import com.doron.gymtracker.data.CardioRun
 import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.data.repository.ExerciseLibrary
 import com.doron.gymtracker.data.repository.WorkoutRepository
+import com.doron.gymtracker.ui.components.LocalDistanceUnit
 import com.doron.gymtracker.ui.navigation.NavGraph
 import com.doron.gymtracker.ui.theme.GymTrackerTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -64,13 +70,19 @@ class MainActivity : ComponentActivity() {
             lifecycleScope.launch { runToResume.value = cardioRecorder.recoverOpenRun() }
         }
         setContent {
+            val distanceUnit by remember { settingsPrefs.profile.map { it.distanceUnit } }
+                .collectAsState(initial = null)
             GymTrackerTheme {
-                showOnboarding.value?.let { onboarding ->
-                    NavGraph(
-                        runToResume = runToResume.value,
-                        showOnboarding = onboarding,
-                        onFirstScreenReady = { firstScreenReady = true }
-                    )
+                // Held back with the onboarding flag, so a runner in miles never sees a frame in km
+                val unit = distanceUnit ?: return@GymTrackerTheme
+                CompositionLocalProvider(LocalDistanceUnit provides unit) {
+                    showOnboarding.value?.let { onboarding ->
+                        NavGraph(
+                            runToResume = runToResume.value,
+                            showOnboarding = onboarding,
+                            onFirstScreenReady = { firstScreenReady = true }
+                        )
+                    }
                 }
             }
         }

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.doron.gymtracker.data.HealthConnectManager
 import com.doron.gymtracker.data.db.ActivityTypeMigration
 import com.doron.gymtracker.data.prefs.SettingsPrefs
+import com.doron.gymtracker.data.toMeters
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.data.repository.TrainingTypes
 import com.doron.gymtracker.data.repository.WorkoutRepository
@@ -111,7 +112,9 @@ class LogSessionViewModel @Inject constructor(
             val finishedAt = startedAt + s.durationS * 1000L
             val calories = s.calories.toIntOrNull() ?: s.estimatedCalories
             // Typed for another type before switching: only a type with a distance keeps it
-            val distanceMeters = if (!type.hasDistance) null else s.distance.replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 }?.times(1000)
+            // Typed in km or miles, as the runner reads distances
+            val unit = settings.profile.first().distanceUnit
+            val distanceMeters = if (!type.hasDistance) null else s.distance.replace(',', '.').toDoubleOrNull()?.takeIf { it > 0 }?.let { unit.toMeters(it) }
             val sessionType = when {
                 s.isStrength -> "GYM"
                 type.id == ActivityTypeMigration.RUN -> "RUNNING"

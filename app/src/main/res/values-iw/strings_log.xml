@@ -10,7 +10,6 @@
     <string name="log_duration">משך</string>
     <string name="log_hours">שעות</string>
     <string name="log_minutes">דקות</string>
-    <string name="log_distance">מרחק בק״מ (לא חובה)</string>
     <string name="log_calories">קלוריות (לא חובה)</string>
     <string name="log_calories_estimate">אם יישאר ריק: כ-%d, לפי משקל הגוף שלך והמשך</string>
     <string name="log_note">הערה (לא חובה)</string>

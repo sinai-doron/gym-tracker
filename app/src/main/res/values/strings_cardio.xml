@@ -7,20 +7,13 @@
     <string name="cardio_paused_auto">⏸ מושהה – ימשיך כשתזוז</string>
     <string name="cardio_off_route">↩ יצאת מהמסלול</string>
     <string name="cardio_distance">מרחק</string>
-    <string name="cardio_km_2dp">%1$.2f ק״מ</string>
-    <string name="cardio_km_1dp">%1$.1f ק״מ</string>
     <string name="cardio_pace">קצב</string>
-    <string name="cardio_pace_value">%1$s /ק״מ</string>
-    <string name="cardio_pace_min_sec">%1$d:%2$02d /ק״מ</string>
     <string name="cardio_avg_pace">קצב ממוצע</string>
-    <string name="cardio_current_lap">הקפה %1$d · %2$.2f ק״מ</string>
     <string name="cardio_speed">מהירות</string>
-    <string name="cardio_kmh_1dp">%1$.1f קמ״ש</string>
     <string name="cardio_resume">המשך</string>
     <string name="cardio_pause">השהה</string>
     <string name="cardio_finish">סיום</string>
     <string name="cardio_finish_title">סיום אימון?</string>
-    <string name="cardio_finish_text">%1$.2f ק״מ ב-%2$s</string>
     <string name="cardio_finish_confirm">סיים</string>
     <string name="cardio_discard">בטל</string>
     <string name="cardio_keep_going">המשך</string>
@@ -28,10 +21,7 @@
     <string name="cardio_target_reached">המטרה הושגה!</string>
     <string name="cardio_route_heading">מסלול</string>
     <string name="cardio_target_heading">מטרה</string>
-    <string name="cardio_route_progress">%1$.2f / %2$.1f ק״מ</string>
-    <string name="cardio_distance_progress">%1$.2f / %2$s ק״מ</string>
     <string name="cardio_steps_cadence_extra">%1$,d · %2$d/ד׳</string>
-    <string name="cardio_climb_extra">%1$d מ׳</string>
     <string name="cardio_kcal_extra">%1$d קק״ל</string>
 
     <!-- Run report -->
@@ -42,7 +32,6 @@
     <string name="cardio_calories">קלוריות</string>
     <string name="cardio_elevation">גובה</string>
     <string name="cardio_laps">הקפות</string>
-    <string name="cardio_chart_point">%1$.2f ק״מ · %2$s</string>
     <string name="cardio_badges_ok">יופי!</string>
     <plurals name="cardio_new_badges">
         <item quantity="one">הישג חדש!</item>
@@ -66,7 +55,6 @@
     <string name="cardio_time">זמן</string>
     <string name="cardio_route">מסלול</string>
     <string name="cardio_minutes_value">%1$d דק׳</string>
-    <string name="cardio_route_name_km">%1$s · %2$.1f ק״מ</string>
     <string name="cardio_choose_route">בחר מסלול</string>
     <string name="cardio_no_routes">אין עדיין מסלולים: שמרו ריצה כמסלול או ייבאו קובץ GPX.</string>
     <string name="cardio_manage_routes">ניהול מסלולים וייבוא GPX</string>
@@ -81,10 +69,7 @@
     <string name="cardio_date">תאריך</string>
     <string name="cardio_records">שיאים</string>
     <string name="cardio_pace_colors">צבעי קצב</string>
-    <string name="cardio_unit_km">ק״מ</string>
     <string name="cardio_unit_time">זמן</string>
-    <string name="cardio_unit_pace">דק׳/ק״מ</string>
-    <string name="cardio_unit_climb">מ׳ עלייה</string>
     <string name="cardio_unit_kcal">קק״ל</string>
     <string name="cardio_unit_steps">צעדים</string>
     <!-- SimpleDateFormat pattern and the locale for its month names -->

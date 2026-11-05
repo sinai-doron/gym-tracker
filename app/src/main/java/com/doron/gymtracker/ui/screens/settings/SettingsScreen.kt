@@ -76,6 +76,9 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.ui.text.style.TextAlign
 import com.doron.gymtracker.BuildConfig
+import com.doron.gymtracker.ui.components.LocalDistanceUnit
+import com.doron.gymtracker.ui.components.lapLengthText
+import com.doron.gymtracker.data.lapOptions
 
 data class LanguageOption(val code: String, val displayName: String)
 
@@ -516,7 +519,7 @@ private fun LapLengthDropdown(selectedM: Int, onSelect: (Int) -> Unit) {
                 .fillMaxWidth()
         )
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            SettingsPrefs.LAP_DISTANCE_OPTIONS_M.forEach { meters ->
+            LocalDistanceUnit.current.lapOptions().forEach { meters ->
                 DropdownMenuItem(
                     text = { Text(lapLengthLabel(meters)) },
                     onClick = {
@@ -623,10 +626,6 @@ private fun formatWeight(kg: Float): String =
     if (kg == kg.toInt().toFloat()) kg.toInt().toString() else kg.toString()
 
 @Composable
-private fun lapLengthLabel(meters: Int): String = when {
-    meters == 0 -> stringResource(R.string.laps_off)
-    meters < 1000 -> stringResource(R.string.meters_value, meters)
-    meters % 1000 == 0 -> stringResource(R.string.km_value, (meters / 1000).toString())
-    else -> stringResource(R.string.km_value, "%.1f".format(meters / 1000.0))
-}
+private fun lapLengthLabel(meters: Int): String =
+    if (meters == 0) stringResource(R.string.laps_off) else lapLengthText(meters)
 

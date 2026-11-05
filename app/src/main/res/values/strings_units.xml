@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Distances in km or miles, climb in metres or feet: the runner's units (ui/components/Units.kt) -->
+    <!-- A number and its unit: "5.00 km", "5:20 /km" -->
+    <string name="units_value">%1$s %2$s</string>
+    <string name="units_km">ק״מ</string>
+    <string name="units_mi">מייל</string>
+    <string name="units_per_km">/ק״מ</string>
+    <string name="units_per_mi">/מייל</string>
+    <string name="units_kmh">קמ״ש</string>
+    <!-- Miles an hour, short -->
+    <string name="units_mph">מייל/ש׳</string>
+    <string name="units_m">מ׳</string>
+    <!-- Feet, for climb and elevation -->
+    <string name="units_ft">רגל</string>
+    <string name="units_min_per_km">דק׳/ק״מ</string>
+    <string name="units_min_per_mi">דק׳/מייל</string>
+    <string name="units_climb_m">מ׳ עלייה</string>
+    <string name="units_climb_ft">רגל עלייה</string>
+    <string name="cardio_current_lap_distance">הקפה %1$d · %2$s</string>
+    <string name="cardio_finish_distance">%1$s ב-%2$s</string>
+    <!-- Distance so far / the target and its unit: "2.40 / 5.0 km" -->
+    <string name="cardio_progress_of">%1$s / %2$s %3$s</string>
+    <string name="cardio_chart_point_at">%1$s · %2$s</string>
+    <string name="cardio_route_name_distance">%1$s · %2$s</string>
+    <string name="routes_card_meta_distance">%1$s · נוסף %2$s</string>
+    <string name="routes_estimate_from_runs_pace">הזמן המשוער לפי הקצב הממוצע שלך בריצות האחרונות (%1$s)</string>
+    <string name="routes_estimate_from_pace_unit">הזמן המשוער לפי קצב של %1$s</string>
+    <string name="run_summary_map_description_distance">מפת המסלול, %1$s מההתחלה ועד הסוף</string>
+    <string name="run_summary_laps_every_distance">כל %1$s</string>
+    <!-- %1$s: /km or /mi -->
+    <string name="run_summary_lap_pace_unit">קצב %1$s</string>
+    <!-- %1$s: km or mi -->
+    <string name="log_distance_in">מרחק ב%1$s (לא חובה)</string>
+</resources>

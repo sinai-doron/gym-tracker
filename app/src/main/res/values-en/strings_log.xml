@@ -10,7 +10,6 @@
     <string name="log_duration">Duration</string>
     <string name="log_hours">Hours</string>
     <string name="log_minutes">Minutes</string>
-    <string name="log_distance">Distance in km (optional)</string>
     <string name="log_calories">Calories (optional)</string>
     <string name="log_calories_estimate">Left empty: about %d, from your body weight and the time</string>
     <string name="log_note">Note (optional)</string>

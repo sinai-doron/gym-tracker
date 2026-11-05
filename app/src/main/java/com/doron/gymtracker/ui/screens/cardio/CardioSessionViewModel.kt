@@ -109,12 +109,9 @@ data class CardioUiState(
     val avgPaceSecsPerKm: Long?
         get() = if (distanceMeters >= MIN_DISTANCE_FOR_PACE_M) (elapsedSecs * 1000 / distanceMeters).toLong() else null
 
-    val currentPace: String
-        get() {
-            if (currentSpeed <= 0.3f) return ""
-            val paceSecsPerKm = (1000.0 / currentSpeed).toInt()
-            return "%d:%02d".format(paceSecsPerKm / 60, paceSecsPerKm % 60)
-        }
+    /** Pace right now, seconds per km, or null when barely moving. */
+    val currentPaceSecsPerKm: Double?
+        get() = if (currentSpeed > 0.3f) 1000.0 / currentSpeed else null
 
     private companion object {
         const val MIN_DISTANCE_FOR_PACE_M = 50.0

@@ -97,6 +97,12 @@ import org.maplibre.geojson.Feature
 import org.maplibre.geojson.FeatureCollection
 import org.maplibre.geojson.LineString
 import org.maplibre.geojson.Point
+import com.doron.gymtracker.ui.components.distanceNumber
+import com.doron.gymtracker.ui.components.distanceUnitLabel
+import com.doron.gymtracker.ui.components.paceNumber
+import com.doron.gymtracker.ui.components.heightNumber
+import com.doron.gymtracker.ui.components.LocalDistanceUnit
+import com.doron.gymtracker.data.prefs.DistanceUnit
 
 /**
  * Sharing a run, once [open]: a choice of the run as an image card (WhatsApp, Instagram…) or as
@@ -266,10 +272,14 @@ private fun ShareImageDialog(state: CardioUiState, records: List<PersonalRecord>
 @Composable
 private fun RunShareCard(state: CardioUiState, records: List<PersonalRecord>, map: Bitmap?, fields: Set<ShareField>) {
     val numbers = listOfNotNull(
-        (ShareField.DISTANCE in fields).takeIf { it }?.let { "%.2f".format(state.distanceMeters / 1000) to stringResource(R.string.cardio_unit_km) },
+        (ShareField.DISTANCE in fields).takeIf { it }?.let { distanceNumber(state.distanceMeters) to distanceUnitLabel() },
         (ShareField.TIME in fields).takeIf { it }?.let { formatClock(state.elapsedSecs) to stringResource(R.string.cardio_unit_time) },
-        state.avgPaceSecsPerKm?.takeIf { ShareField.PACE in fields }?.let { formatClock(it) to stringResource(R.string.cardio_unit_pace) },
-        (ShareField.CLIMB in fields).takeIf { it }?.let { "${state.elevationGainM.roundToInt()}" to stringResource(R.string.cardio_unit_climb) },
+        state.avgPaceSecsPerKm?.takeIf { ShareField.PACE in fields }?.let {
+            paceNumber(it) to stringResource(if (LocalDistanceUnit.current == DistanceUnit.KM) R.string.units_min_per_km else R.string.units_min_per_mi)
+        },
+        (ShareField.CLIMB in fields).takeIf { it }?.let {
+            heightNumber(state.elevationGainM) to stringResource(if (LocalDistanceUnit.current == DistanceUnit.KM) R.string.units_climb_m else R.string.units_climb_ft)
+        },
         state.calories?.takeIf { ShareField.CALORIES in fields }?.let { "$it" to stringResource(R.string.cardio_unit_kcal) },
         state.steps?.takeIf { ShareField.STEPS in fields }?.let { "%,d".format(it) to stringResource(R.string.cardio_unit_steps) }
     )
