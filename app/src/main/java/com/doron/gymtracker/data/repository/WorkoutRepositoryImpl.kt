@@ -74,10 +74,11 @@ class WorkoutRepositoryImpl @Inject constructor(
     private suspend fun WorkoutEntity.toDomain(): Workout {
         val rows = dao.getExercisesForWorkout(id)
         val names = libraryNames(rows)
+        val steps = weightSteps(rows)
         val variantsByBase = rows.filter { it.variantOfId != null }.associateBy { it.variantOfId }
         val exercises = rows.filter { it.variantOfId == null }.map { base ->
-            val variant = variantsByBase[base.id]?.let { it.toDomain(names = names[it.id].orEmpty()) }
-            base.toDomain(variantB = variant, names = names[base.id].orEmpty())
+            val variant = variantsByBase[base.id]?.let { it.toDomain(names = names[it.id].orEmpty(), step = steps[it.libraryExerciseId]) }
+            base.toDomain(variantB = variant, names = names[base.id].orEmpty(), step = steps[base.libraryExerciseId])
         }
         return Workout(id, label, exercises, name = name, sortOrder = sortOrder, weekday = weekday?.let(DayOfWeek::of))
     }
@@ -190,13 +191,22 @@ class WorkoutRepositoryImpl @Inject constructor(
         }.toMap()
     }
 
+    /** The weight step of each library exercise the rows are, from its equipment; by library id. */
+    private suspend fun weightSteps(rows: List<ExerciseDefinitionEntity>): Map<String, Double> {
+        val ids = rows.mapNotNull { it.libraryExerciseId }.distinct()
+        if (ids.isEmpty()) return emptyMap()
+        return libraryDao.getAll(ids).mapNotNull { e -> e.weightStepKg?.let { e.id to it } }.toMap()
+    }
+
     private fun ExerciseDefinitionEntity.toDomain(
         variantB: ExerciseDefinition? = null,
-        names: Map<String, String> = emptyMap()
+        names: Map<String, String> = emptyMap(),
+        step: Double? = null
     ): ExerciseDefinition = when (type) {
         "REP" -> RepExerciseDefinition(
             id, name, targetSets, restDurationSecs, targetReps!!, variantB = variantB,
-            isOptional = isOptional, isPerSide = isPerSide, names = names, isBodyweight = isBodyweight, targetRepsMin = targetRepsMin
+            isOptional = isOptional, isPerSide = isPerSide, names = names, isBodyweight = isBodyweight, targetRepsMin = targetRepsMin,
+            weightStepKg = step
         )
         "DISTANCE" -> DistanceExerciseDefinition(
             id, name, targetSets, restDurationSecs, targetDistanceM!!, variantB = variantB,

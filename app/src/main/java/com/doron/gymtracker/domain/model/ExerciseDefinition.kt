@@ -30,7 +30,12 @@ data class RepExerciseDefinition(
     /** Bodyweight / free-form: logged by reps only, no weight. */
     val isBodyweight: Boolean = false,
     /** The bottom of a rep range (6 in 6–10); null for a fixed count. */
-    val targetRepsMin: Int? = null
+    val targetRepsMin: Int? = null,
+    /**
+     * The weight its equipment adds in one step (2.5 kg barbell, 2 kg dumbbell), from the library
+     * exercise it is; null when that isn't known. Read with the plan, never saved with it.
+     */
+    val weightStepKg: Double? = null
 ) : ExerciseDefinition {
     /** "6–10" for a range, "8" for a fixed count. */
     val repsLabel: String
