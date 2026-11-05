@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Before a run or walk: finding GPS, then GPS ready, with the target and the start button -->
 <resources>
-    <string name="before_run_finding_title">מחפש קליטת GPS</string>
-    <string name="before_run_finding_hint">שמיים פתוחים עוזרים, אז כדאי לצאת החוצה אם אפשר</string>
-    <string name="before_run_ready_title">GPS מוכן</string>
+    <string name="before_run_finding_title">Finding GPS signal</string>
+    <string name="before_run_finding_hint">Open sky helps, so step outside if you can</string>
+    <string name="before_run_ready_title">GPS ready</string>
     <!-- %1$s: plus or minus how many metres, such as ±5, kept left to right -->
-    <string name="before_run_accuracy">דיוק %1$s מ׳</string>
-    <string name="before_run_signal_1">קליטה: חלשה</string>
-    <string name="before_run_signal_2">קליטה: בינונית</string>
-    <string name="before_run_signal_3">קליטה: טובה</string>
-    <string name="before_run_signal_4">קליטה: חזקה</string>
-    <string name="before_run_waiting">ממתין ל־GPS</string>
-    <string name="before_run_waiting_reason">אפשר להתחיל ברגע שה־GPS מוכן</string>
-    <string name="before_run_needs_route_reason">כדי להתחיל, בחרו מסלול או מטרה אחרת</string>
-    <string name="before_run_recentre">מרכז על המיקום שלי</string>
+    <string name="before_run_accuracy">Accuracy %1$s m</string>
+    <string name="before_run_signal_1">Signal: weak</string>
+    <string name="before_run_signal_2">Signal: fair</string>
+    <string name="before_run_signal_3">Signal: good</string>
+    <string name="before_run_signal_4">Signal: strong</string>
+    <string name="before_run_waiting">Waiting for GPS</string>
+    <string name="before_run_waiting_reason">You can start once GPS is ready</string>
+    <string name="before_run_needs_route_reason">To start, choose a route or another target</string>
+    <string name="before_run_recentre">Centre on my location</string>
     <!-- %1$s: plus or minus how many metres, such as ±5 -->
-    <string name="before_run_map_description">מפה שממורכזת על המיקום הנוכחי שלך, דיוק של %1$s מטרים</string>
+    <string name="before_run_map_description">Map centred on your current location, accuracy %1$s metres</string>
     <!-- %1$s: the kind of target; %2$s: how far or how long -->
     <string name="before_run_target_value">%1$s · %2$s</string>
-    <string name="before_run_target_done">סיום</string>
+    <string name="before_run_target_done">Done</string>
 </resources>
