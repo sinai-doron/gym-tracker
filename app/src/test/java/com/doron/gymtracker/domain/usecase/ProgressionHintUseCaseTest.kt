@@ -3,13 +3,12 @@ package com.doron.gymtracker.domain.usecase
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.domain.model.ExerciseSessionSets
 import com.doron.gymtracker.domain.model.ProgressionHint
+import com.doron.gymtracker.domain.model.RepExerciseDefinition
 import com.doron.gymtracker.domain.model.RepSetRecord
-import com.doron.gymtracker.domain.model.Session
 import io.mockk.coEvery
 import io.mockk.mockk
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 
@@ -17,6 +16,11 @@ class ProgressionHintUseCaseTest {
 
     private lateinit var repo: SessionRepository
     private lateinit var useCase: ProgressionHintUseCase
+
+    /** 3 sets of 6–10, on a barbell. */
+    private val squat = RepExerciseDefinition(
+        "d1_e1", "Squat", targetSets = 3, restDurationSecs = 120, targetReps = 10, targetRepsMin = 6, weightStepKg = 2.5
+    )
 
     @Before
     fun setup() {
@@ -30,77 +34,86 @@ class ProgressionHintUseCaseTest {
     private fun history(id: Long, vararg sets: Pair<Int, Float>) =
         ExerciseSessionSets(id, id * 1000, sets.mapIndexed { i, (reps, weight) -> repSet(id * 10 + i, reps, weight) })
 
-    @Test
-    fun `OnTrack when fewer than 3 sessions`() = runTest {
-        coEvery { repo.getExerciseHistory("d1_e1") } returns listOf(history(1, 6 to 60f, 6 to 60f))
-        val hint = useCase("d1_e1", targetReps = 8)
-        assertTrue(hint is ProgressionHint.OnTrack)
+    private fun given(vararg sessions: ExerciseSessionSets) {
+        coEvery { repo.getExerciseHistory("d1_e1") } returns sessions.toList()
     }
 
     @Test
-    fun `Increase when last 3 sessions all hit top of rep range`() = runTest {
-        coEvery { repo.getExerciseHistory("d1_e1") } returns (1L..3L).map { history(it, 8 to 60f, 8 to 60f) }
-        val hint = useCase("d1_e1", targetReps = 8)
-        assertTrue("Expected Increase but got $hint", hint is ProgressionHint.Increase)
+    fun `no history, no hint`() = runTest {
+        given()
+        assertEquals(ProgressionHint.OnTrack, useCase(squat))
     }
 
     @Test
-    fun `Stalled when last 3 sessions have same weight and same reps below target`() = runTest {
-        coEvery { repo.getExerciseHistory("d1_e1") } returns (1L..3L).map { history(it, 6 to 60f, 6 to 60f) }
-        val hint = useCase("d1_e1", targetReps = 8)
-        assertTrue("Expected Stalled but got $hint", hint is ProgressionHint.Stalled)
+    fun `every set at the top of the range adds the equipment step`() = runTest {
+        given(history(1, 10 to 60f, 10 to 60f, 10 to 60f))
+        assertEquals(ProgressionHint.Increase(2.5f), useCase(squat))
     }
 
     @Test
-    fun `OnTrack when improving weight across sessions`() = runTest {
-        // Different weights each session — not stalled
-        coEvery { repo.getExerciseHistory("d1_e1") } returns listOf(
-            history(1, 6 to 50f), history(2, 6 to 55f), history(3, 6 to 60f)
-        )
-        val hint = useCase("d1_e1", targetReps = 8)
-        assertTrue(hint is ProgressionHint.OnTrack)
+    fun `the step follows the equipment, not the reps`() = runTest {
+        given(history(1, 10 to 20f, 10 to 20f, 10 to 20f))
+        assertEquals(ProgressionHint.Increase(2f), useCase(squat.copy(weightStepKg = 2.0)))
+        assertEquals(ProgressionHint.Increase(5f), useCase(squat.copy(weightStepKg = 5.0)))
     }
 
     @Test
-    fun `Only the last 3 sessions that had the exercise count`() = runTest {
-        // An early session missed the target; the last three hit it
-        coEvery { repo.getExerciseHistory("d1_e1") } returns listOf(
-            history(1, 5 to 60f), history(4, 8 to 60f), history(7, 8 to 60f), history(10, 8 to 60f)
-        )
-        val hint = useCase("d1_e1", targetReps = 8)
-        assertTrue("Expected Increase but got $hint", hint is ProgressionHint.Increase)
+    fun `an exercise whose equipment isn't known steps 2_5 kg`() = runTest {
+        given(history(1, 10 to 60f, 10 to 60f, 10 to 60f))
+        assertEquals(ProgressionHint.Increase(2.5f), useCase(squat.copy(weightStepKg = null)))
     }
 
-    /**
-     * The bug: the hint took the last 3 sessions of any kind. With workouts B and C and a run after
-     * the last A, none of them had the bench press, so the hint was stuck on "on track".
-     */
     @Test
-    fun `Other workouts and runs in between don't hide the hint`() = runTest {
-        coEvery { repo.observeAll() } returns flowOf(
-            listOf(
-                Session(1, "workout_a", 1000, 2000), Session(2, "workout_b", 3000, 4000),
-                Session(3, "workout_a", 5000, 6000), Session(4, "RUNNING", 7000, 8000, "RUNNING"),
-                Session(5, "workout_a", 9000, 10000), Session(6, "workout_c", 11000, 12000),
-                Session(7, "RUNNING", 13000, 14000, "RUNNING"),
-            )
-        )
-        coEvery { repo.getExerciseHistory("d1_e1") } returns listOf(
-            history(1, 8 to 60f), history(3, 8 to 60f), history(5, 8 to 60f)
-        )
-        val hint = useCase("d1_e1", targetReps = 8)
-        assertTrue("Expected Increase but got $hint", hint is ProgressionHint.Increase)
+    fun `one set short of the top is not yet`() = runTest {
+        given(history(1, 10 to 60f, 10 to 60f, 8 to 60f))
+        assertEquals(ProgressionHint.OnTrack, useCase(squat))
+    }
+
+    @Test
+    fun `fewer sets than planned is not yet`() = runTest {
+        given(history(1, 10 to 60f, 10 to 60f))
+        assertEquals(ProgressionHint.OnTrack, useCase(squat))
+    }
+
+    @Test
+    fun `lighter warm-up sets don't count`() = runTest {
+        given(history(1, 5 to 40f, 10 to 60f, 10 to 60f, 10 to 60f))
+        assertEquals(ProgressionHint.Increase(2.5f), useCase(squat))
+    }
+
+    @Test
+    fun `a fixed count is its own top`() = runTest {
+        given(history(1, 8 to 60f, 8 to 60f, 8 to 60f))
+        assertEquals(ProgressionHint.Increase(2.5f), useCase(squat.copy(targetReps = 8, targetRepsMin = null)))
+    }
+
+    @Test
+    fun `only the last session decides`() = runTest {
+        // Hit the top before, then moved up and is working back to it
+        given(history(1, 10 to 60f, 10 to 60f, 10 to 60f), history(2, 7 to 62.5f, 7 to 62.5f, 6 to 62.5f))
+        assertEquals(ProgressionHint.OnTrack, useCase(squat))
+    }
+
+    @Test
+    fun `three sessions at the same weight and reps, short of the top, is stalled`() = runTest {
+        given(history(1, 8 to 60f, 7 to 60f), history(2, 8 to 60f, 8 to 60f), history(3, 8 to 60f, 6 to 60f))
+        assertEquals(ProgressionHint.Stalled, useCase(squat))
+    }
+
+    @Test
+    fun `improving weight across sessions is on track`() = runTest {
+        given(history(1, 8 to 50f), history(2, 8 to 55f), history(3, 8 to 60f))
+        assertEquals(ProgressionHint.OnTrack, useCase(squat))
     }
 
     @Test
     fun `a deload week's sessions say nothing about progress`() = runTest {
-        // Weeks 4, 5 and 7 hit the target; week 6, the deload, was lighter and shorter on purpose
+        // Week 5 hit the top; week 6, the deload, was lighter and shorter on purpose
         useCase = ProgressionHintUseCase(repo, ProgramFixture.repo())
-        coEvery { repo.getExerciseHistory("d1_e1") } returns listOf(4, 5, 6, 7).map { week ->
-            val (reps, weight) = if (week == 6) 5 to 36f else 8 to 60f
-            ExerciseSessionSets(week.toLong(), ProgramFixture.inWeek(week), listOf(repSet(week.toLong(), reps, weight)))
-        }
-        val hint = useCase("d1_e1", targetReps = 8)
-        assertTrue("Expected Increase but got $hint", hint is ProgressionHint.Increase)
+        given(
+            ExerciseSessionSets(5, ProgramFixture.inWeek(5), (1..3).map { repSet(5L * 10 + it, 10, 60f) }),
+            ExerciseSessionSets(6, ProgramFixture.inWeek(6), listOf(repSet(61, 5, 36f), repSet(62, 5, 36f)))
+        )
+        assertEquals(ProgressionHint.Increase(2.5f), useCase(squat))
     }
 }

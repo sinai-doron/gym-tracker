@@ -37,7 +37,7 @@
 
     <!-- Exercise sheet -->
     <string name="session_per_side_hint">לכל צד – הזן לכל צד בנפרד</string>
-    <string name="session_hint_increase_by">כל הסטים הגיעו לטווח העליון 3× ברצף — הוסף %1$s</string>
+    <string name="session_hint_increase_by">בפעם הקודמת כל הסטים הגיעו לראש הטווח — הוסף %1$s</string>
     <string name="session_hint_stalled" formatted="false">3 אימונים ללא שיפור — הפחת 10% ובנה מחדש</string>
     <string name="session_delete_set">מחק סט</string>
     <string name="session_update_set">עדכן סט</string>

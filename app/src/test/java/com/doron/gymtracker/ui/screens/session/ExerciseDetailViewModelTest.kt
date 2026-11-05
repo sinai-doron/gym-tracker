@@ -173,7 +173,7 @@ class ExerciseDetailViewModelTest {
         val getLastWeight = mockk<GetLastWeightUseCase>()
         coEvery { getLastWeight(any()) } returns 30f
         val progressionHint = mockk<ProgressionHintUseCase>()
-        coEvery { progressionHint(any(), any()) } returns ProgressionHint.OnTrack
+        coEvery { progressionHint(any()) } returns ProgressionHint.OnTrack
         val logged = listOf(
             RepSetRecord(1L, 1L, 0L, reps = 10, weightKg = 40f),
             RepSetRecord(2L, 1L, 0L, reps = 10, weightKg = 42.5f)
@@ -191,7 +191,7 @@ class ExerciseDetailViewModelTest {
         val getLastWeight = mockk<GetLastWeightUseCase>()
         coEvery { getLastWeight(any()) } returns 65f
         val progressionHint = mockk<ProgressionHintUseCase>()
-        coEvery { progressionHint(any(), any()) } returns ProgressionHint.Increase(2.5f)
+        coEvery { progressionHint(any()) } returns ProgressionHint.Increase(2.5f)
         val vm = ExerciseDetailViewModel(
             1L, repExercise, logSet,
             progressionHint = progressionHint, getLastWeight = getLastWeight, deloadLoadPercent = 60

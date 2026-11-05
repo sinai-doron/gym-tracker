@@ -24,6 +24,9 @@ interface ExerciseLibraryDao {
     @Query("SELECT * FROM exercises WHERE slug = :slug")
     suspend fun getBySlug(slug: String): ExerciseEntity?
 
+    @Query("SELECT * FROM exercises WHERE id IN (:ids)")
+    suspend fun getAll(ids: List<String>): List<ExerciseEntity>
+
     @Query("SELECT * FROM exercise_names WHERE exerciseId = :id")
     suspend fun names(id: String): List<ExerciseNameEntity>
 

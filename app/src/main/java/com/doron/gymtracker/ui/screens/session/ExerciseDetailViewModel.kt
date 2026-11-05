@@ -88,7 +88,7 @@ class ExerciseDetailViewModel(
             scope.launch {
                 // A deload week is lighter on purpose: no hint to add weight, and a share of the usual one
                 val hint = if (deloadLoadPercent != null) ProgressionHint.OnTrack
-                else progressionHint?.invoke(ex.id, ex.targetReps) ?: ProgressionHint.OnTrack
+                else progressionHint?.invoke(ex) ?: ProgressionHint.OnTrack
                 val previousSession = getLastWeight?.invoke(ex.id)?.let { kg ->
                     if (deloadLoadPercent != null) kg * deloadLoadPercent / 100f else kg
                 }

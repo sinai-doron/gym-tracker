@@ -72,8 +72,11 @@ English on any other, and Settings can change it.
   - In a deload week the session caps each exercise's sets and pre-fills the weight at that
     share, rounded down to a plate (2.5 kg or 5 lb), with no hint to add weight. The plan keeps
     its own sets, and later weeks start again from the usual weight.
-  - Progression hints from your last three sessions: *increase*, *stalled* or *on
-    track*.
+  - Progression hints per exercise. Once every set at the top weight reached the top of the
+    rep range last time, the hint says to add the exercise's step, which comes from its
+    equipment: 2.5 kg on a barbell, 2 kg a dumbbell, 5 kg a machine (2.5 kg when unknown;
+    shown as 5 lb in pounds). Three sessions at the same weight and reps short of the top is
+    *stalled*. Deload weeks are left out.
 - **Exercise progress.** For each exercise: its personal record, a chart of the best set
   per workout, and every session's sets.
 
