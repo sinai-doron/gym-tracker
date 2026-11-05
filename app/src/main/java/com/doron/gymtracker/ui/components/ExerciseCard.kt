@@ -153,10 +153,9 @@ private fun InlineSetRow(setNumber: Int, record: SetRecord) {
         Spacer(Modifier.width(10.dp))
         val value = when (record) {
             is RepSetRecord -> {
-                val w = if (record.weightKg == record.weightKg.toLong().toFloat())
-                    record.weightKg.toLong().toString() else record.weightKg.toString()
+                val w = weightText(record.weightKg)
                 if (record.weightKg == 0f) pluralStringResource(R.plurals.session_reps, record.reps, record.reps)
-                else stringResource(R.string.session_reps_times_weight, record.reps, w)
+                else stringResource(R.string.session_reps_times_weight_unit, record.reps, w)
             }
             is TimedSetRecord -> formatDuration(record.durationSecs)
             is DistanceSetRecord -> stringResource(R.string.meters_value, record.distanceM)

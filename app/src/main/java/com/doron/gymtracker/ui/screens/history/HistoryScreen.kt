@@ -72,6 +72,7 @@ import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
 import com.doron.gymtracker.ui.components.distanceText
+import com.doron.gymtracker.ui.components.volumeText
 
 
 private val weekDayOrder = listOf(
@@ -362,7 +363,7 @@ private fun SessionCard(
                     if (session.sessionType == "GYM") {
                         StatChip(pluralStringResource(R.plurals.history_sets_count, session.totalSets, session.totalSets))
                         if (session.totalVolumeKg > 0) {
-                            StatChip(stringResource(R.string.weight_value, "%,.0f".format(session.totalVolumeKg)))
+                            StatChip(volumeText(session.totalVolumeKg))
                         }
                     } else {
                         session.distanceKm?.let { km ->

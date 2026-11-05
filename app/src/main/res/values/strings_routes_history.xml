@@ -66,6 +66,6 @@
     <string name="history_total_volume">Total volume</string>
     <string name="history_exercise_breakdown">Exercise breakdown</string>
     <string name="history_line_sets">%1$d/%2$d sets</string>
-    <string name="history_line_sets_weight">%1$d/%2$d sets · %3$s kg</string>
+    <string name="history_line_sets_weight_unit">%1$d/%2$d sets · %3$s</string>
     <string name="history_soundtrack">♫ Workout soundtrack</string>
 </resources>

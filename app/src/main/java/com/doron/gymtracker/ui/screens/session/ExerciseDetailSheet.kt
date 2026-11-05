@@ -47,6 +47,11 @@ import com.doron.gymtracker.ui.components.ExerciseIllustration
 import com.doron.gymtracker.ui.components.RestTimerOverlay
 import com.doron.gymtracker.ui.components.SetLogRow
 import com.doron.gymtracker.ui.theme.RestTimerColor
+import com.doron.gymtracker.ui.components.weightStepText
+import com.doron.gymtracker.ui.components.weightUnitLabel
+import com.doron.gymtracker.ui.components.LocalWeightUnit
+import com.doron.gymtracker.data.format
+import com.doron.gymtracker.data.toKg
 
 @Composable
 fun ExerciseDetailSheet(
@@ -121,7 +126,7 @@ fun ExerciseDetailSheet(
 
         // Progression hint — only shown for rep exercises
         val hintText = when (val h = state.progressionHint) {
-            is ProgressionHint.Increase -> stringResource(R.string.session_hint_increase, h.addKg.toString())
+            is ProgressionHint.Increase -> stringResource(R.string.session_hint_increase_by, weightStepText(h.addKg))
             is ProgressionHint.Stalled -> stringResource(R.string.session_hint_stalled)
             is ProgressionHint.OnTrack -> null
         }
@@ -229,17 +234,16 @@ private fun RepSetInput(
     onLog: (Int, Float) -> Unit,
     onCancelEdit: (() -> Unit)? = null
 ) {
-    val initialWeight = if (lastWeight != null && lastWeight > 0f)
-        lastWeight.let { if (it == it.toLong().toFloat()) it.toLong().toString() else it.toString() }
-    else ""
+    // Typed and shown in kg or pounds; kept in kg
+    val unit = LocalWeightUnit.current
+    val initialWeight = if (lastWeight != null && lastWeight > 0f) unit.format(lastWeight) else ""
     // Saveable, so a half-typed set survives a trip to progress or a rotation
     var repsText by rememberSaveable(editingSet) {
         mutableStateOf(editingSet?.reps?.toString() ?: DEFAULT_REPS.toString())
     }
     var weightText by rememberSaveable(editingSet, lastWeight) {
         mutableStateOf(
-            editingSet?.weightKg?.let { if (it == it.toLong().toFloat()) it.toLong().toString() else it.toString() }
-                ?: initialWeight
+            editingSet?.weightKg?.let { unit.format(it) } ?: initialWeight
         )
     }
 
@@ -258,7 +262,7 @@ private fun RepSetInput(
             OutlinedTextField(
                 value = weightText,
                 onValueChange = { weightText = it },
-                label = { Text(stringResource(R.string.weight_kg)) },
+                label = { Text(stringResource(R.string.weight_in, weightUnitLabel())) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -279,7 +283,8 @@ private fun RepSetInput(
         Button(
             onClick = {
                 val reps = repsText.toIntOrNull() ?: return@Button
-                val weight = if (isBodyweight) 0f else weightText.toFloatOrNull() ?: return@Button
+                val weight = if (isBodyweight) 0f
+                else weightText.replace(',', '.').toDoubleOrNull()?.let { unit.toKg(it) } ?: return@Button
                 onLog(reps, weight)
                 if (editingSet == null) {
                     repsText = DEFAULT_REPS.toString()

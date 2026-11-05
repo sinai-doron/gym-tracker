@@ -2,6 +2,7 @@ package com.doron.gymtracker.data
 
 import com.doron.gymtracker.data.prefs.DistanceUnit
 import com.doron.gymtracker.data.prefs.SettingsPrefs
+import com.doron.gymtracker.data.prefs.WeightUnit
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -68,5 +69,30 @@ class UnitsTest {
         // Never below half a unit
         assertEquals(0.5, mi.of(mi.stepTargetKm(0.8f, -1) * 1000.0), 1e-4)
         assertEquals(0.5f, km.stepTargetKm(0.5f, -1), 1e-4f)
+    }
+
+    @Test
+    fun `weights typed in pounds are kept in kg and read back as typed`() {
+        val lb = WeightUnit.LB
+        assertEquals(61.235f, lb.toKg(135.0), 0.001f)
+        assertEquals("135", lb.format(lb.toKg(135.0)))
+        assertEquals("137.5", lb.format(lb.toKg(137.5)))
+        assertEquals("45", lb.format(lb.toKg(45.0)))
+        // A weight logged in kg reads to a tenth of a pound
+        assertEquals("138.9", lb.format(63f))
+        // kg as it was entered
+        assertEquals("62.5", WeightUnit.KG.format(62.5f))
+        assertEquals("80", WeightUnit.KG.format(80f))
+        assertEquals(80f, WeightUnit.KG.toKg(80.0), 0f)
+    }
+
+    @Test
+    fun `a step in pounds is a plate a lifter in pounds adds`() {
+        val lb = WeightUnit.LB
+        assertEquals(5.0, lb.step(2.5), 0.0)
+        assertEquals(10.0, lb.step(5.0), 0.0)
+        assertEquals(2.5, lb.step(1.25), 0.0)
+        assertEquals(2.5, lb.step(1.0), 0.0)
+        assertEquals(2.5, WeightUnit.KG.step(2.5), 0.0)
     }
 }

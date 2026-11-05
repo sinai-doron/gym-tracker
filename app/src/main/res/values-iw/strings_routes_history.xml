@@ -66,6 +66,6 @@
     <string name="history_total_volume">נפח כולל</string>
     <string name="history_exercise_breakdown">פירוט תרגילים</string>
     <string name="history_line_sets">%1$d/%2$d סטים</string>
-    <string name="history_line_sets_weight">%1$d/%2$d סטים · %3$s ק״ג</string>
+    <string name="history_line_sets_weight_unit">%1$d/%2$d סטים · %3$s</string>
     <string name="history_soundtrack">♫ פסקול האימון</string>
 </resources>

@@ -18,6 +18,7 @@ import com.doron.gymtracker.data.prefs.SettingsPrefs
 import com.doron.gymtracker.data.repository.ExerciseLibrary
 import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.ui.components.LocalDistanceUnit
+import com.doron.gymtracker.ui.components.LocalWeightUnit
 import com.doron.gymtracker.ui.navigation.NavGraph
 import com.doron.gymtracker.ui.theme.GymTrackerTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -66,12 +67,12 @@ class MainActivity : ComponentActivity() {
             lifecycleScope.launch { runToResume.value = cardioRecorder.recoverOpenRun() }
         }
         setContent {
-            val distanceUnit by remember { settingsPrefs.profile.map { it.distanceUnit } }
+            val units by remember { settingsPrefs.profile.map { it.distanceUnit to it.weightUnit } }
                 .collectAsState(initial = null)
             GymTrackerTheme {
-                // Held back with the onboarding flag, so a runner in miles never sees a frame in km
-                val unit = distanceUnit ?: return@GymTrackerTheme
-                CompositionLocalProvider(LocalDistanceUnit provides unit) {
+                // Held back with the onboarding flag, so someone in miles or pounds never sees a frame in km or kg
+                val (distance, weight) = units ?: return@GymTrackerTheme
+                CompositionLocalProvider(LocalDistanceUnit provides distance, LocalWeightUnit provides weight) {
                     showOnboarding.value?.let { onboarding ->
                         NavGraph(
                             runToResume = runToResume.value,

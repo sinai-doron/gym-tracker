@@ -82,6 +82,9 @@ English on any other, and Settings can change it.
   targets, the notification and the voice. Climb and elevation go with them, in metres or
   feet. Everything is still stored in metres. The fastest 1, 5 and 10 km records and the
   badges stay metric, as do GPS accuracy and gym exercises measured in metres.
+- **Kilograms or pounds**, as chosen in About you: sets are typed and shown in the chosen
+  unit, and so are volume, the progression hint (2.5 kg becomes 5 lb) and body weight.
+  Weights are still stored in kg. The tonnes badges stay metric.
 - **Targets.** None, a distance, a duration, or a saved route to follow. Following a
   route warns you when you're off it and counts shortcuts.
 - **Laps** of a length set in Settings (from 200 m to 5 km, or ⅛ to 5 mi; changing units

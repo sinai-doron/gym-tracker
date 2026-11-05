@@ -94,7 +94,7 @@ private fun ExercisePreviewRow(
         )
         if (showWeights) {
             Text(
-                item.lastWeightKg?.let { stringResource(R.string.weight_value, formatKg(it)) } ?: "",
+                item.lastWeightKg?.let { weightText(it) } ?: "",
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = Purple,
                 textAlign = TextAlign.End,
@@ -127,6 +127,3 @@ internal fun lastDoneText(lastDoneAt: Long?): String {
         else -> stringResource(R.string.done_days_ago, days)
     }
 }
-
-private fun formatKg(kg: Float): String =
-    if (kg == kg.toLong().toFloat()) kg.toLong().toString() else kg.toString()

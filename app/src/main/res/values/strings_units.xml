@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Distances in km or miles, climb in metres or feet: the runner's units (ui/components/Units.kt) -->
+    <!-- Distances in km or miles, climb in metres or feet, weights in kg or lb: the units chosen in About you (ui/components/Units.kt) -->
     <!-- A number and its unit: "5.00 km", "5:20 /km" -->
     <string name="units_value">%1$s %2$s</string>
     <string name="units_km">km</string>
@@ -32,4 +32,7 @@
     <string name="run_summary_lap_pace_unit">Pace %1$s</string>
     <!-- %1$s: km or mi -->
     <string name="log_distance_in">Distance in %1$s (optional)</string>
+    <string name="units_kg">kg</string>
+    <!-- Pounds, short -->
+    <string name="units_lb">lb</string>
 </resources>
