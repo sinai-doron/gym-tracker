@@ -85,7 +85,7 @@ English available in Settings.
   - **Auto-pause.** The run pauses after 10 seconds without moving.
   - A gap in GPS that still covered ground at walking speed or more isn't a pause.
   - **Manual pause** from the screen or the notification.
-- **Voice feedback** (optional, in Hebrew): laps, the target, pause and resume.
+- **Voice feedback** (optional, in the app's language: Hebrew, or English for any other): laps, the target, pause and resume. It needs the phone's speech engine to have that language; without it the run beeps instead.
 - **Run report.**
   - The map colored by slope.
   - Elevation, pace and cadence charts.

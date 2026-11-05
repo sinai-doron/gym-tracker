@@ -7,14 +7,16 @@ import android.media.AudioManager
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
+import com.doron.gymtracker.AppLocale
+import com.doron.gymtracker.data.VoiceLanguage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Speaks run announcements in Hebrew through whatever is playing audio (e.g. Bluetooth
- * headphones), lowering any music while it talks.
+ * Speaks run announcements in the app's language (Hebrew, else English) through whatever is
+ * playing audio (e.g. Bluetooth headphones), lowering any music while it talks.
  */
 @Singleton
 class RunVoice @Inject constructor(
@@ -33,7 +35,11 @@ class RunVoice @Inject constructor(
     @Volatile private var ready = false
     private var pending: String? = null
 
-    /** True once the engine has started without Hebrew: callers should beep instead. */
+    /** The language this run's announcements are in, fixed when the engine starts. */
+    @Volatile var language: VoiceLanguage = VoiceLanguage.of(AppLocale.language())
+        private set
+
+    /** True once the engine has started without [language]: callers should beep instead. */
     @Volatile var unavailable = false
         private set
 
@@ -61,10 +67,10 @@ class RunVoice @Inject constructor(
 
     private fun create(): TextToSpeech = TextToSpeech(context) { status ->
         val engine = tts ?: return@TextToSpeech
-        val hebrew = status == TextToSpeech.SUCCESS &&
-            engine.setLanguage(Locale.forLanguageTag("he-IL")) >= TextToSpeech.LANG_AVAILABLE
-        if (!hebrew) {
-            Log.w(TAG, "Hebrew speech isn't available (status $status)")
+        val spoken = status == TextToSpeech.SUCCESS &&
+            engine.setLanguage(speechLocale()) >= TextToSpeech.LANG_AVAILABLE
+        if (!spoken) {
+            Log.w(TAG, "$language speech isn't available (status $status)")
             unavailable = true
             return@TextToSpeech
         }
@@ -77,7 +83,18 @@ class RunVoice @Inject constructor(
         })
         ready = true
         pending?.let { pending = null; speak(it) }
-    }.also { tts = it }
+    }.also {
+        // Read again for each run: the app's language may have changed since the last one
+        language = VoiceLanguage.of(AppLocale.language())
+        unavailable = false
+        tts = it
+    }
+
+    /** English in the phone's own variety (en-GB, en-US...) when the app is in English. */
+    private fun speechLocale(): Locale = when (language) {
+        VoiceLanguage.HEBREW -> Locale.forLanguageTag(VoiceLanguage.HEBREW.tag)
+        VoiceLanguage.ENGLISH -> AppLocale.current().takeIf { it.language == "en" } ?: Locale.forLanguageTag(VoiceLanguage.ENGLISH.tag)
+    }
 
     private fun releaseFocusWhenQuiet() {
         if (tts?.isSpeaking != true) audioManager.abandonAudioFocusRequest(focus)

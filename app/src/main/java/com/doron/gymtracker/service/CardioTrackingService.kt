@@ -144,7 +144,7 @@ class CardioTrackingService : Service() {
         when (audioFeedback) {
             AudioFeedback.OFF -> Unit
             AudioFeedback.VOICE -> if (voice.unavailable) tone(milestone) else {
-                voice.speak(RunAnnouncements.text(milestone, run, now))
+                voice.speak(RunAnnouncements.text(milestone, run, now, voice.language))
                 if (milestone is RunMilestone.LapDone || milestone == RunMilestone.TargetReached || milestone == RunMilestone.OffRoute) {
                     RestTimerBeepPlayer.vibrate()
                 }

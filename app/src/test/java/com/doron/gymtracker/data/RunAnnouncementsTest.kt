@@ -47,4 +47,34 @@ class RunAnnouncementsTest {
         assertEquals("ההליכה הושהתה", RunAnnouncements.text(RunMilestone.Paused, run.copy(type = "WALKING"), 0))
         assertEquals("ממשיכים", RunAnnouncements.text(RunMilestone.Resumed, run, 0))
     }
+
+    @Test
+    fun `spells durations out in English`() {
+        val en = VoiceLanguage.ENGLISH
+        assertEquals("5 minutes and 20 seconds", RunAnnouncements.duration(320, en))
+        assertEquals("1 minute", RunAnnouncements.duration(60, en))
+        assertEquals("1 hour, 3 minutes and 5 seconds", RunAnnouncements.duration(3_785, en))
+        assertEquals("45 seconds", RunAnnouncements.duration(45, en))
+        assertEquals("0 seconds", RunAnnouncements.duration(0, en))
+    }
+
+    @Test
+    fun `announces in English`() {
+        val en = VoiceLanguage.ENGLISH
+        val lap = Lap(3, 1_000.0, 320, 16 * 60_000L)
+        assertEquals(
+            "Kilometre 3. Lap time 5 minutes and 20 seconds. Average pace 5 minutes and 20 seconds per kilometre",
+            RunAnnouncements.text(RunMilestone.LapDone(lap), run, 16 * 60_000L, en)
+        )
+        assertEquals("Target reached! 3 kilometres in 16 minutes", RunAnnouncements.text(RunMilestone.TargetReached, run, 16 * 60_000L, en))
+        assertEquals("Walk paused", RunAnnouncements.text(RunMilestone.Paused, run.copy(type = "WALKING"), 0, en))
+        assertEquals("Resuming", RunAnnouncements.text(RunMilestone.Resumed, run, 0, en))
+    }
+
+    @Test
+    fun `the voice speaks Hebrew for Hebrew and English for every other language`() {
+        assertEquals(VoiceLanguage.HEBREW, VoiceLanguage.of("he"))
+        assertEquals(VoiceLanguage.ENGLISH, VoiceLanguage.of("en"))
+        assertEquals(VoiceLanguage.ENGLISH, VoiceLanguage.of("fr"))
+    }
 }
