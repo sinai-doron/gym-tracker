@@ -10,6 +10,9 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.ZoneOffset
 
 class GetNextWorkoutUseCaseTest {
 
@@ -60,6 +63,86 @@ class GetNextWorkoutUseCaseTest {
         // workout_x was hidden after it was done: the one before it decides
         history("workout_x", "workout_b")
         assertEquals("C", useCase()?.code)
+    }
+
+    // ---- By weekday ----
+
+    /** Thursday 5 November 2026. */
+    private val thursday = LocalDate.of(2026, 11, 5)
+
+    /** A on Monday, B on Thursday, C with no day. */
+    private fun weekly() {
+        val (a, b, c) = TrainingPlanData.all
+        coEvery { repo.getAll() } returns listOf(a.copy(weekday = DayOfWeek.MONDAY), b.copy(weekday = DayOfWeek.THURSDAY), c)
+    }
+
+    /** A finished session of [workoutId] that started at noon UTC on [day]. */
+    private fun doneOn(vararg done: Pair<String, LocalDate>) {
+        coEvery { sessions.getCompletedSince(0) } returns done.mapIndexed { i, (id, day) ->
+            val at = day.atTime(12, 0).toInstant(ZoneOffset.UTC).toEpochMilli()
+            Session(i + 1L, id, startedAt = at, finishedAt = at + 3_600_000)
+        }
+    }
+
+    private suspend fun next() = useCase.next(thursday, ZoneOffset.UTC)
+
+    @Test
+    fun `on a workout's day, that workout is next, today`() = runTest {
+        weekly()
+        doneOn("workout_a" to thursday.minusDays(3))
+        val next = next()
+        assertEquals("B", next?.workout?.code)
+        assertEquals(thursday, next?.day)
+    }
+
+    @Test
+    fun `once today's workout is done, the next day with one`() = runTest {
+        weekly()
+        doneOn("workout_b" to thursday)
+        val next = next()
+        assertEquals("A", next?.workout?.code)
+        assertEquals(LocalDate.of(2026, 11, 9), next?.day)
+    }
+
+    @Test
+    fun `a missed day isn't made up`() = runTest {
+        // Monday's A was skipped; Thursday is still B's day
+        weekly()
+        doneOn("workout_b" to thursday.minusDays(7))
+        assertEquals("B", next()?.workout?.code)
+    }
+
+    @Test
+    fun `a workout without a day is never suggested`() = runTest {
+        weekly()
+        doneOn("workout_b" to thursday)
+        assertEquals("A", next()?.workout?.code)
+        coEvery { repo.getAll() } returns TrainingPlanData.all.map { if (it.code == "C") it.copy(weekday = DayOfWeek.SATURDAY) else it }
+        assertEquals("C", next()?.workout?.code)
+    }
+
+    @Test
+    fun `a programme with one day comes round again next week`() = runTest {
+        val (a, b, c) = TrainingPlanData.all
+        coEvery { repo.getAll() } returns listOf(a, b.copy(weekday = DayOfWeek.THURSDAY), c)
+        doneOn("workout_b" to thursday)
+        assertEquals(thursday.plusDays(7), next()?.day)
+    }
+
+    @Test
+    fun `two workouts on one day come in their order`() = runTest {
+        val (a, b, c) = TrainingPlanData.all
+        coEvery { repo.getAll() } returns listOf(a.copy(weekday = DayOfWeek.THURSDAY), b.copy(weekday = DayOfWeek.THURSDAY), c)
+        doneOn()
+        assertEquals("A", next()?.workout?.code)
+        doneOn("workout_a" to thursday)
+        assertEquals("B", next()?.workout?.code)
+    }
+
+    @Test
+    fun `in order, no day is given`() = runTest {
+        history("workout_a")
+        assertNull(next()?.day)
     }
 
     @Test

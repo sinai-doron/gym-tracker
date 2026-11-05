@@ -12,6 +12,7 @@ import com.doron.gymtracker.domain.model.Program
 import com.doron.gymtracker.domain.model.RepExerciseDefinition
 import com.doron.gymtracker.domain.model.TimedExerciseDefinition
 import com.doron.gymtracker.domain.model.Workout
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.UUID
 import javax.inject.Inject
@@ -78,7 +79,7 @@ class WorkoutRepositoryImpl @Inject constructor(
             val variant = variantsByBase[base.id]?.let { it.toDomain(names = names[it.id].orEmpty()) }
             base.toDomain(variantB = variant, names = names[base.id].orEmpty())
         }
-        return Workout(id, label, exercises, name = name, sortOrder = sortOrder)
+        return Workout(id, label, exercises, name = name, sortOrder = sortOrder, weekday = weekday?.let(DayOfWeek::of))
     }
 
     override suspend fun installProgram(program: Program, workouts: List<NewWorkout>) {
@@ -96,13 +97,19 @@ class WorkoutRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun addWorkout(programId: String, code: String, name: String?): String {
+    override suspend fun addWorkout(programId: String, code: String, name: String?, weekday: DayOfWeek?): String {
         val id = UUID.randomUUID().toString()
-        dao.insertWorkout(WorkoutEntity(id, code, programId = programId, sortOrder = dao.maxWorkoutSortOrder(programId) + 1, name = name))
+        dao.insertWorkout(
+            WorkoutEntity(
+                id, code, programId = programId, sortOrder = dao.maxWorkoutSortOrder(programId) + 1, name = name,
+                weekday = weekday?.value
+            )
+        )
         return id
     }
 
-    override suspend fun editWorkout(id: String, code: String, name: String?) = dao.editWorkout(id, code, name)
+    override suspend fun editWorkout(id: String, code: String, name: String?, weekday: DayOfWeek?) =
+        dao.editWorkout(id, code, name, weekday?.value)
 
     override suspend fun moveWorkout(programId: String, workoutId: String, direction: Int) {
         val workouts = dao.getForProgram(programId)

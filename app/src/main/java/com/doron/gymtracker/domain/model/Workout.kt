@@ -1,5 +1,7 @@
 package com.doron.gymtracker.domain.model
 
+import java.time.DayOfWeek
+
 data class Workout(
     val id: String,
     /** The short code on the workout's chip: A, B, Push… */
@@ -8,7 +10,9 @@ data class Workout(
     /** The name the user gave it; null shows the built-in name of the seeded plan's workouts. */
     val name: String? = null,
     /** Its place in the programme's rotation. */
-    val sortOrder: Int = 0
+    val sortOrder: Int = 0,
+    /** The day of the week it is done on, when its programme follows the week; null for none. */
+    val weekday: DayOfWeek? = null
 ) {
     /**
      * A rough length, for a new user to notice a workout growing too long: each set takes its rest

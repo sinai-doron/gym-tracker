@@ -25,6 +25,7 @@ import org.junit.Assert.assertEquals
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
 import org.junit.Test
+import com.doron.gymtracker.domain.usecase.NextWorkout
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
@@ -44,7 +45,7 @@ class HomeViewModelTest {
         getNextWorkout = mockk()
         startSession = mockk()
         workoutRepo = mockk()
-        coEvery { getNextWorkout() } returns TrainingPlanData.workoutB
+        coEvery { getNextWorkout.next(any(), any()) } returns NextWorkout(TrainingPlanData.workoutB, null)
         coEvery { workoutRepo.getAll() } returns TrainingPlanData.all
         sessionRepo = mockk(relaxed = true)
         stepCounter = mockk(relaxed = true)

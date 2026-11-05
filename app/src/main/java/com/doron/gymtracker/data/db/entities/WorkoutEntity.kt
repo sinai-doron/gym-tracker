@@ -16,7 +16,7 @@ data class WorkoutEntity(
     val sortOrder: Int = 0,
     /** The name the user gave it; null shows the seeded plan's built-in name. */
     val name: String? = null,
-    /** 1 (Monday) to 7 (Sunday) when the workout is tied to a weekday; not used yet. */
+    /** 1 (Monday) to 7 (Sunday) when the workout is tied to a weekday: a programme with any such workout follows the week (GetNextWorkoutUseCase). */
     val weekday: Int? = null,
     /** Removed by the user: kept, so history still shows it, and left out of the rotation. */
     val hiddenAt: Long? = null

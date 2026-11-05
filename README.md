@@ -40,8 +40,11 @@ English on any other, and Settings can change it.
 
 ### Gym workouts
 
-- **A → B → C rotation.** Home suggests the workout after the last one you finished;
-  you can pick another before starting.
+- **Rotation, in order or by weekday.** Home suggests the workout after the last one you
+  finished. Give a programme's workouts a day (edit a workout in the programme) and it follows
+  the week instead: home shows today's workout, or the next day's ("Next workout · Monday").
+  A missed day isn't made up, and a workout without a day is only started by hand. Either
+  way, you can pick another before starting.
 - **Session clock.** A session runs from when you start it until you end it. If the app
   is killed mid-workout, home offers to resume it.
 - **Three kinds of exercise.**

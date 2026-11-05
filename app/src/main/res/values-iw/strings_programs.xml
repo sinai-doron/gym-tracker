@@ -32,6 +32,7 @@
     <string name="builder_rename">שנה שם</string>
     <string name="builder_program_name">שם התוכנית</string>
     <string name="builder_workouts_header">אימונים · לפי הסדר</string>
+    <string name="builder_workouts_header_weekly">אימונים · כל אחד ביום שלו</string>
     <string name="builder_no_workouts">עדיין אין אימונים. הוסף את הראשון ומלא אותו בתרגילים.</string>
     <string name="builder_add_workout">הוסף אימון</string>
     <string name="builder_edit_workout">עריכת אימון</string>
@@ -54,7 +55,7 @@
     <string name="builder_rules_no_deload">בלי הורדת עומס</string>
     <string name="builder_rules_alternate">שבוע B בשבועות הזוגיים</string>
     <string name="builder_rules_no_variants">בלי שבועות מתחלפים</string>
-    <string name="builder_rules_later">ההגדרות לאלה יגיעו בהמשך.</string>
+    <string name="builder_rules_later">הסבב הולך לפי ימי השבוע ברגע שלאימון יש יום. ההגדרות להורדת עומס ולשבועות מתחלפים יגיעו בהמשך.</string>
     <string name="builder_open_workout">עריכת התרגילים של %s</string>
     <!-- An exercise's targets in a workout (the sheet in the workout editor) -->
     <string name="targets_reps_from">חזרות, מ-</string>
@@ -90,4 +91,8 @@
     <string name="create_save">שמור והוסף</string>
     <string name="body_front">מלפנים</string>
     <string name="body_back">מאחור</string>
+    <string name="builder_workout_day">יום</string>
+    <string name="builder_workout_no_day">בלי יום</string>
+    <string name="builder_workout_day_help">כשלאימונים יש יום, התוכנית הולכת לפי ימי השבוע. בלי ימים, הם מתחלפים לפי הסדר.</string>
+    <string name="builder_rules_by_weekday">לפי ימי השבוע</string>
 </resources>

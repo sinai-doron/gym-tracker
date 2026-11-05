@@ -62,14 +62,22 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import java.time.DayOfWeek
+import java.time.format.TextStyle
+import java.time.temporal.WeekFields
+import com.doron.gymtracker.ui.components.appLocale
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.MenuAnchorType
 
 /** A workout being added (null) or edited. */
 private data class WorkoutEdit(val workout: Workout?)
 
 /**
  * One programme: its workouts in the order they rotate, and when its week 1 starts. Tapping a
- * workout opens its exercises (the plan editor). Rotation, deload and alternate weeks show as
- * they are; settings for them come with the rules engine (roadmap phase 3).
+ * workout opens its exercises (the plan editor). Giving workouts a day makes the rotation follow
+ * the week; deload and alternate weeks show as they are, their settings still to come.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -115,7 +123,11 @@ fun ProgramBuilderScreen(
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            item(key = "header") { SectionLabel(stringResource(R.string.builder_workouts_header)) }
+            item(key = "header") {
+                SectionLabel(
+                    stringResource(if (state.byWeekday) R.string.builder_workouts_header_weekly else R.string.builder_workouts_header)
+                )
+            }
             if (workouts.isEmpty()) {
                 item(key = "empty") {
                     Text(
@@ -128,6 +140,7 @@ fun ProgramBuilderScreen(
             itemsIndexed(workouts, key = { _, w -> w.id }) { i, workout ->
                 WorkoutRow(
                     workout = workout,
+                    byWeekday = state.byWeekday,
                     canMoveUp = i > 0,
                     canMoveDown = i < workouts.lastIndex,
                     onOpen = { onOpenWorkout(workout.id) },
@@ -156,7 +169,7 @@ fun ProgramBuilderScreen(
                         value = startValue(program),
                         onClick = { pickingDate = true }
                     )
-                    InfoField(label = stringResource(R.string.builder_rules), value = rulesValue(program), onClick = null)
+                    InfoField(label = stringResource(R.string.builder_rules), value = rulesValue(program, state.byWeekday), onClick = null)
                     Text(
                         stringResource(R.string.builder_rules_later),
                         style = MaterialTheme.typography.bodySmall,
@@ -185,10 +198,10 @@ fun ProgramBuilderScreen(
             initial = edit.workout,
             suggestedCode = nextCode(state.workouts),
             onDismiss = { editing = null },
-            onSave = { code, name ->
+            onSave = { code, name, weekday ->
                 editing = null
                 val workout = edit.workout
-                if (workout == null) viewModel.addWorkout(code, name) else viewModel.editWorkout(workout.id, code, name)
+                if (workout == null) viewModel.addWorkout(code, name, weekday) else viewModel.editWorkout(workout.id, code, name, weekday)
             }
         )
     }
@@ -247,6 +260,7 @@ private fun SectionLabel(text: String) {
 @Composable
 private fun WorkoutRow(
     workout: Workout,
+    byWeekday: Boolean,
     canMoveUp: Boolean,
     canMoveDown: Boolean,
     onOpen: () -> Unit,
@@ -269,9 +283,15 @@ private fun WorkoutRow(
             .padding(start = 4.dp)) {
             Text(name, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold))
             val count = workout.exercises.size
+            // In a programme that follows the week, the day comes first; one without a day says so
+            val day = workout.weekday?.let { weekdayName(it) }
+                ?: if (byWeekday) stringResource(R.string.builder_workout_no_day) else null
             Text(
-                pluralStringResource(R.plurals.builder_exercises, count, count) +
-                    if (count > 0) " · " + stringResource(R.string.builder_about_minutes, workout.estimatedMinutes()) else "",
+                listOfNotNull(
+                    day,
+                    pluralStringResource(R.plurals.builder_exercises, count, count),
+                    if (count > 0) stringResource(R.string.builder_about_minutes, workout.estimatedMinutes()) else null
+                ).joinToString(" · "),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -316,8 +336,8 @@ private fun startValue(program: Program): String {
 }
 
 @Composable
-private fun rulesValue(program: Program): String = listOf(
-    stringResource(R.string.builder_rules_in_order),
+private fun rulesValue(program: Program, byWeekday: Boolean): String = listOf(
+    stringResource(if (byWeekday) R.string.builder_rules_by_weekday else R.string.builder_rules_in_order),
     program.deloadEveryWeeks?.let { stringResource(R.string.builder_rules_deload_every, it) }
         ?: stringResource(R.string.builder_rules_no_deload),
     stringResource(
@@ -326,21 +346,26 @@ private fun rulesValue(program: Program): String = listOf(
     )
 ).joinToString(" · ")
 
+/** "Monday", "יום שני". */
+@Composable
+private fun weekdayName(day: DayOfWeek): String = day.getDisplayName(TextStyle.FULL, appLocale())
+
 /**
- * A workout's name. The code it is stored with is no longer shown: a new workout gets the next
- * free letter, an edited one keeps its own.
+ * A workout's name and its day. The code it is stored with is no longer shown: a new workout gets
+ * the next free letter, an edited one keeps its own.
  */
 @Composable
 private fun WorkoutDialog(
     initial: Workout?,
     suggestedCode: String,
     onDismiss: () -> Unit,
-    onSave: (code: String, name: String?) -> Unit
+    onSave: (code: String, name: String?, weekday: DayOfWeek?) -> Unit
 ) {
     // A built-in workout's translated name stays unset, so it still follows the app's language
     val current = initial?.localizedName()
     val builtInName = current.takeIf { initial?.name == null }
     var name by remember { mutableStateOf(current ?: "") }
+    var weekday by remember { mutableStateOf(initial?.weekday) }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(if (initial == null) R.string.builder_add_workout else R.string.builder_edit_workout)) },
@@ -352,11 +377,17 @@ private fun WorkoutDialog(
                     label = { Text(stringResource(R.string.builder_workout_name)) },
                     singleLine = true
                 )
+                WeekdayDropdown(selected = weekday, onSelect = { weekday = it })
+                Text(
+                    stringResource(R.string.builder_workout_day_help),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         },
         confirmButton = {
             TextButton(
-                onClick = { onSave(initial?.code ?: suggestedCode, name.trim().takeIf { it != builtInName }) },
+                onClick = { onSave(initial?.code ?: suggestedCode, name.trim().takeIf { it != builtInName }, weekday) },
                 enabled = name.isNotBlank()
             ) { Text(stringResource(R.string.save)) }
         },
@@ -364,3 +395,36 @@ private fun WorkoutDialog(
     )
 }
 
+
+/** No day, then the days of the week from the one the phone's calendar starts on. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun WeekdayDropdown(selected: DayOfWeek?, onSelect: (DayOfWeek?) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    val first = WeekFields.of(appLocale()).firstDayOfWeek
+    val options = listOf(null) + (0L..6L).map { first.plus(it) }
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        OutlinedTextField(
+            value = selected?.let { weekdayName(it) } ?: stringResource(R.string.builder_workout_no_day),
+            onValueChange = {},
+            readOnly = true,
+            singleLine = true,
+            label = { Text(stringResource(R.string.builder_workout_day)) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                .fillMaxWidth()
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach { day ->
+                DropdownMenuItem(
+                    text = { Text(day?.let { weekdayName(it) } ?: stringResource(R.string.builder_workout_no_day)) },
+                    onClick = {
+                        onSelect(day)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
