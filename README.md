@@ -3,14 +3,16 @@
 Published as **Neonsheep Fitness** (package `dev.neonsheep.gymtracker`); this repository keeps its
 first name, gym-tracker.
 
-A personal Android app for training: strength workouts in the gym, and runs and walks
-outside. Log every set with a rest timer between them, record runs with GPS, and follow
-how your weights, distances and steps move over time.
+An Android app for training, on Google Play: strength workouts in the gym, runs and walks
+outside, and any other training you time or log. Build your own programme or start from a
+template, log every set with a rest timer between them, record runs with GPS, and follow how
+your weights, distances and steps move over time.
 
-It is built for one person and one training programme. There is no account and no
-server: workouts are stored on the phone. The UI is in English or Hebrew
-(right to left): a fresh install follows the phone's language, Hebrew on a Hebrew phone and
-English on any other, and Settings can change it.
+Anyone can install it. Each install belongs to one person and keeps their workouts on the
+phone; there is no account to make. Sign-in and sync to a server exist but are switched off
+for the public release (see [Data and privacy](#data-and-privacy)). The UI is in English
+first, and in Hebrew (right to left): a fresh install follows the phone's language, Hebrew on
+a Hebrew phone and English on any other, and Settings can change it.
 
 ## Features
 
@@ -21,6 +23,12 @@ English on any other, and Settings can change it.
   Each has an illustration, a short reason, an enable button and Skip; dots at the bottom
   show where you are. Pages that don't apply to the phone are left out.
 - **Run it again** from Settings → Permissions.
+- **About you.** Units (kilometres or miles, kilograms or pounds) and the first day of the
+  week, preset from the phone's region, then a few optional details such as body weight and
+  the daily step goal. Settings opens it again.
+- **Your training.** Start from a template (Full body, Upper / Lower, Push / Pull / Legs or
+  A / B / C) or an empty programme, and pick when its week 1 starts. It can be skipped; home
+  then offers to set one up.
 
 ### Home
 
@@ -33,10 +41,17 @@ English on any other, and Settings can change it.
   on runs and walks in green. Steps come from Health Connect and the phone's step sensor.
 - **Achievements.**
   - Distance badges: 1K, 5K and 10K.
+  - Bronze, silver and gold in four families: climb in one run or walk, distance in all,
+    tonnes lifted and weeks in a row; and three one-offs (all of a programme's workouts in a
+    week, a night owl and an early bird). The Achievements screen shows each with its
+    progress.
   - Personal records: fastest 1K, 5K and 10K, longest run and best week. Tap a record to
     open its run.
-- **Program status and weather.** Week number, A/B week, weeks to deload, and today's
-  weather.
+- **Other training.** Every shown training type has a button: Run and Walk record with GPS,
+  the others with a timer.
+- **Programme status and weather.** The programme's name (tap it for the list of
+  programmes), its week number, the A/B week and weeks to deload when it has them, and
+  today's weather.
 
 ### Gym workouts
 
@@ -65,9 +80,19 @@ English on any other, and Settings can change it.
   - Change an exercise's name, sets, target and rest.
   - Reorder, add and remove exercises.
   - Removal is soft, so history stays.
+- **Exercise library.** About 190 built-in exercises, each with its muscles, equipment and
+  names in English and Hebrew. Add one to a workout by searching any name or alias, or by
+  muscle (on a body map) and equipment. When it isn't there, create your own exercise;
+  similar ones already in the library are shown first.
+- **Logging by hand.** A session done without the phone (a class, a game, a run with the
+  phone in the locker) can be added afterwards. It counts for streaks and totals but not
+  for speed or distance records; a strength session goes on to its workout to fill in the
+  sets.
 - **Programme logic.**
-  - Weekly exercise variants that alternate on A/B weeks.
-  - A deload week every sixth week: 60% of the last weight, 2 sets.
+  - Weekly exercise variants that alternate on A/B weeks, and a deload week every sixth
+    week, shown as a banner (60% of the last weight, 2 sets). Only the owner's original
+    programme has these so far: programmes made from a template or the builder have
+    neither until they get their own settings.
   - Progression hints from your last three sessions: *increase*, *stalled* or *on
     track*.
 - **Exercise progress.** For each exercise: its personal record, a chart of the best set
@@ -128,9 +153,12 @@ English on any other, and Settings can change it.
 
 - **Settings.**
   - Language: English or Hebrew; until one is picked, the phone's.
-  - Body weight, used for calories.
-  - Daily step goal (10,000 by default).
+  - About you: units, week start, body weight (used for calories) and the daily step goal
+    (10,000 by default).
+  - Training types: show or hide the built-ins, and add your own, recorded with a timer.
   - Lap length and voice feedback.
+  - Permissions, the privacy policy and open-source licences.
+  - Account, only while sign-in is switched on (see [Data and privacy](#data-and-privacy)).
 - **Backup and restore.**
   - Save the database and settings as one zip, anywhere the system file picker reaches
     (e.g. Google Drive).
@@ -138,37 +166,35 @@ English on any other, and Settings can change it.
 - **Now playing bar.** The music playing in any app, with play/pause and skip, so you
   don't leave the session screen. This needs notification access.
 
-## The training programme
+## Programmes
 
-The programme is seeded into the database on first launch from
-[`TrainingPlanData.kt`](app/src/main/java/com/doron/gymtracker/data/seed/TrainingPlanData.kt).
-After that, edit it in the app's plan editor; see
-[ADR-0002](docs/adr/0002-hardcoded-training-plan.md). Each of its exercises is linked to the
-built-in exercise it is in the exercise library, which the app fills from the catalogue on start
-([ADR-0006](docs/adr/0006-exercise-model.md)).
+A fresh install has no programme. The user starts one from a template in
+[`assets/templates/`](app/src/main/assets/templates) or from an empty programme, on first
+launch or later; see [ADR-0002](docs/adr/0002-hardcoded-training-plan.md). Every exercise in a
+programme is linked to its exercise in the library: a built-in one, which the app fills from
+the catalogue on start ([ADR-0006](docs/adr/0006-exercise-model.md)), or one the user created.
 
-| Workout | Focus |
-|---|---|
-| A | Chest and back |
-| B | Legs and core |
-| C | Shoulders and arms |
+A programme is a row in the database with a start date, from which its weeks are counted. A
+user can keep several, one active. The programme chip on home opens the list: make one
+active, archive or restore one, or start a new one. A programme's builder adds, renames,
+reorders and removes its workouts, gives them a day of the week, and sets when week 1 starts.
+Tapping a workout opens its exercises. A workout or programme with history is hidden or
+archived, never deleted.
 
-The plan belongs to a programme, a row in the database: its start date drives the A/B weeks
-and the deload weeks (every sixth). The owner's started on 2026-10-26; a fresh install's starts
-the day it is first opened.
+The owner's own A/B/C plan (chest and back, legs and core, shoulders and arms) predates all
+this: database version 16 made it from their history when programmes arrived, and
+[`TrainingPlanData.kt`](app/src/main/java/com/doron/gymtracker/data/seed/TrainingPlanData.kt)
+tops it up on installs that have it. It started on 2026-10-26, and is the only programme with
+deload weeks and A/B variants.
 
-Every session has a training type, also a row: Strength, Run and Walk are built in.
-
-A user can keep several programmes, one active. The programme chip on home opens the list:
-make one active, archive or restore one, or start a new one. A programme's builder adds,
-renames, reorders and removes its workouts, and sets when week 1 starts. Tapping a workout opens its
-exercises. A workout or programme with history is hidden or archived, never deleted.
+Every session has a training type, also a row: Strength, Run and Walk are built in, and the
+user can add their own.
 
 ## Tech stack
 
 | | |
 |---|---|
-| Language | Kotlin 2.1 |
+| Language | Kotlin 2.4 |
 | UI | Jetpack Compose, Material 3 |
 | Architecture | MVVM with a use-case layer (`ui` → `domain` → `data`) |
 | Dependency injection | Hilt |
@@ -179,19 +205,22 @@ exercises. A workout or programme with history is hidden or archived, never dele
 | Navigation | Navigation Compose |
 | Async | Kotlin coroutines and Flow |
 | Tests | JUnit 4, MockK, Turbine, coroutines-test; Room and Compose instrumented tests |
-| Min / target SDK | 26 (Android 8.0) / 35 |
+| Min / target SDK | 26 (Android 8.0) / 36 |
+| Sign-in and sync | Credential Manager (Google ID tokens) and WorkManager, to the owner's server at `apps.neonsheep.dev` |
 
 ## Project structure
 
 ```
 app/src/main/java/com/doron/gymtracker/
+├── account/           Sign-in (behind a switch), consent, and whose data this phone holds
 ├── data/
 │   ├── catalogue/     Reads the exercise catalogue from assets/exercises/
 │   ├── db/            Room database, entities, DAOs and migrations
 │   ├── di/            Hilt modules
 │   ├── prefs/         DataStore: settings
 │   ├── repository/    Session, workout and route repositories; the exercise library
-│   ├── seed/          The initial training programme
+│   ├── seed/          The owner's original A/B/C plan
+│   ├── templates/     Reads the programme templates from assets/templates/
 │   ├── CardioRecorder, LocationTracker   Recording a run from GPS fixes
 │   ├── ActiveClock, RouteDistance, Laps  Moving time, distance and laps
 │   ├── RunStats, RouteFollower           Elevation, pace, best efforts, route following
@@ -203,6 +232,7 @@ app/src/main/java/com/doron/gymtracker/
 │   └── usecase/       Rotation, sessions, sets, variants, deload, progression, records
 ├── media/             Now playing, rest-timer beeps, run voice
 ├── service/           Foreground services for the gym session and the run, pause receiver
+├── sync/              Sends changes to the server and pulls them back, when signed in
 └── ui/
     ├── components/    Shared pieces: run map, charts, activity icons, rest timer, …
     ├── navigation/
@@ -220,8 +250,9 @@ catalogue/            The built-in exercise catalogue: written by hand, built in
                       assets/exercises/ by build_catalogue.py (see its README)
 catalogue/wger/       Pinned snapshot of wger's exercise data, the upstream of our
                       exercise catalogue; how to refresh it and what we owe in its README
-scripts/              build_body_map.py (refreshes assets/body_map/; how is in the
-                      script), check-hebrew-literals.sh
+scripts/              make-upload-key.sh and bundle-release.sh (Play uploads, below),
+                      build_body_map.py (refreshes assets/body_map/; how is in the
+                      script), make_app_icon.py, check-hebrew-literals.sh
 docs/
 ├── adr/               Architecture decision records
 └── superpowers/plans/ Implementation plans
@@ -333,6 +364,9 @@ GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs on 
 
 ## Data and privacy
 
+The privacy policy is at <https://apps.neonsheep.dev/gym-tracker/privacy>, linked from
+Settings and the consent screen.
+
 Workouts, runs, routes and settings are stored on the device in a local Room database.
 Back them up from Settings: uninstalling the app or wiping the phone deletes them
 otherwise. See [ADR-0001](docs/adr/0001-local-only-no-backend.md).
@@ -343,6 +377,26 @@ The app talks to a few services, and only for these things:
 - **Open-Meteo:** weather for your location.
 - **OpenStreetMap Nominatim:** street names for new routes.
 - **Health Connect,** on the phone itself: runs you finish, steps, and heart rate.
+
+### Sign-in and sync (switched off)
+
+The app can sign in with Google and sync to the owner's server (`apps.neonsheep.dev`), so a
+new phone gets its history back. It is off for the public release: the welcome screens skip
+the account page and Settings has no Account section. A phone already signed in keeps it, and
+seven taps on the version line in Settings switch it on by hand, for testing.
+
+When it is on:
+
+- **Sign-in is optional.** Everything works without it, and then no workout data leaves the
+  phone.
+- **Nothing syncs before consent.** Signing in opens a consent screen; workouts sync only
+  after the user agrees there, and run routes (GPS) and the music log are separate choices,
+  changeable in Settings. The server keeps its own record of the consent and enforces it.
+- **One person per phone.** The first account to sign in owns the data on the phone. Another
+  account is refused, so it can't sync someone else's workouts into its own.
+- **Health Connect data never syncs:** neither daily steps nor heart rate leave the phone.
+  Nor do the steps saved as a run goes, for cadence over the run. A run's total step count,
+  from the phone's own sensor, syncs with the run.
 
 ## Known limits
 
@@ -363,9 +417,12 @@ The app talks to a few services, and only for these things:
 The reasoning behind the main choices is recorded in [`docs/adr`](docs/adr):
 
 - [0001 — Local-only storage, no backend, no authentication](docs/adr/0001-local-only-no-backend.md)
+  (amended 2026-11: data stays on the phone; optional sign-in and sync, switched off for now)
 - [0002 — The training plan is hardcoded, not user-editable](docs/adr/0002-hardcoded-training-plan.md)
+  (superseded 2026-11: users build programmes or start from templates)
 - [0003 — Distinct exercise types (rep-based and timed)](docs/adr/0003-two-exercise-types.md)
 - [0004 — Hebrew UI with right-to-left forced at the app root](docs/adr/0004-hebrew-rtl-single-language.md)
+  (superseded 2026-11: English first, Hebrew second, direction from the language)
 - [0005 — Runs: moving time, pauses and GPS dropouts](docs/adr/0005-run-moving-time.md)
 - [0006 — Exercises declare their metrics; a set is made of parts](docs/adr/0006-exercise-model.md)
 
