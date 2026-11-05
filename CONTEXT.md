@@ -1,15 +1,36 @@
-# Gym Tracker — Domain Context
+# Neonsheep Fitness — Domain Context
+
+The app was first called Gym Tracker, and the code still is (`com.doron.gymtracker`). Each
+install belongs to one person; many people use the app, each on their own phone.
 
 ## Glossary
 
+**Programme** (`Program`)
+What the user follows: a name, a start date from which its weeks count, and its Workouts. A user can keep several; exactly one is active, and the rest can be archived. A fresh install has none: the user starts one from a ProgramTemplate or from an empty programme. A programme with history is archived, never deleted. Its deload and variant rules (`deloadEveryWeeks`, `deloadLoadPercent`, `deloadSets`, `variantRule`, `variantEveryWeeks`) are set by the user from the programme's rules line.
+
+**ProgramTemplate**
+A ready-made Programme the user can start from: Full body, Upper / Lower, Push / Pull / Legs, A / B / C. Kept as JSON in `assets/templates/`, naming LibraryExercises by slug, with its names in English and Hebrew.
+
 **TrainingPlan**
-The full set of three workouts (A, B, C) that make up the user's programme. Seeded on first launch and editable in the plan editor. There is exactly one TrainingPlan.
+The owner's original A/B/C plan, from before Programmes: `TrainingPlanData` in code. Database version 16 turned it into a Programme on the owner's phone; it means nothing on any other install.
 
 **Workout**
-One of the three labelled variants of the TrainingPlan: Workout A, Workout B, or Workout C. Contains an ordered list of ExerciseDefinitions. Order within a Workout is a default, not a constraint — the user is free to perform exercises in any order during a Session.
+One of a Programme's workouts, with a name, a short code for its chip (A, B, Push…), its place in the Rotation and, optionally, a day of the week. Contains an ordered list of ExerciseDefinitions. Order within a Workout is a default, not a constraint — the user is free to perform exercises in any order during a Session. A workout with history is hidden, never deleted.
+
+**Rotation**
+How the next Workout is chosen, read from history (`GetNextWorkoutUseCase`), never stored:
+- **In order** (no Workout has a day): the one after the last finished, the first when none has been.
+- **By weekday** (any Workout has a day): today's, unless already done today, else the next day that has one. A missed day isn't made up, and a Workout without a day is never suggested.
+The user may pick another Workout at Session start.
+
+**LibraryExercise**
+An exercise in the exercise library: a built-in one from the catalogue (`catalogue/`, built into `assets/exercises/`, names in English and Hebrew), or a CustomExercise. It declares the metrics a set records, its muscles and equipment (ADR-0006).
+
+**CustomExercise**
+A LibraryExercise the user created because the library lacked it. It keeps the name they typed.
 
 **ExerciseDefinition**
-A template describing one exercise as it appears in a Workout: its name, type (rep-based, timed or distance), target number of sets, target reps or distance, and rest duration between sets.
+One exercise as it appears in a Workout: the LibraryExercise it is, its targets (sets, reps, time or distance) and rest duration between sets.
 
 **RepExercise**
 An ExerciseDefinition whose performance is measured in repetitions and load (weight). Each completed set records reps and weight.
@@ -29,9 +50,6 @@ One completed set within an ExerciseEntry. For a RepExercise: reps performed + w
 **RestPeriod**
 A countdown timer that starts automatically after a SetRecord is saved. Duration is defined on the ExerciseDefinition, not globally. The user may dismiss it early.
 
-**RotationCursor**
-The internal record of which Workout was last completed, used to derive the next suggested Workout (A→B→C→A). The user may override the suggestion at Session start.
-
 **SessionHistory**
 The persistent log of all completed Sessions, gym and cardio. In the app it is the monthly History calendar, where gym days are purple and cardio days green. Per exercise, it also feeds Exercise Progress: the personal record, the best set per workout, and every session's sets.
 
@@ -39,10 +57,38 @@ The persistent log of all completed Sessions, gym and cardio. In the app it is t
 An ExerciseDefinition measured in distance (e.g. Farmer's Walk).
 
 **DeloadWeek**
-Every sixth week since the programme start. Sessions suggest 60% of the last weight for 2 sets.
+Every Nth week since the Programme's start, when the Programme has deloads (the owner's: every sixth), never before week 1. The Programme sets the load (a share of the usual weight) and the sets per exercise. In the session, each exercise's sets are capped and the weight pre-fills at that share, rounded down to a plate; the plan keeps its own sets, and later weeks' last weight and ProgressionHint pass over deload sessions.
 
 **ExerciseVariant**
-An exercise that alternates between two versions on alternate (A/B) weeks, counted from the programme start date.
+An exercise that alternates between two versions in A/B weeks, counted from the Programme's start date, when the Programme alternates: the exercise for N weeks, then its variant for N (N from 1 to 4, a Programme setting).
+
+**TrainingType**
+What a Session is: Strength, Run and Walk are built in (the built-ins can be hidden), and the user can add their own (Pilates, football…). Each names the screen that records it: the gym session, the GPS run screen, or a timer.
+
+**LoggedSession**
+A Session added afterwards rather than recorded live (`loggedManually`). It counts for streaks and totals, not for speed or distance records.
+
+**Units**
+Kilometres or miles, kilograms or pounds: the user's choice in About you, preset from the phone's region. Storage is always metres and kilograms; units apply only to what is shown and typed.
+
+**Achievement**
+The distance Badges, plus bronze, silver and gold in four families (climb in one run or walk, distance in all, tonnes lifted, weeks in a row) and three one-offs.
+
+---
+
+## Account and sync
+
+**Account**
+A Google sign-in, optional, and switched off for the public release (`SignInFeature`). Without it the app works fully and no workout data leaves the phone.
+
+**DataOwner**
+The account whose data this phone holds: the first to sign in. Another account is refused.
+
+**SyncConsent**
+What the signed-in user agreed to on the consent screen, with the version of its text. Nothing syncs without it; run routes and the music log are separate choices.
+
+**Sync**
+Changes logged by database triggers in `sync_changes` and sent to the owner's server, then pulled back on other phones. Health Connect data (daily steps, heart rate) and a run's steps over time never sync.
 
 ---
 

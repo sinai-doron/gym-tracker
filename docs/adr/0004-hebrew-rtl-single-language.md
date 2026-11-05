@@ -1,7 +1,8 @@
 # ADR-0004: Hebrew as the sole UI language, RTL forced at app root
 
 ## Status
-Superseded in part (2026-11)
+Superseded (2026-11): English first, Hebrew second, layout direction from the language. The
+amendments below record how it got there; the last one is where it stands.
 
 > **Amendment (2026-11).** The app is going to the public Play Store with English as the
 > main language. Interface text lives in string resources (`values` and `values-iw` in
@@ -24,6 +25,21 @@ Superseded in part (2026-11)
 > phone, so a Hebrew phone gets Hebrew and any other language gets English. An install that
 > already has a language (every one so far, as the old code set Hebrew on first launch)
 > keeps it. The run voice follows the same choice.
+
+> **Where it stands (2026-11).** The decision below is replaced:
+>
+> - **Languages.** English in `values/`, Hebrew in `values-iw/`. A fresh install follows the
+>   phone (Hebrew on a Hebrew phone, English on any other), and Settings → Language changes
+>   it. `scripts/check-hebrew-literals.sh` fails on Hebrew written in Kotlin instead of a
+>   string resource.
+> - **Direction.** Android sets it from the app's language; nothing forces it.
+> - **Exercise names** come from the exercise library, which has English and Hebrew names
+>   for every built-in exercise (ADR-0006), so a workout's exercises follow the language too.
+>   A user's own exercise keeps the name they typed.
+> - **Run voice.** Hebrew in Hebrew, English for every other app language.
+> - **Units** are a separate choice from language, in About you: kilometres or miles and
+>   kilograms or pounds, preset from the phone's region. Everything is stored in metres and
+>   kilograms and converted only for display and input.
 
 ## Context
 This is a personal app for a single Hebrew-speaking user. All training content, exercise names, and UI text are in Hebrew. Options considered:
