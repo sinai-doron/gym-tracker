@@ -89,12 +89,17 @@ a Hebrew phone and English on any other, and Settings can change it.
   for speed or distance records; a strength session goes on to its workout to fill in the
   sets.
 - **Programme logic.**
-  - Weekly exercise variants that alternate on A/B weeks, and a deload week every sixth
-    week, shown as a banner (60% of the last weight, 2 sets). Only the owner's original
-    programme has these so far: programmes made from a template or the builder have
-    neither until they get their own settings.
-  - Progression hints from your last three sessions: *increase*, *stalled* or *on
-    track*.
+  - Set per programme (tap the rules line in the programme): a deload every 3 to 12 weeks,
+    at a share of the usual weight (40–90%) and with at most so many sets; and week B, when
+    exercises switch to their variant, every week or every 2 to 4 weeks.
+  - In a deload week the session caps each exercise's sets and pre-fills the weight at that
+    share, rounded down to a plate (2.5 kg or 5 lb), with no hint to add weight. The plan keeps
+    its own sets, and later weeks start again from the usual weight.
+  - Progression hints per exercise. Once every set at the top weight reached the top of the
+    rep range last time, the hint says to add the exercise's step, which comes from its
+    equipment: 2.5 kg on a barbell, 2 kg a dumbbell, 5 kg a machine (2.5 kg when unknown;
+    shown as 5 lb in pounds). Three sessions at the same weight and reps short of the top is
+    *stalled*. Deload weeks are left out.
 - **Exercise progress.** For each exercise: its personal record, a chart of the best set
   per workout, and every session's sets.
 
@@ -184,8 +189,9 @@ archived, never deleted.
 The owner's own A/B/C plan (chest and back, legs and core, shoulders and arms) predates all
 this: database version 16 made it from their history when programmes arrived, and
 [`TrainingPlanData.kt`](app/src/main/java/com/doron/gymtracker/data/seed/TrainingPlanData.kt)
-tops it up on installs that have it. It started on 2026-10-26, and is the only programme with
-deload weeks and A/B variants.
+tops it up on installs that have it. It started on 2026-10-26 and keeps the settings it always
+had: a deload every sixth week at 60% and 2 sets, and week-B variants every other week. Any
+programme can now set its own (Programme logic, above).
 
 Every session has a training type, also a row: Strength, Run and Walk are built in, and the
 user can add their own.

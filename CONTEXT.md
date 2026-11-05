@@ -6,7 +6,7 @@ install belongs to one person; many people use the app, each on their own phone.
 ## Glossary
 
 **Programme** (`Program`)
-What the user follows: a name, a start date from which its weeks count, and its Workouts. A user can keep several; exactly one is active, and the rest can be archived. A fresh install has none: the user starts one from a ProgramTemplate or from an empty programme. A programme with history is archived, never deleted. Its deload and variant rules (`deloadEveryWeeks`, `variantRule`) are set only on the owner's original programme so far.
+What the user follows: a name, a start date from which its weeks count, and its Workouts. A user can keep several; exactly one is active, and the rest can be archived. A fresh install has none: the user starts one from a ProgramTemplate or from an empty programme. A programme with history is archived, never deleted. Its deload and variant rules (`deloadEveryWeeks`, `deloadLoadPercent`, `deloadSets`, `variantRule`, `variantEveryWeeks`) are set by the user from the programme's rules line.
 
 **ProgramTemplate**
 A ready-made Programme the user can start from: Full body, Upper / Lower, Push / Pull / Legs, A / B / C. Kept as JSON in `assets/templates/`, naming LibraryExercises by slug, with its names in English and Hebrew.
@@ -57,10 +57,10 @@ The persistent log of all completed Sessions, gym and cardio. In the app it is t
 An ExerciseDefinition measured in distance (e.g. Farmer's Walk).
 
 **DeloadWeek**
-Every Nth week since the Programme's start, when the Programme has deloads (the owner's: every sixth). The session shows a banner: 60% of the last weight for 2 sets.
+Every Nth week since the Programme's start, when the Programme has deloads (the owner's: every sixth), never before week 1. The Programme sets the load (a share of the usual weight) and the sets per exercise. In the session, each exercise's sets are capped and the weight pre-fills at that share, rounded down to a plate; the plan keeps its own sets, and later weeks' last weight and ProgressionHint pass over deload sessions.
 
 **ExerciseVariant**
-An exercise that alternates between two versions on alternate (A/B) weeks, counted from the Programme's start date, when the Programme alternates.
+An exercise that alternates between two versions in A/B weeks, counted from the Programme's start date, when the Programme alternates: the exercise for N weeks, then its variant for N (N from 1 to 4, a Programme setting).
 
 **TrainingType**
 What a Session is: Strength, Run and Walk are built in (the built-ins can be hidden), and the user can add their own (Pilates, football…). Each names the screen that records it: the gym session, the GPS run screen, or a timer.

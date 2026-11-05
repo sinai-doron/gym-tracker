@@ -95,4 +95,14 @@ class UnitsTest {
         assertEquals(2.5, lb.step(1.0), 0.0)
         assertEquals(2.5, WeightUnit.KG.step(2.5), 0.0)
     }
+
+    @Test
+    fun `a deload's share of the weight rounds down to a plate`() {
+        // 60% of 62.5 kg is 37.5, already on a plate; of 65 kg, 39 becomes 37.5
+        assertEquals(37.5f, WeightUnit.KG.floorToPlate(37.5f), 1e-4f)
+        assertEquals(37.5f, WeightUnit.KG.floorToPlate(39f), 1e-4f)
+        // 60% of 135 lb is 81 lb: 80 lb, kept in kg
+        val kg = WeightUnit.LB.floorToPlate(WeightUnit.LB.toKg(81.0))
+        assertEquals("80", WeightUnit.LB.format(kg))
+    }
 }

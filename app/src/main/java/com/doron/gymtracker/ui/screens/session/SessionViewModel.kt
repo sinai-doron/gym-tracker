@@ -29,6 +29,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.doron.gymtracker.domain.model.Program
+import com.doron.gymtracker.domain.model.withTargetSets
 
 data class SessionUiState(
     val workout: Workout? = null,
@@ -37,14 +39,17 @@ data class SessionUiState(
     val isFinished: Boolean = false,
     /** What finishing this workout earned, shown once over the summary. */
     val newAchievements: List<AchievementStatus> = emptyList(),
-    val isDeloadWeek: Boolean = false,
+    /** The programme, when the session falls in one of its deload weeks: its load and sets apply. */
+    val deload: Program? = null,
     val tracks: List<TrackLog> = emptyList(),
     val startedAt: Long = 0L,
     /** Sets already logged in this session (non-empty when resuming), by exercise id. */
     val loggedSets: Map<String, List<SetRecord>> = emptyMap(),
     /** The exercise whose sheet is open; kept here so it reopens after a trip to progress. */
     val selectedExerciseId: String? = null
-)
+) {
+    val isDeloadWeek: Boolean get() = deload != null
+}
 
 /** What each exercise sheet needs, injected once for the whole session. */
 class ExerciseDetailDeps @Inject constructor(
@@ -90,6 +95,7 @@ class SessionViewModel @AssistedInject constructor(
                 onTargetSetsChanged = ::updateTargetSets,
                 onSetDeleted = ::deleteSet,
                 loggedSets = _uiState.value.loggedSets[exercise.id].orEmpty(),
+                deloadLoadPercent = _uiState.value.deload?.deloadLoadPercent,
                 parentScope = viewModelScope
             )
         }
@@ -103,7 +109,6 @@ class SessionViewModel @AssistedInject constructor(
 
     init {
         viewModelScope.launch {
-            _uiState.update { it.copy(isDeloadWeek = isDeloadWeek()) }
             // A resumed session keeps its original start time and the sets already logged
             val session = sessionRepo.getById(sessionId)
             val startedAt = session?.startedAt ?: System.currentTimeMillis()
@@ -111,12 +116,16 @@ class SessionViewModel @AssistedInject constructor(
             val endedAt = session?.finishedAt?.takeIf { session.loggedManually }
             val loggedSets = sessionRepo.getEntriesForSession(sessionId).associate { it.exerciseId to it.sets }
             val raw = workoutRepo.getById(workoutId)
-            // Resolve A/B variant by the week the session started in
+            // The variant and any deload follow the week the session started in; a deload caps
+            // each exercise's sets for this session only, the plan keeps its own
+            val deload = isDeloadWeek.program(startedAt)
             val resolved = raw?.let { w ->
-                w.copy(exercises = w.exercises.map { resolveVariant(it, startedAt) })
+                w.copy(exercises = w.exercises.map { ex ->
+                    resolveVariant(ex, startedAt).let { if (deload != null) it.withTargetSets(deload.deloadSetsFor(it.targetSets)) else it }
+                })
             }
-            // Loaded together so exercise sheets are created with their logged sets
-            _uiState.update { it.copy(workout = resolved, startedAt = startedAt, loggedSets = loggedSets) }
+            // Loaded together so exercise sheets are created with their logged sets and the deload
+            _uiState.update { it.copy(workout = resolved, startedAt = startedAt, loggedSets = loggedSets, deload = deload) }
             while (!_uiState.value.isFinished) {
                 _uiState.update { it.copy(elapsedSecs = ((endedAt ?: System.currentTimeMillis()) - startedAt) / 1000) }
                 delay(1_000)
@@ -167,8 +176,12 @@ class SessionViewModel @AssistedInject constructor(
         }
     }
 
-    /** Saves a new set count to the training plan, so it sticks for future sessions too. */
+    /**
+     * Saves a new set count to the training plan, so it sticks for future sessions too; not in a
+     * deload week, whose counts are the deload's.
+     */
     fun updateTargetSets(exerciseId: String, sets: Int) {
+        if (_uiState.value.isDeloadWeek) return
         viewModelScope.launch {
             workoutRepo.updateTargetSets(exerciseId, sets)
         }

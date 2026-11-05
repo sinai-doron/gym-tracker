@@ -21,7 +21,7 @@ class GetLastWeightUseCaseTest {
     @Before
     fun setup() {
         repo = mockk()
-        useCase = GetLastWeightUseCase(repo)
+        useCase = GetLastWeightUseCase(repo, mockk { coEvery { getActiveProgram() } returns null })
     }
 
     @Test
@@ -62,5 +62,20 @@ class GetLastWeightUseCaseTest {
         val run = Session(3L, "", 0L, 1000L, type = "RUNNING")
         coEvery { repo.getCompletedSince(0) } returns listOf(run)
         assertNull(useCase("d1_e1"))
+    }
+
+    @Test
+    fun `a deload week's lighter weight is passed over`() = runTest {
+        useCase = GetLastWeightUseCase(repo, ProgramFixture.repo())
+        // Newest first: week 6 (the deload) at 36 kg, then week 5 at 60
+        coEvery { repo.getCompletedSince(0) } returns listOf(
+            Session(6L, "workout_a", ProgramFixture.inWeek(6), ProgramFixture.inWeek(6) + 1000),
+            Session(5L, "workout_a", ProgramFixture.inWeek(5), ProgramFixture.inWeek(5) + 1000)
+        )
+        coEvery { repo.getEntriesForSession(6L) } returns
+            listOf(ExerciseEntry(6L, 6L, "d1_e1", listOf(RepSetRecord(6L, 6L, 0L, reps = 6, weightKg = 36f))))
+        coEvery { repo.getEntriesForSession(5L) } returns
+            listOf(ExerciseEntry(5L, 5L, "d1_e1", listOf(RepSetRecord(5L, 5L, 0L, reps = 6, weightKg = 60f))))
+        assertEquals(60f, useCase("d1_e1"))
     }
 }

@@ -53,7 +53,7 @@ class SessionViewModelTest {
         getAchievements = mockk()
         coEvery { getAchievements.earnedBy(any()) } returns emptyList()
         coEvery { resolveVariant(any(), any()) } answers { firstArg() }
-        coEvery { isDeloadWeek(any()) } returns false // identity — return exercise as-is
+        coEvery { isDeloadWeek.program(any()) } returns null
         coEvery { workoutRepo.getById("workout_a") } returns TrainingPlanData.workoutA
         coEvery { sessionRepo.getEntriesForSession(1L) } returns emptyList()
         coEvery { sessionRepo.getById(1L) } returns Session(1L, "workout_a", System.currentTimeMillis(), null)
@@ -153,6 +153,25 @@ class SessionViewModelTest {
         assertEquals(null, viewModel.uiState.value.selectedExerciseId)
 
         // finish so the ticker loop exits and runTest can complete
+        viewModel.finishSession("Chest & Back")
+        advanceTimeBy(100)
+    }
+
+    @Test
+    fun `a deload week caps each exercise's sets for the session, not in the plan`() = runTest(testDispatcher) {
+        val program = TrainingPlanData.program(java.time.LocalDate.of(2026, 10, 26)).copy(deloadSets = 2, deloadLoadPercent = 70)
+        coEvery { isDeloadWeek.program(any()) } returns program
+        coJustRun { workoutRepo.updateTargetSets(any(), any()) }
+        val viewModel = makeViewModel()
+        advanceTimeBy(100)
+        val state = viewModel.uiState.value
+        assertEquals(program, state.deload)
+        state.workout!!.exercises.zip(TrainingPlanData.workoutA.exercises).forEach { (deload, planned) ->
+            assertEquals(minOf(2, planned.targetSets), deload.targetSets)
+        }
+        viewModel.updateTargetSets("d1_e1", 3)
+        advanceTimeBy(100)
+        io.mockk.coVerify(exactly = 0) { workoutRepo.updateTargetSets(any(), any()) }
         viewModel.finishSession("Chest & Back")
         advanceTimeBy(100)
     }

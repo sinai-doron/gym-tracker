@@ -77,7 +77,7 @@ private data class WorkoutEdit(val workout: Workout?)
 /**
  * One programme: its workouts in the order they rotate, and when its week 1 starts. Tapping a
  * workout opens its exercises (the plan editor). Giving workouts a day makes the rotation follow
- * the week; deload and alternate weeks show as they are, their settings still to come.
+ * the week; the rules line opens the deload and alternate-week settings.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,6 +91,7 @@ fun ProgramBuilderScreen(
     var editing by remember { mutableStateOf<WorkoutEdit?>(null) }
     var removing by remember { mutableStateOf<Workout?>(null) }
     var pickingDate by remember { mutableStateOf(false) }
+    var editingRules by remember { mutableStateOf(false) }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.reload() }
 
     val program = state.program
@@ -169,7 +170,11 @@ fun ProgramBuilderScreen(
                         value = startValue(program),
                         onClick = { pickingDate = true }
                     )
-                    InfoField(label = stringResource(R.string.builder_rules), value = rulesValue(program, state.byWeekday), onClick = null)
+                    InfoField(
+                        label = stringResource(R.string.builder_rules),
+                        value = rulesValue(program, state.byWeekday),
+                        onClick = { editingRules = true }
+                    )
                     Text(
                         stringResource(R.string.builder_rules_later),
                         style = MaterialTheme.typography.bodySmall,
@@ -218,6 +223,17 @@ fun ProgramBuilderScreen(
                 }) { Text(stringResource(R.string.remove), color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = { TextButton(onClick = { removing = null }) { Text(stringResource(R.string.cancel)) } }
+        )
+    }
+
+    if (editingRules && program != null) {
+        RulesDialog(
+            program = program,
+            onDismiss = { editingRules = false },
+            onSave = {
+                editingRules = false
+                viewModel.setRules(it)
+            }
         )
     }
 
@@ -338,12 +354,13 @@ private fun startValue(program: Program): String {
 @Composable
 private fun rulesValue(program: Program, byWeekday: Boolean): String = listOf(
     stringResource(if (byWeekday) R.string.builder_rules_by_weekday else R.string.builder_rules_in_order),
-    program.deloadEveryWeeks?.let { stringResource(R.string.builder_rules_deload_every, it) }
+    program.deloadEveryWeeks?.let { stringResource(R.string.builder_rules_deload_detail, it, program.deloadLoadPercent) }
         ?: stringResource(R.string.builder_rules_no_deload),
-    stringResource(
-        if (program.variantRule == VariantRule.ALTERNATE_WEEKLY) R.string.builder_rules_alternate
-        else R.string.builder_rules_no_variants
-    )
+    when {
+        program.variantRule != VariantRule.ALTERNATE_WEEKLY -> stringResource(R.string.builder_rules_no_variants)
+        program.variantEveryWeeks == 1 -> stringResource(R.string.builder_rules_alternate)
+        else -> stringResource(R.string.builder_rules_alternate_every, program.variantEveryWeeks)
+    }
 ).joinToString(" · ")
 
 /** "Monday", "יום שני". */
@@ -421,6 +438,111 @@ private fun WeekdayDropdown(selected: DayOfWeek?, onSelect: (DayOfWeek?) -> Unit
                     text = { Text(day?.let { weekdayName(it) } ?: stringResource(R.string.builder_workout_no_day)) },
                     onClick = {
                         onSelect(day)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+private val DELOAD_EVERY = listOf<Int?>(null) + (3..12)
+private val DELOAD_LOADS = (40..90 step 5).toList()
+private val DELOAD_SETS = (1..5).toList()
+private val VARIANT_EVERY = listOf<Int?>(null) + (1..4)
+
+/** "Off", "Every week", "Every 3 weeks". */
+@Composable
+private fun everyText(weeks: Int?): String = when (weeks) {
+    null -> stringResource(R.string.builder_off)
+    1 -> stringResource(R.string.builder_every_week)
+    else -> stringResource(R.string.builder_every_n_weeks, weeks)
+}
+
+/**
+ * How often the programme deloads, at what share of the usual weight and with how many sets, and
+ * how long the exercise and its variant each last before switching.
+ */
+@Composable
+private fun RulesDialog(program: Program, onDismiss: () -> Unit, onSave: (Program) -> Unit) {
+    var deloadEvery by remember { mutableStateOf(program.deloadEveryWeeks) }
+    var load by remember { mutableStateOf(program.deloadLoadPercent) }
+    var sets by remember { mutableStateOf(program.deloadSets) }
+    var variantEvery by remember {
+        mutableStateOf(program.variantEveryWeeks.takeIf { program.variantRule == VariantRule.ALTERNATE_WEEKLY })
+    }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.builder_rules_edit_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                ChoiceDropdown(stringResource(R.string.builder_deload), deloadEvery, DELOAD_EVERY, { everyText(it) }) { deloadEvery = it }
+                if (deloadEvery != null) {
+                    ChoiceDropdown(
+                        stringResource(R.string.builder_deload_load), load, DELOAD_LOADS,
+                        { stringResource(R.string.builder_percent_of_usual, it) }
+                    ) { load = it }
+                    ChoiceDropdown(
+                        stringResource(R.string.builder_deload_sets), sets, DELOAD_SETS,
+                        { stringResource(R.string.builder_at_most_sets, it) }
+                    ) { sets = it }
+                }
+                ChoiceDropdown(stringResource(R.string.builder_alternate), variantEvery, VARIANT_EVERY, { everyText(it) }) {
+                    variantEvery = it
+                }
+                Text(
+                    stringResource(R.string.builder_alternate_help),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onSave(
+                    program.copy(
+                        deloadEveryWeeks = deloadEvery,
+                        deloadLoadPercent = load,
+                        deloadSets = sets,
+                        variantRule = if (variantEvery != null) VariantRule.ALTERNATE_WEEKLY else VariantRule.NONE,
+                        // Kept when variants are turned off, so turning them back on restores it
+                        variantEveryWeeks = variantEvery ?: program.variantEveryWeeks
+                    )
+                )
+            }) { Text(stringResource(R.string.save)) }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun <T> ChoiceDropdown(
+    label: String,
+    selected: T,
+    options: List<T>,
+    text: @Composable (T) -> String,
+    onSelect: (T) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        OutlinedTextField(
+            value = text(selected),
+            onValueChange = {},
+            readOnly = true,
+            singleLine = true,
+            label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                .fillMaxWidth()
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(text(option)) },
+                    onClick = {
+                        onSelect(option)
                         expanded = false
                     }
                 )

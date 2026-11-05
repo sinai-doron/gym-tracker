@@ -21,7 +21,7 @@
     <string name="sets_progress">%1$d / %2$d סטים</string>
     <string name="suggested_marker">★</string>
     <string name="no_sessions_month">אין אימונים בחודש זה</string>
-    <string name="deload_week_banner" formatted="false">שבוע הורדת עומס — 60% ממשקל אחרון, 2 סטים</string>
+    <string name="deload_week_banner">שבוע הורדת עומס: %1$d%% מהמשקל הרגיל, עד %2$d סטים</string>
     <string name="settings">הגדרות</string>
     <string name="language">שפה</string>
     <string name="next_workout">האימון הבא</string>

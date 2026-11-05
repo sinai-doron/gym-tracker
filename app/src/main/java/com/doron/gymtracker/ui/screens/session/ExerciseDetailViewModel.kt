@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.doron.gymtracker.domain.model.withTargetSets
 
 data class ExerciseDetailUiState(
     val exercise: ExerciseDefinition,
@@ -33,6 +34,8 @@ data class ExerciseDetailUiState(
     val timerElapsedSecs: Int = 0,
     val progressionHint: ProgressionHint = ProgressionHint.OnTrack,
     val lastWeight: Float? = null,
+    /** [lastWeight] is a deload week's share of the usual weight, still to be rounded to a plate. */
+    val deloadPrefill: Boolean = false,
     val editingSetIndex: Int? = null
 )
 
@@ -47,6 +50,8 @@ class ExerciseDetailViewModel(
     private val onTargetSetsChanged: (exerciseId: String, sets: Int) -> Unit = { _, _ -> },
     private val onSetDeleted: (setId: Long) -> Unit = {},
     loggedSets: List<SetRecord> = emptyList(),
+    /** In a deload week, the share of the usual weight to pre-fill; null in any other week. */
+    private val deloadLoadPercent: Int? = null,
     /**
      * The session's scope, when the session owns this sheet. Then the sheet lives as long as
      * the session does (across progress round trips and rotation) and stops with it.
@@ -81,10 +86,20 @@ class ExerciseDetailViewModel(
         val ex = _uiState.value.exercise
         if (ex is RepExerciseDefinition && !ex.isBodyweight) {
             scope.launch {
-                val hint = progressionHint?.invoke(ex.id, ex.targetReps) ?: ProgressionHint.OnTrack
-                val previousSession = getLastWeight?.invoke(ex.id)
+                // A deload week is lighter on purpose: no hint to add weight, and a share of the usual one
+                val hint = if (deloadLoadPercent != null) ProgressionHint.OnTrack
+                else progressionHint?.invoke(ex) ?: ProgressionHint.OnTrack
+                val previousSession = getLastWeight?.invoke(ex.id)?.let { kg ->
+                    if (deloadLoadPercent != null) kg * deloadLoadPercent / 100f else kg
+                }
                 // Only past sessions: a weight from this session (resumed or just logged) wins
-                _uiState.update { it.copy(progressionHint = hint, lastWeight = it.lastWeight ?: previousSession) }
+                _uiState.update {
+                    it.copy(
+                        progressionHint = hint,
+                        lastWeight = it.lastWeight ?: previousSession,
+                        deloadPrefill = it.lastWeight == null && previousSession != null && deloadLoadPercent != null
+                    )
+                }
             }
         }
     }
@@ -99,7 +114,7 @@ class ExerciseDetailViewModel(
             )
             val dbId = logSet(sessionId, exercise.id, record)
             val saved = record.copy(id = dbId)
-            _uiState.update { it.copy(completedSets = it.completedSets + saved, lastWeight = weightKg) }
+            _uiState.update { it.copy(completedSets = it.completedSets + saved, lastWeight = weightKg, deloadPrefill = false) }
             startRestTimer(exercise.restDurationSecs)
         }
     }
@@ -165,7 +180,7 @@ class ExerciseDetailViewModel(
             val updated = old.copy(reps = reps, weightKg = weightKg)
             updateSet?.invoke(updated)
             sets[index] = updated
-            _uiState.update { it.copy(completedSets = sets, editingSetIndex = null, lastWeight = weightKg) }
+            _uiState.update { it.copy(completedSets = sets, editingSetIndex = null, lastWeight = weightKg, deloadPrefill = false) }
         }
     }
 
@@ -198,12 +213,7 @@ class ExerciseDetailViewModel(
         val exercise = _uiState.value.exercise
         val sets = (exercise.targetSets + delta).coerceIn(1, 10)
         if (sets == exercise.targetSets) return
-        val updated = when (exercise) {
-            is RepExerciseDefinition -> exercise.copy(targetSets = sets)
-            is TimedExerciseDefinition -> exercise.copy(targetSets = sets)
-            is DistanceExerciseDefinition -> exercise.copy(targetSets = sets)
-        }
-        _uiState.update { it.copy(exercise = updated) }
+        _uiState.update { it.copy(exercise = exercise.withTargetSets(sets)) }
         onTargetSetsChanged(exercise.id, sets)
     }
 }

@@ -44,6 +44,9 @@ class ProgramBuilderViewModel @Inject constructor(
 
     fun setStartDate(date: LocalDate) = change { programs.setStartDate(programId, date) }
 
+    /** Saves the deload and variant settings [rules] has. */
+    fun setRules(rules: Program) = change { programs.setRules(programId, rules) }
+
     fun addWorkout(code: String, name: String?, weekday: DayOfWeek?) =
         change { workouts.addWorkout(programId, code, name?.trim()?.ifEmpty { null }, weekday) }
 

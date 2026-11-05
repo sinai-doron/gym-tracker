@@ -52,6 +52,7 @@ import com.doron.gymtracker.ui.components.weightUnitLabel
 import com.doron.gymtracker.ui.components.LocalWeightUnit
 import com.doron.gymtracker.data.format
 import com.doron.gymtracker.data.toKg
+import com.doron.gymtracker.data.floorToPlate
 
 @Composable
 fun ExerciseDetailSheet(
@@ -165,6 +166,7 @@ fun ExerciseDetailSheet(
                 is RepExerciseDefinition -> RepSetInput(
                     isBodyweight = (state.exercise as RepExerciseDefinition).isBodyweight,
                     lastWeight = state.lastWeight,
+                    roundToPlate = state.deloadPrefill,
                     editingSet = editingSet as? RepSetRecord,
                     onLog = { reps, weight ->
                         if (editIdx != null) {
@@ -230,13 +232,17 @@ private const val DEFAULT_REPS = 10
 private fun RepSetInput(
     isBodyweight: Boolean,
     lastWeight: Float?,
+    /** [lastWeight] is a deload's share of the usual weight: shown rounded down to a plate. */
+    roundToPlate: Boolean = false,
     editingSet: RepSetRecord? = null,
     onLog: (Int, Float) -> Unit,
     onCancelEdit: (() -> Unit)? = null
 ) {
     // Typed and shown in kg or pounds; kept in kg
     val unit = LocalWeightUnit.current
-    val initialWeight = if (lastWeight != null && lastWeight > 0f) unit.format(lastWeight) else ""
+    val initialWeight = if (lastWeight != null && lastWeight > 0f) {
+        unit.format(if (roundToPlate) unit.floorToPlate(lastWeight) else lastWeight)
+    } else ""
     // Saveable, so a half-typed set survives a trip to progress or a rotation
     var repsText by rememberSaveable(editingSet) {
         mutableStateOf(editingSet?.reps?.toString() ?: DEFAULT_REPS.toString())

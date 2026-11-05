@@ -24,8 +24,8 @@ Superseded (2026-11): users build their own programmes.
 >   (`GetNextWorkoutUseCase`).
 > - **`TrainingPlanData` stays only for the owner's plan.** It tops up the A/B/C plan that
 >   database version 16 made from the owner's history, on installs that have it, and nothing
->   else. That plan is still the only one with deload weeks and A/B variants; programmes made
->   since have neither until those become settings.
+>   else. Deload weeks and A/B variants are now settings of every programme (database
+>   version 19); that plan keeps the ones it always had.
 
 ## Context
 The app needs a source of truth for the three Workouts (A, B, C) and their ExerciseDefinitions. Options considered:
