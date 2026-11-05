@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Settings → About → Open-source licences -->
-    <string name="about">אודות</string>
-    <string name="licences_title">רישיונות קוד פתוח</string>
-    <string name="licences_intro">האפליקציה משתמשת ביצירות שאחרים שיתפו ברישיונות פתוחים. הנה הן, ומי יצר אותן.</string>
-    <string name="licences_body_title">איורי הגוף</string>
-    <string name="licences_body_text">איורי הגוף מלפנים ומאחור בבחירת התרגיל לקוחים מהספרייה %1$s (גרסה %2$s), ברישיון MIT:</string>
-    <string name="licences_catalogue_title">ספריית התרגילים</string>
-    <string name="licences_catalogue_text">ההוראות ונתוני התרגילים לקוחים מהאתר wger, מאת היוצרים הרשומים למטה, כל תרגיל ברישיון הרשום לידו. שינינו אותם והוספנו את השמות בעברית ואת השאר. הספרייה כולה משותפת ברישיון CC BY-SA 4.0.</string>
-    <string name="licences_cc_by_sa">הרישיון CC BY-SA 4.0</string>
-    <string name="licences_by_exercise">תרגיל אחר תרגיל</string>
+    <string name="about">About</string>
+    <string name="licences_title">Open-source licences</string>
+    <string name="licences_intro">The app uses work others shared under open licences. Here it is, with who made it.</string>
+    <string name="licences_body_title">Body figures</string>
+    <string name="licences_body_text">The front and back figures in the exercise picker come from %1$s %2$s, under the MIT licence:</string>
+    <string name="licences_catalogue_title">Exercise library</string>
+    <string name="licences_catalogue_text">Exercise instructions and data come from wger, by the authors named below, each exercise under the licence named beside it. We changed them, and added the Hebrew names and the rest. The library as a whole is shared under CC BY-SA 4.0.</string>
+    <string name="licences_cc_by_sa">The CC BY-SA 4.0 licence</string>
+    <string name="licences_by_exercise">Exercise by exercise</string>
     <string name="licences_credit">wger · %1$s · %2$s</string>
-    <string name="licences_open">פתיחת %s ב-wger</string>
-    <string name="licences_wger_contributors">תורמי wger</string>
+    <string name="licences_open">Open %s on wger</string>
+    <string name="licences_wger_contributors">wger contributors</string>
 </resources>

@@ -49,9 +49,9 @@ class LibraryVocabularyTest {
 
     @Test
     fun `every word has its English and Hebrew label`() {
-        val en = labels("values-en")
+        // English is the default; Hebrew is the translation
+        val en = labels("values")
         val he = labels("values-iw")
-        assertEquals(he, labels("values"))
         for ((group, prefix) in listOf("muscles" to "muscle_", "equipment" to "equipment_", "presets" to "preset_")) {
             vocabulary.getValue(group).jsonObject.forEach { (slug, value) ->
                 assertEquals(value.jsonObject.getValue("en").jsonPrimitive.content, en["$prefix$slug"])

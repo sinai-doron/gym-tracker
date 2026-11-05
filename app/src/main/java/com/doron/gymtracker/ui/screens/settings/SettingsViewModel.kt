@@ -118,7 +118,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     val languageCode: StateFlow<String> = prefs.languageCode
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), "iw")
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), "en")
 
     private val _healthConnectGranted = MutableStateFlow(false)
     val healthConnectGranted: StateFlow<Boolean> = _healthConnectGranted.asStateFlow()

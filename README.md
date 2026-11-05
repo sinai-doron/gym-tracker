@@ -8,8 +8,9 @@ outside. Log every set with a rest timer between them, record runs with GPS, and
 how your weights, distances and steps move over time.
 
 It is built for one person and one training programme. There is no account and no
-server: workouts are stored on the phone. The UI is Hebrew-first and right-to-left, with
-English available in Settings.
+server: workouts are stored on the phone. The UI is in English or Hebrew
+(right to left): a fresh install follows the phone's language, Hebrew on a Hebrew phone and
+English on any other, and Settings can change it.
 
 ## Features
 
@@ -120,7 +121,7 @@ English available in Settings.
 ### Settings and extras
 
 - **Settings.**
-  - Language: Hebrew or English.
+  - Language: English or Hebrew; until one is picked, the phone's.
   - Body weight, used for calories.
   - Daily step goal (10,000 by default).
   - Lap length and voice feedback.

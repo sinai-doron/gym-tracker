@@ -18,6 +18,13 @@ Superseded in part (2026-11)
 > ranges in Unicode isolates (U+2066…U+2069) so they don't read backwards. Canvas
 > drawings such as charts and the week strip mirror themselves for right-to-left.
 
+> **Amendment (2026-11).** English is now the main language (the app is going public on
+> Play): the default `values/` strings are English and Hebrew lives in `values-iw/`
+> (`values-en/` is gone). A fresh install is no longer switched to Hebrew; it follows the
+> phone, so a Hebrew phone gets Hebrew and any other language gets English. An install that
+> already has a language (every one so far, as the old code set Hebrew on first launch)
+> keeps it. The run voice follows the same choice.
+
 ## Context
 This is a personal app for a single Hebrew-speaking user. All training content, exercise names, and UI text are in Hebrew. Options considered:
 - **Full localisation (strings.xml + locale detection)** — supports multiple languages but adds overhead and this app will never need it

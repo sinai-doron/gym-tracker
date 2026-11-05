@@ -1,83 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Run / walk session -->
-    <string name="cardio_run">ריצה</string>
-    <string name="cardio_walk">הליכה</string>
-    <string name="cardio_paused_manual">⏸ מושהה – לחץ ▶ כדי להמשיך</string>
-    <string name="cardio_paused_auto">⏸ מושהה – ימשיך כשתזוז</string>
-    <string name="cardio_off_route">↩ יצאת מהמסלול</string>
-    <string name="cardio_distance">מרחק</string>
-    <string name="cardio_pace">קצב</string>
-    <string name="cardio_avg_pace">קצב ממוצע</string>
-    <string name="cardio_speed">מהירות</string>
-    <string name="cardio_resume">המשך</string>
-    <string name="cardio_pause">השהה</string>
-    <string name="cardio_finish">סיום</string>
-    <string name="cardio_finish_title">סיום אימון?</string>
-    <string name="cardio_finish_confirm">סיים</string>
-    <string name="cardio_discard">בטל</string>
-    <string name="cardio_keep_going">המשך</string>
-    <string name="cardio_route_finished">סיימת את המסלול!</string>
-    <string name="cardio_target_reached">המטרה הושגה!</string>
-    <string name="cardio_route_heading">מסלול</string>
-    <string name="cardio_target_heading">מטרה</string>
-    <string name="cardio_steps_cadence_extra">%1$,d · %2$d/ד׳</string>
-    <string name="cardio_kcal_extra">%1$d קק״ל</string>
+    <string name="cardio_run">Run</string>
+    <string name="cardio_walk">Walk</string>
+    <string name="cardio_paused_manual">⏸ Paused – tap ▶ to resume</string>
+    <string name="cardio_paused_auto">⏸ Paused – resumes when you move</string>
+    <string name="cardio_off_route">↩ You\'re off the route</string>
+    <string name="cardio_distance">Distance</string>
+    <string name="cardio_pace">Pace</string>
+    <string name="cardio_avg_pace">Avg pace</string>
+    <string name="cardio_speed">Speed</string>
+    <string name="cardio_resume">Resume</string>
+    <string name="cardio_pause">Pause</string>
+    <string name="cardio_finish">Finish</string>
+    <string name="cardio_finish_title">Finish workout?</string>
+    <string name="cardio_finish_confirm">Finish</string>
+    <string name="cardio_discard">Discard</string>
+    <string name="cardio_keep_going">Keep going</string>
+    <string name="cardio_route_finished">Route complete!</string>
+    <string name="cardio_target_reached">Target reached!</string>
+    <string name="cardio_route_heading">Route</string>
+    <string name="cardio_target_heading">Target</string>
+    <string name="cardio_steps_cadence_extra">%1$,d · %2$d/min</string>
+    <string name="cardio_kcal_extra">%1$d kcal</string>
 
     <!-- Run report -->
-    <string name="cardio_duration">משך</string>
-    <string name="cardio_avg_speed">מהירות ממוצעת</string>
-    <string name="cardio_steps">צעדים</string>
-    <string name="cardio_elevation_gain">עלייה מצטברת</string>
-    <string name="cardio_calories">קלוריות</string>
-    <string name="cardio_elevation">גובה</string>
-    <string name="cardio_laps">הקפות</string>
-    <string name="cardio_badges_ok">יופי!</string>
+    <string name="cardio_duration">Duration</string>
+    <string name="cardio_avg_speed">Avg speed</string>
+    <string name="cardio_steps">Steps</string>
+    <string name="cardio_elevation_gain">Total climb</string>
+    <string name="cardio_calories">Calories</string>
+    <string name="cardio_elevation">Elevation</string>
+    <string name="cardio_laps">Laps</string>
+    <string name="cardio_badges_ok">Nice!</string>
     <plurals name="cardio_new_badges">
-        <item quantity="one">הישג חדש!</item>
-        <item quantity="other">%1$d הישגים חדשים!</item>
+        <item quantity="one">New achievement!</item>
+        <item quantity="other">%1$d new achievements!</item>
     </plurals>
-    <string name="cardio_first_badge">רצת לראשונה %1$s</string>
-    <string name="cardio_records_ok">יש!</string>
+    <string name="cardio_first_badge">Your first %1$s run</string>
+    <string name="cardio_records_ok">Yes!</string>
     <plurals name="cardio_new_records">
-        <item quantity="one">שיא אישי חדש!</item>
-        <item quantity="other">%1$d שיאים אישיים!</item>
+        <item quantity="one">New personal record!</item>
+        <item quantity="other">%1$d personal records!</item>
     </plurals>
 
     <!-- GPS lock and target -->
-    <string name="cardio_back">חזרה</string>
-    <string name="cardio_at_route_start">אתה בתחילת המסלול</string>
-    <string name="cardio_route_starts_away">המסלול מתחיל %1$s ממך</string>
-    <string name="cardio_start_run">התחל ריצה</string>
-    <string name="cardio_start_walk">התחל הליכה</string>
-    <string name="cardio_target">מטרה</string>
-    <string name="cardio_target_none">ללא מטרה</string>
-    <string name="cardio_time">זמן</string>
-    <string name="cardio_route">מסלול</string>
-    <string name="cardio_minutes_value">%1$d דק׳</string>
-    <string name="cardio_choose_route">בחר מסלול</string>
-    <string name="cardio_no_routes">אין עדיין מסלולים: שמרו ריצה כמסלול או ייבאו קובץ GPX.</string>
-    <string name="cardio_manage_routes">ניהול מסלולים וייבוא GPX</string>
+    <string name="cardio_back">Back</string>
+    <string name="cardio_at_route_start">You\'re at the start of the route</string>
+    <string name="cardio_route_starts_away">The route starts %1$s away</string>
+    <string name="cardio_start_run">Start run</string>
+    <string name="cardio_start_walk">Start walk</string>
+    <string name="cardio_target">Target</string>
+    <string name="cardio_target_none">No target</string>
+    <string name="cardio_time">Time</string>
+    <string name="cardio_route">Route</string>
+    <string name="cardio_minutes_value">%1$d min</string>
+    <string name="cardio_choose_route">Choose a route</string>
+    <string name="cardio_no_routes">No routes yet: save a run as a route or import a GPX file.</string>
+    <string name="cardio_manage_routes">Manage routes and import GPX</string>
 
     <!-- Sharing a run -->
-    <string name="cardio_share_run">שיתוף הריצה</string>
-    <string name="cardio_share_walk">שיתוף ההליכה</string>
-    <string name="cardio_share_image">שתף תמונה</string>
-    <string name="cardio_share_gpx">קובץ GPX</string>
-    <string name="cardio_share_image_send">שתף תמונה</string>
-    <string name="cardio_climb">עלייה</string>
-    <string name="cardio_date">תאריך</string>
-    <string name="cardio_records">שיאים</string>
-    <string name="cardio_pace_colors">צבעי קצב</string>
-    <string name="cardio_unit_time">זמן</string>
-    <string name="cardio_unit_kcal">קק״ל</string>
-    <string name="cardio_unit_steps">צעדים</string>
+    <string name="cardio_share_run">Share run</string>
+    <string name="cardio_share_walk">Share walk</string>
+    <string name="cardio_share_image">Share image</string>
+    <string name="cardio_share_gpx">GPX file</string>
+    <string name="cardio_share_image_send">Share image</string>
+    <string name="cardio_climb">Climb</string>
+    <string name="cardio_date">Date</string>
+    <string name="cardio_records">Records</string>
+    <string name="cardio_pace_colors">Pace colors</string>
+    <string name="cardio_unit_time">time</string>
+    <string name="cardio_unit_kcal">kcal</string>
+    <string name="cardio_unit_steps">steps</string>
     <!-- SimpleDateFormat pattern and the locale for its month names -->
-    <string name="cardio_share_date_pattern">d בMMM · HH:mm</string>
-    <string name="cardio_share_date_locale">he</string>
+    <string name="cardio_share_date_pattern">MMM d · HH:mm</string>
+    <string name="cardio_share_date_locale">en</string>
 
     <!-- Tracking notification -->
-    <string name="cardio_channel_name">מעקב ריצה/הליכה</string>
-    <string name="cardio_channel_description">GPS פעיל בזמן אימון</string>
-    <string name="cardio_notification_paused">%1$s · ⏸ מושהה</string>
+    <string name="cardio_channel_name">Run/walk tracking</string>
+    <string name="cardio_channel_description">GPS is on during a workout</string>
+    <string name="cardio_notification_paused">%1$s · ⏸ Paused</string>
 </resources>

@@ -52,7 +52,7 @@ class SettingsPrefs @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     val languageCode: Flow<String> = context.settingsDataStore.data
-        .map { prefs -> prefs[LANGUAGE_CODE] ?: "iw" }  // default Hebrew
+        .map { prefs -> prefs[LANGUAGE_CODE] ?: "en" }  // none chosen: the app follows the phone, English for any language but Hebrew
 
     suspend fun setLanguageCode(code: String) {
         context.settingsDataStore.edit { prefs -> prefs[LANGUAGE_CODE] = code }

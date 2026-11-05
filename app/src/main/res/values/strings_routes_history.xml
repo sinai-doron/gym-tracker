@@ -1,71 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Routes -->
-    <string name="routes_title">מסלולים</string>
-    <string name="routes_back">חזרה</string>
-    <string name="routes_imported">המסלול נוסף</string>
-    <string name="routes_not_a_route">לא נמצא מסלול בקובץ</string>
-    <string name="routes_import">ייבוא מסלול</string>
-    <string name="routes_empty">אין עדיין מסלולים.\nשמרו ריצה כמסלול מההיסטוריה, או ייבאו קובץ GPX.</string>
-    <string name="routes_import_text">בחרו קובץ GPX: מסלול שהורדתם, או ריצה שייצאתם מ-Strava, Garmin וכדומה.</string>
-    <string name="routes_choose_gpx">בחירת קובץ GPX</string>
-    <string name="routes_picker_hint">בבוחר הקבצים אין כפתור ביטול: כדי לחזור בלי לבחור, החליקו אחורה מקצה המסך.</string>
-    <string name="routes_rename">שינוי שם</string>
-    <string name="routes_delete">מחיקה</string>
-    <string name="routes_run_route">רוץ במסלול</string>
-    <string name="routes_distance">מרחק</string>
-    <string name="routes_climb">עלייה מצטברת</string>
-    <string name="routes_descent">ירידה מצטברת</string>
-    <string name="routes_highest">נקודה גבוהה</string>
-    <string name="routes_estimated_time">זמן משוער</string>
-    <string name="routes_elevation">גובה</string>
-    <string name="routes_name_title">שם המסלול</string>
-    <string name="routes_delete_title">למחוק את \"%1$s\"?</string>
-    <string name="routes_delete_text">הריצות שנעשו במסלול נשארות בהיסטוריה.</string>
-    <string name="routes_delete_confirm">מחק</string>
-    <string name="routes_loop_street">מעגלי · %1$s</string>
-    <string name="routes_legend_up">עלייה</string>
-    <string name="routes_legend_down">ירידה</string>
-    <string name="routes_legend_start">התחלה</string>
-    <string name="routes_legend_finish">סיום</string>
+    <string name="routes_title">Routes</string>
+    <string name="routes_back">Back</string>
+    <string name="routes_imported">Route added</string>
+    <string name="routes_not_a_route">No route found in this file</string>
+    <string name="routes_import">Import route</string>
+    <string name="routes_empty">No routes yet.\nSave a run as a route from your history, or import a GPX file.</string>
+    <string name="routes_import_text">Pick a GPX file: a route you downloaded, or a run you exported from Strava, Garmin and the like.</string>
+    <string name="routes_choose_gpx">Choose a GPX file</string>
+    <string name="routes_picker_hint">The file picker has no cancel button: to go back without picking, swipe back from the edge of the screen.</string>
+    <string name="routes_rename">Rename</string>
+    <string name="routes_delete">Delete</string>
+    <string name="routes_run_route">Run this route</string>
+    <string name="routes_distance">Distance</string>
+    <string name="routes_climb">Total climb</string>
+    <string name="routes_descent">Total descent</string>
+    <string name="routes_highest">Highest point</string>
+    <string name="routes_estimated_time">Est. time</string>
+    <string name="routes_elevation">Elevation</string>
+    <string name="routes_name_title">Route name</string>
+    <string name="routes_delete_title">Delete \"%1$s\"?</string>
+    <string name="routes_delete_text">Runs on this route stay in your history.</string>
+    <string name="routes_delete_confirm">Delete</string>
+    <string name="routes_loop_street">Loop · %1$s</string>
+    <string name="routes_legend_up">Uphill</string>
+    <string name="routes_legend_down">Downhill</string>
+    <string name="routes_legend_start">Start</string>
+    <string name="routes_legend_finish">Finish</string>
     <!-- A new route's name when the phone can't tell where it starts -->
-    <string name="routes_default_name">מסלול</string>
+    <string name="routes_default_name">Route</string>
 
     <!-- History -->
-    <string name="history_back">חזרה</string>
-    <string name="history_next_month">חודש הבא</string>
-    <string name="history_prev_month">חודש קודם</string>
+    <string name="history_back">Back</string>
+    <string name="history_next_month">Next month</string>
+    <string name="history_prev_month">Previous month</string>
     <string-array name="history_day_headers">
-        <item>א</item>
-        <item>ב</item>
-        <item>ג</item>
-        <item>ד</item>
-        <item>ה</item>
-        <item>ו</item>
-        <item>ש</item>
+        <item>S</item>
+        <item>M</item>
+        <item>T</item>
+        <item>W</item>
+        <item>T</item>
+        <item>F</item>
+        <item>S</item>
     </string-array>
-    <string name="history_legend_gym">אימון כוח</string>
-    <string name="history_legend_cardio">ריצה / הליכה</string>
+    <string name="history_legend_gym">Strength</string>
+    <string name="history_legend_cardio">Run / walk</string>
     <plurals name="history_sessions_count">
-        <item quantity="one">%d אימונים</item>
-        <item quantity="other">%d אימונים</item>
+        <item quantity="one">%d workout</item>
+        <item quantity="other">%d workouts</item>
     </plurals>
-    <string name="history_delete_title">מחיקת אימון?</string>
-    <string name="history_delete_text">למחוק את האימון %1$s?\nכל הנתונים יימחקו לצמיתות.</string>
-    <string name="history_delete_confirm">מחק</string>
-    <string name="history_delete_session">מחק אימון</string>
-    <string name="history_minutes">%1$d דק׳</string>
+    <string name="history_delete_title">Delete workout?</string>
+    <string name="history_delete_text">Delete %1$s?\nAll its data will be gone for good.</string>
+    <string name="history_delete_confirm">Delete</string>
+    <string name="history_delete_session">Delete workout</string>
+    <string name="history_minutes">%1$d min</string>
     <plurals name="history_sets_count">
-        <item quantity="one">%d סטים</item>
-        <item quantity="other">%d סטים</item>
+        <item quantity="one">%d set</item>
+        <item quantity="other">%d sets</item>
     </plurals>
-    <string name="history_run">ריצה</string>
-    <string name="history_walk">הליכה</string>
-    <string name="history_duration">משך</string>
-    <string name="history_exercises">תרגילים</string>
-    <string name="history_total_volume">נפח כולל</string>
-    <string name="history_exercise_breakdown">פירוט תרגילים</string>
-    <string name="history_line_sets">%1$d/%2$d סטים</string>
-    <string name="history_line_sets_weight">%1$d/%2$d סטים · %3$s ק״ג</string>
-    <string name="history_soundtrack">♫ פסקול האימון</string>
+    <string name="history_run">Run</string>
+    <string name="history_walk">Walk</string>
+    <string name="history_duration">Duration</string>
+    <string name="history_exercises">Exercises</string>
+    <string name="history_total_volume">Total volume</string>
+    <string name="history_exercise_breakdown">Exercise breakdown</string>
+    <string name="history_line_sets">%1$d/%2$d sets</string>
+    <string name="history_line_sets_weight">%1$d/%2$d sets · %3$s kg</string>
+    <string name="history_soundtrack">♫ Workout soundtrack</string>
 </resources>
