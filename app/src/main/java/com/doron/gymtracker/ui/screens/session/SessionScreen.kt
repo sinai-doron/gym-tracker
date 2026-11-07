@@ -68,6 +68,10 @@ fun SessionScreen(
     viewModel: SessionViewModel,
     settingsPrefs: SettingsPrefs? = null,
     onShowProgress: (exerciseId: String) -> Unit = {},
+    // False while another screen (Progress) is on top: a predictive back gesture there still
+    // composes this screen to peek at it, and the sheet, a window of its own, and BackHandler
+    // would take the back, so both wait until this screen is current again
+    onTop: Boolean = true,
     onFinished: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -141,7 +145,7 @@ fun SessionScreen(
 
     // Leaving with BACK used to leave the session open forever; make the user choose
     var showExitDialog by rememberSaveable { mutableStateOf(false) }
-    BackHandler { showExitDialog = true }
+    BackHandler(enabled = onTop) { showExitDialog = true }
     if (showExitDialog) {
         AlertDialog(
             onDismissRequest = { showExitDialog = false },
@@ -274,7 +278,7 @@ fun SessionScreen(
     }
 
     val exercise = state.workout?.exercises?.firstOrNull { it.id == state.selectedExerciseId }
-    if (exercise != null) {
+    if (exercise != null && onTop) {
         ModalBottomSheet(onDismissRequest = { viewModel.selectExercise(null) }, sheetState = sheetState) {
             ExerciseDetailSheet(
                 viewModel = viewModel.detailFor(exercise),

@@ -5,6 +5,7 @@ import com.doron.gymtracker.data.repository.WorkoutRepository
 import com.doron.gymtracker.data.seed.TrainingPlanData
 import com.doron.gymtracker.domain.model.ExerciseSessionSets
 import com.doron.gymtracker.domain.model.ProgressMetric
+import com.doron.gymtracker.domain.model.RepExerciseDefinition
 import com.doron.gymtracker.domain.model.RepSetRecord
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -17,14 +18,27 @@ import org.junit.Test
 class GetExerciseProgressUseCaseTest {
 
     private lateinit var sessionRepo: SessionRepository
+    private lateinit var workoutRepo: WorkoutRepository
     private lateinit var useCase: GetExerciseProgressUseCase
 
     @Before
     fun setup() {
         sessionRepo = mockk()
-        val workoutRepo = mockk<WorkoutRepository>()
+        workoutRepo = mockk()
         coEvery { workoutRepo.getAll() } returns TrainingPlanData.all
+        coEvery { workoutRepo.getExercise(any()) } returns null
         useCase = GetExerciseProgressUseCase(sessionRepo, workoutRepo)
+    }
+
+    @Test
+    fun `an exercise no longer in the active plan is still found, as opened from History`() = runTest {
+        coEvery { workoutRepo.getExercise("old") } returns RepExerciseDefinition("old", "Old press", 3, 90, 8)
+        coEvery { sessionRepo.getExerciseHistory("old") } returns listOf(
+            ExerciseSessionSets(1L, 100L, listOf(rep(8, 30f)))
+        )
+        val progress = useCase("old")!!
+        assertEquals("Old press", progress.exercise.name)
+        assertEquals(listOf(30f), progress.points.map { it.value })
     }
 
     private fun rep(reps: Int, kg: Float) = RepSetRecord(0L, 0L, 0L, reps, kg)

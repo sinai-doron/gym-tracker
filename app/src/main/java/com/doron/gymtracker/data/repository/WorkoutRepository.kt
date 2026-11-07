@@ -15,6 +15,8 @@ interface WorkoutRepository {
     suspend fun getForProgram(programId: String): List<Workout>
     /** A workout in any programme, hidden or not. */
     suspend fun getById(id: String): Workout?
+    /** An exercise of any workout in any programme, removed from its plan or not. */
+    suspend fun getExercise(id: String): ExerciseDefinition?
     /**
      * Writes [program] whole, in one transaction, and makes it the active one: [workouts] in
      * rotation order, each with its exercises.

@@ -35,6 +35,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.doron.gymtracker.ui.components.SOUNDTRACK_PREVIEW
+import com.doron.gymtracker.ui.components.SoundtrackToggle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -631,8 +634,9 @@ private fun LapRow(
 @Composable
 private fun SoundtrackCard(state: CardioUiState) {
     SectionCard(stringResource(R.string.run_summary_soundtrack)) {
+        var allTracks by rememberSaveable { mutableStateOf(false) }
         Column(verticalArrangement = Arrangement.spacedBy(RunSummaryShapes.trackRowGap)) {
-            state.tracks.forEachIndexed { index, track ->
+            (if (allTracks) state.tracks else state.tracks.take(SOUNDTRACK_PREVIEW)).forEachIndexed { index, track ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("${index + 1}", style = RunSummaryType.cellLabel, modifier = Modifier.width(24.dp))
                     Column(Modifier.weight(1f)) {
@@ -641,6 +645,13 @@ private fun SoundtrackCard(state: CardioUiState) {
                     }
                 }
             }
+            SoundtrackToggle(
+                total = state.tracks.size,
+                expanded = allTracks,
+                onToggle = { allTracks = !allTracks },
+                color = RunSummaryColors.accent,
+                style = RunSummaryType.tableCell
+            )
         }
     }
 }

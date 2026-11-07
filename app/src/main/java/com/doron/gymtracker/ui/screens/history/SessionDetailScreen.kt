@@ -28,10 +28,16 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.doron.gymtracker.ui.components.SOUNDTRACK_PREVIEW
+import com.doron.gymtracker.ui.components.SoundtrackToggle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -156,10 +162,11 @@ class SessionDetailViewModel @Inject constructor(
             var exercisesCompleted = 0
             val lines = mutableListOf<ExerciseBreakdownLine>()
 
-            val allExercises = workout?.exercises ?: emptyList()
+            val allExercises = workout?.exercises?.flatMap { listOfNotNull(it, it.variantB) } ?: emptyList()
 
             entries.forEach { entry ->
-                val exercise = allExercises.find { it.id == entry.exerciseId }
+                // A week-B variant, or one since removed from the plan
+                val exercise = allExercises.find { it.id == entry.exerciseId } ?: workoutRepo.getExercise(entry.exerciseId)
                 val name = exercise?.nameIn(AppLocale.language()) ?: entry.exerciseId
                 val target = exercise?.targetSets ?: entry.sets.size
                 val sets = entry.sets
@@ -249,7 +256,8 @@ class SessionDetailViewModel @Inject constructor(
 @Composable
 fun SessionDetailScreen(
     viewModel: SessionDetailViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onExerciseProgress: (exerciseId: String) -> Unit = {}
 ) {
     val data by viewModel.state.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -396,6 +404,11 @@ fun SessionDetailScreen(
                                 modifier = Modifier.size(20.dp)
                             )
                         }
+                        if (line.setsCompleted > 0) {
+                            TextButton(onClick = { onExerciseProgress(line.exerciseId) }) {
+                                Text(stringResource(R.string.progress))
+                            }
+                        }
                     }
                     Spacer(Modifier.height(6.dp))
                 }
@@ -411,7 +424,9 @@ fun SessionDetailScreen(
                     modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
                 )
 
-                d.tracks.forEachIndexed { index, track ->
+                var allTracks by rememberSaveable { mutableStateOf(false) }
+                val shownTracks = if (allTracks) d.tracks else d.tracks.take(SOUNDTRACK_PREVIEW)
+                shownTracks.forEachIndexed { index, track ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -441,6 +456,13 @@ fun SessionDetailScreen(
                     }
                     Spacer(Modifier.height(4.dp))
                 }
+                SoundtrackToggle(
+                    total = d.tracks.size,
+                    expanded = allTracks,
+                    onToggle = { allTracks = !allTracks },
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.labelLarge
+                )
             }
 
             Spacer(Modifier.height(32.dp))

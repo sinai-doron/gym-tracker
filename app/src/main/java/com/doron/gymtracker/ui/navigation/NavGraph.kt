@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.doron.gymtracker.data.CardioRun
 import com.doron.gymtracker.data.prefs.SettingsPrefs
@@ -201,6 +202,7 @@ fun NavGraph(
                 viewModel = viewModel,
                 settingsPrefs = factoryHolder.settingsPrefs,
                 onShowProgress = { id -> navController.navigate("exercise-progress/$id") },
+                onTop = navController.currentBackStackEntryAsState().value?.id == backStackEntry.id,
                 onFinished = { navController.popBackStack() }
             )
         }
@@ -261,7 +263,8 @@ fun NavGraph(
             androidx.compose.runtime.LaunchedEffect(sessionId) { viewModel.load(sessionId) }
             SessionDetailScreen(
                 viewModel = viewModel,
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onExerciseProgress = { id -> navController.navigate("exercise-progress/$id") }
             )
         }
     }

@@ -68,4 +68,6 @@
     <string name="history_line_sets">%1$d/%2$d sets</string>
     <string name="history_line_sets_weight_unit">%1$d/%2$d sets · %3$s</string>
     <string name="history_soundtrack">♫ Workout soundtrack</string>
+    <string name="soundtrack_show_more">Show %1$d more</string>
+    <string name="soundtrack_show_less">Show less</string>
 </resources>

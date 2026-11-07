@@ -142,25 +142,18 @@ fun ExerciseDetailSheet(
 
         val editIdx = state.editingSetIndex
         val restSecs = state.restCountdownSecs
-        if (restSecs != null && editIdx == null) {
+        // Resting, the next set's inputs stay in view under a one-row countdown
+        if (restSecs != null) {
             RestTimerOverlay(
-                countdownSecs = state.restCountdownSecs!!,
+                countdownSecs = restSecs,
                 totalSecs = state.restTotalSecs,
                 onDismiss = { viewModel.dismissRestTimer() },
                 onAdjust = { delta -> viewModel.adjustRestTimer(delta) }
             )
-        } else {
+            Spacer(Modifier.height(12.dp))
+        }
+        run {
             val editingSet = if (editIdx != null) state.completedSets.getOrNull(editIdx) else null
-
-            // Editing during rest: the countdown keeps running, so keep it visible
-            if (restSecs != null) {
-                Text(
-                    stringResource(R.string.rest_value, "%d:%02d".format(restSecs / 60, restSecs % 60)),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = RestTimerColor,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-            }
 
             when (state.exercise) {
                 is RepExerciseDefinition -> RepSetInput(

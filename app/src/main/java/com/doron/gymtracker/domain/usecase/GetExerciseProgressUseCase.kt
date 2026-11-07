@@ -40,10 +40,12 @@ class GetExerciseProgressUseCase @Inject constructor(
         )
     }
 
-    // Week-B variants are only reachable through their week-A exercise
+    // Week-B variants are only reachable through their week-A exercise. Opened from History,
+    // the exercise may be gone from the plan or belong to another programme: look it up directly.
     private suspend fun findExercise(id: String): ExerciseDefinition? =
         workoutRepo.getAll().flatMap { w -> w.exercises.flatMap { listOfNotNull(it, it.variantB) } }
             .firstOrNull { it.id == id }
+            ?: workoutRepo.getExercise(id)
 
     private fun ExerciseSessionSets.bestValue(metric: ProgressMetric): Float? = when (metric) {
         ProgressMetric.WEIGHT -> sets.filterIsInstance<RepSetRecord>().maxOfOrNull { it.weightKg }

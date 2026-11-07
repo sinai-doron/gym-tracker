@@ -71,6 +71,11 @@ class WorkoutRepositoryImpl @Inject constructor(
         return dao.getWorkout(id)?.toDomain()
     }
 
+    override suspend fun getExercise(id: String): ExerciseDefinition? {
+        val row = dao.getExercise(id) ?: return null
+        return row.toDomain(names = libraryNames(listOf(row))[row.id].orEmpty(), step = weightSteps(listOf(row))[row.libraryExerciseId])
+    }
+
     private suspend fun WorkoutEntity.toDomain(): Workout {
         val rows = dao.getExercisesForWorkout(id)
         val names = libraryNames(rows)

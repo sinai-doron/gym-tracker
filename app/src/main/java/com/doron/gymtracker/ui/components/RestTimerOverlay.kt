@@ -5,13 +5,11 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -34,6 +32,10 @@ import androidx.compose.ui.unit.sp
 import com.doron.gymtracker.R
 import com.doron.gymtracker.ui.theme.RestTimerColor
 
+/**
+ * The rest countdown as one row, so the exercise and the next set's inputs stay in view under it:
+ * a ring that empties, the time left, -15 / +15 and Skip.
+ */
 @Composable
 fun RestTimerOverlay(
     countdownSecs: Int,
@@ -50,21 +52,16 @@ fun RestTimerOverlay(
 
     val trackColor = MaterialTheme.colorScheme.surfaceVariant
 
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .background(MaterialTheme.colorScheme.surface, MaterialTheme.shapes.medium)
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(stringResource(R.string.rest), style = MaterialTheme.typography.titleMedium, color = RestTimerColor)
-
-        Spacer(Modifier.height(16.dp))
-
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.size(180.dp)) {
-            Canvas(modifier = Modifier.size(180.dp)) {
-                val strokeWidth = 10.dp.toPx()
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.size(44.dp)) {
+            Canvas(modifier = Modifier.size(44.dp)) {
+                val strokeWidth = 5.dp.toPx()
                 drawArc(
                     color = trackColor,
                     startAngle = -90f,
@@ -80,41 +77,34 @@ fun RestTimerOverlay(
                     style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
                 )
             }
+        }
+        Spacer(Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(stringResource(R.string.rest), style = MaterialTheme.typography.labelMedium, color = RestTimerColor)
             Text(
                 "%d:%02d".format(countdownSecs / 60, countdownSecs % 60),
-                fontSize = 48.sp,
+                fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = RestTimerColor
             )
         }
-
-        Spacer(Modifier.height(16.dp))
-
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+        FilledTonalButton(
+            onClick = { onAdjust(-15) },
+            shape = CircleShape,
+            modifier = Modifier.size(44.dp),
+            contentPadding = ButtonDefaults.TextButtonContentPadding
         ) {
-            FilledTonalButton(
-                onClick = { onAdjust(-15) },
-                shape = CircleShape,
-                modifier = Modifier.size(48.dp),
-                contentPadding = ButtonDefaults.TextButtonContentPadding
-            ) {
-                Text("-15", style = MaterialTheme.typography.labelSmall)
-            }
-            Spacer(Modifier.width(16.dp))
-            FilledTonalButton(
-                onClick = { onAdjust(15) },
-                shape = CircleShape,
-                modifier = Modifier.size(48.dp),
-                contentPadding = ButtonDefaults.TextButtonContentPadding
-            ) {
-                Text("+15", style = MaterialTheme.typography.labelSmall)
-            }
+            Text("-15", style = MaterialTheme.typography.labelSmall)
         }
-
-        Spacer(Modifier.height(12.dp))
-
+        Spacer(Modifier.width(8.dp))
+        FilledTonalButton(
+            onClick = { onAdjust(15) },
+            shape = CircleShape,
+            modifier = Modifier.size(44.dp),
+            contentPadding = ButtonDefaults.TextButtonContentPadding
+        ) {
+            Text("+15", style = MaterialTheme.typography.labelSmall)
+        }
         TextButton(onClick = onDismiss) {
             Text(stringResource(R.string.skip_rest), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
