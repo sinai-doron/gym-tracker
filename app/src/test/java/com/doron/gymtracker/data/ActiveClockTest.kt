@@ -15,6 +15,28 @@ class ActiveClockTest {
     private fun stepAfter(prev: DistanceMark, at: Long) = DistanceMark(at, prev.meters + 3)
 
     @Test
+    fun `moving time at every move in one pass matches asking for each`() {
+        val random = java.util.Random(7)
+        repeat(200) {
+            // Moves with stops, GPS gaps and the odd fix from before the start
+            var t = random.nextInt(20_000).toLong() - 5_000
+            var meters = 0.0
+            val moves = (0 until 300).map {
+                t += when (random.nextInt(10)) { 0 -> 15_000L + random.nextInt(60_000); 1 -> 300_000L; else -> 1_000L + random.nextInt(3_000) }
+                meters += random.nextDouble() * 8
+                DistanceMark(t, meters)
+            }
+            val manual = (0 until random.nextInt(4)).map {
+                val at = random.nextLong().mod(t)
+                Pause(at, at + random.nextInt(120_000))
+            }
+            val clock = ActiveClock(0, moves, manual)
+            val times = moves.map { it.timestamp }
+            assertEquals(times.map(clock::activeMs), clock.activeAtEach(times))
+        }
+    }
+
+    @Test
     fun `moving all along counts every second`() {
         val clock = ActiveClock(0, steady)
         assertEquals(60_000, clock.activeMs(60_000))

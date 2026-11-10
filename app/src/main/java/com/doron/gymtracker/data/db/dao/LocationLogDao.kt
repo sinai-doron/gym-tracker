@@ -3,7 +3,11 @@ package com.doron.gymtracker.data.db.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import com.doron.gymtracker.data.db.entities.LocationLogEntity
+
+/** How many GPS points one session has. */
+data class SessionPointCount(val sessionId: Long, val points: Int)
 
 @Dao
 interface LocationLogDao {
@@ -15,4 +19,17 @@ interface LocationLogDao {
 
     @Query("DELETE FROM location_log WHERE sessionId = :sessionId")
     suspend fun deleteForSession(sessionId: Long)
+
+    @Query("SELECT sessionId, count(*) AS points FROM location_log GROUP BY sessionId")
+    suspend fun countBySession(): List<SessionPointCount>
+
+    @Insert
+    suspend fun insertAll(entities: List<LocationLogEntity>)
+
+    /** A session's points swapped for [entities] in one go: never half a route. */
+    @Transaction
+    suspend fun replaceForSession(sessionId: Long, entities: List<LocationLogEntity>) {
+        deleteForSession(sessionId)
+        insertAll(entities)
+    }
 }

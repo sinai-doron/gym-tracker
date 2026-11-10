@@ -6,11 +6,14 @@ import com.doron.gymtracker.data.RouteDistance
 import com.doron.gymtracker.data.repository.SessionRepository
 import com.doron.gymtracker.domain.model.PersonalRecord
 import com.doron.gymtracker.domain.model.RecordKind
+import com.doron.gymtracker.domain.model.Session
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.ZoneId
 import java.time.temporal.TemporalAdjusters
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
+import javax.inject.Singleton
 
 /** What one finished run counts towards the records. */
 data class RunFacts(
@@ -22,11 +25,29 @@ data class RunFacts(
 )
 
 /**
+ * Each finished run's [RunFacts], kept while the app runs: working them out reads the run's
+ * whole route, and with years of imported runs that took over 13 s every time a run was opened.
+ * A run's entry is redone when its finish, distance or number of GPS points changes.
+ */
+@Singleton
+class RunFactsCache @Inject constructor() {
+    private data class Key(val finishedAt: Long?, val distanceMeters: Double?, val points: Int)
+    private val facts = ConcurrentHashMap<Long, Pair<Key, RunFacts>>()
+
+    suspend fun get(session: Session, points: Int, work: suspend () -> RunFacts): RunFacts {
+        val key = Key(session.finishedAt, session.distanceMeters, points)
+        facts[session.id]?.takeIf { it.first == key }?.let { return it.second }
+        return work().also { facts[session.id] = key to it }
+    }
+}
+
+/**
  * Personal records from the finished runs (walks don't count), worked out from their saved
  * routes, so runs from before records existed count too.
  */
 class GetPersonalRecordsUseCase @Inject constructor(
-    private val sessionRepo: SessionRepository
+    private val sessionRepo: SessionRepository,
+    private val cache: RunFactsCache
 ) {
     suspend operator fun invoke(): List<PersonalRecord> = records(facts())
 
@@ -44,30 +65,34 @@ class GetPersonalRecordsUseCase @Inject constructor(
         }
     }
 
-    private suspend fun facts(): List<RunFacts> =
-        sessionRepo.getCompletedSince(0)
+    private suspend fun facts(): List<RunFacts> {
+        val points = sessionRepo.countRoutePoints()
+        return sessionRepo.getCompletedSince(0)
             // Logged by hand: no route or clock to trust, so no speed or distance records
             .filter { it.type == "RUNNING" && it.finishedAt != null && !it.loggedManually }
-            .map { session ->
-                val route = sessionRepo.getRouteForSession(session.id)
-                val pauses = sessionRepo.getPauses(session.id)
-                val marks = RouteDistance.marks(route, pauses)
-                val clock = ActiveClock(session.startedAt, marks, pauses)
-                val active = marks.map { clock.activeMs(it.timestamp) }
-                RunFacts(
-                    sessionId = session.id,
-                    startedAt = session.startedAt,
-                    distanceMeters = session.distanceMeters ?: (marks.lastOrNull()?.meters ?: 0.0),
-                    fastest = RecordKind.entries.mapNotNull { kind ->
-                        kind.meters?.let { m ->
-                            BestEffort.fastestSecs(marks, active, m)
-                                // Faster than this is a GPS jump, not running
-                                ?.takeIf { it >= m / 1000 * FASTEST_SECS_PER_KM }
-                                ?.let { kind to it }
-                        }
-                    }.toMap()
-                )
-            }
+            .map { session -> cache.get(session, points[session.id] ?: 0) { factsOf(session) } }
+    }
+
+    private suspend fun factsOf(session: Session): RunFacts {
+        val route = sessionRepo.getRouteForSession(session.id)
+        val pauses = sessionRepo.getPauses(session.id)
+        val marks = RouteDistance.marks(route, pauses)
+        val clock = ActiveClock(session.startedAt, marks, pauses)
+        val active = clock.activeAtEach(marks.map { it.timestamp })
+        return RunFacts(
+            sessionId = session.id,
+            startedAt = session.startedAt,
+            distanceMeters = session.distanceMeters ?: (marks.lastOrNull()?.meters ?: 0.0),
+            fastest = RecordKind.entries.mapNotNull { kind ->
+                kind.meters?.let { m ->
+                    BestEffort.fastestSecs(marks, active, m)
+                        // Faster than this is a GPS jump, not running
+                        ?.takeIf { it >= m / 1000 * FASTEST_SECS_PER_KM }
+                        ?.let { kind to it }
+                }
+            }.toMap()
+        )
+    }
 
     companion object {
         private const val FASTEST_SECS_PER_KM = 150.0

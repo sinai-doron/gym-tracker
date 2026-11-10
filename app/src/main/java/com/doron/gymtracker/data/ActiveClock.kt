@@ -60,6 +60,30 @@ class ActiveClock(
         return (at - startedAt - paused).coerceAtLeast(0)
     }
 
+    /**
+     * [activeMs] at each of [times], in order, in one pass: what a run's records need at every
+     * move, where calling [activeMs] for each re-sorts every pause per point.
+     */
+    fun activeAtEach(times: List<Long>): List<Long> {
+        // A pause still open, or times past the last move, need activeMs's extra stretches
+        if (manualPauses.any { it.endedAt == null } || times.any { it > moves.last().timestamp } ||
+            times.zipWithNext().any { (a, b) -> b < a }
+        ) return times.map(::activeMs)
+        val stretches = pauses
+        var i = 0
+        var closed = 0L // paused time in stretches that ended before the current time
+        return times.map { at ->
+            if (at <= startedAt) return@map 0L
+            while (i < stretches.size && stretches[i].second <= at) {
+                val (a, b) = stretches[i]
+                closed += (b - maxOf(a, startedAt)).coerceAtLeast(0)
+                i++
+            }
+            val open = stretches.getOrNull(i)?.let { (a, _) -> (at - maxOf(a, startedAt)).coerceAtLeast(0) } ?: 0
+            (at - startedAt - closed - open).coerceAtLeast(0)
+        }
+    }
+
     companion object {
         const val PAUSE_AFTER_MS = 10_000L
         /** A slow walk; standing at a light while GPS drifts is far below it. */

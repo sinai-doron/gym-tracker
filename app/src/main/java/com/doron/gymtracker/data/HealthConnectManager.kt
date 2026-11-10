@@ -9,10 +9,12 @@ import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.ElevationGainedRecord
 import androidx.health.connect.client.records.ExerciseLap
 import androidx.health.connect.client.records.ExerciseRoute
+import androidx.health.connect.client.records.ExerciseRouteResult
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.records.metadata.DataOrigin
 import androidx.health.connect.client.records.metadata.Device
 import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
@@ -25,6 +27,7 @@ import com.doron.gymtracker.R
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.Period
 import java.time.ZoneId
 import javax.inject.Inject
@@ -231,17 +234,8 @@ class HealthConnectManager @Inject constructor(
         val c = client ?: return 0
         if (HealthPermission.getReadPermission(StepsRecord::class) !in granted()) return 0
         return try {
-            val now = Instant.now()
-            val startOfDay = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()
-            // aggregate() de-duplicates steps written by several apps (e.g. phone + watch);
-            // summing raw records double-counts them and is capped at one page of records
-            val response = c.aggregate(
-                AggregateRequest(
-                    metrics = setOf(StepsRecord.COUNT_TOTAL),
-                    timeRangeFilter = TimeRangeFilter.between(startOfDay, now)
-                )
-            )
-            response[StepsRecord.COUNT_TOTAL] ?: 0
+            val today = LocalDate.now()
+            stepsByDay(c, today.atStartOfDay(), LocalDateTime.now())[today] ?: 0
         } catch (e: Exception) {
             Log.w("HealthConnect", "Failed to read steps", e)
             0
@@ -249,22 +243,77 @@ class HealthConnectManager @Inject constructor(
     }
 
     /**
-     * Steps on each of [days] days from [from], de-duplicated across apps like today's count.
+     * Steps on each of [days] days from [from], counted once across apps like today's count.
      * Days without any data are missing; null when steps can't be read at all.
      */
     suspend fun readDailySteps(from: LocalDate, days: Int): Map<LocalDate, Long>? {
         val c = client ?: return null
         if (HealthPermission.getReadPermission(StepsRecord::class) !in granted()) return null
         return try {
-            c.aggregateGroupByPeriod(
-                AggregateGroupByPeriodRequest(
-                    metrics = setOf(StepsRecord.COUNT_TOTAL),
-                    timeRangeFilter = TimeRangeFilter.between(from.atStartOfDay(), from.plusDays(days.toLong()).atStartOfDay()),
-                    timeRangeSlicer = Period.ofDays(1)
-                )
-            ).associate { it.startTime.toLocalDate() to (it.result[StepsRecord.COUNT_TOTAL] ?: 0L) }
+            stepsByDay(c, from.atStartOfDay(), from.plusDays(days.toLong()).atStartOfDay())
         } catch (e: Exception) {
             Log.w("HealthConnect", "Failed to read daily steps", e)
+            null
+        }
+    }
+
+    /**
+     * Each day's steps from the fullest single app. Health Connect's own total adds apps it
+     * can't line up, e.g. the phone's steps and Samsung Health's copy of them: see [StepSources].
+     */
+    private suspend fun stepsByDay(c: HealthConnectClient, from: LocalDateTime, to: LocalDateTime): Map<LocalDate, Long> {
+        suspend fun perDay(origins: Set<DataOrigin>) = c.aggregateGroupByPeriod(
+            AggregateGroupByPeriodRequest(
+                metrics = setOf(StepsRecord.COUNT_TOTAL),
+                timeRangeFilter = TimeRangeFilter.between(from, to),
+                timeRangeSlicer = Period.ofDays(1),
+                dataOriginFilter = origins
+            )
+        )
+        val all = perDay(emptySet())
+        val origins = all.flatMap { it.result.dataOrigins }.toSet()
+        if (origins.size <= 1) return all.associate { it.startTime.toLocalDate() to (it.result[StepsRecord.COUNT_TOTAL] ?: 0L) }
+        return StepSources.perDay(origins.associate { origin ->
+            origin.packageName to perDay(setOf(origin)).associate { it.startTime.toLocalDate() to (it.result[StepsRecord.COUNT_TOTAL] ?: 0L) }
+        })
+    }
+
+    /**
+     * The routes of the runs and walks this app wrote since [sinceMillis], for [RunRouteRepair].
+     * An app reads what it wrote without asking; null when Health Connect can't be read.
+     */
+    suspend fun readOwnRunRoutes(sinceMillis: Long): List<RecordedRoute>? {
+        val c = client ?: return null
+        return try {
+            val sessions = mutableListOf<ExerciseSessionRecord>()
+            var page: String? = null
+            do {
+                val response = c.readRecords(
+                    ReadRecordsRequest(
+                        ExerciseSessionRecord::class,
+                        TimeRangeFilter.after(Instant.ofEpochMilli(sinceMillis)),
+                        dataOriginFilter = setOf(DataOrigin(context.packageName)),
+                        pageToken = page
+                    )
+                )
+                sessions += response.records
+                page = response.pageToken
+            } while (page != null)
+            sessions.mapNotNull { session ->
+                val route = (session.exerciseRouteResult as? ExerciseRouteResult.Data)?.exerciseRoute ?: return@mapNotNull null
+                RecordedRoute(session.startTime.toEpochMilli(), route.route.map {
+                    LocationPoint(
+                        latitude = it.latitude,
+                        longitude = it.longitude,
+                        speed = null,
+                        altitude = it.altitude?.inMeters,
+                        accuracy = it.horizontalAccuracy?.inMeters?.toFloat(),
+                        timestamp = it.time.toEpochMilli()
+                    )
+                })
+            }
+        } catch (e: Exception) {
+            Log.w("HealthConnect", "Failed to read routes", e)
             null
         }
     }

@@ -163,6 +163,15 @@ class SessionRepositoryImpl @Inject constructor(
         )
     }
 
+    override suspend fun replaceRoute(sessionId: Long, points: List<LocationPoint>) {
+        locationLogDao.replaceForSession(sessionId, points.map {
+            LocationLogEntity(0, sessionId, it.timestamp, it.latitude, it.longitude, it.speed, it.altitude, it.accuracy, it.bearing)
+        })
+    }
+
+    override suspend fun countRoutePoints(): Map<Long, Int> =
+        locationLogDao.countBySession().associate { it.sessionId to it.points }
+
     override suspend fun getRouteForSession(sessionId: Long): List<LocationPoint> =
         locationLogDao.getForSession(sessionId).map {
             LocationPoint(it.latitude, it.longitude, it.speed, it.altitude, it.accuracy, it.timestamp, it.bearing)

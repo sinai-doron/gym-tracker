@@ -3,6 +3,7 @@ package com.doron.gymtracker.ui.screens.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.doron.gymtracker.data.HealthConnectManager
+import com.doron.gymtracker.data.RunRouteRepair
 import com.doron.gymtracker.data.StepCounterManager
 import com.doron.gymtracker.data.WeatherRepository
 import com.doron.gymtracker.data.db.ActivityTypeMigration
@@ -104,13 +105,16 @@ class HomeViewModel @Inject constructor(
     private val weatherRepo: WeatherRepository,
     private val getProgramStatus: GetProgramStatusUseCase,
     private val settingsPrefs: SettingsPrefs,
-    private val trainingTypes: TrainingTypes
+    private val trainingTypes: TrainingTypes,
+    private val runRouteRepair: RunRouteRepair
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
+        // Here, as Health Connect is read only with the app in front
+        viewModelScope.launch { runRouteRepair.repair() }
         refresh()
         viewModelScope.launch {
             stepCounter.todaySteps.collect { steps ->

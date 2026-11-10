@@ -1,9 +1,12 @@
 package com.doron.gymtracker.data.db.entities
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "location_log")
+// Indexed by session: a run's points are read by session, and without it every read scanned
+// every point of every run (13 s to open a run, with years of runs imported)
+@Entity(tableName = "location_log", indices = [Index("sessionId")])
 data class LocationLogEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val sessionId: Long,

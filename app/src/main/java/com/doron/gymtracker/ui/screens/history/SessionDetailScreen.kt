@@ -75,6 +75,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import com.doron.gymtracker.ui.components.weightText
 import com.doron.gymtracker.ui.components.volumeText
@@ -213,6 +214,11 @@ class SessionDetailViewModel @Inject constructor(
                 note = session.note
             )
             _isLoading.value = false
+            // The records it holds come after: they need every run, which the page shouldn't wait for
+            if (session.type == "RUNNING") {
+                val held = getPersonalRecords().filter { it.sessionId == session.id }
+                _state.update { it?.copy(run = it.run?.copy(heldRecords = held)) }
+            }
         }
     }
 
@@ -246,7 +252,6 @@ class SessionDetailViewModel @Inject constructor(
             // No temperature saved: no weather, rather than a made-up 0°
             weather = details?.weatherTempC?.let { temp -> details.weatherCondition?.let { Weather(temp, 0, 0, it) } },
             calories = details?.calories,
-            heldRecords = if (session.type == "RUNNING") getPersonalRecords().filter { it.sessionId == session.id } else emptyList(),
             isFinished = true
         )
     }

@@ -6,6 +6,7 @@ import com.doron.gymtracker.data.db.ActivityTypeMigration
 import com.doron.gymtracker.data.db.ProgramMigration
 import com.doron.gymtracker.data.db.SyncMigration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
@@ -354,6 +355,18 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
         val parts = db.query(
             "SELECT points FROM sync_track_parts WHERE session_uuid = ? ORDER BY chunk", arrayOf<Any?>(sessionUuid)
         ).use { c -> buildList { while (c.moveToNext()) add(SyncJson.parseToJsonElement(c.getString(0)).jsonArray) } }
+        // Points recorded here and not uploaded yet are newer than anything the server holds: a
+        // run's first seconds, uploaded as the phone went into the pocket, come back on the next
+        // pull, which runs before the push. The push sends every point, and its echo rebuilds this.
+        val unsent = db.query(
+            "SELECT 1 FROM sync_changes WHERE entity = ? AND uuid = ?", arrayOf<Any?>(SyncPayloads.TRACK, sessionUuid)
+        ).use { it.moveToFirst() }
+        if (!unsent) rebuildPoints(sessionId, parts)
+        // What the server holds for this session's track: kept in step for uploads.
+        db.execSQL("INSERT OR REPLACE INTO sync_track_chunks VALUES (?, ?)", arrayOf<Any?>(sessionUuid, parts.size))
+    }
+
+    private fun rebuildPoints(sessionId: Long, parts: List<JsonArray>) {
         db.execSQL("DELETE FROM location_log WHERE sessionId = ?", arrayOf<Any?>(sessionId))
         parts.forEach { points ->
             points.forEach { p ->
@@ -370,8 +383,6 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
                 })
             }
         }
-        // What the server holds for this session's track: kept in step for uploads.
-        db.execSQL("INSERT OR REPLACE INTO sync_track_chunks VALUES (?, ?)", arrayOf<Any?>(sessionUuid, parts.size))
     }
 
     /** A user's own exercise, its names and muscles replaced by the server's. Never a built-in's id. */

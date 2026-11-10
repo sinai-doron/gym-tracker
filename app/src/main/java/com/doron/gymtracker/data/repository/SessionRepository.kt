@@ -47,6 +47,10 @@ interface SessionRepository {
     suspend fun getTracksForSession(sessionId: Long): List<TrackLog>
     suspend fun logLocation(sessionId: Long, point: LocationPoint)
     suspend fun getRouteForSession(sessionId: Long): List<LocationPoint>
+    /** How many GPS points each session has, without reading them; sessions with none are missing. */
+    suspend fun countRoutePoints(): Map<Long, Int>
+    /** Swaps a session's GPS points for [points]; queued for upload like any other change. */
+    suspend fun replaceRoute(sessionId: Long, points: List<LocationPoint>)
     suspend fun getRunDetails(sessionId: Long): RunDetails?
     suspend fun saveRunDetails(details: RunDetails)
     /** The pauses the runner asked for, in order. */

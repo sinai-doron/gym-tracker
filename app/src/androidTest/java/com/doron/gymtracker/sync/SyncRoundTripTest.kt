@@ -198,6 +198,42 @@ class SyncRoundTripTest {
         assertEquals(0L, a.count("SELECT count(*) FROM run_steps"))
     }
 
+    /**
+     * The app syncs when it goes to the background, so a run's first seconds get uploaded as the
+     * phone goes into the pocket. The server hands that upload back on the next pull, which comes
+     * before the push: it must not replace the whole run recorded since with those first points.
+     */
+    @Test
+    fun aRunsFirstSecondsComingBackFromTheServerDontReplaceTheRestOfIt() {
+        a.execSQL("INSERT INTO sessions (workoutId, startedAt, finishedAt, type, activityTypeId) VALUES ('RUNNING', 10000, NULL, 'RUNNING', 'run')")
+        val run = a.text("SELECT uuid FROM sessions")!!
+        fun fix(i: Int) = a.execSQL(
+            "INSERT INTO location_log (sessionId, timestamp, latitude, longitude) VALUES (1, ?, ?, 34.78)",
+            arrayOf<Any?>(10000L + i * 1000, 32.08 + i * 1e-5),
+        )
+        (0 until 5).forEach(::fix)
+
+        // Uploaded with 5 points, as SyncRepository.pushAll does it
+        val payloads = SyncPayloads(a)
+        val queued = a.count("SELECT changed_at FROM sync_changes WHERE entity = 'track' AND uuid = ?", run)
+        val firstUpload = payloads.changes(SyncPayloads.TRACK, run, queued, false)
+            .map { IncomingChange(it.entity, it.id, it.updatedAt, it.deleted, it.data) }
+        payloads.recordSentChunks(run, firstUpload.size)
+        a.execSQL("DELETE FROM sync_changes WHERE entity = 'track' AND uuid = ? AND changed_at = ?", arrayOf<Any?>(run, queued))
+
+        // The rest of the run, then the run ends and the next sync pulls that upload back
+        (5 until 2000).forEach(::fix)
+        a.execSQL("UPDATE sessions SET finishedAt = 2010000")
+        SyncPull(a).applyPage(firstUpload, 1)
+
+        assertEquals("every point recorded is still there", 2000L, a.count("SELECT count(*) FROM location_log"))
+        // ... and the push that follows the pull sends all of them
+        val pending = a.count("SELECT changed_at FROM sync_changes WHERE entity = 'track' AND uuid = ?", run)
+        val points = payloads.changes(SyncPayloads.TRACK, run, pending, false).filterNot { it.deleted }
+            .sumOf { it.data!!["points"]!!.let { p -> (p as kotlinx.serialization.json.JsonArray).size } }
+        assertEquals(2000, points)
+    }
+
     @Test
     fun deletionsArriveAndAreNotEchoed() {
         fillPhoneA()
