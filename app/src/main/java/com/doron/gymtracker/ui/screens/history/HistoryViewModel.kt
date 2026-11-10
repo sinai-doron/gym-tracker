@@ -92,7 +92,8 @@ class HistoryViewModel @Inject constructor(
     }
 
     fun prevMonth() { _currentMonth.update { it.minusMonths(1) } }
-    fun nextMonth() { _currentMonth.update { it.plusMonths(1) } }
+    // Nothing can be logged in the future, so the calendar ends at this month
+    fun nextMonth() { _currentMonth.update { minOf(it.plusMonths(1), YearMonth.now()) } }
 
     fun loadDaySessions(date: LocalDate) {
         viewModelScope.launch {

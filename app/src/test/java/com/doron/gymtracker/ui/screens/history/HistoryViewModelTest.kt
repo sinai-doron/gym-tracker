@@ -78,11 +78,21 @@ class HistoryViewModelTest {
     }
 
     @Test
-    fun `nextMonth increments month`() = runTest(testDispatcher) {
+    fun `nextMonth moves forward from a past month`() = runTest(testDispatcher) {
         val vm = makeVm()
-        val before = vm.currentMonth.value
+        val thisMonth = vm.currentMonth.value
+        vm.prevMonth()
+        vm.prevMonth()
         vm.nextMonth()
-        assertEquals(before.plusMonths(1), vm.currentMonth.value)
+        assertEquals(thisMonth.minusMonths(1), vm.currentMonth.value)
+    }
+
+    @Test
+    fun `nextMonth stops at this month, as nothing can be logged in the future`() = runTest(testDispatcher) {
+        val vm = makeVm()
+        val thisMonth = vm.currentMonth.value
+        vm.nextMonth()
+        assertEquals(thisMonth, vm.currentMonth.value)
     }
 
     @Test

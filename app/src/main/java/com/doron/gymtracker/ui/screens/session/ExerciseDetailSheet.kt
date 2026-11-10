@@ -5,13 +5,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -23,14 +29,18 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -53,6 +63,7 @@ import com.doron.gymtracker.ui.components.LocalWeightUnit
 import com.doron.gymtracker.data.format
 import com.doron.gymtracker.data.toKg
 import com.doron.gymtracker.data.floorToPlate
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun ExerciseDetailSheet(
@@ -62,10 +73,25 @@ fun ExerciseDetailSheet(
 ) {
     val state by viewModel.uiState.collectAsState()
 
+    val inputs = remember { BringIntoViewRequester() }
+    val ime = WindowInsets.ime
+    val density = LocalDensity.current
+    // A focused field alone would scroll up just far enough to show itself, leaving the other
+    // field and the buttons under the keyboard. The keys are what moves the block with it open.
+    LaunchedEffect(state.editingSetIndex, state.completedSets.size, state.restCountdownSecs != null) {
+        snapshotFlow { ime.getBottom(density) }.collectLatest { keyboardHeight ->
+            if (keyboardHeight > 0) {
+                withFrameNanos { } // let the new height reach layout first
+                inputs.bringIntoView()
+            }
+        }
+    }
+
     Column(modifier = Modifier
         .fillMaxWidth()
-        .padding(horizontal = 16.dp)
         .imePadding()
+        .verticalScroll(rememberScrollState())
+        .padding(horizontal = 16.dp)
     ) {
         ExerciseIllustration(exerciseId = state.exercise.id)
         Spacer(Modifier.height(12.dp))
@@ -152,7 +178,7 @@ fun ExerciseDetailSheet(
             )
             Spacer(Modifier.height(12.dp))
         }
-        run {
+        Column(modifier = Modifier.fillMaxWidth().bringIntoViewRequester(inputs)) {
             val editingSet = if (editIdx != null) state.completedSets.getOrNull(editIdx) else null
 
             when (state.exercise) {
@@ -212,9 +238,9 @@ fun ExerciseDetailSheet(
                     Text(stringResource(R.string.session_delete_set))
                 }
             }
-        }
 
-        Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(32.dp))
+        }
     }
 }
 

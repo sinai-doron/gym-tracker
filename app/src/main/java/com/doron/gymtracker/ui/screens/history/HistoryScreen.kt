@@ -150,7 +150,7 @@ private fun MonthHeader(month: YearMonth, onPrev: () -> Unit, onNext: () -> Unit
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
-            IconButton(onClick = onNext) {
+            IconButton(onClick = onNext, enabled = month < YearMonth.now()) {
                 Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(R.string.history_next_month))
             }
         }
