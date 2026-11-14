@@ -181,7 +181,7 @@ class SyncPayloads(private val db: SupportSQLiteDatabase) {
             }
         }
         "entry" -> row(
-            """SELECT s.uuid AS session_uuid, x.uuid AS exercise_uuid, e.libraryExerciseId FROM exercise_entries e
+            """SELECT s.uuid AS session_uuid, x.uuid AS exercise_uuid, e.libraryExerciseId, e.skipped, e.note FROM exercise_entries e
                JOIN sessions s ON s.id = e.sessionId
                JOIN exercise_definitions x ON x.id = e.exerciseId WHERE e.uuid = ?""",
             uuid,
@@ -190,7 +190,32 @@ class SyncPayloads(private val db: SupportSQLiteDatabase) {
                 put("sessionId", c.str("session_uuid"))
                 put("exerciseId", c.str("exercise_uuid"))
                 put("libraryExerciseId", c.strOrNull("libraryExerciseId"))
+                // Version 21 (doron-backend Task 55)
+                put("skipped", c.int("skipped") != 0)
+                put("note", c.strOrNull("note")?.take(NOTE_MAX))
             }
+        }
+        // Body weight and water, and their goals (version 21, doron-backend Task 56)
+        "weight" -> row("SELECT measuredAt, kg FROM weight_entries WHERE uuid = ?", uuid) { c ->
+            buildJsonObject { put("measuredAt", c.long("measuredAt")); put("kg", c.getDouble(c.getColumnIndexOrThrow("kg"))) }
+        }
+        "weight_goal" -> row("SELECT * FROM weight_goal WHERE uuid = ?", uuid) { c ->
+            buildJsonObject {
+                put("startKg", c.getDouble(c.getColumnIndexOrThrow("startKg")))
+                put("startAt", c.long("startAt"))
+                put("targetKg", c.getDouble(c.getColumnIndexOrThrow("targetKg")))
+                put("paceKgPerWeek", c.getDouble(c.getColumnIndexOrThrow("paceKgPerWeek")))
+            }
+        }
+        "water" -> row("SELECT drankAt, ml FROM water_entries WHERE uuid = ?", uuid) { c ->
+            buildJsonObject { put("drankAt", c.long("drankAt")); put("ml", c.int("ml")) }
+        }
+        "water_goal" -> row("SELECT * FROM water_goal WHERE uuid = ?", uuid) { c ->
+            buildJsonObject { put("dailyMl", c.int("dailyMl")); put("glassMl", c.int("glassMl")); put("bottleMl", c.int("bottleMl")) }
+        }
+        // The note kept on an exercise, known by the exercise's id (version 21)
+        "exercise_note" -> row("SELECT text FROM exercise_notes WHERE uuid = ?", uuid) { c ->
+            buildJsonObject { put("text", c.str("text").take(EXERCISE_NOTE_MAX)) }
         }
         // A set with its parts, in order (version 15 on).
         "set" -> row(
@@ -326,6 +351,9 @@ class SyncPayloads(private val db: SupportSQLiteDatabase) {
     companion object {
         const val TRACK = "track"
         const val TRACK_CHUNK_POINTS = 600
+        /** The server's limits on an entry's note and an exercise's (doron-backend's gym.entities.ts). */
+        const val NOTE_MAX = 1_000
+        const val EXERCISE_NOTE_MAX = 2_000
         val ROUTE_KINDS = setOf("route", "route_points", TRACK)
         val MUSIC_KINDS = setOf("song")
 

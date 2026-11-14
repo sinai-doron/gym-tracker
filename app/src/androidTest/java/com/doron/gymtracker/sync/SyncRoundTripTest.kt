@@ -234,6 +234,67 @@ class SyncRoundTripTest {
         assertEquals(2000, points)
     }
 
+    /** Version 21: an exercise skipped for the day with a note on it, and the note kept on an exercise. */
+    @Test
+    fun aSkippedExerciseItsNoteAndAnExercisesOwnNoteArrive() {
+        fillPhoneA()
+        a.execSQL("UPDATE exercise_entries SET skipped = 1, note = 'Left shoulder tight'")
+        val bench = "936c29b1-a11d-3212-9375-b4430e5930b2"
+        a.execSQL("INSERT INTO exercise_notes (exerciseId, text, uuid) VALUES (?, 'Seat on 4', ?)", arrayOf<Any?>(bench, bench))
+        assertEquals("the note is logged by its exercise's id", 1L,
+            a.count("SELECT count(*) FROM sync_changes WHERE entity = 'exercise_note' AND uuid = ?", bench))
+
+        SyncPull(b).applyPage(serverItemsFromA(), 1)
+        assertEquals("1|Left shoulder tight", b.text("SELECT skipped || '|' || note FROM exercise_entries"))
+        assertEquals("Seat on 4", b.text("SELECT text FROM exercise_notes WHERE exerciseId = ?", bench))
+        assertEquals("downloads are not logged back", 0L, b.count("SELECT count(*) FROM sync_changes"))
+
+        // An app from before version 21 sends the entry without them: what B has stays
+        val entry = serverItemsFromA().single { it.entity == "entry" }
+        val old = buildJsonObject {
+            entry.data!!.filterKeys { it != "skipped" && it != "note" }.forEach { (k, v) -> put(k, v) }
+        }
+        SyncPull(b).applyPage(listOf(entry.copy(updatedAt = entry.updatedAt + 1, data = old)), 2)
+        assertEquals("1|Left shoulder tight", b.text("SELECT skipped || '|' || note FROM exercise_entries"))
+
+        // Deleting the note on A deletes it on B
+        a.execSQL("DELETE FROM exercise_notes")
+        SyncPull(b).applyPage(serverItemsFromA().filter { it.entity == "exercise_note" }, 3)
+        assertEquals(0L, b.count("SELECT count(*) FROM exercise_notes"))
+    }
+
+    /** Version 21: weigh-ins, drinks and the two goals arrive; a goal stays one row; deletions follow. */
+    @Test
+    fun weighInsDrinksAndTheirGoalsArrive() {
+        a.execSQL("INSERT INTO weight_entries (measuredAt, kg) VALUES (1000, 82.4), (2000, 82.1)")
+        a.execSQL("INSERT INTO water_entries (drankAt, ml) VALUES (1500, 250), (2500, 500)")
+        a.execSQL(
+            "INSERT INTO weight_goal (id, startKg, startAt, targetKg, paceKgPerWeek, uuid) VALUES (1, 86.0, 500, 78.0, 0.5, ?)",
+            arrayOf<Any?>(com.doron.gymtracker.data.db.entities.WEIGHT_GOAL_UUID)
+        )
+        a.execSQL(
+            "INSERT INTO water_goal (id, dailyMl, glassMl, bottleMl, uuid) VALUES (1, 2900, 300, 750, ?)",
+            arrayOf<Any?>(com.doron.gymtracker.data.db.entities.WATER_GOAL_UUID)
+        )
+        SyncPull(b).applyPage(serverItemsFromA(), 1)
+
+        assertEquals("82.4,82.1", b.text("SELECT group_concat(kg) FROM (SELECT kg FROM weight_entries ORDER BY measuredAt)"))
+        assertEquals("250,500", b.text("SELECT group_concat(ml) FROM (SELECT ml FROM water_entries ORDER BY drankAt)"))
+        assertEquals("1|86.0|500|78.0|0.5", b.text("SELECT id || '|' || startKg || '|' || startAt || '|' || targetKg || '|' || paceKgPerWeek FROM weight_goal"))
+        assertEquals("1|2900|300|750", b.text("SELECT id || '|' || dailyMl || '|' || glassMl || '|' || bottleMl FROM water_goal"))
+        assertEquals("downloads are not logged back", 0L, b.count("SELECT count(*) FROM sync_changes"))
+
+        // A goal changed on A replaces B's: still one row
+        a.execSQL("UPDATE water_goal SET dailyMl = 3000")
+        SyncPull(b).applyPage(serverItemsFromA().filter { it.entity == "water_goal" }.map { it.copy(updatedAt = Long.MAX_VALUE / 4) }, 2)
+        assertEquals("1|3000", b.text("SELECT count(*) || '|' || max(dailyMl) FROM water_goal"))
+
+        // A drink removed on A goes from B too
+        a.execSQL("DELETE FROM water_entries WHERE ml = 250")
+        SyncPull(b).applyPage(serverItemsFromA().filter { it.entity == "water" }.map { it.copy(updatedAt = Long.MAX_VALUE / 4) }, 3)
+        assertEquals("500", b.text("SELECT group_concat(ml) FROM water_entries"))
+    }
+
     @Test
     fun deletionsArriveAndAreNotEchoed() {
         fillPhoneA()

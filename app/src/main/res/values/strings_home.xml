@@ -5,6 +5,9 @@
     <string name="home_achievements_earned">%1$d of %2$d</string>
     <string name="home_achievements_ok">Nice!</string>
     <string name="home_badges_title">Distance</string>
+    <string name="places_title">Places</string>
+    <string name="places_explain">A badge for your first run in each country, and in each US state.</string>
+    <string name="places_us_states">US states · %1$d of %2$d</string>
     <string name="home_badges_explain">Your first run to reach each distance</string>
 
     <!-- Home: next workout card -->

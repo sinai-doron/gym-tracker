@@ -21,10 +21,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.doron.gymtracker.R
 import kotlinx.coroutines.delay
 
+/** An exercise's pictures, shown in turn: web addresses, or images shipped with the app (drawable ids). */
 data class ExerciseImages(
-    val urls: List<String>
+    val urls: List<Any>
 )
 
 private val exerciseImageMap = mapOf(
@@ -44,6 +46,7 @@ private val exerciseImageMap = mapOf(
         "https://wger.de/media/exercise-images/41/Incline-bench-press-1.png",
         "https://wger.de/media/exercise-images/41/Incline-bench-press-2.png"
     )),
+    // Chest-supported row as the owner does it: on an incline bench with two dumbbells (wger 1283)
     "d1_e4a" to ExerciseImages(listOf(
         "https://wger.de/media/exercise-images/1283/e7262f70-7512-408a-8d00-4c499ef632fc.jpg"
     )),
@@ -66,10 +69,8 @@ private val exerciseImageMap = mapOf(
         "https://wger.de/media/exercise-images/1117/2555c4c3-a84d-47db-b83b-cbf721f12e45.png",
         "https://wger.de/media/exercise-images/1117/e74255c0-67a0-4309-b78d-2d79e6ff8c11.png"
     )),
-    "d1_e7" to ExerciseImages(listOf(
-        "https://wger.de/media/exercise-images/458/b7bd9c28-9f1d-4647-bd17-ab6a3adf5770.png",
-        "https://wger.de/media/exercise-images/458/902e6836-394e-458b-b94e-101d714294e2.png"
-    )),
+    // Plank: the owner's chosen picture, shipped with the app
+    "d1_e7" to ExerciseImages(listOf(R.drawable.exercise_plank)),
     // Day B — Legs
     "d2_e1" to ExerciseImages(listOf(
         "https://wger.de/media/exercise-images/1801/60043328-1cfb-4289-9865-aaf64d5aaa28.jpg",

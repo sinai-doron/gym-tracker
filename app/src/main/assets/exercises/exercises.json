@@ -336,6 +336,13 @@
      "With the width of the grip you can also control which part of the chest is trained more:",
      "wide grip: outer chest muscles",
      "narrow grip: inner chest muscles and triceps"
+    ],
+    "he": [
+     "לשכב על הספסל כך שהמוט נמצא ישירות מעל העיניים, הברכיים מעט כפופות וכפות הרגליים יציבות על הרצפה. להתרכז, לנשום עמוק ולאחוז במוט באחיזה רחבה מרוחב הכתפיים. להוריד את המוט לאט עד שהוא נוגע קלות בחזה בגובה הפטמות, ולדחוף אותו בחזרה למעלה.",
+     "כשמתאמנים עם משקל כבד, מומלץ להיעזר בשומר (ספוטר) שיוכל לעזור להרים את המוט אם לא מצליחים לבד.",
+     "רוחב האחיזה קובע גם איזה חלק של החזה עובד יותר:",
+     "אחיזה רחבה: החלק החיצוני של שרירי החזה",
+     "אחיזה צרה: החלק הפנימי של שרירי החזה והיד האחורית"
     ]
    },
    "source": {
@@ -417,6 +424,14 @@
      "Pulling phase (concentric):",
      "Pull the bar down to your upper chest or collarbone area by driving your elbows down and back.",
      "Keep your chest lifted and squeeze your shoulder blades together at the bottom."
+    ],
+    "he": [
+     "תנוחת התחלה:",
+     "הידיים ישרות מעל הראש, עם תחושת מתיחה בשרירי הגב הרחבים.",
+     "להחזיק את הכתפיים למטה (בלי למשוך אותן לכיוון האוזניים).",
+     "שלב המשיכה (קונצנטרי):",
+     "למשוך את המוט עד לחלק העליון של החזה או לאזור עצם הבריח, תוך הובלת המרפקים למטה ולאחור.",
+     "לשמור על חזה מורם ולכווץ את השכמות זו לזו בתחתית התנועה."
     ]
    },
    "source": {
@@ -495,6 +510,14 @@
      "Anatomical Stabilization: Plant your feet firmly on the floor. Retract your scapulas (bring your shoulder blades together and press them into the bench) to protect your shoulders and stabilize the load.",
      "Eccentric Phase (Lowering): Lower the dumbbells slowly and in a controlled manner toward the upper part of your chest. Your elbows should not splay out to the sides (90°); maintain a safe angle of about 45 to 60 degrees relative to your torso.",
      "Concentric Phase (Lift): Push the dumbbells vertically upward as you exhale. Follow a slightly converging path (without letting them touch at the top). Stop the movement just before locking out your elbows to maintain muscle tension in the upper pectoral."
+    ],
+    "he": [
+     "זוהי וריאציה של לחיצת החזה בספסל שטוח שנועדה להדגיש את הראש העליון (הבריחי) של שריר החזה הגדול. הטיית פלג הגוף משנה את זווית הדחיפה ומעבירה יותר עומס לחזה העליון ולכתפיים, מה שעוזר להשיג פיתוח מאוזן, אסתטי ותלת-ממדי יותר של פלג הגוף העליון.",
+     "כיוון הספסל והכנה: לכוון את הספסל לשיפוע של 30 עד 45 מעלות (שיפוע של יותר מ-45° מעמיס יותר מדי על הכתפיים ומפחית את הגירוי לחזה). לשבת עם משקולת על כל ירך.",
+     "תנוחת התחלה: להישען לאחור עם הגב על הספסל, ובעזרת הברכיים, אחת אחרי השנייה, להעלות את המשקולות לגובה הכתפיים.",
+     "ייצוב: להציב את כפות הרגליים היטב על הרצפה. לקרב את השכמות זו לזו ולהצמיד אותן לספסל כדי להגן על הכתפיים ולייצב את המשקל.",
+     "שלב אקסצנטרי (הורדה): להוריד את המשקולות לאט ובשליטה לכיוון החלק העליון של החזה. המרפקים לא צריכים להיפתח לצדדים (90°); לשמור על זווית בטוחה של כ-45 עד 60 מעלות ביחס לגוף.",
+     "שלב קונצנטרי (הרמה): לדחוף את המשקולות אנכית למעלה תוך כדי נשיפה, במסלול שמתקרב מעט למרכז (בלי שהמשקולות ייגעו זו בזו למעלה). לעצור רגע לפני נעילת המרפקים כדי לשמור על מתח בחזה העליון."
     ]
    },
    "source": {
@@ -688,6 +711,9 @@
    "instructions": {
     "en": [
      "With dumbbells in hand, bend at the hip until hands hang just below the knees (similar to straight-legged-deadlift starting position). Keep upper body angle constant while contracting your lats to pull you ellbows back pinching the shoulder blades at the top. Try not to stand up with every rep, check hands go below knees on every rep."
+    ],
+    "he": [
+     "עם המשקולות ביד, להתכופף מהירך עד שהידיים תלויות מעט מתחת לברכיים (בדומה לתנוחת ההתחלה של דדליפט ברגליים ישרות). לשמור על זווית קבועה של פלג הגוף העליון ולכווץ את שרירי הגב הרחבים כדי למשוך את המרפקים לאחור, עם כיווץ השכמות למעלה. לא להזדקף בכל חזרה, ולוודא שהידיים יורדות מתחת לברכיים בכל חזרה."
     ]
    },
    "source": {
@@ -763,6 +789,9 @@
    "instructions": {
     "en": [
      "seated machine, straight back, slow exercise"
+    ],
+    "he": [
+     "בישיבה במכונה, עם גב ישר, בתנועה איטית."
     ]
    },
    "source": {
@@ -836,6 +865,9 @@
    "instructions": {
     "en": [
      "Adjust the cable machine: Set the pulley to the lowest setting possible. Choose your handles: You can use neutral grip handles (palms facing each other) or straight handles depending on your preference. Neutral grip might be easier on your wrists. Stand with proper form: Stand with your feet shoulder-width apart, knees slightly bent, and core engaged. Maintain a slight arch in your lower back throughout the exercise. Grip the handles: Grab the handles with your chosen grip and step back a small step or two until there's slight tension on the cables. Initiate the movement: Keep your elbows slightly bent throughout the exercise. Imagine you're giving someone a big hug. Squeeze your chest muscles as you bring your hands together in front of your chest. Control the movement: Focus on squeezing your chest muscles rather than using your arms to pull the handles. Peak contraction: Briefly hold the squeeze at the top of the movement with your hands together at chest level. Return slowly: Slowly release the tension and return the handles back down to the starting position with your arms slightly extended but not locked out."
+    ],
+    "he": [
+     "כיוון המכונה: לכוון את הפולי לנקודה הנמוכה ביותר. בחירת ידיות: אפשר להשתמש בידיות לאחיזה ניטרלית (כפות הידיים פונות זו לזו) או בידיות ישרות, לפי העדפה; אחיזה ניטרלית עשויה להיות נוחה יותר לשורש כף היד. עמידה נכונה: לעמוד עם רגליים ברוחב הכתפיים, ברכיים מעט כפופות וליבה מכווצת, ולשמור על קשת קלה בגב התחתון לאורך כל התרגיל. אחיזה בידיות: לאחוז בידיות באחיזה שבחרתם ולצעוד צעד או שניים לאחור עד שיש מתח קל בכבלים. תחילת התנועה: לשמור על מרפקים מעט כפופים לאורך כל התרגיל. לדמיין שמחבקים מישהו חיבוק גדול, ולכווץ את שרירי החזה תוך כדי קירוב הידיים זו לזו מול החזה. שליטה בתנועה: להתמקד בכיווץ שרירי החזה ולא במשיכה עם הידיים. כיווץ שיא: להחזיק לרגע את הכיווץ בראש התנועה, כשהידיים צמודות בגובה החזה. חזרה איטית: לשחרר לאט את המתח ולהחזיר את הידיות למטה לתנוחת ההתחלה, עם ידיים מעט מושטות אך לא נעולות."
     ]
    },
    "source": {
@@ -915,6 +947,13 @@
      "Roll the shoulders back and down. Squeeze them together as you row, thinking about pinching a pencil in between them. As you do this, pull the handle back towards you, landing right above your belly button.",
      "Pause here for a moment before returning the handle, still squeezing the shoulder blades. Once you've returned the weight to the stack, then allow the shoulder blades to relax, without pulling the torso forward.",
      "Repeat the movement."
+    ],
+    "he": [
+     "לשבת במכונה עם כפות רגליים יציבות, מעט רחב מרוחב הכתפיים. ללחוץ דרך העקבים ולכווץ את הישבן. לאחוז בידית הכבל.",
+     "לשבת זקוף עם כיפוף קל בברכיים. להדק את שרירי הבטן והגב התחתון כדי לשמור על פלג גוף עליון ניצב לרצפה.",
+     "לגלגל את הכתפיים אחורה ולמטה. לכווץ את השכמות זו לזו תוך כדי החתירה, כאילו מחזיקים עיפרון ביניהן. במקביל למשוך את הידית לכיוון הגוף, עד מעט מעל הטבור.",
+     "לעצור כאן לרגע לפני החזרת הידית, תוך המשך כיווץ השכמות. רק אחרי שהמשקל חזר למקומו, לשחרר את השכמות, בלי להימשך קדימה עם פלג הגוף.",
+     "לחזור על התנועה."
     ]
    },
    "source": {
@@ -1052,6 +1091,10 @@
     "en": [
      "Get into a position on the floor supporting your weight on your forearms and toes. Arms are bent and directly below the shoulder.",
      "Keep your body straight at all times and hold this position as long as possible. To increase difficulty an arm or leg can be raised while performing this exercise."
+    ],
+    "he": [
+     "להיכנס לתנוחה על הרצפה כשמשקל הגוף נשען על האמות ועל קצות האצבעות. הידיים כפופות והמרפקים ישירות מתחת לכתפיים.",
+     "לשמור על גוף ישר כל הזמן ולהחזיק את התנוחה כמה שיותר זמן. כדי להקשות, אפשר להרים יד או רגל במהלך התרגיל."
     ]
    },
    "source": {
@@ -1129,6 +1172,9 @@
    "instructions": {
     "en": [
      "Place a barbell in a rack just below shoulder-height. Dip under the bar to put it behind the neck across the top of the back, and grip the bar with the hands wider than shoulder-width apart. Lift the chest up and squeeze the shoulder blades together to keep the straight back throughout the entire movement. Stand up to bring the bar off the rack and step backwards, then place the feet so that they are a little wider than shoulder-width apart. Sit back into hips and keep the back straight and the chest up, squatting down so the hips are below the knees. From the bottom of the squat, press feet into the ground and push hips forward to return to the top of the standing position."
+    ],
+    "he": [
+     "להניח מוט במתקן מעט מתחת לגובה הכתפיים. להיכנס מתחת למוט ולהניח אותו מאחורי הצוואר על החלק העליון של הגב, ולאחוז בו בידיים רחבות מרוחב הכתפיים. להרים את החזה ולכווץ את השכמות זו לזו כדי לשמור על גב ישר לאורך כל התנועה. להזדקף כדי להוריד את המוט מהמתקן, לצעוד לאחור ולהציב את כפות הרגליים מעט רחב מרוחב הכתפיים. לשבת לאחור מהאגן, עם גב ישר וחזה מורם, ולרדת עד שהאגן נמוך מהברכיים. מתחתית הסקוואט, ללחוץ עם כפות הרגליים ברצפה ולדחוף את האגן קדימה כדי לחזור לעמידה."
     ]
    },
    "source": {
@@ -1201,9 +1247,8 @@
     "restS": 120
    },
    "instructions": {
-    "en": [
-     "DL from top to pos 2: https://www.youtube.com/watch?v=WtWtjViRsKo"
-    ]
+    "en": [],
+    "he": []
    },
    "source": {
     "name": "wger",
@@ -1276,6 +1321,9 @@
    "instructions": {
     "en": [
      "This exercise involves holding a dumbbell in each hand and bending forward at the hips while keeping the back straight, then returning to a standing position. It primarily targets the hamstrings and glutes."
+    ],
+    "he": [
+     "מחזיקים משקולת בכל יד ומתכופפים קדימה מהאגן תוך שמירה על גב ישר, ואז חוזרים לעמידה. התרגיל עובד בעיקר על שרירי הירך האחורית והישבן."
     ]
    },
    "source": {
@@ -1350,6 +1398,9 @@
    "instructions": {
     "en": [
      "The Bulgarian split squat consists of performing a squat on one leg with the rear foot resting on a raised platform. Elevating your back leg on a bench creates instability and increases the range of motion of the exercise."
+    ],
+    "he": [
+     "סקוואט בולגרי הוא סקוואט על רגל אחת כשכף הרגל האחורית מונחת על משטח מוגבה. הרמת הרגל האחורית על ספסל יוצרת חוסר יציבות ומגדילה את טווח התנועה של התרגיל."
     ]
    },
    "source": {
@@ -1429,6 +1480,12 @@
      "The Stride: Take a wide step forward with your right leg.",
      "The Descent: Lower your hips until both knees are bent at approximately 90-degree angles.",
      "The Transition: Drive through your front heel to stand up, bringing your back foot forward to step directly into the next lunge."
+    ],
+    "he": [
+     "תנוחת התחלה: לעמוד עם רגליים ברוחב האגן, הידיים על המותניים או מחזיקות משקולות לצד הגוף.",
+     "הצעד: לצעוד צעד רחב קדימה עם הרגל הימנית.",
+     "הירידה: להוריד את האגן עד ששתי הברכיים כפופות בזווית של כ-90 מעלות.",
+     "המעבר: לדחוף דרך העקב של הרגל הקדמית כדי לקום, ולהביא את הרגל האחורית קדימה ישר אל הלאנג' הבא."
     ]
    },
    "source": {
@@ -1499,6 +1556,9 @@
    "instructions": {
     "en": [
      "The leg extension is a resistance weight training exercise that targets the quadriceps muscle in the legs. The exercise is done using a machine called the Leg Extension Machine. There are various manufacturers of these machines and each one is slightly different. Most gym and weight rooms will have the machine in their facility. The leg extension is an isolated exercise targeting one specific muscle group, the quadriceps. It should not be considered as a total leg workout, such as the squat or deadlift. The exercise consists of bending the leg at the knee and extending the legs, then lowering them back to the original position."
+    ],
+    "he": [
+     "פשיטת ברכיים היא תרגיל התנגדות שמכוון לשריר הארבע-ראשי של הירך. התרגיל מבוצע במכונה ייעודית לפשיטת ברכיים; יש יצרנים שונים וכל מכונה שונה מעט, ורוב חדרי הכושר מחזיקים מכונה כזו. זהו תרגיל מבודד שמכוון לקבוצת שרירים אחת, הארבע-ראשי, ואין לראות בו אימון רגליים מלא כמו סקוואט או דדליפט. בתרגיל מכופפים את הרגליים בברך ופושטים אותן, ואז מורידים אותן חזרה לתנוחת ההתחלה."
     ]
    },
    "source": {
@@ -1571,6 +1631,9 @@
    "instructions": {
     "en": [
      "The leg curl, also known as the hamstring curl, is an isolation exercise that targets the hamstring muscles. The exercise involves flexing the lower leg against resistance towards the buttocks. Other exercises that can be used to strengthen the hamstrings are the glute-ham raise and the deadlift."
+    ],
+    "he": [
+     "כפיפת ברכיים היא תרגיל מבודד שמכוון לשרירי הירך האחורית. בתרגיל מכופפים את השוק כנגד התנגדות לכיוון הישבן. תרגילים נוספים לחיזוק הירך האחורית הם Glute-ham raise ודדליפט."
     ]
    },
    "source": {
@@ -1641,6 +1704,9 @@
    "instructions": {
     "en": [
      "Starting Position: Sit on the machine with your knees inward and against the pads. Pull the pin to release the pads. Grab the handles on the sides.b"
+    ],
+    "he": [
+     "תנוחת התחלה: לשבת במכונה כשהברכיים פונות פנימה ונשענות על הכריות. למשוך את הפין כדי לשחרר את הכריות, ולאחוז בידיות שבצדדים."
     ]
    },
    "source": {
@@ -1777,6 +1843,9 @@
    "instructions": {
     "en": [
      "Lay down on your back a soft surface, the feet are on the floor. Ask a partner or use some other help (barbell, etc.) to keep them fixed, your hands are behind your head. From this position move your upper body up till your head or elbows touch your knees. Do this movement by rolling up your back."
+    ],
+    "he": [
+     "לשכב על הגב על משטח רך, כפות הרגליים על הרצפה. לבקש מבן זוג לאימון או להיעזר במשהו אחר (מוט וכדומה) כדי לקבע אותן, והידיים מאחורי הראש. מהתנוחה הזו להרים את פלג הגוף העליון עד שהראש או המרפקים נוגעים בברכיים, תוך גלגול הגב."
     ]
    },
    "source": {
@@ -1850,6 +1919,9 @@
    "instructions": {
     "en": [
      "The 90° leg raise on the bar is a very intense exercise that involves all the abdominal muscles."
+    ],
+    "he": [
+     "הרמת רגליים ל-90° בתלייה על מוט היא תרגיל אינטנסיבי מאוד שמערב את כל שרירי הבטן."
     ]
    },
    "source": {
@@ -1923,6 +1995,9 @@
    "instructions": {
     "en": [
      "Sit on a bench, the back rest should be almost vertical. Take two dumbbells and bring them up to shoulder height, the palms and the elbows point during the whole exercise to the front. Press the weights up, at the highest point they come very near but don't touch. Go slowly down and repeat."
+    ],
+    "he": [
+     "לשבת על ספסל עם משענת כמעט אנכית. לקחת שתי משקולות ולהעלות אותן לגובה הכתפיים; כפות הידיים והמרפקים פונים קדימה לאורך כל התרגיל. ללחוץ את המשקולות למעלה, כך שבנקודה הגבוהה הן מתקרבות מאוד זו לזו אבל לא נוגעות. לרדת לאט ולחזור על התנועה."
     ]
    },
    "source": {
@@ -1996,6 +2071,9 @@
    "instructions": {
     "en": [
      "This exercise works the deltoid muscle of the shoulder. The movement starts with the arms straight, and the hands holding weights at the sides or in front of the body. Body is in a slight forward-leaning position with hips and knees bent a little. Arms are kept straight or slightly bent, and raised through an arc of movement in the coronal plane that terminates when the hands are at approximately shoulder height. Weights are lowered to the starting position, completing one rep. When using a cable machine the individual stands with the coronal plane in line with the pulley, which is at or near the ground.[9] The exercise can be completed one shoulder at a time (with the other hand used to stabilize the body against the weight moved), or with both hands simultaneously if two parallel pulleys are available."
+    ],
+    "he": [
+     "התרגיל עובד על שריר הכתף (הדלתא). מתחילים עם ידיים ישרות, כשהידיים מחזיקות משקולות לצד הגוף או מולו. הגוף נוטה מעט קדימה, עם כיפוף קל באגן ובברכיים. הידיים ישרות או מעט כפופות, ומורמות בקשת לצדדים עד שהן מגיעות בערך לגובה הכתפיים. מורידים את המשקולות חזרה לתנוחת ההתחלה, וזו חזרה אחת. בביצוע עם כבל, עומדים בצד לפולי שנמצא בגובה הרצפה או קרוב אליה. אפשר לבצע כתף אחת בכל פעם (כשהיד השנייה מייצבת את הגוף), או בשתי הידיים יחד אם יש שני פולים מקבילים."
     ]
    },
    "source": {
@@ -2070,6 +2148,10 @@
     "en": [
      "Lift with your elbows leading, not your hands.",
      "Don’t shrug your shoulders; keep traps quiet."
+    ],
+    "he": [
+     "להרים כשהמרפקים מובילים את התנועה, לא כפות הידיים.",
+     "לא למשוך את הכתפיים למעלה; לשמור על הטרפזים רגועים."
     ]
    },
    "source": {
@@ -2213,6 +2295,13 @@
      "Retract the scapulae (squeeze your partner's finger with your shoulder blades) and pull the center of the rope slightly up towards the face. A good cue is to think about pulling the ends of the rope apart, not just pulling back.",
      "As you near your face, externally rotate so your knuckles are facing the ceiling.",
      "Hold for one second at the top position and slowly lower."
+    ],
+    "he": [
+     "לחבר חבל לפולי שמכוון בערך לגובה החזה.",
+     "לצעוד לאחור כך שהמשקל מוחזק כשהידיים מושטות לגמרי, ולעמוד בעמידה מדורגת (רגל אחת קדימה). לכופף מעט את הברכיים לבסיס יציב.",
+     "לקרב את השכמות זו לזו (כאילו לוחצים ביניהן אצבע של בן זוג) ולמשוך את מרכז החבל מעט למעלה לכיוון הפנים. טיפ טוב: לחשוב על פירוק קצוות החבל זה מזה, ולא רק על משיכה לאחור.",
+     "כשמתקרבים לפנים, לסובב את הידיים החוצה כך שפרקי האצבעות פונים לתקרה.",
+     "להחזיק שנייה אחת בתנוחה העליונה ולהחזיר לאט."
     ]
    },
    "source": {
@@ -2286,6 +2375,10 @@
     "en": [
      "Hold the Barbell shoulder-wide, the back is straight, the shoulders slightly back, the arms are streched. Bend the arms, bringing the weight up, with a fast movement. Without pausing, let down the bar with a slow and controlled movement.",
      "Don't allow your body to swing during the exercise, all work is done by the biceps, which are the only mucles that should move (pay attention to the elbows)."
+    ],
+    "he": [
+     "להחזיק את המוט ברוחב הכתפיים, גב ישר, כתפיים מעט לאחור וידיים ישרות. לכופף את הידיים ולהעלות את המשקל בתנועה מהירה. בלי לעצור, להוריד את המוט בתנועה איטית ומבוקרת.",
+     "לא לתת לגוף להתנדנד במהלך התרגיל; את כל העבודה עושה היד הקדמית, והיא היחידה שאמורה לזוז (לשים לב למרפקים)."
     ]
    },
    "source": {
@@ -2363,6 +2456,12 @@
      "Curl: Lift the weights toward your shoulders while maintaining the neutral grip (like holding a hammer).",
      "Squeeze: Contract the biceps at the top without moving your elbows forward.",
      "Lower: Slowly return to the starting position with full control."
+    ],
+    "he": [
+     "התחלה: להחזיק משקולות לצד הגוף, כפות הידיים פונות לגוף.",
+     "כפיפה: להרים את המשקולות לכיוון הכתפיים תוך שמירה על אחיזה ניטרלית (כמו אחיזה בפטיש).",
+     "כיווץ: לכווץ את היד הקדמית למעלה בלי להזיז את המרפקים קדימה.",
+     "הורדה: לחזור לאט ובשליטה מלאה לתנוחת ההתחלה."
     ]
    },
    "source": {
@@ -2433,6 +2532,9 @@
    "instructions": {
     "en": [
      "Triceps pushdown on cable using lat bar."
+    ],
+    "he": [
+     "יד אחורית בכבל עם מוט פולי."
     ]
    },
    "source": {
@@ -2506,6 +2608,12 @@
      "Grip: Hold the rope with palms facing each other and elbows tucked tight to your ribs.",
      "Execution: Push the rope down until arms are fully straight, pulling the ends apart at the bottom.",
      "Control: Keep upper arms still and return to the start with a slow, controlled motion."
+    ],
+    "he": [
+     "עמידה: לעמוד מול הכבל, רגליים ברוחב הכתפיים, עם הטיה קלה קדימה.",
+     "אחיזה: להחזיק את החבל כשכפות הידיים פונות זו לזו והמרפקים צמודים לצלעות.",
+     "ביצוע: לדחוף את החבל למטה עד שהידיים ישרות לגמרי, ולפתוח את קצות החבל לצדדים בתחתית.",
+     "שליטה: לשמור על הזרועות העליונות במקום ולחזור להתחלה בתנועה איטית ומבוקרת."
     ]
    },
    "source": {
@@ -2578,6 +2686,9 @@
    "instructions": {
     "en": [
      "Bicep Curls using cables. Can be seated or standing"
+    ],
+    "he": [
+     "כפיפות מרפקים ליד קדמית בכבל. אפשר בישיבה או בעמידה."
     ]
    },
    "source": {
@@ -2649,6 +2760,10 @@
     "en": [
      "Position one dumbbell over head with both hands under inner plate (heart shaped grip).",
      "With elbows over head, lower forearm behind upper arm by flexing elbows. Flex wrists at bottom to avoid hitting dumbbell on back of neck. Raise dumbbell over head by extending elbows while hyperextending wrists. Return and repeat."
+    ],
+    "he": [
+     "להחזיק משקולת אחת מעל הראש בשתי הידיים, מתחת לצלחת הפנימית (אחיזה בצורת לב).",
+     "כשהמרפקים מעל הראש, להוריד את האמה אל מאחורי הזרוע העליונה על ידי כיפוף המרפקים. לכופף את שורשי כף היד בתחתית כדי שהמשקולת לא תפגע בעורף. להרים את המשקולת מעל הראש על ידי יישור המרפקים, תוך הטיית שורשי כף היד לאחור. לחזור על התנועה."
     ]
    },
    "source": {
@@ -2722,6 +2837,9 @@
    "instructions": {
     "en": [
      "Grab half your body weight in each hand and walk."
+    ],
+    "he": [
+     "לקחת בכל יד משקל של חצי ממשקל הגוף וללכת."
     ]
    },
    "source": {
@@ -2798,8 +2916,14 @@
      "The “Leg Drive” and Posture: Plant your feet firmly on the floor. Retract your shoulder blades (press them together against the bench) and maintain a slight natural lumbar curve.",
      "Starting Position: Push the dumbbells toward the ceiling. Your wrists should be aligned with your elbows. Rotate the dumbbells slightly inward (about 45 degrees) so that your elbows do not splay out too far to the sides, thereby protecting your shoulders.",
      "Eccentric Phase (Lowering): Lower the dumbbells in a controlled manner toward the sides of your chest. Your elbows should lower at an angle of about 45–60 degrees relative to your body. Feel the stretch in the lower part of your chest.",
-     "Concentric Phase (Lift): Push the weight upward in a slight arc (toward the center), without letting the dumbbells collide at the top or fully locking out your elbows to maintain muscle tension. Exhale as you lift.",
-     "Translated with DeepL.com (free version)"
+     "Concentric Phase (Lift): Push the weight upward in a slight arc (toward the center), without letting the dumbbells collide at the top or fully locking out your elbows to maintain muscle tension. Exhale as you lift."
+    ],
+    "he": [
+     "הכנה ותנוחת התחלה: לשבת בקצה ספסל שטוח עם משקולת עומדת על כל ירך. להישען לאחור בזהירות תוך כדי דחיפת המשקולות לכיוון החזה בעזרת הברכיים.",
+     "דחיפת רגליים ויציבה: להציב את כפות הרגליים היטב על הרצפה. לקרב את השכמות זו לזו ולהצמיד אותן לספסל, ולשמור על קשת טבעית קלה בגב התחתון.",
+     "תנוחת התחלה: לדחוף את המשקולות לכיוון התקרה. שורשי כף היד צריכים להיות בקו אחד עם המרפקים. לסובב את המשקולות מעט פנימה (כ-45 מעלות) כדי שהמרפקים לא ייפתחו יותר מדי לצדדים, וכך להגן על הכתפיים.",
+     "שלב אקסצנטרי (הורדה): להוריד את המשקולות בשליטה לכיוון צדי החזה. המרפקים יורדים בזווית של כ-45–60 מעלות ביחס לגוף. להרגיש את המתיחה בחלק התחתון של החזה.",
+     "שלב קונצנטרי (הרמה): לדחוף את המשקל למעלה בקשת קלה (לכיוון המרכז), בלי שהמשקולות יתנגשו למעלה ובלי לנעול את המרפקים לגמרי, כדי לשמור על מתח בשריר. לנשוף בזמן ההרמה."
     ]
    },
    "source": {
@@ -2874,6 +2998,12 @@
      "Descent: Lower the bar with control to your lower chest.",
      "Form: Keep your elbows tucked in tight against your torso—do not let them flare out.",
      "Ascent: Press the bar straight back up, squeezing your triceps at the top."
+    ],
+    "he": [
+     "הכנה: לשכב על הספסל ולאחוז במוט ברוחב הכתפיים (צר יותר מלחיצת חזה רגילה).",
+     "ירידה: להוריד את המוט בשליטה לחלק התחתון של החזה.",
+     "טכניקה: לשמור על המרפקים צמודים לגוף, בלי לתת להם להיפתח לצדדים.",
+     "עלייה: ללחוץ את המוט ישר למעלה ולכווץ את היד האחורית בראש התנועה."
     ]
    },
    "source": {
@@ -2943,6 +3073,9 @@
    "instructions": {
     "en": [
      "Lay down on a decline bench, the bar should be directly above your eyes, the knees are somewhat angled and the feet are firmly on the floor. Concentrate, breath deeply and grab the bar more than shoulder wide. Bring it slowly down till it briefly touches your chest at the height of your nipples. Push the bar up."
+    ],
+    "he": [
+     "לשכב על ספסל בשיפוע שלילי כך שהמוט נמצא ישירות מעל העיניים, הברכיים מעט כפופות וכפות הרגליים יציבות. להתרכז, לנשום עמוק ולאחוז במוט באחיזה רחבה מרוחב הכתפיים. להוריד את המוט לאט עד שהוא נוגע קלות בחזה בגובה הפטמות, ולדחוף אותו בחזרה למעלה."
     ]
    },
    "source": {
@@ -3012,6 +3145,9 @@
    "instructions": {
     "en": [
      "Take two dumbbells and sit on a decline bench, the feet are firmly on the floor, the head is resting the bench. Hold the weights next to the chest, at the height of your nipples and press them up till the arms are stretched. Let the weight slowly and controlled down."
+    ],
+    "he": [
+     "לקחת שתי משקולות ולשבת על ספסל בשיפוע שלילי, כפות הרגליים מקובעות היטב והראש נשען על הספסל. להחזיק את המשקולות ליד החזה בגובה הפטמות וללחוץ אותן למעלה עד שהידיים ישרות. להוריד את המשקל לאט ובשליטה."
     ]
    },
    "source": {
@@ -3082,6 +3218,9 @@
    "instructions": {
     "en": [
      "Take two dumbbells and lay on a bench, make sure the feet are firmly on the ground and your back is not arched, but has good contact with the bench. The arms are stretched in front of you, about shoulder wide. Bend now the arms a bit and let them down with a half-circle movement to the side. Without changing the angle of the elbow bring them in a fluid movement back up."
+    ],
+    "he": [
+     "לקחת שתי משקולות ולשכב על ספסל; לוודא שכפות הרגליים יציבות על הרצפה ושהגב לא מקושת אלא צמוד היטב לספסל. הידיים מושטות מולכם, בערך ברוחב הכתפיים. לכופף מעט את הידיים ולהוריד אותן בתנועת חצי עיגול לצדדים. בלי לשנות את זווית המרפק, להחזיר אותן למעלה בתנועה רציפה."
     ]
    },
    "source": {
@@ -3150,6 +3289,9 @@
    "instructions": {
     "en": [
      "Use inclined bench. Hold dumbbells straight out to your sides, elbows slightly bent. Bring arms together above you, keeping angle of elbows fixed."
+    ],
+    "he": [
+     "להשתמש בספסל בשיפוע חיובי. להחזיק את המשקולות כשהידיים פתוחות לצדדים והמרפקים מעט כפופים. לקרב את הידיים זו לזו מעליכם, תוך שמירה על זווית קבועה במרפקים."
     ]
    },
    "source": {
@@ -3220,6 +3362,9 @@
    "instructions": {
     "en": [
      "Begin with cables at about shoulder height, one in each hand. Take a step forward so that one foot is in front of the other, for stability, and so that there is tension on the cables. Bring hands together in front of you. Try to make your hands overlap (so that the cables cross) a few inches."
+    ],
+    "he": [
+     "להתחיל כשהכבלים בערך בגובה הכתפיים, ידית בכל יד. לצעוד צעד קדימה כך שרגל אחת לפני השנייה, ליציבות וכדי שיהיה מתח בכבלים. לקרב את הידיים זו לזו מולכם, ולנסות להעביר אותן זו מעבר לזו (כך שהכבלים מצטלבים) כמה סנטימטרים."
     ]
    },
    "source": {
@@ -3294,6 +3439,14 @@
      "Pause briefly at the top position.",
      "Slowly lower your arms back to the starting position while maintaining control of the movement.",
      "Repeat for reps."
+    ],
+    "he": [
+     "להציב ספסל בין שני פולים ולכוון אותם כך שיהיו בגובה החזה/הכתפיים בישיבה.",
+     "לאחוז בידיות באחיזה ניטרלית ולהישען על המשענת הזקופה.",
+     "לקרב את הידיים זו לזו מול החזה בתנועה מבוקרת, תוך התמקדות בכיווץ שרירי החזה. לשמור על המרפקים מעט כפופים לאורך כל התנועה.",
+     "לעצור לרגע בתנוחה העליונה.",
+     "להחזיר את הידיים לאט לתנוחת ההתחלה תוך שמירה על שליטה בתנועה.",
+     "לחזור על מספר החזרות."
     ]
    },
    "source": {
@@ -3371,6 +3524,15 @@
      "Press the handles away from your chest and exhale.",
      "Allow the handles to come in gently until they reach your chest.",
      "Allow the handles to return to your chest as you inhale."
+    ],
+    "he": [
+     "לכוון את גובה המושב כך שהידיות בגובה החזה.",
+     "לדחוף עם הרגל את דוושת הרגל קדימה.",
+     "להביא את הידיות לתנוחת ההתחלה.",
+     "לשמור על הגב צמוד למשענת וללחוץ קדימה.",
+     "ללחוץ את הידיות הרחק מהחזה תוך כדי נשיפה.",
+     "לתת לידיות לחזור בעדינות עד שהן מגיעות לחזה.",
+     "לתת לידיות לחזור לחזה תוך כדי שאיפה."
     ]
    },
    "source": {
@@ -3451,6 +3613,20 @@
      "Focus on squeezing your upper chest at the top.",
      "Lock and repeat:",
      "Complete your reps, then safely rack the bar back into the hooks."
+    ],
+    "he": [
+     "ביצוע",
+     "תנוחת התחלה:",
+     "לשחרר את המוט מהווים ולהחזיק אותו מעל החלק העליון של החזה עם ידיים ישרות לגמרי.",
+     "לשמור על השכמות מקורבות ומוצמדות לספסל.",
+     "שלב ההורדה (אקסצנטרי):",
+     "להוריד את המוט לאט עד מעט מתחת לעצם הבריח או לחזה העליון.",
+     "לשמור על שליטה, בלי להקפיץ את המוט.",
+     "שלב הלחיצה (קונצנטרי):",
+     "לדחוף את המוט למעלה בקו ישר עד שהידיים ישרות לגמרי.",
+     "להתמקד בכיווץ החזה העליון למעלה.",
+     "נעילה וחזרה:",
+     "להשלים את החזרות, ואז להחזיר את המוט בבטחה לווים."
     ]
    },
    "source": {
@@ -3528,6 +3704,14 @@
      "Engage your core and lower your body by bending your elbows, keeping them close to your body or flared slightly outward.",
      "Lower until your chest nearly touches the ground while maintaining a neutral spine.",
      "Push through your palms to return to the starting position, fully extending your arms."
+    ],
+    "he": [
+     "שכיבות סמיכה הן תרגיל בסיס במשקל גוף שעובד על החזה, הידיים והכתפיים, ומפעיל את הליבה לייצוב. לא נדרש ציוד, והתרגיל מצוין לבניית כוח בפלג הגוף העליון.",
+     "הוראות:",
+     "להתחיל בתנוחת פלאנק כשהידיים מעט רחבות מרוחב הכתפיים, הרגליים צמודות והגוף בקו ישר מהראש ועד העקבים.",
+     "לכווץ את הליבה ולהוריד את הגוף על ידי כיפוף המרפקים, כשהם צמודים לגוף או נפתחים מעט החוצה.",
+     "לרדת עד שהחזה כמעט נוגע ברצפה, תוך שמירה על עמוד שדרה ניטרלי.",
+     "לדחוף דרך כפות הידיים כדי לחזור לתנוחת ההתחלה, עד יישור מלא של הידיים."
     ]
    },
    "source": {
@@ -3597,6 +3781,9 @@
    "instructions": {
     "en": [
      "Inclined push-ups primarily target the chest muscles (pectoralis major and minor), but also work the triceps, shoulders, and core to a lesser extent. Because the upper body is elevated, the incline push-up places less emphasis on the triceps compared to regular push-ups, which may be beneficial for individuals looking to specifically target their chest muscles."
+    ],
+    "he": [
+     "שכיבות סמיכה בשיפוע חיובי עובדות בעיקר על שרירי החזה (החזה הגדול והקטן), וגם, במידה פחותה, על היד האחורית, הכתפיים והליבה. מכיוון שפלג הגוף העליון מוגבה, יש פחות דגש על היד האחורית בהשוואה לשכיבות סמיכה רגילות, מה שיכול להתאים למי שרוצה להתמקד בשרירי החזה."
     ]
    },
    "source": {
@@ -3668,6 +3855,9 @@
    "instructions": {
     "en": [
      "Decline push-ups are another modified version of the traditional push-up that target the upper body muscles in a different way. To perform a decline push-up, elevate your feet on an elevated surface, such as a bench, chair, or step, while placing your hands on the ground in a push-up position. Lower your body towards the ground while maintaining a straight line from your shoulders to your ankles, and then push back up to the starting position. Unlike the inclined push-up, the decline push-up places more emphasis on the shoulders and triceps, while still engaging the chest muscles to a lesser extent. By elevating your feet, you increase the difficulty of the exercise by placing more weight on your upper body, forcing your shoulders and triceps to work harder to push your body back up. The decline push-up can be a great way to challenge your upper body strength and improve your ability to perform other push-up variations. As with any exercise, be sure to use proper form and start with a height that is appropriate for your strength and fitness level."
+    ],
+    "he": [
+     "שכיבות סמיכה בשיפוע שלילי הן וריאציה נוספת של שכיבות סמיכה רגילות שעובדת על שרירי פלג הגוף העליון בצורה שונה. לביצוע, להניח את כפות הרגליים על משטח מוגבה, כמו ספסל, כיסא או מדרגה, ואת הידיים על הרצפה בתנוחת שכיבות סמיכה. להוריד את הגוף לכיוון הרצפה תוך שמירה על קו ישר מהכתפיים ועד הקרסוליים, ואז לדחוף חזרה לתנוחת ההתחלה. בניגוד לשכיבות סמיכה בשיפוע חיובי, כאן יש יותר דגש על הכתפיים והיד האחורית, ועדיין יש מעורבות של שרירי החזה במידה פחותה. הגבהת הרגליים מקשה את התרגיל כי יותר משקל עובר לפלג הגוף העליון, והכתפיים והיד האחורית צריכות לעבוד קשה יותר כדי לדחוף את הגוף למעלה. זו דרך מצוינת לאתגר את הכוח בפלג הגוף העליון ולשפר את היכולת בווריאציות אחרות של שכיבות סמיכה. כמו בכל תרגיל, להקפיד על טכניקה נכונה ולהתחיל מגובה שמתאים לרמת הכוח והכושר שלכם."
     ]
    },
    "source": {
@@ -3742,6 +3932,12 @@
      "Lower: Bend your elbows to lower your chest toward your hands. Keep your body straight.",
      "Push: Push back up until arms are fully extended.",
      "New note Keep elbows close to your body and core tight."
+    ],
+    "he": [
+     "התחלה: להיכנס לתנוחת פלאנק. להניח את הידיים קרוב זו לזו מתחת לחזה, כך שהאגודלים והאצבעות המורות יוצרים צורת יהלום.",
+     "ירידה: לכופף את המרפקים ולהוריד את החזה לכיוון הידיים. לשמור על גוף ישר.",
+     "דחיפה: לדחוף חזרה למעלה עד שהידיים ישרות לגמרי.",
+     "לשמור על המרפקים צמודים לגוף ועל ליבה מכווצת."
     ]
    },
    "source": {
@@ -3815,6 +4011,13 @@
      "Lower your torso towards the ground, bending your elbows while keeping your trunk stable. Keep your knees in contact with the floor.",
      "Push through your hands to return to the starting position. Be sure to maintain contraction of chest, shoulder and arm muscles at the top of the movement.",
      "Perform the desired number of repetitions, controlling the movement and maintaining good form."
+    ],
+    "he": [
+     "להתחיל בכריעה על הרצפה עם ברכיים צמודות. להניח את הידיים על הרצפה לפניכם, מעט רחב מרוחב הכתפיים.",
+     "לוודא שהגוף יוצר קו ישר מהראש ועד הברכיים. הידיים צריכות להיות מתחת לכתפיים.",
+     "להוריד את פלג הגוף לכיוון הרצפה על ידי כיפוף המרפקים, תוך שמירה על גו יציב. הברכיים נשארות בקשר עם הרצפה.",
+     "לדחוף דרך הידיים כדי לחזור לתנוחת ההתחלה. להקפיד לשמור על כיווץ של שרירי החזה, הכתפיים והידיים בראש התנועה.",
+     "לבצע את מספר החזרות הרצוי, בתנועה מבוקרת ועם טכניקה טובה."
     ]
    },
    "source": {
@@ -3887,6 +4090,9 @@
    "instructions": {
     "en": [
      "A dip is an upper-body strength exercise. Narrow, shoulder-width dips primarily train the triceps, with major synergists being the anterior deltoid, the pectoralis muscles (sternal, clavicular, and minor), and the rhomboid muscles of the back (in that order).[1] Wide arm training places additional emphasis on the pectoral muscles, similar in respect to the way a wide grip bench press would focus more on the pectorals and less on the triceps."
+    ],
+    "he": [
+     "מקבילים הם תרגיל כוח לפלג הגוף העליון. מקבילים צרים, ברוחב הכתפיים, עובדים בעיקר על היד האחורית, ובנוסף על הכתף הקדמית, שרירי החזה (העליון, האמצעי והקטן) והשרירים המעוינים בגב (בסדר הזה). אחיזה רחבה מעבירה יותר דגש לשרירי החזה, בדומה ללחיצת חזה באחיזה רחבה שמתמקדת יותר בחזה ופחות ביד האחורית."
     ]
    },
    "source": {
@@ -3956,6 +4162,9 @@
    "instructions": {
     "en": [
      "Assisted triceps dips is a gym work out exercise that targets triceps and also involves chest."
+    ],
+    "he": [
+     "מקבילים בעזרה במכונה הם תרגיל שמכוון ליד האחורית ומערב גם את החזה."
     ]
    },
    "source": {
@@ -4027,6 +4236,9 @@
    "instructions": {
     "en": [
      "Put two benches so far appart, that you can hold onto one with your hands and are just able to reach the other with your feet. The legs stay during the exercise completely stretched. With your elbows facing back, bend them as much as you can. Push yourself up, but don't stretch out the arms."
+    ],
+    "he": [
+     "להציב שני ספסלים במרחק כזה שאפשר להחזיק אחד מהם עם הידיים ובקושי להגיע לשני עם הרגליים. הרגליים נשארות ישרות לגמרי לאורך כל התרגיל. כשהמרפקים פונים לאחור, לכופף אותם כמה שאפשר. לדחוף את הגוף למעלה, בלי ליישר את הידיים עד הסוף."
     ]
    },
    "source": {
@@ -4096,6 +4308,9 @@
    "instructions": {
     "en": [
      "Doubling as a back and chest exercise, the Dumbbell Pullover can train both your pecs and lats."
+    ],
+    "he": [
+     "פולאובר עם משקולת משמש גם כתרגיל גב וגם כתרגיל חזה, ומאמן גם את שרירי החזה וגם את שרירי הגב הרחבים."
     ]
    },
    "source": {
@@ -4166,6 +4381,9 @@
    "instructions": {
     "en": [
      "Grab the pull up bar with a wide grip, the body is hanging freely. Keep your chest out and pull yourself up till your chin reaches the bar or it touches your neck, if you want to pull behind you. Go with a slow and controlled movement down, always keeping the chest out."
+    ],
+    "he": [
+     "לאחוז במוט המתח באחיזה רחבה, כשהגוף תלוי באופן חופשי. לשמור על חזה מורם ולמשוך את הגוף למעלה עד שהסנטר מגיע למוט, או עד שהמוט נוגע בעורף אם מושכים מאחורי הראש. לרדת בתנועה איטית ומבוקרת, תוך שמירה על חזה מורם כל הזמן."
     ]
    },
    "source": {
@@ -4238,6 +4456,9 @@
    "instructions": {
     "en": [
      "The chin-up (also known as a chin or chinup) is a strength training exercise. People frequently do this exercise with the intention of strengthening muscles such as the latissimus dorsi and biceps, which extend the shoulder and flex the elbow, respectively. In this maneuver, the palms are faced towards the body. It is a form of pull-up in which the range of motion is established in relation to a person's chin."
+    ],
+    "he": [
+     "מתח באחיזה הפוכה (Chin-up) הוא תרגיל כוח. מבצעים אותו בדרך כלל כדי לחזק שרירים כמו הגב הרחב והיד הקדמית, שאחראים בהתאמה על פשיטת הכתף וכפיפת המרפק. בתרגיל הזה כפות הידיים פונות אל הגוף. זהו סוג של מתח שבו טווח התנועה נקבע ביחס לסנטר."
     ]
    },
    "source": {
@@ -4314,6 +4535,16 @@
      "Top position:",
      "Chin should clear the bar (or at least reach bar level).",
      "Pause for a brief squeeze in your lats."
+    ],
+    "he": [
+     "ביצוע",
+     "שלב המשיכה (קונצנטרי):",
+     "להוביל את המרפקים למטה ומעט לאחור, ולמשוך את החזה לכיוון המוט.",
+     "להוביל עם החזה, לא עם הסנטר.",
+     "לשמור על הכתפיים למטה (בלי למשוך אותן לכיוון האוזניים).",
+     "תנוחה עליונה:",
+     "הסנטר צריך לעבור את המוט (או לפחות להגיע לגובהו).",
+     "לעצור לרגע ולכווץ את שרירי הגב הרחבים."
     ]
    },
    "source": {
@@ -4392,6 +4623,16 @@
      "Top position:",
      "Chin should clear or reach the level of your hands.",
      "Pause briefly and contract your lats hard."
+    ],
+    "he": [
+     "ביצוע",
+     "שלב המשיכה (קונצנטרי):",
+     "להוביל את המרפקים למטה ולאחור, ולמשוך את החזה לכיוון הידיים.",
+     "לשמור על הכתפיים למטה ולאחור (בלי למשוך אותן לכיוון האוזניים).",
+     "להתמקד בכיווץ שרירי הגב הרחבים והגב העליון למעלה.",
+     "תנוחה עליונה:",
+     "הסנטר צריך לעבור את גובה הידיים או להגיע אליו.",
+     "לעצור לרגע ולכווץ חזק את שרירי הגב הרחבים."
     ]
    },
    "source": {
@@ -4510,6 +4751,9 @@
    "instructions": {
     "en": [
      "Grip the pull-down bar with your hands closer than shoulder width apart, with your palms facing away from you. Lean back slightly. Pull the bar down towards your chest, keeping your elbows close to your sides as you come down. Pull your shoulders back at the end of the motion."
+    ],
+    "he": [
+     "לאחוז במוט הפולי כשהידיים צרות מרוחב הכתפיים וכפות הידיים פונות קדימה. להישען מעט לאחור. למשוך את המוט לכיוון החזה, כשהמרפקים צמודים לצדי הגוף בזמן הירידה. למשוך את הכתפיים לאחור בסוף התנועה."
     ]
    },
    "source": {
@@ -4581,6 +4825,9 @@
    "instructions": {
     "en": [
      "Grip the pull-down bar with your palms facing you and your hands closer than shoulder-width apart. Lean back slightly and keep your back straight. Pull the bar down towards your chest, pulling your shoulders back slightly at the end of the motion."
+    ],
+    "he": [
+     "לאחוז במוט הפולי כשכפות הידיים פונות אליכם והידיים צרות מרוחב הכתפיים. להישען מעט לאחור ולשמור על גב ישר. למשוך את המוט לכיוון החזה, ולמשוך מעט את הכתפיים לאחור בסוף התנועה."
     ]
    },
    "source": {
@@ -4650,6 +4897,9 @@
    "instructions": {
     "en": [
      "Sit at the lat pulldown machine and grab the single handle with a neutral grip. Keep your torso stable, your chest lifted, and your shoulder blades slightly retracted. Start with your arm fully extended overhead, then pull the handle down toward your upper chest following a controlled, slightly diagonal path. Focus on engaging the latissimus dorsi while keeping the shoulder depressed and avoiding any torso rotation. Slowly return to the starting position, maintaining full control throughout the movement."
+    ],
+    "he": [
+     "לשבת במכונת הפולי העליון ולאחוז בידית הבודדת באחיזה ניטרלית. לשמור על פלג גוף יציב, חזה מורם ושכמות מעט מקורבות. להתחיל עם יד מושטת לגמרי מעל הראש, ואז למשוך את הידית לכיוון החזה העליון במסלול מבוקר ומעט אלכסוני. להתמקד בהפעלת שריר הגב הרחב, לשמור על הכתף למטה ולהימנע מסיבוב של פלג הגוף. לחזור לאט לתנוחת ההתחלה, בשליטה מלאה לאורך כל התנועה."
     ]
    },
    "source": {
@@ -4721,6 +4971,9 @@
    "instructions": {
     "en": [
      "Use the straight bar attachment on a high pulley. Grasp the two ends of the bar with your palms facing downward and your arms straight out in front of you. Pull your hands down towards your hips, while keeping your arms straight, then raise them back up to the starting position."
+    ],
+    "he": [
+     "להשתמש במוט ישר בפולי עליון. לאחוז בשני קצות המוט כשכפות הידיים פונות למטה והידיים מושטות ישר לפנים. למשוך את הידיים למטה לכיוון הירכיים כשהידיים נשארות ישרות, ואז להחזיר אותן למעלה לתנוחת ההתחלה."
     ]
    },
    "source": {
@@ -4797,6 +5050,12 @@
      "Starting position:",
      "Hold the barbell with arms fully extended toward the floor.",
      "Maintain tension in your lats and back muscles."
+    ],
+    "he": [
+     "ביצוע",
+     "תנוחת התחלה:",
+     "להחזיק את המוט כשהידיים ישרות לגמרי לכיוון הרצפה.",
+     "לשמור על מתח בשרירי הגב הרחבים ובשרירי הגב."
     ]
    },
    "source": {
@@ -4872,6 +5131,12 @@
      "Starting position:",
      "Hold the barbell with arms fully extended toward the floor.",
      "Maintain tension in your lats and back muscles."
+    ],
+    "he": [
+     "ביצוע",
+     "תנוחת התחלה:",
+     "להחזיק את המוט כשהידיים ישרות לגמרי לכיוון הרצפה.",
+     "לשמור על מתח בשרירי הגב הרחבים ובשרירי הגב."
     ]
    },
    "source": {
@@ -4942,6 +5207,9 @@
    "instructions": {
     "en": [
      "Back excercise with a barbell with a starting position which is in a bent over position with the back paralell to the ground. The barbell is on the ground at chest level.For the movement grab the barbell at shoulder width grip and pull towards your chest without losing the bent over position and without moving anything but your arms"
+    ],
+    "he": [
+     "תרגיל גב עם מוט, שתנוחת ההתחלה שלו היא בכפיפה כשהגב מקביל לרצפה. המוט מונח על הרצפה בקו החזה. לאחוז במוט באחיזה ברוחב הכתפיים ולמשוך אותו לכיוון החזה, בלי לאבד את תנוחת הכפיפה ובלי להזיז שום דבר מלבד הידיים."
     ]
    },
    "source": {
@@ -5013,6 +5281,10 @@
     "en": [
      "The execution of this exercise is very similar to the regular bent over rowing, only that the bar is fixed here.",
      "Grab the barbell with a wide grip (slightly more than shoulder wide) and lean forward. Your upper body is not quite parallel to the floor, but forms a slight angle. The chest's out during the whole exercise. Pull now the barbell with a fast movement towards your belly button, not further up. Go slowly down to the initial position. Don't swing with your body and keep your arms next to your body."
+    ],
+    "he": [
+     "הביצוע דומה מאוד לחתירה בכפיפה רגילה, רק שכאן המוט מקובע בקצה אחד.",
+     "לאחוז במוט באחיזה רחבה (מעט רחב מרוחב הכתפיים) ולהתכופף קדימה. פלג הגוף העליון לא ממש מקביל לרצפה, אלא בזווית קלה. החזה מורם לאורך כל התרגיל. למשוך את המוט בתנועה מהירה לכיוון הטבור, לא גבוה יותר. לרדת לאט לתנוחת ההתחלה. לא להתנדנד עם הגוף ולשמור על הידיים קרוב לגוף."
     ]
    },
    "source": {
@@ -5089,6 +5361,13 @@
      "Grab a dumbbell in each hand and set up with a good posture – core and lats engaged and shoulders neutral.",
      "Row the dumbbells toward the top of the stomach and squeeze the back at the top of the rep.",
      "Finally, lower the dumbbells back to the starting position and repeat until all reps are completed."
+    ],
+    "he": [
+     "לכוון ספסל מתכוונן לזווית של 45 מעלות.",
+     "לשכב על הבטן כשהראש בולט מעט מעבר לקצה הספסל.",
+     "לקחת משקולת בכל יד ולהתמקם ביציבה טובה: ליבה ושרירי גב רחבים מופעלים וכתפיים ניטרליות.",
+     "לחתור עם המשקולות לכיוון החלק העליון של הבטן ולכווץ את הגב בראש החזרה.",
+     "לבסוף, להוריד את המשקולות חזרה לתנוחת ההתחלה ולחזור עד שמסיימים את כל החזרות."
     ]
    },
    "source": {
@@ -5160,6 +5439,10 @@
     "en": [
      "Keep your chest up and squeeze your shoulder blades at the end.",
      "Don’t hunch forward or round your back during the pull."
+    ],
+    "he": [
+     "לשמור על חזה מורם ולכווץ את השכמות בסוף התנועה.",
+     "לא להתכופף קדימה ולא לעגל את הגב בזמן המשיכה."
     ]
    },
    "source": {
@@ -5233,6 +5516,9 @@
    "instructions": {
     "en": [
      "Maintain a straight body, retract your shoulder blades, and pull your chest to the bar for an effective back and upper body workout."
+    ],
+    "he": [
+     "לשמור על גוף ישר, לקרב את השכמות ולמשוך את החזה אל המוט, לאימון יעיל של הגב ופלג הגוף העליון."
     ]
    },
    "source": {
@@ -5308,6 +5594,10 @@
     "en": [
      "Stand firmly, with your feet slightly more than shoulder wide apart. Stand directly behind the bar where it should barely touch your shin, your feet pointing a bit out. Bend down with a straight back, the knees also pointing somewhat out. Grab the bar with a shoulder wide grip, one overhand, one underhand (mixed grip).",
      "Pull the weight up. At the highest point make a slight hollow back and pull the bar back. Hold 1 or 2 seconds that position. Go down, making sure the back is not bent. Once down you can either go back again as soon as the weights touch the floor, or make a pause, depending on the weight."
+    ],
+    "he": [
+     "לעמוד יציב, עם רגליים מעט רחבות מרוחב הכתפיים. לעמוד ישירות מאחורי המוט כך שהוא כמעט נוגע בשוקיים, כפות הרגליים פונות מעט החוצה. להתכופף עם גב ישר, כשגם הברכיים פונות מעט החוצה. לאחוז במוט באחיזה ברוחב הכתפיים, יד אחת מלמעלה ויד אחת מלמטה (אחיזה מעורבת).",
+     "להרים את המשקל. בנקודה הגבוהה ביותר לקשת מעט את הגב ולמשוך את המוט לאחור. להחזיק את התנוחה שנייה או שתיים. לרדת, תוך הקפדה שהגב לא מתעגל. למטה אפשר להתחיל מיד את החזרה הבאה ברגע שהמשקולות נוגעות ברצפה, או לעצור להפסקה, בהתאם למשקל."
     ]
    },
    "source": {
@@ -5442,6 +5732,10 @@
     "en": [
      "Deadlift to be done using a Smith machine or a free rack. Bar or barbell hould be just right under the knee cap level. Lift using the glutes and through the heels, then come back to starting postion with a control movement of 2 seconds.",
      "This exercise targets mainly the lower back and glutes."
+    ],
+    "he": [
+     "דדליפט שמבוצע במכונת סמית' או במתקן חופשי. המוט צריך להיות מעט מתחת לגובה פיקת הברך. להרים בעזרת הישבן ודרך העקבים, ואז לחזור לתנוחת ההתחלה בתנועה מבוקרת של 2 שניות.",
+     "התרגיל עובד בעיקר על הגב התחתון והישבן."
     ]
    },
    "source": {
@@ -5514,6 +5808,9 @@
    "instructions": {
     "en": [
      "Lie on the hyperextension pillow with your navel at the front edge, allowing your upper body to hang freely. Tighten all your back muscles and raise your torso until you're horizontal, but no higher. Lower yourself slowly, maintaining a steady flow of muscles."
+    ],
+    "he": [
+     "לשכב על כרית מתקן פשיטת הגב כשהטבור בקצה הקדמי של הכרית, כך שפלג הגוף העליון תלוי באופן חופשי. לכווץ את כל שרירי הגב ולהרים את פלג הגוף עד שהוא אופקי, לא יותר. לרדת לאט, תוך שמירה על מתח רציף בשרירים."
     ]
    },
    "source": {
@@ -5642,6 +5939,10 @@
     "en": [
      "Take a barbell and stand with a straight body, the arms are hanging freely in front of you. Lift from this position the shoulders as high as you can, but don't bend the arms during the movement. On the highest point, make a short pause of 1 or 2 seconds before returning slowly to the initial position.",
      "When training with a higher weight, make sure that you still do the whole movement!"
+    ],
+    "he": [
+     "לקחת מוט ולעמוד עם גוף ישר, הידיים תלויות באופן חופשי לפני הגוף. מהתנוחה הזו להרים את הכתפיים כמה שיותר גבוה, בלי לכופף את הידיים. בנקודה הגבוהה לעצור שנייה או שתיים, ואז לחזור לאט לתנוחת ההתחלה.",
+     "גם כשמתאמנים עם משקל כבד, להקפיד לבצע את התנועה המלאה!"
     ]
    },
    "source": {
@@ -5711,6 +6012,10 @@
     "en": [
      "Stand with straight body, the hands are hanging freely on the side and hold each a dumbbell. Lift from this position the shoulders as high as you can, but don't bend the arms during the movement. On the highest point, make a short pause of 1 or 2 seconds before returning slowly to the initial position.",
      "When training with a higher weight, make sure that you still do the whole movement!"
+    ],
+    "he": [
+     "לעמוד עם גוף ישר, הידיים תלויות באופן חופשי לצד הגוף ומחזיקות משקולת בכל יד. מהתנוחה הזו להרים את הכתפיים כמה שיותר גבוה, בלי לכופף את הידיים. בנקודה הגבוהה לעצור שנייה או שתיים, ואז לחזור לאט לתנוחת ההתחלה.",
+     "גם כשמתאמנים עם משקל כבד, להקפיד לבצע את התנועה המלאה!"
     ]
    },
    "source": {
@@ -5779,6 +6084,9 @@
    "instructions": {
     "en": [
      "Lay flat on your stomach with your arms extended in front of you on the ground as your legs are lying flat. Lift both your arms and legs at the same time, as if you were flying, and contract the lower back. Make sure that you are breathing and, depending on your fitness level, hold the movement for at least two to five seconds per repetition."
+    ],
+    "he": [
+     "לשכב על הבטן כשהידיים מושטות קדימה על הרצפה והרגליים שטוחות. להרים את הידיים והרגליים בו-זמנית, כאילו עפים, ולכווץ את הגב התחתון. להקפיד לנשום, ולפי רמת הכושר להחזיק את התנוחה לפחות שתיים עד חמש שניות בכל חזרה."
     ]
    },
    "source": {
@@ -5851,6 +6159,12 @@
      "Keep your elbows slightly bent but fixed throughout the movement.",
      "Pull the band apart by spreading your arms until the band touches or comes close to your chest.",
      "Slowly bring your arms back to the starting position, controlling the tension on the band."
+    ],
+    "he": [
+     "להחזיק את הגומייה כשהידיים מושטות לפנים בגובה הכתפיים.",
+     "לשמור על המרפקים מעט כפופים וקבועים לאורך כל התנועה.",
+     "למתוח את הגומייה על ידי פתיחת הידיים לצדדים, עד שהגומייה נוגעת בחזה או מתקרבת אליו.",
+     "להחזיר את הידיים לאט לתנוחת ההתחלה, תוך שליטה במתח של הגומייה."
     ]
    },
    "source": {
@@ -5926,8 +6240,13 @@
      "Setup: Stand with feet together and grip the bar slightly wider than shoulders.",
      "Position: Rest the bar on your upper chest.",
      "Press: Brace your core and push the bar straight up until your arms lock out.",
-     "Finish: Control the bar back down to your chest.",
-     "https://youtu.be/ZXpdJOLNoWw?si=u27cGyODoblXHBu1"
+     "Finish: Control the bar back down to your chest."
+    ],
+    "he": [
+     "הכנה: לעמוד עם רגליים צמודות ולאחוז במוט מעט רחב מרוחב הכתפיים.",
+     "תנוחה: להניח את המוט על החלק העליון של החזה.",
+     "לחיצה: לכווץ את הליבה ולדחוף את המוט ישר למעלה עד נעילת הידיים.",
+     "סיום: להוריד את המוט בשליטה חזרה לחזה."
     ]
    },
    "source": {
@@ -6057,6 +6376,10 @@
     "en": [
      "The exercise is basically the same as with a free barbell:",
      "Sit on a bench, the back rest should be almost vertical. Take a bar with a shoulder wide grip and bring it down to chest height. Press the weight up, but don't stretch the arms completely. Go slowly down and repeat."
+    ],
+    "he": [
+     "התרגיל זהה בעיקרו לביצוע עם מוט חופשי:",
+     "לשבת על ספסל עם משענת כמעט אנכית. לאחוז במוט באחיזה ברוחב הכתפיים ולהוריד אותו לגובה החזה. ללחוץ את המשקל למעלה, בלי ליישר את הידיים לגמרי. לרדת לאט ולחזור על התנועה."
     ]
    },
    "source": {
@@ -6127,8 +6450,12 @@
     "en": [
      "Sit on a bench with your back supported. Hold a pair of dumbbells in front of your shoulders, palms facing you and elbows in front of your body.",
      "Press the dumbbells overhead while rotating your hands, so that your palms face forward at the top. Stop just before your elbows lock out.",
-     "Reverse the movement under control: lower the dumbbells and turn your palms back towards you until you are in the starting position again.",
-     "As shown here: https://www.youtube.com/watch?v=vj2w851ZHRM"
+     "Reverse the movement under control: lower the dumbbells and turn your palms back towards you until you are in the starting position again."
+    ],
+    "he": [
+     "לשבת על ספסל עם תמיכה לגב. להחזיק זוג משקולות מול הכתפיים, כפות הידיים פונות אליכם והמרפקים לפני הגוף.",
+     "ללחוץ את המשקולות מעל הראש תוך סיבוב הידיים, כך שלמעלה כפות הידיים פונות קדימה. לעצור רגע לפני נעילת המרפקים.",
+     "להפוך את התנועה בשליטה: להוריד את המשקולות ולסובב את כפות הידיים חזרה אליכם עד שחוזרים לתנוחת ההתחלה."
     ]
    },
    "source": {
@@ -6201,6 +6528,11 @@
      "Rest bar in front on your shoulders",
      "Bend knees while keeping upper body straight",
      "Extend legs pushing the bar overhead with force"
+    ],
+    "he": [
+     "להניח את המוט מלפנים על הכתפיים.",
+     "לכופף את הברכיים תוך שמירה על פלג גוף עליון ישר.",
+     "ליישר את הרגליים ולדחוף את המוט בכוח מעל הראש."
     ]
    },
    "source": {
@@ -6272,6 +6604,12 @@
      "The movement is to bring the arms up in front of the body to eye level and with only a slight bend in the elbow. This isolates the anterior deltoid muscle (front of the shoulder) and uses the anterior deltoid to lift the weight.",
      "When lifting it is important to keep the body still so the anterior deltoid is fully utilised; if the weight cannot be lifted by standing still then it is too heavy and a lower weight is needed. It is important to keep a slight bend in the elbow when lifting as keeping the elbow locked will add stress to the elbow joint and could cause injury.",
      "A neutral grip, similar to that used in the hammer curl, can also be used. With this variation the weight is again raised to eye level, but out to a 45 degree angle from the front of the body. This may be beneficial for those with shoulder injuries, particularly those related to the rotator cuff."
+    ],
+    "he": [
+     "לביצוע התרגיל, לעמוד עם רגליים ברוחב הכתפיים ולהחזיק משקולות או ידיות לצד הגוף באחיזה עליונה (כפות הידיים פונות לגוף).",
+     "להרים את הידיים לפני הגוף עד גובה העיניים, עם כיפוף קל בלבד במרפק. כך מבודדים את הכתף הקדמית (החלק הקדמי של הכתף) והיא זו שמרימה את המשקל.",
+     "בזמן ההרמה חשוב לשמור על הגוף יציב כדי שהכתף הקדמית תעבוד במלואה; אם אי אפשר להרים את המשקל בלי להזיז את הגוף, הוא כבד מדי וצריך משקל קל יותר. חשוב לשמור על כיפוף קל במרפק בזמן ההרמה, כי מרפק נעול מעמיס על מפרק המרפק ועלול לגרום לפציעה.",
+     "אפשר גם להשתמש באחיזה ניטרלית, כמו ביד קדמית פטיש. בווריאציה הזו מרימים שוב לגובה העיניים, אבל בזווית של 45 מעלות החוצה מקדמת הגוף. זה יכול להתאים למי שסובל מפציעות בכתף, במיוחד כאלה שקשורות לשרוול המסובב."
     ]
    },
    "source": {
@@ -6341,6 +6679,10 @@
     "en": [
      "Raise the handle in a slight arc with controlled movement.",
      "Don’t swing your torso to start the rep."
+    ],
+    "he": [
+     "להרים את הידית בקשת קלה ובתנועה מבוקרת.",
+     "לא לנדנד את פלג הגוף כדי להתחיל את החזרה."
     ]
    },
    "source": {
@@ -6415,6 +6757,15 @@
      "Lifting Phase: Exhale and lift your arms out to the sides, moving your upper arms laterally, until they are parallel to the floor.",
      "Peak Contraction: Pause briefly at the top, squeezing the side delts, but don't shrug your shoulders up.",
      "Lowering Phase: Inhale and slowly lower the weight back down with control, resisting the weight on the way down."
+    ],
+    "he": [
+     "הרחקה לצדדים במכונה היא תרגיל מבודד לכתף האמצעית (הצדדית), שמבוצע במכונה ליציבות. מרימים את הכריות או הידיות לצדדים עד גובה הכתפיים ומורידים לאט, עם מרפקים מעט כפופים וטרפזים למטה, כדי להתמקד בכתפיים. התרגיל עוזר לבנות כתפיים רחבות, מונע תנופה ושומר על מתח קבוע, ולכן מתאים מאוד למתחילים או כתרגיל סיום.",
+     "איך מבצעים הרחקה לצדדים במכונה",
+     "הכנה: לכוון את המושב כך שהכתפיים בקו אחד עם ציר הסיבוב של המכונה, החזה צמוד לכרית (או הגב, אם יושבים עם הפנים החוצה), והידיים בזווית של 90 מעלות מול הכריות/הידיות.",
+     "תנוחת התחלה: לאחוז בידיות באחיזה רפויה, מרפקים מעט כפופים וכתפיים למטה, רחוק מהאוזניים.",
+     "שלב ההרמה: לנשוף ולהרים את הידיים לצדדים, תוך הזזת הזרועות העליונות הצידה, עד שהן מקבילות לרצפה.",
+     "כיווץ שיא: לעצור לרגע למעלה ולכווץ את הכתף האמצעית, בלי למשוך את הכתפיים למעלה.",
+     "שלב ההורדה: לשאוף ולהוריד את המשקל לאט ובשליטה, תוך התנגדות למשקל בדרך למטה."
     ]
    },
    "source": {
@@ -6487,6 +6838,13 @@
      "Reach across your body and grab the handle with a neutral grip.",
      "Keep the elbow slightly bent and pull the handle across your body and raise laterally.",
      "Slowly lower the handle back to the starting position under control."
+    ],
+    "he": [
+     "הרחקה לצדדים בכבל ביד אחת היא וריאציה של הרחקה לצדדים, ומשמשת לבניית שרירי הכתפיים.",
+     "לכוון את הכבל לנקודה הנמוכה ביותר ולחבר ידית בודדת.",
+     "להושיט יד מעבר לגוף ולאחוז בידית באחיזה ניטרלית.",
+     "לשמור על מרפק מעט כפוף, למשוך את הידית לרוחב הגוף ולהרים אותה הצידה.",
+     "להוריד את הידית לאט ובשליטה חזרה לתנוחת ההתחלה."
     ]
    },
    "source": {
@@ -6558,6 +6916,9 @@
    "instructions": {
     "en": [
      "Sit on bench while holding weights. Bend forward as far as possible, with arms slightly bent at the elbow. Perform a lateral raise while maintaining the bend in your elbow."
+    ],
+    "he": [
+     "לשבת על ספסל ולהחזיק את המשקולות. להתכופף קדימה כמה שאפשר, עם ידיים מעט כפופות במרפק. לבצע הרחקה לצדדים תוך שמירה על הכיפוף במרפק."
     ]
    },
    "source": {
@@ -6632,6 +6993,13 @@
      "With your right hand, grab the left pulley, and with your left hand, grab the right pulley, crossing them in front of you. This is where you’ll begin your journey.",
      "Start the movement by moving your arms back and forth while keeping your arms straight.",
      "Pause at the finish of the move for a brief moment before returning the handles to their starting positions."
+    ],
+    "he": [
+     "פרפר הפוך בכבל הוא תרגיל לחיזוק ולחיטוב שריר הכתף. זהו אחד מהתרגילים המבודדים הטובים ביותר לגב ולכתף האחורית. התרגיל מכוון לכתף האחורית ומערב מגוון שרירים בפלג הגוף העליון.",
+     "לכוון את המשקל ואת הפולים לגובה הנכון. הפולים צריכים להיות מעל הראש, כך שתוכלו לראות אותם.",
+     "ביד ימין לאחוז בפולי השמאלי וביד שמאל בפולי הימני, כך שהכבלים מוצלבים מולכם. זו תנוחת ההתחלה.",
+     "להתחיל את התנועה על ידי הזזת הידיים לאחור וחזרה, תוך שמירה על ידיים ישרות.",
+     "לעצור לרגע בסוף התנועה לפני החזרת הידיות לתנוחת ההתחלה."
     ]
    },
    "source": {
@@ -6704,6 +7072,9 @@
    "instructions": {
     "en": [
      "Stand straight, your feet are shoulder-width apart. Hold the SZ-bar with an overhand grip on your thighs, the arms are stretched. Lift the bar close to the body till your chin. The elbows point out so that at the highest point they form a V. Make here a short pause before going slowly down and repeating the movement."
+    ],
+    "he": [
+     "לעמוד זקוף, רגליים ברוחב הכתפיים. להחזיק את מוט ה-EZ באחיזה עליונה מול הירכיים, הידיים ישרות. להרים את המוט קרוב לגוף עד לגובה הסנטר. המרפקים פונים החוצה, כך שבנקודה הגבוהה הם יוצרים צורת V. לעצור כאן לרגע, ואז לרדת לאט ולחזור על התנועה."
     ]
    },
    "source": {
@@ -6773,6 +7144,9 @@
    "instructions": {
     "en": [
      "Hold a dumbbell in each hand in front of your body. Keep your palms towards your body. Lift you hands straight up until your hands are under your chin, then lower them. Repeat the exercise."
+    ],
+    "he": [
+     "להחזיק משקולת בכל יד מול הגוף, כפות הידיים פונות לגוף. להרים את הידיים ישר למעלה עד שהן מתחת לסנטר, ואז להוריד אותן. לחזור על התרגיל."
     ]
    },
    "source": {
@@ -6904,6 +7278,10 @@
     "en": [
      "Hold two dumbbells, the arms are streched, the hands are on your side, the palms face inwards. Bend the arms and bring the weight with a fast movement up. At the same time, rotate your arms by 90 degrees at the very beginning of the movement. At the highest point, rotate a little the weights further outwards. Without a pause, bring them down, slowly.",
      "Don't allow your body to swing during the exercise, all work is done by the biceps, which are the only mucles that should move (pay attention to the elbows)."
+    ],
+    "he": [
+     "להחזיק שתי משקולות, הידיים ישרות לצד הגוף וכפות הידיים פונות פנימה. לכופף את הידיים ולהעלות את המשקל בתנועה מהירה. בתחילת התנועה ממש, לסובב את הידיים ב-90 מעלות. בנקודה הגבוהה, לסובב את המשקולות עוד מעט החוצה. בלי לעצור, להוריד אותן לאט.",
+     "לא לתת לגוף להתנדנד במהלך התרגיל; את כל העבודה עושה היד הקדמית, והיא היחידה שאמורה לזוז (לשים לב למרפקים)."
     ]
    },
    "source": {
@@ -6973,6 +7351,10 @@
     "en": [
      "Hold two dumbbells, the arms are streched, the hands are on your side, the palms face inwards. Bend one arm at a time and bring the weight with a fast movement up. At the same time, rotate your arms by 90 degrees at the very beginning of the movement. At the highest point, rotate a little the weights further outwards. Without a pause, bring the arm back down, slowly, and do the same with the other arm.",
      "Don't allow your body to swing during the exercise, all work is done by the biceps, which are the only mucles that should move (pay attention to the elbows)."
+    ],
+    "he": [
+     "להחזיק שתי משקולות, הידיים ישרות לצד הגוף וכפות הידיים פונות פנימה. לכופף יד אחת בכל פעם ולהעלות את המשקל בתנועה מהירה. בתחילת התנועה ממש, לסובב את היד ב-90 מעלות. בנקודה הגבוהה, לסובב את המשקולת עוד מעט החוצה. בלי לעצור, להוריד את היד לאט ולבצע את אותו הדבר עם היד השנייה.",
+     "לא לתת לגוף להתנדנד במהלך התרגיל; את כל העבודה עושה היד הקדמית, והיא היחידה שאמורה לזוז (לשים לב למרפקים)."
     ]
    },
    "source": {
@@ -7042,6 +7424,10 @@
     "en": [
      "Hold the SZ-bar shoulder-wide, the back is straight, the shoulders slightly back, the arms are streched. Bend the arms, bringing the weight up, with a fast movement. Without pausing, let down the bar with a slow and controlled movement.",
      "Don't allow your body to swing during the exercise, all work is done by the biceps, which are the only mucles that should move (pay attention to the elbows)."
+    ],
+    "he": [
+     "להחזיק את מוט ה-EZ ברוחב הכתפיים, גב ישר, כתפיים מעט לאחור וידיים ישרות. לכופף את הידיים ולהעלות את המשקל בתנועה מהירה. בלי לעצור, להוריד את המוט בתנועה איטית ומבוקרת.",
+     "לא לתת לגוף להתנדנד במהלך התרגיל; את כל העבודה עושה היד הקדמית, והיא היחידה שאמורה לזוז (לשים לב למרפקים)."
     ]
    },
    "source": {
@@ -7112,6 +7498,9 @@
    "instructions": {
     "en": [
      "Place the EZ curl bar on the rest handles in front of the preacher bench. Lean over the bench and grab the EZ curl bar with palms up. Sit down on the preacher bench seat so your upper arms rest on top of the pad and your chest is pressed against the pad. Lower the weight until your elbows are extended and arms are straight. Bring the weights back up to the starting point by contracting biceps. Repeat"
+    ],
+    "he": [
+     "להניח את מוט ה-EZ על התומכנים שבחזית ספסל הסקוט. להתכופף מעל הספסל ולאחוז במוט כשכפות הידיים פונות למעלה. לשבת על מושב הספסל כך שהזרועות העליונות מונחות על הכרית והחזה צמוד אליה. להוריד את המשקל עד שהמרפקים פשוטים והידיים ישרות. להעלות את המשקל חזרה לנקודת ההתחלה על ידי כיווץ היד הקדמית. לחזור על התנועה."
     ]
    },
    "source": {
@@ -7180,6 +7569,9 @@
    "instructions": {
     "en": [
      "Sit on the preacher curl bench and perform a bicep curl with a dumbbell in one hand. Your other hand can be at rest, or beneath your curling arm's elbow."
+    ],
+    "he": [
+     "לשבת על ספסל הסקוט ולבצע כפיפת מרפק עם משקולת ביד אחת. היד השנייה יכולה לנוח, או להיות מתחת למרפק של היד העובדת."
     ]
    },
    "source": {
@@ -7252,6 +7644,13 @@
      "The Curl: Keeping your upper arms stationary and shoulders pinned back against the bench, exhale and curl the weights upward toward your shoulders.",
      "Peak Contraction: Squeeze your biceps hard at the top of the movement, ensuring your elbows do not swing forward.",
      "The Descent: Inhale and slowly lower the dumbbells back to the starting position, maintaining full control and feeling the stretch in the biceps."
+    ],
+    "he": [
+     "הכנה: לכוון ספסל מתכוונן לשיפוע של כ-45 עד 60 מעלות.",
+     "תנוחת התחלה: לשבת עם הגב צמוד לספסל ומשקולת בכל יד. לתת לידיים להיות תלויות ישר למטה לכיוון הרצפה, כפות הידיים פונות קדימה (אחיזה תחתונה).",
+     "הכפיפה: תוך שמירה על הזרועות העליונות במקום והכתפיים צמודות לספסל, לנשוף ולכופף את המשקולות למעלה לכיוון הכתפיים.",
+     "כיווץ שיא: לכווץ חזק את היד הקדמית בראש התנועה, ולוודא שהמרפקים לא זזים קדימה.",
+     "הירידה: לשאוף ולהוריד את המשקולות לאט חזרה לתנוחת ההתחלה, בשליטה מלאה ותוך הרגשת המתיחה ביד הקדמית."
     ]
    },
    "source": {
@@ -7328,6 +7727,17 @@
      "Keep your elbow flexion controlled. Your arms should stay locked in position with no unnecessary movement.",
      "Squeeze hard at the top for 1-2 seconds. This is where maximum tension hits the biceps muscle fibers.",
      "Lower the weight under control for 3-4 seconds to keep muscles under tension for the entire range of motion."
+    ],
+    "he": [
+     "כדי להפיק את המרב מיד קדמית ספיידר עם משקולות, צריך ספסל מתכוונן בשיפוע של 45 מעלות. השיפוע מאפשר לידיים להיות תלויות באופן חופשי, בתנוחת התחלה מושטת כשהמרפקים מעט לפני הגוף, וזה המפתח לשמירה על מתח איזומטרי קל לאורך כל התנועה.",
+     "לשכב על הבטן על ספסל מתכוונן כשהחזה נתמך במלואו, ולהחזיק זוג משקולות.",
+     "לשמור על ראש בתנוחה ניטרלית, בלי למתוח את הצוואר.",
+     "לתת לידיים להיות תלויות ישר למטה כשכפות הידיים פונות קדימה (ליד קדמית ספיידר רגילה), או פנימה לווריאציית פטיש.",
+     "לשמור על כפות רגליים יציבות על הרצפה לשיווי משקל ושליטה.",
+     "להתחיל את הכפיפה על ידי כיווץ היד הקדמית והרמת המשקולות או המוט לכיוון הכתפיים.",
+     "לשמור על כפיפת מרפק מבוקרת. הזרועות צריכות להישאר נעולות במקום, בלי תנועה מיותרת.",
+     "לכווץ חזק למעלה למשך 1-2 שניות. כאן המתח על סיבי היד הקדמית מגיע לשיא.",
+     "להוריד את המשקל בשליטה במשך 3-4 שניות, כדי לשמור על השריר תחת מתח לאורך כל טווח התנועה."
     ]
    },
    "source": {
@@ -7396,6 +7806,9 @@
    "instructions": {
     "en": [
      "The biceps curl machine is designed to isolate the biceps muscles and provide a controlled range of motion. Sit on the machine with your back against the pad and adjust the seat so your arms are aligned with the machine's handles or pads. Grip the handles firmly, keeping your elbows fixed in place, and curl the handles upward by contracting your biceps. Slowly lower the handles to the starting position, maintaining control throughout the movement."
+    ],
+    "he": [
+     "מכונת היד הקדמית נועדה לבודד את שרירי היד הקדמית ולספק טווח תנועה מבוקר. לשבת במכונה עם הגב צמוד לכרית ולכוון את המושב כך שהידיים בקו אחד עם הידיות או הכריות של המכונה. לאחוז בידיות היטב, לשמור על המרפקים קבועים במקום, ולכופף את הידיות למעלה על ידי כיווץ היד הקדמית. להוריד את הידיות לאט לתנוחת ההתחלה, בשליטה לאורך כל התנועה."
     ]
    },
    "source": {
@@ -7467,6 +7880,10 @@
     "en": [
      "Take a cable in your hands (palms parallel, point to each other), the body is straight. Bend the arms and bring the weight up with a fast movement. Without any pause bring it back down with a slow, controlled movement, but don't stretch completely your arms.",
      "Don't swing your body during the exercise, the biceps should do all the work here. The elbows are at your side and don't move."
+    ],
+    "he": [
+     "לאחוז בכבל בשתי הידיים (כפות הידיים מקבילות ופונות זו לזו), הגוף ישר. לכופף את הידיים ולהעלות את המשקל בתנועה מהירה. בלי לעצור, להוריד אותו בתנועה איטית ומבוקרת, אבל בלי ליישר את הידיים לגמרי.",
+     "לא לנדנד את הגוף במהלך התרגיל; היד הקדמית צריכה לעשות את כל העבודה. המרפקים צמודים לצדי הגוף ולא זזים."
     ]
    },
    "source": {
@@ -7534,6 +7951,9 @@
    "instructions": {
     "en": [
      "The reverse-grip barbell curl is a variation on the biceps curl where the palms face downward. The switch from an underhand to an overhand grip brings the forearm and brachialis muscles more into the exercise."
+    ],
+    "he": [
+     "יד קדמית באחיזה הפוכה עם מוט היא וריאציה של כפיפת מרפקים שבה כפות הידיים פונות למטה. המעבר מאחיזה תחתונה לאחיזה עליונה מכניס יותר לעבודה את שרירי האמה ואת השריר הזרועי."
     ]
    },
    "source": {
@@ -7602,6 +8022,9 @@
    "instructions": {
     "en": [
      "Cable curl with the shoulder extended backwards, which puts the biceps in a stretched position at the start of the movement."
+    ],
+    "he": [
+     "כפיפת מרפק בכבל כשהכתף מושטת לאחור, מה שמכניס את היד הקדמית למצב מתוח בתחילת התנועה."
     ]
    },
    "source": {
@@ -7669,6 +8092,9 @@
    "instructions": {
     "en": [
      "With your palms facing forward, curl the weights up to your shoulders. Turn your hands so that that your palms downwards and slowly return the weights back down. Finally face your palms back forward."
+    ],
+    "he": [
+     "כשכפות הידיים פונות קדימה, לכופף את המשקולות למעלה עד הכתפיים. לסובב את הידיים כך שכפות הידיים פונות למטה, ולהוריד את המשקולות לאט. לבסוף, לסובב את כפות הידיים חזרה קדימה."
     ]
    },
    "source": {
@@ -7738,6 +8164,10 @@
     "en": [
      "Hold the SZ-bar and lay down on a flat bench in such a way that around 1/4 of your head is over the edge. Stretch your arms with the bar and bend them so that the bar is lowered. Just before it touches your forehead, push it up.",
      "Pay attention to your elbows and arms: only the triceps are doing the work, the rest of the arms should not move."
+    ],
+    "he": [
+     "להחזיק את מוט ה-EZ ולשכב על ספסל שטוח כך שכרבע מהראש בולט מעבר לקצה. ליישר את הידיים עם המוט, ואז לכופף אותן כדי להוריד את המוט. רגע לפני שהוא נוגע במצח, לדחוף אותו למעלה.",
+     "לשים לב למרפקים ולזרועות: רק היד האחורית עובדת, ושאר הזרוע לא אמורה לזוז."
     ]
    },
    "source": {
@@ -7805,6 +8235,10 @@
     "en": [
      "Hold the dumbbells and lay down on a flat bench in such a way that around 1/4 of your head is over the edge. Stretch arms straight up and then lean dumbbells away from your toes to a 10-20 degree angle. Keep upper arm at this angle throughout exercise. Dumbbell shall not be amed at your head, but away over your head. This will maximise gain from exercise with load on triceps all the time.",
      "Pay attention to your elbows and arms: only the triceps are doing the work, the rest of the arms should not move."
+    ],
+    "he": [
+     "להחזיק את המשקולות ולשכב על ספסל שטוח כך שכרבע מהראש בולט מעבר לקצה. ליישר את הידיים ישר למעלה, ואז להטות את המשקולות הרחק מכפות הרגליים לזווית של 10-20 מעלות. לשמור על הזרוע העליונה בזווית הזו לאורך כל התרגיל. המשקולת לא מכוונת אל הראש, אלא מעבר לו. כך מפיקים את המרב מהתרגיל, עם עומס רציף על היד האחורית.",
+     "לשים לב למרפקים ולזרועות: רק היד האחורית עובדת, ושאר הזרוע לא אמורה לזוז."
     ]
    },
    "source": {
@@ -7871,6 +8305,9 @@
    "instructions": {
     "en": [
      "Use rope handle with your back against the cable machine. Straighten your arms until they are filly extended and reverse the motion resisting on the negative."
+    ],
+    "he": [
+     "להשתמש בחבל, עם הגב אל מכונת הכבל. ליישר את הידיים עד פשיטה מלאה, ולהחזיר את התנועה תוך התנגדות בשלב השלילי (ההורדה)."
     ]
    },
    "source": {
@@ -7937,6 +8374,9 @@
    "instructions": {
     "en": [
      "Single-arm cable pushdown is a unilateral isolation exercise that targets the triceps brachii. By working one arm at a time, it helps correct strength imbalances between sides while also engaging the core for stability. Starting position: Stand facing the cable machine with your feet shoulder-width apart. Attach a single handle to the high pulley. Grab the handle with one hand using an overhand grip (pronated), with your elbow bent at approximately 90° and tucked close to your body. Keep your core braced and your back straight. Execution: Push the handle downward in a controlled motion by extending your elbow until your arm is fully extended. Hold the contraction for 1 second at the bottom, then slowly return to the starting position."
+    ],
+    "he": [
+     "יד אחורית בפולי עליון ביד אחת היא תרגיל מבודד חד-צדדי שמכוון לשריר התלת-ראשי. עבודה עם יד אחת בכל פעם עוזרת לתקן חוסר איזון בכוח בין הצדדים, ומפעילה גם את הליבה לייצוב. תנוחת התחלה: לעמוד מול מכונת הכבל, רגליים ברוחב הכתפיים. לחבר ידית בודדת לפולי העליון. לאחוז בידית ביד אחת באחיזה עליונה, כשהמרפק כפוף בכ-90° וצמוד לגוף. לשמור על ליבה מכווצת וגב ישר. ביצוע: לדחוף את הידית למטה בתנועה מבוקרת על ידי יישור המרפק, עד שהיד ישרה לגמרי. להחזיק את הכיווץ שנייה אחת בתחתית, ואז לחזור לאט לתנוחת ההתחלה."
     ]
    },
    "source": {
@@ -8003,6 +8443,9 @@
    "instructions": {
     "en": [
      "Grab onto the handle, and pull your elbow up and back slightly above your torso. Keep your upper arm to be parallel to the ground for the duration of the set"
+    ],
+    "he": [
+     "לאחוז בידית ולמשוך את המרפק למעלה ולאחור, מעט מעל קו הגוף. לשמור על הזרוע העליונה מקבילה לרצפה לאורך כל הסט."
     ]
    },
    "source": {
@@ -8069,6 +8512,9 @@
    "instructions": {
     "en": [
      "Sit down and hold the bar firmly with your hands. Now press the weight upwards (don't fully extend your arms) and lower it slowly again. As with other triceps exercises, it's important not to move your upper arms."
+    ],
+    "he": [
+     "לשבת ולאחוז במוט היטב. ללחוץ את המשקל למעלה (בלי ליישר את הידיים לגמרי) ולהוריד אותו שוב לאט. כמו בתרגילי יד אחורית אחרים, חשוב לא להזיז את הזרועות העליונות."
     ]
    },
    "source": {
@@ -8136,6 +8582,10 @@
     "en": [
      "Sitting on a bench, grab a barbell with your palms facing up and your hands shoulder-width apart. Rest your forearms on your thighs and allow your wrists to hang over your knees. Perform the movement by curling your palms and wrists towards your face.",
      "Pause for a moment in the top position, then slowly return the barbell to the starting position."
+    ],
+    "he": [
+     "בישיבה על ספסל, לאחוז במוט כשכפות הידיים פונות למעלה והידיים ברוחב הכתפיים. להניח את האמות על הירכיים ולתת לשורשי כף היד להיות תלויים מעבר לברכיים. לבצע את התנועה על ידי כפיפת כפות הידיים ושורשי כף היד לכיוון הפנים.",
+     "לעצור לרגע בתנוחה העליונה, ואז להחזיר לאט את המוט לתנוחת ההתחלה."
     ]
    },
    "source": {
@@ -8203,6 +8653,10 @@
     "en": [
      "Sitting on a bench, grab a barbell with your palms facing down and your hands shoulder-width apart. Rest your forearms on your thighs and allow your wrists to hang over your knees.",
      "Curl your knuckles towards your face, lifting the barbell. Pause for a moment in the top position, then slowly return the barbell to the starting position."
+    ],
+    "he": [
+     "בישיבה על ספסל, לאחוז במוט כשכפות הידיים פונות למטה והידיים ברוחב הכתפיים. להניח את האמות על הירכיים ולתת לשורשי כף היד להיות תלויים מעבר לברכיים.",
+     "להרים את גב כף היד לכיוון הפנים וכך להרים את המוט. לעצור לרגע בתנוחה העליונה, ואז להחזיר לאט את המוט לתנוחת ההתחלה."
     ]
    },
    "source": {
@@ -8272,6 +8726,12 @@
      "Perform the movement by curling your palms and wrists towards your face.",
      "(optional/variable) Pause at the top.",
      "Slowly return to the starting position."
+    ],
+    "he": [
+     "בישיבה על ספסל, לאחוז במשקולת כשכפות הידיים פונות למעלה והידיים ברוחב הכתפיים. להניח את האמות על הירכיים ולתת לשורשי כף היד להיות תלויים מעבר לברכיים.",
+     "לבצע את התנועה על ידי כפיפת כפות הידיים ושורשי כף היד לכיוון הפנים.",
+     "(אופציונלי) לעצור למעלה.",
+     "לחזור לאט לתנוחת ההתחלה."
     ]
    },
    "source": {
@@ -8404,6 +8864,11 @@
      "Grasp dumbbell with both hands at the sides of the upper plates. Hold dumbbell in front of chest, close to torso. Place feet about shoulderwide apart, keep knees slightly bent.",
      "Squat down until thighs are parallel to floor. Keep back straight, bend and move hips backward to keep knees above feet. Return, keep knees slightly flexed. Repeat.",
      "Keep bodyweight on heels and look ahead or slightly above to keep back straight."
+    ],
+    "he": [
+     "לאחוז במשקולת בשתי הידיים בצדי הצלחת העליונה. להחזיק את המשקולת מול החזה, קרוב לגוף. להציב את כפות הרגליים בערך ברוחב הכתפיים, ברכיים מעט כפופות.",
+     "לרדת לסקוואט עד שהירכיים מקבילות לרצפה. לשמור על גב ישר, ולכופף ולהזיז את האגן לאחור כדי שהברכיים יישארו מעל כפות הרגליים. לעלות חזרה, עם ברכיים מעט כפופות. לחזור על התנועה.",
+     "לשמור את משקל הגוף על העקבים ולהסתכל קדימה או מעט למעלה כדי לשמור על גב ישר."
     ]
    },
    "source": {
@@ -8473,6 +8938,9 @@
    "instructions": {
     "en": [
      "Hack squats target the lower body and are performed on a hack squat machine or with a barbell. For the machine variation, position yourself on the platform with your shoulders under the pads and feet slightly forward. Push through your heels to lift the weight, then bend your knees to lower the platform in a controlled motion until your thighs are parallel to the ground. Push back up to the starting position. For the barbell variation, hold the bar behind your legs with your arms extended and perform a squat-like motion."
+    ],
+    "he": [
+     "האק סקוואט מכוון לפלג הגוף התחתון ומבוצע במכונת האק סקוואט או עם מוט. בגרסת המכונה, להתמקם על הפלטפורמה כשהכתפיים מתחת לכריות וכפות הרגליים מעט קדימה. לדחוף דרך העקבים כדי להרים את המשקל, ואז לכופף את הברכיים ולרדת בתנועה מבוקרת עד שהירכיים מקבילות לרצפה. לדחוף חזרה למעלה לתנוחת ההתחלה. בגרסת המוט, להחזיק את המוט מאחורי הרגליים עם ידיים ישרות ולבצע תנועה דמוית סקוואט."
     ]
    },
    "source": {
@@ -8543,6 +9011,9 @@
    "instructions": {
     "en": [
      "The leg press is a weight training exercise in which the individual pushes a weight or resistance away from them using their legs."
+    ],
+    "he": [
+     "לחיצת רגליים היא תרגיל משקולות שבו דוחפים משקל או התנגדות הרחק מהגוף בעזרת הרגליים."
     ]
    },
    "source": {
@@ -8612,6 +9083,9 @@
    "instructions": {
     "en": [
      "Strength training exercise where you push a weight away from your body using one leg at a time on a leg press machine. It helps to improve leg strength, balance, and muscular symmetry by isolating each leg individually. This exercise is particularly useful for identifying and correcting muscle imbalances between your legs."
+    ],
+    "he": [
+     "תרגיל כוח שבו דוחפים משקל הרחק מהגוף ברגל אחת בכל פעם, במכונת לחיצת רגליים. בידוד כל רגל בנפרד עוזר לשפר את הכוח ברגליים, את שיווי המשקל ואת הסימטריה השרירית. התרגיל שימושי במיוחד לזיהוי ותיקון של חוסר איזון שרירי בין הרגליים."
     ]
    },
    "source": {
@@ -8698,6 +9172,25 @@
      "Reduced Balance Requirements: Fixed bar path makes it easier for beginners",
      "Controlled Movement: Less risk of improper form compared to free weight squats",
      "Isolation: Allows focused leg muscle development"
+    ],
+    "he": [
+     "טכניקה וביצוע",
+     "סקוואט בסמית' הוא וריאציה של סקוואט מוט רגיל, עם מוט שנע במסלול קבוע ומונחה. הנה פירוט של הטכניקה הנכונה:",
+     "תנוחת התחלה",
+     "מיקום כפות הרגליים: מעט לפני קו המוט, בערך ברוחב הכתפיים",
+     "מיקום המוט: על הטרפזים העליונים/הכתפיים, כמו בסקוואט מוט רגיל",
+     "עמידה: אפשר לסובב מעט את כפות הרגליים החוצה לסיבוב טבעי של האגן",
+     "תנועת הסקוואט",
+     "לשחרר את המוט על ידי סיבובו מווי הבטיחות",
+     "להוריד את הגוף לאט על ידי כיפוף הברכיים והאגן",
+     "לרדת עד שהירכיים מקבילות לרצפה (או מעט מתחת)",
+     "לעצור לרגע בתחתית התנועה",
+     "לדחוף דרך העקבים כדי לחזור לתנוחת ההתחלה",
+     "יתרונות ודגשים",
+     "יתרונות",
+     "פחות דרישה לשיווי משקל: מסלול המוט הקבוע מקל על מתחילים",
+     "תנועה מבוקרת: פחות סיכון לטכניקה שגויה לעומת סקוואט במשקל חופשי",
+     "בידוד: מאפשר התמקדות בפיתוח שרירי הרגליים"
     ]
    },
    "source": {
@@ -8770,6 +9263,9 @@
    "instructions": {
     "en": [
      "Squat is a type of bodyweight exercise. It is one of the most popular exercises for strength and muscle growth. Squat is particularly effective for focusing on the muscles of the leg and hips. Squat are an easy exercise for beginners to do. It can help strengthen leg muscles, tighten hip muscles and burn calories to lose weight. It tightens the butt and legs. Squats are very effective for firming and strengthening your legs by acting on the gluteus,hip flexors, quadriceps, hamstrings and inner thigh muscles. Also, bodyweight squats can help shape your glutes and butt."
+    ],
+    "he": [
+     "סקוואט הוא תרגיל במשקל גוף, ואחד התרגילים הפופולריים ביותר לכוח ולבניית שריר. הוא יעיל במיוחד לשרירי הרגליים והאגן, וקל לביצוע גם למתחילים. הוא עוזר לחזק את שרירי הרגליים, להדק את שרירי האגן ולשרוף קלוריות לירידה במשקל, ומחטב את הישבן והרגליים. סקוואט יעיל מאוד לחיזוק ולהידוק הרגליים, כי הוא מפעיל את שרירי הישבן, מכופפי הירך, הארבע-ראשי, הירך האחורית והירך הפנימית. בנוסף, סקוואט במשקל גוף יכול לעזור לעצב את הישבן."
     ]
    },
    "source": {
@@ -8842,6 +9338,10 @@
     "en": [
      "Put barbell on the back of your shoulders. Stand upright, then take the first step forward. Step should bring you forward so that your supporting legs knee can touch the floor. Then stand back up and repeat with the other leg.",
      "Remember to keep good posture."
+    ],
+    "he": [
+     "להניח את המוט על החלק האחורי של הכתפיים. לעמוד זקוף ולצעוד את הצעד הראשון קדימה. הצעד צריך להיות ארוך מספיק כדי שהברך של הרגל האחורית תוכל לגעת ברצפה. לקום חזרה ולחזור עם הרגל השנייה.",
+     "לזכור לשמור על יציבה טובה."
     ]
    },
    "source": {
@@ -8977,6 +9477,15 @@
      "Slowly bend both knees to form 90 degree angles.",
      "Return to the starting position.",
      "Repeat, alternating legs."
+    ],
+    "he": [
+     "תנוחת התחלה:",
+     "לעמוד זקוף, רגליים ברוחב האגן.",
+     "שלבים:",
+     "לצעוד לאחור עם רגל אחת, מספיק רחוק כדי שתוכל להתכופף בנוחות לזווית של 90 מעלות.",
+     "לכופף לאט את שתי הברכיים לזווית של 90 מעלות.",
+     "לחזור לתנוחת ההתחלה.",
+     "לחזור על התנועה, לסירוגין בין הרגליים."
     ]
    },
    "source": {
@@ -9051,6 +9560,16 @@
      "Bring your pelvis back up.",
      "Return to the starting position by stepping back.",
      "Repeat, switching legs each time."
+    ],
+    "he": [
+     "תנוחת התחלה:",
+     "לעמוד עם גב ישר.",
+     "שלבים:",
+     "לצעוד צעד גדול קדימה עם הרגל השמאלית.",
+     "להוריד את האגן עד שהברך הימנית כמעט נוגעת ברצפה.",
+     "להרים את האגן חזרה.",
+     "לחזור לתנוחת ההתחלה בצעד לאחור.",
+     "לחזור על התנועה, בכל פעם עם הרגל השנייה."
     ]
    },
    "source": {
@@ -9119,6 +9638,9 @@
    "instructions": {
     "en": [
      "The \"Smith Machine Split Squat\" is a strength exercise performed on the Smith machine, ideal for targeting the legs and glutes. It involves placing one foot forward and the other back, lowering the body until the front thigh is parallel to the ground while the bar slides vertically along the machine. This exercise helps improve stability, correct muscle imbalances, and reduces stress on the back, providing a safe environment for strength training."
+    ],
+    "he": [
+     "סקוואט מפוצל בסמית' הוא תרגיל כוח שמבוצע במכונת סמית', ומתאים מאוד לעבודה על הרגליים והישבן. מציבים רגל אחת קדימה ואת השנייה מאחור, ומורידים את הגוף עד שהירך הקדמית מקבילה לרצפה, כשהמוט נע אנכית לאורך המכונה. התרגיל עוזר לשפר יציבות, לתקן חוסר איזון שרירי ומפחית עומס על הגב, וכך מספק סביבה בטוחה לאימון כוח."
     ]
    },
    "source": {
@@ -9247,6 +9769,9 @@
    "instructions": {
     "en": [
      "The bar should go directly on your upper thigh, directly below your crotch. Your feet should be directly under your knees. Push your hips up so that you form a straight line from your knees to your shoulders. Use a pad for comfort."
+    ],
+    "he": [
+     "המוט צריך להיות מונח על החלק העליון של הירכיים, ממש מתחת למפשעה. כפות הרגליים צריכות להיות ישירות מתחת לברכיים. לדחוף את האגן למעלה כך שנוצר קו ישר מהברכיים ועד הכתפיים. להשתמש בכרית לנוחות."
     ]
    },
    "source": {
@@ -9315,6 +9840,9 @@
    "instructions": {
     "en": [
      "This exercise involves sitting on the ground with a dumbbell resting on the hips, then thrusting the hips upward while squeezing the glutes. It is a great exercise for strengthening the glutes and improving hip mobility."
+    ],
+    "he": [
+     "יושבים על הרצפה עם משקולת מונחת על האגן, ואז דוחפים את האגן למעלה תוך כיווץ הישבן. זהו תרגיל מצוין לחיזוק הישבן ולשיפור הניידות של מפרק הירך."
     ]
    },
    "source": {
@@ -9383,6 +9911,9 @@
    "instructions": {
     "en": [
      "Extend one leg while laying down and start raising your body with one leg touching the ground through the heel."
+    ],
+    "he": [
+     "בשכיבה, ליישר רגל אחת ולהתחיל להרים את הגוף כשהרגל השנייה נוגעת ברצפה דרך העקב."
     ]
    },
    "source": {
@@ -9451,6 +9982,9 @@
    "instructions": {
     "en": [
      "Lie on you back with your hips and knees flexed, feet on the ground. From this position, raise your butt off of the ground to a height where your body makes a straight line from your knees to your shoulders. To make the exercise more intense, you can add weight by letting a barbell rest on your hips as you complete the motion, or you can put your feet on a slightly higher surface such as a step or a bench."
+    ],
+    "he": [
+     "לשכב על הגב עם ברכיים כפופות וכפות רגליים על הרצפה. מהתנוחה הזו להרים את הישבן מהרצפה לגובה שבו הגוף יוצר קו ישר מהברכיים ועד הכתפיים. כדי להקשות, אפשר להוסיף משקל על ידי הנחת מוט על האגן במהלך התנועה, או להניח את כפות הרגליים על משטח מעט גבוה יותר, כמו מדרגה או ספסל."
     ]
    },
    "source": {
@@ -9521,6 +10055,10 @@
     "en": [
      "The Cable Pull Through is a lower-body exercise that targets the glutes and hamstrings using a \"hip hinge\" motion. To perform it, attach a rope to the lowest pulley setting, face away from the machine with the rope between your legs, and step forward to create tension. Keeping your back flat and knees slightly soft, push your hips backward as if trying to close a door behind you until you feel a deep stretch in your hamstrings.",
      "To finish the rep, explosively drive your hips forward to return to a standing position, squeezing your glutes hard at the top. It is vital to remember that this is not a squat; your knees should not bend deeply, and your arms should remain straight and relaxed, acting only as hooks for the rope. This movement provides constant tension on the glutes while placing less stress on the lower back than a traditional deadlift."
+    ],
+    "he": [
+     "משיכה בין הרגליים בכבל היא תרגיל לפלג הגוף התחתון שמכוון לישבן ולירך האחורית בתנועת ציר מהאגן. לביצוע, לחבר חבל לפולי בנקודה הנמוכה ביותר, לעמוד עם הגב למכונה כשהחבל בין הרגליים, ולצעוד קדימה כדי ליצור מתח. עם גב ישר וברכיים מעט רכות, לדחוף את האגן לאחור, כאילו סוגרים דלת מאחוריכם, עד שמרגישים מתיחה עמוקה בירך האחורית.",
+     "כדי לסיים את החזרה, לדחוף את האגן קדימה בפיצוץ ולחזור לעמידה, תוך כיווץ חזק של הישבן למעלה. חשוב לזכור שזה לא סקוואט: הברכיים לא אמורות להתכופף עמוק, והידיים נשארות ישרות ורפויות ומשמשות רק כווים שמחזיקים את החבל. התנועה שומרת על מתח קבוע על הישבן ומעמיסה פחות על הגב התחתון מדדליפט רגיל."
     ]
    },
    "source": {
@@ -9589,6 +10127,9 @@
    "instructions": {
     "en": [
      "This exercise lets you work the upper, or larger, part of the glutes. For that reason, it should never be missing from your routine of isolated exercises for training the glutes. Stand in front of a cable machine and locate the low pulley. Then attach the ankle strap to work on the low pulley. As for your posture, you should stay upright at all times. Pay special attention to your back to keep it straight and avoid injury. It is advisable to hold on to the machine for better balance. With the leg that is holding the weight of the cable, perform a slow stretch backward without bending the knee."
+    ],
+    "he": [
+     "התרגיל מאפשר לעבוד על החלק העליון, הגדול יותר, של הישבן, ולכן כדאי שיהיה חלק קבוע משגרת התרגילים המבודדים לישבן. לעמוד מול מכונת כבל ולאתר את הפולי התחתון, ולחבר אליו את רצועת הקרסול. לגבי היציבה, לשמור על גוף זקוף כל הזמן, ולהקפיד במיוחד על גב ישר כדי למנוע פציעה. מומלץ להחזיק במכונה לשיווי משקל טוב יותר. עם הרגל שמחוברת לכבל, למתוח אותה לאט לאחור בלי לכופף את הברך."
     ]
    },
    "source": {
@@ -9658,6 +10199,10 @@
     "en": [
      "Drive through your heel, not your toes, to hit the glute.",
      "Don’t hyperextend your lower back at the top."
+    ],
+    "he": [
+     "לדחוף דרך העקב, לא דרך קצות האצבעות, כדי להפעיל את הישבן.",
+     "לא לקשת את הגב התחתון יותר מדי בראש התנועה."
     ]
    },
    "source": {
@@ -9747,6 +10292,30 @@
      "Reduces Risk of Knee Injuries",
      "Enhances Lateral Movement Capabilities",
      "Targets Often-Neglected Muscle Groups"
+    ],
+    "he": [
+     "טכניקה וביצוע",
+     "תנוחת התחלה",
+     "ישיבה: לשבת במכונה עם הגב צמוד לכרית",
+     "מיקום הרגליים: הצד החיצוני של הירכיים צמוד לכריות ההתנגדות של המכונה",
+     "כיוון המכונה: לכוון את המושב כך שמפרק הירך בקו אחד עם ציר הסיבוב של המכונה",
+     "טכניקת התנועה",
+     "להתחיל עם רגליים צמודות או לחוצות קלות אל הכריות",
+     "לדחוף לאט את הרגליים החוצה ולפתוח אותן",
+     "להמשיך עד טווח הפתיחה המקסימלי הנוח",
+     "לעצור לרגע בנקודה החיצונית של התנועה",
+     "לחזור לאט לתנוחת ההתחלה בתנועה מבוקרת",
+     "פירוק ביומכני",
+     "השרירים המעורבים",
+     "שריר עיקרי: הישבן האמצעי (שריר הירך הצדדי)",
+     "ייצוב: מפעיל את שרירי הליבה והגב התחתון",
+     "תנועה תפקודית: מחקה את תנועת הרגל לצד, כמו בהליכה, בספורט ובפעילות יומיומית",
+     "יתרונות",
+     "כוח ויציבות",
+     "משפר את יציבות האגן",
+     "מפחית את הסיכון לפציעות ברך",
+     "משפר את היכולת לנוע לצדדים",
+     "מכוון לקבוצות שרירים שלעיתים קרובות מוזנחות"
     ]
    },
    "source": {
@@ -9815,6 +10384,9 @@
    "instructions": {
     "en": [
      "Lay on a bench and put your calves behind the leg holder (better if they are hold on around the lower calves). Hold a grip on the bars to make sure the body is firmly in place. Bend your legs bringing the weight up, go slowly back. During the exercise the body should not move, all work is done by the legs."
+    ],
+    "he": [
+     "לשכב על הספסל ולהכניס את השוקיים מתחת לכרית הרגליים (עדיף שהכרית תהיה בחלק התחתון של השוק). לאחוז בידיות כדי לוודא שהגוף מקובע היטב במקום. לכופף את הרגליים ולהעלות את המשקל, ולחזור לאט. במהלך התרגיל הגוף לא אמור לזוז, ואת כל העבודה עושות הרגליים."
     ]
    },
    "source": {
@@ -9943,6 +10515,9 @@
    "instructions": {
     "en": [
      "The Nordic hamstring curl is one of the best lower-body exercises to build posterior leg strength, improve knee health, and prevent injury."
+    ],
+    "he": [
+     "כפיפת ברכיים נורדית היא אחד התרגילים הטובים ביותר לפלג הגוף התחתון לבניית כוח בחלק האחורי של הרגל, לשיפור בריאות הברך ולמניעת פציעות."
     ]
    },
    "source": {
@@ -10016,6 +10591,13 @@
      "Range of Motion: Continue lowering your torso until it is nearly parallel to the floor, or you feel an intense stretch in your supporting hamstring, ensuring your back remains neutral throughout the movement.",
      "Return to Start: Pause at the bottom, then contract your glutes and hamstrings to slowly raise your torso back to the starting position. Your non-supporting leg should return in line with the supporting one.",
      "Switch Sides: After completing your desired number of repetitions on one side, switch your weight and repeat the movement on the other leg."
+    ],
+    "he": [
+     "תנוחת התחלה: לעמוד זקוף עם כיפוף קל בברכיים, ולהחזיק משקולת ביד אחת או בשתי הידיים. להעביר את המשקל לרגל התומכת (למשל הרגל הימנית) ולהרים מעט את כף הרגל השנייה מהרצפה.",
+     "הכפיפה: עם גב ישר וליבה מכווצת, להתכופף מהאגן ולדחוף את הישבן לאחור. בזמן שפלג הגוף יורד, למתוח את הרגל החופשית ישר לאחור לשיווי משקל, תוך שמירה על האגן מקביל לרצפה. המשקולות צריכות לרדת לכיוון הרצפה לאורך קו הרגל התומכת.",
+     "טווח תנועה: להמשיך להוריד את פלג הגוף עד שהוא כמעט מקביל לרצפה, או עד שמרגישים מתיחה חזקה בירך האחורית של הרגל התומכת, ולוודא שהגב נשאר ניטרלי לאורך כל התנועה.",
+     "חזרה להתחלה: לעצור בתחתית, ואז לכווץ את הישבן והירך האחורית כדי להרים לאט את פלג הגוף חזרה לתנוחת ההתחלה. הרגל החופשית חוזרת לקו אחד עם הרגל התומכת.",
+     "החלפת צד: אחרי שמסיימים את מספר החזרות הרצוי בצד אחד, להעביר את המשקל ולחזור על התנועה עם הרגל השנייה."
     ]
    },
    "source": {
@@ -10089,6 +10671,11 @@
      "Hold the kettlebell securely in both hands. Keep your back flat throughout the move, avoiding any rounding of the spine.Keeping your knees \"soft\", hinge your hips backwards, letting the kettlebell swing between your knees.",
      "You want to bend from the hips as far as you can without letting your back round forwards. Then, snap your hips forwards quickly and standing up straight, locking your body in an upright posture.",
      "The speed you do this will cause your arms and the kettlebell to swing up in front of you. Don't try to lift the kettlebell with your arms. The snapping forwards of your hips will cause the kettlebell to swing forwards through momentum. Depending on the weight of the kettlebell and the speed of your hip movement, your arms will swing up to about shoulder height. At the top of this swing, let your hips hinge backwards again as the kettlebell swings back down to between your legs and the start of the next repetition."
+    ],
+    "he": [
+     "להחזיק את הקטלבל היטב בשתי הידיים. לשמור על גב ישר לאורך כל התנועה, בלי לעגל את עמוד השדרה. עם ברכיים רכות, להתכופף מהאגן לאחור ולתת לקטלבל להתנדנד בין הברכיים.",
+     "להתכופף מהאגן כמה שאפשר בלי שהגב יתעגל קדימה. אז להקפיץ את האגן קדימה במהירות ולהזדקף, תוך נעילת הגוף בעמידה זקופה.",
+     "המהירות של התנועה תגרום לידיים ולקטלבל להתנדנד למעלה לפניכם. לא לנסות להרים את הקטלבל עם הידיים; הדחיפה המהירה של האגן קדימה היא שמניפה את הקטלבל בתנופה. בהתאם למשקל הקטלבל ולמהירות תנועת האגן, הידיים יעלו בערך עד גובה הכתפיים. בשיא התנופה, לתת לאגן להתכופף שוב לאחור בזמן שהקטלבל יורד חזרה אל בין הרגליים, וזו תחילת החזרה הבאה."
     ]
    },
    "source": {
@@ -10155,6 +10742,9 @@
    "instructions": {
     "en": [
      "Sit on a bench for calf raises and check that the feet are half free and that you can completely stretch the calf muscles down. Pull your calves up, going as far (up) as you can. Make at the highest point a short pause of 1 or 2 seconds and go down."
+    ],
+    "he": [
+     "לשבת במכונת התאומים ולוודא שחצי מכף הרגל חופשי ושאפשר למתוח את שרירי התאומים עד הסוף למטה. להרים את העקבים כמה שיותר גבוה. בנקודה הגבוהה לעצור שנייה או שתיים, ולרדת."
     ]
    },
    "source": {
@@ -10222,6 +10812,10 @@
     "en": [
      "Put the balls of your feet on an extended leg press pad. Use your calves to press the weight by flexing your feet/toes into a pointed position, and releasing back into a relaxed position.",
      "This exercise builds mass and strength in the Gastrocnemius and Soleus muscles as well, if not better, than any calf exercise."
+    ],
+    "he": [
+     "להניח את כריות כפות הרגליים על פלטפורמת מכונת לחיצת הרגליים, כשהרגליים ישרות. לדחוף את המשקל בעזרת התאומים על ידי פשיטת כפות הרגליים (כמו עמידה על קצות האצבעות), ולשחרר בחזרה לתנוחה רפויה.",
+     "התרגיל בונה מסה וכוח בשרירי התאומים והסולאוס לא פחות טוב, ואולי אף יותר, מכל תרגיל תאומים אחר."
     ]
    },
    "source": {
@@ -10289,6 +10883,10 @@
     "en": [
      "Place yourself on the machine with your back firmly against the backrest, the feet are on the platform for calf raises. Check that the feet are half free and that you can completely stretch the calf muscles down.",
      "With straight knees pull up your weight as much as you can. Go with a fluid movement down till the calves are completely stretched. Repeat."
+    ],
+    "he": [
+     "להתמקם במכונה עם הגב צמוד היטב למשענת, וכפות הרגליים על משטח התאומים. לוודא שחצי מכף הרגל חופשי ושאפשר למתוח את שרירי התאומים עד הסוף למטה.",
+     "עם ברכיים ישרות, להרים את המשקל כמה שיותר גבוה. לרדת בתנועה רציפה עד שהתאומים מתוחים לגמרי. לחזור על התנועה."
     ]
    },
    "source": {
@@ -10356,6 +10954,9 @@
    "instructions": {
     "en": [
      "The Wall Sit (or wall chair) is an isometric exercise that mainly involves the leg muscles, improving muscular endurance and stability. Here are the main and secondary muscles activated during the exercise."
+    ],
+    "he": [
+     "ישיבה על הקיר (או כיסא קיר) היא תרגיל איזומטרי שמערב בעיקר את שרירי הרגליים ומשפר סבולת שריר ויציבות."
     ]
    },
    "source": {
@@ -10426,6 +11027,9 @@
    "instructions": {
     "en": [
      "The Cossack Squat is a multi-joint exercise that works mainly on the legs and buttocks, but also involves stabilizing muscles. It is an excellent exercise for improving strength, mobility and stability in a functional way."
+    ],
+    "he": [
+     "סקוואט קוזאקי הוא תרגיל רב-מפרקי שעובד בעיקר על הרגליים והישבן, ומערב גם שרירים מייצבים. זהו תרגיל מצוין לשיפור כוח, ניידות ויציבות באופן תפקודי."
     ]
    },
    "source": {
@@ -10500,6 +11104,13 @@
      "Slowly squat down.",
      "(optional) pause at the bottom.",
      "Keep your (free) leg and arms extended for the whole duration."
+    ],
+    "he": [
+     "לעמוד עם רגליים ברוחב האגן, אצבעות כפות הרגליים פונות קדימה וחזה זקוף.",
+     "למתוח רגל אחת ישר קדימה, ולהושיט את שתי הידיים לפנים בגובה הכתפיים. לכווץ את הליבה ולהסתכל ישר קדימה.",
+     "לרדת לאט לסקוואט.",
+     "(אופציונלי) לעצור בתחתית.",
+     "לשמור על הרגל החופשית והידיים מושטות לאורך כל התנועה."
     ]
    },
    "source": {
@@ -10569,6 +11180,9 @@
    "instructions": {
     "en": [
      "Hanging from bar or straps, bring legs up with knees extended or flexed"
+    ],
+    "he": [
+     "בתלייה על מוט או ברצועות, להרים את הרגליים כשהברכיים ישרות או כפופות."
     ]
    },
    "source": {
@@ -10637,6 +11251,9 @@
    "instructions": {
     "en": [
      "Lay down on a bench and hold onto the recliner with your hands to keep you stable. Hold your legs straight and lift them till they make an angle of about 45°. Make a short pause of 1 sec. and go slowly down to the initial position. To increase the intensity you can make a longer pause of 7 sec. every 5th time."
+    ],
+    "he": [
+     "לשכב על ספסל ולהחזיק בידיים בקצה הספסל כדי לשמור על יציבות. להחזיק את הרגליים ישרות ולהרים אותן עד שהן יוצרות זווית של כ-45°. לעצור שנייה אחת ולרדת לאט לתנוחת ההתחלה. כדי להגביר את העצימות, אפשר לעצור 7 שניות בכל חזרה חמישית."
     ]
    },
    "source": {
@@ -10709,6 +11326,13 @@
      "Raise your legs, but about 70% of the way you should be able to also raise your pelvis",
      "(optional/variable) Hold 1/2 seconds at the top",
      "Go back to starting position"
+    ],
+    "he": [
+     "לשכב על הגב.",
+     "להניח את הידיים ליד הישבן (בדרך כלל מעט לפניו, מתחתיו, או שניהם).",
+     "להרים את הרגליים; בערך ב-70% מהדרך, להרים גם את האגן.",
+     "(אופציונלי) להחזיק חצי שנייה עד שנייה למעלה.",
+     "לחזור לתנוחת ההתחלה."
     ]
    },
    "source": {
@@ -10776,6 +11400,9 @@
    "instructions": {
     "en": [
      "Bicycle crunches are a core exercise performed on the floor. Lie on your back with your hands behind your head and legs extended. Lift your shoulders off the ground, bring one knee toward your chest, and twist your torso so your opposite elbow meets the knee. Alternate sides in a pedaling motion, ensuring controlled movements and engaging your core throughout the exercise."
+    ],
+    "he": [
+     "כפיפות בטן אופניים הן תרגיל ליבה שמבוצע על הרצפה. לשכב על הגב עם הידיים מאחורי הראש והרגליים ישרות. להרים את הכתפיים מהרצפה, לקרב ברך אחת לחזה ולסובב את פלג הגוף כך שהמרפק הנגדי פוגש את הברך. להחליף צדדים בתנועת דיווש, בתנועות מבוקרות ותוך הפעלת הליבה לאורך כל התרגיל."
     ]
    },
    "source": {
@@ -10846,6 +11473,11 @@
      "Hold a dumbbell, barbell weight or something else that is heavy with both hands, but make sure it is not too heavy and you are able to keep in form.",
      "Lean back to a 45-degree angle from the floor. For an extra challenge, lift your feet off the floor.",
      "Rotate your arms to one side to the same level as your chest, touch the floor for a little extra challenge, and then do the same to the other side. When you're back in your original position after doing both sides it will count as 1 rep."
+    ],
+    "he": [
+     "להחזיק בשתי הידיים משקולת, צלחת משקל או חפץ כבד אחר, אבל לוודא שהוא לא כבד מדי ושאפשר לשמור על טכניקה נכונה.",
+     "להישען לאחור לזווית של 45 מעלות מהרצפה. לאתגר נוסף, להרים את כפות הרגליים מהרצפה.",
+     "לסובב את הידיים לצד אחד עד לגובה החזה (לאתגר נוסף, לגעת ברצפה), ואז לעשות אותו הדבר לצד השני. חזרה לתנוחת ההתחלה אחרי שני הצדדים נחשבת חזרה אחת."
     ]
    },
    "source": {
@@ -10916,6 +11548,9 @@
    "instructions": {
     "en": [
      "Take the cable on your hands and hold it next to your temples. Knee down and hold your upper body straight and bend forward. Go down with a fast movement, rolling your back in (your ellbows point to your knees). Once down, go slowly back to the initial position."
+    ],
+    "he": [
+     "לאחוז בכבל בידיים ולהחזיק אותו ליד הרקות. לכרוע על הברכיים, להחזיק את פלג הגוף העליון ישר ולהתכופף קדימה. לרדת בתנועה מהירה תוך עיגול הגב (המרפקים מכוונים לברכיים). למטה, לחזור לאט לתנוחת ההתחלה."
     ]
    },
    "source": {
@@ -10984,6 +11619,9 @@
    "instructions": {
     "en": [
      "The procedure is very similar as for regular crunches, only with the additional weight of the machine. Sit on the machine, put both feet firmly on the ground. Grab the to the weights, cables, etc. and do a rolling motion forwards (the spine should ideally lose touch vertebra by vertebra). Slowly return to the starting position."
+    ],
+    "he": [
+     "הביצוע דומה מאוד לכפיפות בטן רגילות, רק עם המשקל הנוסף של המכונה. לשבת במכונה ולהציב את שתי כפות הרגליים היטב על הרצפה. לאחוז בידיות ולבצע תנועת גלגול קדימה (באופן אידיאלי, עמוד השדרה מתנתק מהמשענת חוליה אחר חוליה). לחזור לאט לתנוחת ההתחלה."
     ]
    },
    "source": {
@@ -11052,6 +11690,9 @@
    "instructions": {
     "en": [
      "Lay down on your back on a inclined bench, feet are on one end of the bench. Ask a partner or use some other help (barbell, etc.) to keep them fixed, your hands are behind your head. From this position move your upper body up till your head or elbows touch your knees. Do this movement by rolling up your back."
+    ],
+    "he": [
+     "לשכב על הגב על ספסל משופע, כפות הרגליים בקצה אחד של הספסל. לבקש מבן זוג לאימון או להיעזר במשהו אחר (מוט וכדומה) כדי לקבע אותן, והידיים מאחורי הראש. מהתנוחה הזו להרים את פלג הגוף העליון עד שהראש או המרפקים נוגעים בברכיים, תוך גלגול הגב."
     ]
    },
    "source": {
@@ -11120,6 +11761,9 @@
    "instructions": {
     "en": [
      "Sit on a mat, your calves are resting on a bench, the knees make a right angle. Hold your hands behind your neck. Go now up with a rolling movement of your back, you should feel how the individual vertebrae lose contact with the mat. At the highest point, contract your abs as much as you can and hold there for 2 sec. Go now down, unrolling your back."
+    ],
+    "he": [
+     "לשבת על מזרן כשהשוקיים מונחות על ספסל והברכיים בזווית ישרה. להחזיק את הידיים מאחורי העורף. לעלות בתנועת גלגול של הגב, ולהרגיש איך החוליות מתנתקות מהמזרן אחת אחרי השנייה. בנקודה הגבוהה, לכווץ את הבטן כמה שאפשר ולהחזיק 2 שניות. לרדת חזרה תוך פריסת הגב."
     ]
    },
    "source": {
@@ -11244,6 +11888,9 @@
    "instructions": {
     "en": [
      "Lie on your back, with your hips and knees bent to 90°. Raise both arms toward the ceiling. Pull your lower back to the floor to eliminate the gap. Start by pressing one leg out, and tapping the heel to the floor. \"As you extend one leg, exhale as much as you can, keeping your lower back glued to the floor,\" Dunham says. When you can’t exhale any more, pull your knee back to the starting position. Make this more difficult by holding weight in your hands, or by lowering opposite arm and leg."
+    ],
+    "he": [
+     "לשכב על הגב עם האגן והברכיים כפופים ב-90°. להרים את שתי הידיים לכיוון התקרה. להצמיד את הגב התחתון לרצפה כדי לסגור את הרווח. להתחיל ביישור רגל אחת קדימה ולגעת בעקב ברצפה. בזמן יישור הרגל, לנשוף כמה שאפשר ולשמור על הגב התחתון צמוד לרצפה. כשאי אפשר לנשוף יותר, להחזיר את הברך לתנוחת ההתחלה. אפשר להקשות על ידי החזקת משקל בידיים, או על ידי הורדת יד ורגל נגדיות."
     ]
    },
    "source": {
@@ -11317,6 +11964,13 @@
      "Extend your right arm forward and left leg backward simultaneously, keeping hips square.",
      "Pause briefly at full extension while engaging your core and glutes.",
      "Return to the starting position and repeat on the opposite side"
+    ],
+    "he": [
+     "ציפור-כלב הוא תרגיל יציבות ליבה שמשפר שיווי משקל, קואורדינציה ויישור של עמוד השדרה. זו תנועה בעצימות נמוכה שמתאימה לחיזוק השרשרת האחורית ולשיפור השליטה התפקודית.",
+     "להתחיל בעמידת שש, ידיים מתחת לכתפיים וברכיים מתחת לאגן, עם עמוד שדרה ניטרלי.",
+     "להושיט את היד הימנית קדימה ואת הרגל השמאלית לאחור בו-זמנית, תוך שמירה על אגן ישר.",
+     "לעצור לרגע ביישור מלא תוך הפעלת הליבה והישבן.",
+     "לחזור לתנוחת ההתחלה ולחזור על התנועה בצד השני."
     ]
    },
    "source": {
@@ -11391,6 +12045,12 @@
      "Grip the Wheel: Hold the handles firmly.",
      "Roll Out: Slowly roll the wheel forward, extending your body while keeping your core tight.",
      "Return: Pull the wheel back towards your knees, maintaining tension in your core."
+    ],
+    "he": [
+     "תנוחת התחלה: לכרוע על הרצפה עם גלגלת הבטן לפניכם.",
+     "אחיזה בגלגלת: להחזיק את הידיות היטב.",
+     "גלגול החוצה: לגלגל את הגלגלת לאט קדימה, תוך מתיחת הגוף ושמירה על ליבה מכווצת.",
+     "חזרה: למשוך את הגלגלת חזרה לכיוון הברכיים, תוך שמירה על מתח בליבה."
     ]
    },
    "source": {
@@ -11458,6 +12118,9 @@
    "instructions": {
     "en": [
      "Get on a mat and lie on your back. Contract your abs, stretch your arms and legs and raise them (your head and shoulders are also be raised). Make sure your lower back remains in contact with the mat."
+    ],
+    "he": [
+     "לשכב על הגב על מזרן. לכווץ את הבטן, למתוח את הידיים והרגליים ולהרים אותן (גם הראש והכתפיים מורמים). לוודא שהגב התחתון נשאר צמוד למזרן."
     ]
    },
    "source": {
@@ -11534,6 +12197,16 @@
      "Keep repeating step 2, alternating legs.",
      "Notes:",
      "Throughout the exercise, your back should remain as straight as possible – avoid a hump or a sagging back."
+    ],
+    "he": [
+     "תנוחת התחלה:",
+     "להתחיל בתנוחת שכיבת סמיכה עליונה, כלומר פלאנק על ידיים ישרות. הידיים ישירות מתחת לכתפיים. הראש בקו אחד עם הגב, המבט לרצפה. כפות הרגליים בערך ברוחב האגן.",
+     "שלבים:",
+     "לקרב ברך אחת למרכז הגוף, לכיוון המרפקים, כשהרגל השנייה נשארת ישרה.",
+     "בתנועת קפיצה מהירה, ליישר את הרגל הכפופה ולקרב את הברך השנייה לגוף.",
+     "להמשיך לחזור על השלב הקודם, לסירוגין בין הרגליים.",
+     "דגשים:",
+     "לאורך כל התרגיל, הגב צריך להישאר ישר ככל האפשר, בלי להתקמר ובלי לשקוע."
     ]
    },
    "source": {
@@ -11603,6 +12276,12 @@
      "Stand parallel to the cable machine or to the anchor point to the resistance band and clasp with the handle or band with both hands.",
      "Make sure your torso is front on and bring your hands to the center of your chest and slowly press out.",
      "Slowly return your hands to the chest and repeat."
+    ],
+    "he": [
+     "לחיצת פאלוף היא תרגיל נגד סיבוב שמאמן את השרירים הגדולים והקטנים סביב עמוד השדרה להתנגד לסיבוב.",
+     "לעמוד בצד למכונת הכבל (או לנקודת העיגון של הגומייה) ולאחוז בידית או בגומייה בשתי הידיים.",
+     "לוודא שפלג הגוף פונה קדימה, להביא את הידיים למרכז החזה ולדחוף אותן לאט קדימה.",
+     "להחזיר לאט את הידיים לחזה ולחזור על התנועה."
     ]
    },
    "source": {
@@ -11673,6 +12352,9 @@
    "instructions": {
     "en": [
      "Set cable pulley slightly lower than chest height. Keep body facing forward with hips stable. Grab the pulley handle, fully extend your arms and bring your arms forward and across your body. Hold for 1 second at the end of the movement and slowly return to starting position."
+    ],
+    "he": [
+     "לכוון את הפולי מעט מתחת לגובה החזה. הגוף פונה קדימה והאגן יציב. לאחוז בידית, ליישר את הידיים לגמרי ולהעביר אותן קדימה ולרוחב הגוף. להחזיק שנייה אחת בסוף התנועה ולחזור לאט לתנוחת ההתחלה."
     ]
    },
    "source": {
@@ -11739,6 +12421,9 @@
    "instructions": {
     "en": [
      "This exercise involves holding a dumbbell in one hand and bending sideways to work the oblique muscles on the side of the body. It can be done standing or seated and is often used as a core strengthening exercise."
+    ],
+    "he": [
+     "מחזיקים משקולת ביד אחת ומתכופפים הצידה כדי לעבוד על השרירים האלכסוניים בצד הגוף. אפשר לבצע בעמידה או בישיבה, ולרוב משתמשים בתרגיל לחיזוק הליבה."
     ]
    },
    "source": {
@@ -11809,6 +12494,9 @@
    "instructions": {
     "en": [
      "The name \"Toes to Bar\" says it all: This exercise, in which you hang from a pull-up bar, involves bringing your toes toward the bar, pointing toward your face. This really works your abdominal muscles. \"Toes to Bar\" is popular in functional fitness programs like Freeletics and CrossFit, and is an effective exercise for six-pack training."
+    ],
+    "he": [
+     "השם אומר הכול: בתרגיל הזה תלויים על מוט מתח ומקרבים את אצבעות הרגליים אל המוט, לכיוון הפנים. התרגיל עובד חזק על שרירי הבטן. רגליים למוט פופולרי באימונים פונקציונליים כמו Freeletics וקרוספיט, והוא תרגיל יעיל לבניית קוביות בבטן."
     ]
    },
    "source": {
@@ -11878,6 +12566,10 @@
     "en": [
      "Sit on the ground with your legs together and your arms by your sides. Push your body off the ground using your hands, maintaining the same sitting position so that your legs are straight and your feet do not touch the floor.",
      "Hold for as long as required."
+    ],
+    "he": [
+     "לשבת על הרצפה עם רגליים צמודות והידיים לצד הגוף. לדחוף את הגוף מהרצפה בעזרת הידיים, תוך שמירה על אותה תנוחת ישיבה, כך שהרגליים ישרות וכפות הרגליים לא נוגעות ברצפה.",
+     "להחזיק כמה זמן שנדרש."
     ]
    },
    "source": {
@@ -11948,6 +12640,13 @@
      "-Bring your R foot down until it nearly touches the floor, and bring your L foot upwards. Maintain leg rigidity throughout the exercise. Your head should stay off the ground, supported by tightened upper abdominals.",
      "-(L up R down, L down R up, x2) ^v, v^, ^v, v^ = 1 rep",
      "-Primarily works the Rectus Abdominus, the hip flexors and the lower back. Secondarily works the Obliques. Emphasis placed on the lower quadrant of the abs."
+    ],
+    "he": [
+     "בשכיבה על הגב, להרים את הרגליים הישרות מהרצפה לזווית של 45 מעלות.",
+     "בזמן שכף הרגל השמאלית יורדת וכמעט נוגעת ברצפה, כף הרגל הימנית צריכה לשאוף להגיע לזווית של 90 מעלות, או קרוב לכך ככל האפשר.",
+     "להוריד את הרגל הימנית עד שהיא כמעט נוגעת ברצפה, ולהעלות את הרגל השמאלית. לשמור על רגליים קשיחות לאורך כל התרגיל. הראש נשאר מורם מהרצפה, נתמך על ידי שרירי בטן עליונים מכווצים.",
+     "(שמאל למעלה ימין למטה, שמאל למטה ימין למעלה, פעמיים) = חזרה אחת",
+     "עובד בעיקר על שריר הבטן הישר, מכופפי הירך והגב התחתון, ובמידה משנית על השרירים האלכסוניים. הדגש הוא על החלק התחתון של הבטן."
     ]
    },
    "source": {
@@ -12016,6 +12715,9 @@
    "instructions": {
     "en": [
      "One of the best exercises for the rectus abdominis muscles. Lie on your back with your legs straight and your arms close to your sides. Lift your head off the floor and raise your legs and arms about 15 centimeters off the floor. Your palms should face down, and look up at the ceiling. Now bend your legs and at the same time sit up so that your knees and chest almost touch. Only your buttocks are still on the floor. Your arms are now extended at shoulder height. Then slowly return to the starting position with your arms and legs extended and your head raised."
+    ],
+    "he": [
+     "אחד התרגילים הטובים ביותר לשריר הבטן הישר. לשכב על הגב עם רגליים ישרות וידיים צמודות לצדי הגוף. להרים את הראש מהרצפה ולהרים את הרגליים והידיים כ-15 סנטימטרים מהרצפה. כפות הידיים פונות למטה והמבט לתקרה. עכשיו לכופף את הרגליים ובמקביל להתיישב, כך שהברכיים והחזה כמעט נוגעים. רק הישבן נשאר על הרצפה, והידיים מושטות בגובה הכתפיים. אחר כך לחזור לאט לתנוחת ההתחלה, עם ידיים ורגליים ישרות וראש מורם."
     ]
    },
    "source": {
@@ -12085,6 +12787,9 @@
    "instructions": {
     "en": [
      "Keep your body completely rigid throughout the movement, avoiding sagging in your lower back. Use a firm grip to stabilize your upper body. Start with simpler versions (such as with bent knees) to build strength and control."
+    ],
+    "he": [
+     "לשמור על גוף קשיח לגמרי לאורך כל התנועה, בלי שהגב התחתון ישקע. להשתמש באחיזה חזקה כדי לייצב את פלג הגוף העליון. להתחיל בגרסאות פשוטות יותר (למשל עם ברכיים כפופות) כדי לבנות כוח ושליטה."
     ]
    },
    "source": {
@@ -12388,6 +13093,13 @@
      "Soften your knees, then simultaneously drive your butt back as if you're closing a door behind you while pulling your arms straight down past your hips until your hands pass by the side of your knees.",
      "Next, bring your arms back overhead while thrusting your hips forward until you're standing with your arms fully extended.",
      "Repeat for reps, time or distance."
+    ],
+    "he": [
+     "להתחיל בעמידה על הפלטפורמה, רגליים ברוחב האגן.",
+     "להושיט את הידיים מעל הראש ולאחוז בידיות כשכפות הידיים פונות פנימה.",
+     "לרכך את הברכיים, ואז בו-זמנית לדחוף את הישבן לאחור, כאילו סוגרים דלת מאחוריכם, ולמשוך את הידיים ישר למטה מעבר לאגן עד שכפות הידיים עוברות את צדי הברכיים.",
+     "לאחר מכן להחזיר את הידיים מעל הראש תוך דחיפת האגן קדימה, עד שעומדים זקוף עם ידיים מושטות לגמרי.",
+     "לחזור לפי מספר חזרות, זמן או מרחק."
     ]
    },
    "source": {
@@ -12573,6 +13285,16 @@
      "Repeat.",
      "Notes:",
      "This exercise requires a jump rope. Make sure the rope length is adjusted to your height. One way to check is to grab both handles with one hand and stand on the middle of the rope hanging on the ground with one foot. If the rope (excluding the handles) reaches just below your chest, its length is right. A shorter rope would be hazardous, as you might hit yourself, and a longer rope would make for bad form."
+    ],
+    "he": [
+     "תנוחת התחלה:",
+     "רגליים צמודות, ברכיים מעט כפופות, ראש וגוף ישרים, מרפקים צמודים לגוף, ידיים פתוחות לצדדים.",
+     "שלבים:",
+     "לסובב רק את שורשי כף היד, בכוח מספיק כדי שהחבל יסתובב.",
+     "לקפוץ רק גבוה מספיק כדי שהחבל יעבור מתחת לכפות הרגליים.",
+     "לחזור על התנועה.",
+     "דגשים:",
+     "התרגיל דורש חבל קפיצה. לוודא שאורך החבל מותאם לגובה שלכם. דרך אחת לבדוק: לאחוז בשתי הידיות ביד אחת ולעמוד ברגל אחת על אמצע החבל שמונח על הרצפה. אם החבל (בלי הידיות) מגיע עד מעט מתחת לחזה, האורך נכון. חבל קצר יותר מסוכן, כי עלולים להיפגע ממנו, וחבל ארוך יותר יפגע בטכניקה."
     ]
    },
    "source": {
@@ -12648,6 +13370,15 @@
      "Keeping your hands on the floor, jump your legs backward into high plank position.",
      "Jump your feet forward to return to the squat position.",
      "Repeat."
+    ],
+    "he": [
+     "תנוחת התחלה:",
+     "לעמוד זקוף, רגליים ברוחב האגן.",
+     "שלבים:",
+     "לרדת לסקוואט עמוק ולהישען על הרצפה עם הידיים בין הברכיים ולפני כפות הרגליים, עם גב ישר.",
+     "כשהידיים על הרצפה, לקפוץ עם הרגליים לאחור לתנוחת פלאנק על ידיים ישרות.",
+     "לקפוץ עם הרגליים קדימה כדי לחזור לתנוחת הסקוואט.",
+     "לחזור על התנועה."
     ]
    },
    "source": {
@@ -12717,6 +13448,9 @@
    "instructions": {
     "en": [
      "Jump from a standing position onto the box, stretch your body, then step down again (do not jump)"
+    ],
+    "he": [
+     "לקפוץ מעמידה אל התיבה, להזדקף, ואז לרדת בצעד (לא בקפיצה)."
     ]
    },
    "source": {
@@ -12786,6 +13520,9 @@
    "instructions": {
     "en": [
      "A jumping jack or star jump, also called side-straddle hop in the US military, is a physical jumping exercise performed by jumping to a position with the legs spread wide and the hands going overhead, sometimes in a clap, and then returning to a position with the feet together and the arms at the sides"
+    ],
+    "he": [
+     "קפיצות פיסוק הן תרגיל קפיצה שבו קופצים לתנוחה עם רגליים פתוחות לרווחה וידיים מעל הראש (לפעמים עם מחיאת כף), ואז חוזרים לתנוחה עם רגליים צמודות וידיים לצד הגוף."
     ]
    },
    "source": {
@@ -12856,6 +13593,11 @@
      "Hold the ends of the rope at arm's length in front of your hips with your hands shoulder-width apart.",
      "Brace your core and begin alternately raising and lowering each arm explosively.",
      "Keep alternating arms for three to four sets of 1 to 2 minutes."
+    ],
+    "he": [
+     "להחזיק את קצות החבלים בידיים מושטות מול האגן, ידיים ברוחב הכתפיים.",
+     "לכווץ את הליבה ולהתחיל להרים ולהוריד כל יד לסירוגין בתנועה מתפרצת.",
+     "להמשיך להחליף ידיים במשך שלושה עד ארבעה סטים של 1 עד 2 דקות."
     ]
    },
    "source": {
@@ -12929,6 +13671,11 @@
      "Load the sled with 25% of your maximum load. If you don’t know this, choose a weight you can push for 10 minutes with short breaks. Beginners may choose to push the sled with no weight.",
      "Stand behind the sled and grab the poles with a high-grip hand position.",
      "Engage your core muscles and start pushing the sled forward as fast as you can, powering through your entire leg. Extend your hips and knees as you move the sled forward. Your foot stance should resemble your natural running position."
+    ],
+    "he": [
+     "להעמיס על המזחלת 25% מהמשקל המקסימלי שלכם. אם אינכם יודעים מהו, לבחור משקל שאפשר לדחוף במשך 10 דקות עם הפסקות קצרות. מתחילים יכולים לדחוף את המזחלת בלי משקל.",
+     "לעמוד מאחורי המזחלת ולאחוז בעמודים באחיזה גבוהה.",
+     "לכווץ את שרירי הליבה ולהתחיל לדחוף את המזחלת קדימה מהר ככל האפשר, בכוח של כל הרגל. ליישר את האגן והברכיים תוך כדי דחיפת המזחלת. מיקום כפות הרגליים צריך להיות דומה לתנוחת ריצה טבעית."
     ]
    },
    "source": {
@@ -13004,6 +13751,12 @@
      "Extend your knees and drive your hips forward while simultaneously lifting the ball. Aim for being as tall as possible, the ball overhead, arms up, hips slightly forward, and on your toes from the force of your drive.",
      "Use your core and arms to slam the medicine ball straight down between your feet with as much force as possible. Press your hips back and bend your knees to further power the slam. Exhale as you slam the ball down.",
      "Squat down to pick up the ball from the floor, then immediately move into the next slam by repeating the movement. Repeat for reps or time."
+    ],
+    "he": [
+     "לעמוד עם רגליים בערך ברוחב הכתפיים, ברכיים ואגן מעט כפופים, ולהחזיק את הכדור בשתי הידיים בגובה החזה. לכווץ את הליבה ולשמור על יציבה טובה.",
+     "ליישר את הברכיים ולדחוף את האגן קדימה תוך כדי הרמת הכדור. לשאוף להיות גבוהים ככל האפשר: הכדור מעל הראש, הידיים למעלה, האגן מעט קדימה, ועל קצות האצבעות מעוצמת הדחיפה.",
+     "בעזרת הליבה והידיים, להטיח את כדור הכוח ישר למטה בין כפות הרגליים בכל הכוח. לדחוף את האגן לאחור ולכופף את הברכיים כדי להוסיף עוצמה להטחה. לנשוף בזמן ההטחה.",
+     "לרדת לסקוואט כדי להרים את הכדור מהרצפה, ומיד לעבור להטחה הבאה. לחזור לפי מספר חזרות או זמן."
     ]
    },
    "source": {
@@ -13074,6 +13827,9 @@
    "instructions": {
     "en": [
      "Get a medicine ball, shoulder width stance, squat, thrust the ball as high as possible against the wall and catch"
+    ],
+    "he": [
+     "לקחת כדור כוח, לעמוד ברוחב הכתפיים, לרדת לסקוואט, לזרוק את הכדור כמה שיותר גבוה אל הקיר ולתפוס אותו."
     ]
    },
    "source": {
@@ -13146,6 +13902,11 @@
      "Start by doing a front squat",
      "At the top position, push the bar above your head (similar to a press)",
      "Lower the bar to the shoulders"
+    ],
+    "he": [
+     "להתחיל בסקוואט קדמי.",
+     "בתנוחה העליונה, לדחוף את המוט מעל הראש (בדומה ללחיצת כתפיים).",
+     "להוריד את המוט לכתפיים."
     ]
    },
    "source": {
@@ -13216,6 +13977,9 @@
    "instructions": {
     "en": [
      "Start with the dumbbells resting on your shoulders and squat down. Push into standing and raise the dumbbells into an overhead position. Bring the dumbbells back to your shoulders and repeat."
+    ],
+    "he": [
+     "להתחיל כשהמשקולות מונחות על הכתפיים ולרדת לסקוואט. לדחוף לעמידה ולהרים את המשקולות מעל הראש. להחזיר את המשקולות לכתפיים ולחזור על התנועה."
     ]
    },
    "source": {
@@ -13290,6 +14054,9 @@
    "instructions": {
     "en": [
      "Regular olympic lift clean. Pull bar from ground, catch on shoulders performing a front squat."
+    ],
+    "he": [
+     "קלין רגיל מהרמת משקולות אולימפית. למשוך את המוט מהרצפה ולתפוס אותו על הכתפיים בסקוואט קדמי."
     ]
    },
    "source": {
@@ -13362,6 +14129,9 @@
    "instructions": {
     "en": [
      "Olympic lift clean and jerk. Combination of clean and jerk in one motion."
+    ],
+    "he": [
+     "קלין וג'רק מהרמת משקולות אולימפית: שילוב של קלין וג'רק ברצף אחד."
     ]
    },
    "source": {
@@ -13438,6 +14208,13 @@
      "Move bar slowly until cleared knees then explosively extend hips, pull bar up and dive under the bar",
      "Catch bar overhead with straight arms",
      "Push head forward during lockout"
+    ],
+    "he": [
+     "סנאץ' מהרמת משקולות אולימפית.",
+     "למשוך את המוט מהרצפה עד נעילה מעל הראש, באחיזה רחבה ועם סקוואט מעל הראש.",
+     "להזיז את המוט לאט עד שהוא עובר את הברכיים, ואז ליישר את האגן בפיצוץ, למשוך את המוט למעלה ולצלול מתחתיו.",
+     "לתפוס את המוט מעל הראש עם ידיים ישרות.",
+     "לדחוף את הראש קדימה בזמן הנעילה."
     ]
    },
    "source": {
@@ -13512,6 +14289,13 @@
      "The Pull: Explosively extend your hips, knees, and ankles (triple extension) to drive the dumbbell upward, keeping your elbow high and the dumbbell close to your body.",
      "The Catch: Quickly flex your hips and knees to drop under the dumbbell and receive it overhead with your arm locked in position, landing in a half-squat stance.",
      "Common Mistakes: Using your arms too much to lift the weight instead of your legs, having a low elbow during the pull phase, and misaligning your shoulder, elbow, and wrist in the final position. For beginners, it’s recommended to start with light loads, focus on technique, and perform 3 to 5 sets of 3 to 5 reps per arm."
+    ],
+    "he": [
+     "שלבים מרכזיים לביצוע נכון:",
+     "הכנה: להניח את המשקולת בין כפות הרגליים, הכתפיים מעל האגן, חזה מורם וגב ישר.",
+     "המשיכה: ליישר בפיצוץ את האגן, הברכיים והקרסוליים (יישור משולש) כדי להניע את המשקולת למעלה, עם מרפק גבוה ומשקולת קרובה לגוף.",
+     "התפיסה: לכופף במהירות את האגן והברכיים כדי לרדת מתחת למשקולת ולקבל אותה מעל הראש עם יד נעולה, ולנחות בתנוחת חצי סקוואט.",
+     "טעויות נפוצות: שימוש רב מדי בידיים להרמת המשקל במקום ברגליים, מרפק נמוך בשלב המשיכה, וחוסר יישור של הכתף, המרפק ושורש כף היד בתנוחה הסופית. למתחילים מומלץ להתחיל במשקלים קלים, להתמקד בטכניקה ולבצע 3 עד 5 סטים של 3 עד 5 חזרות לכל יד."
     ]
    },
    "source": {
@@ -13583,6 +14367,9 @@
    "instructions": {
     "en": [
      "Starting on back, move to the standing position with dumbbell in one hand. Switch hands between reps."
+    ],
+    "he": [
+     "מתנוחת שכיבה על הגב, לקום לעמידה כשמשקולת ביד אחת. להחליף ידיים בין חזרות."
     ]
    },
    "source": {
@@ -13658,6 +14445,13 @@
      "Explosively jump your feet forward and swing the dumbbells between your legs.",
      "Drive the dumbbells overhead in one continuous motion, locking out your arms.",
      "Lower the dumbbells with control to return to the starting position and repeat"
+    ],
+    "he": [
+     "דוויל'ס פרס היא תנועה משולבת של ברפי עם משקולות וסנאץ' כפול עם משקולות. זהו תרגיל לכל הגוף בעצימות גבוהה, שמפתח כוח, עוצמה וכושר מטבולי.",
+     "להתחיל עם משקולת בכל יד ולבצע ברפי, כשהחזה נוגע ברצפה תוך כדי אחיזה במשקולות.",
+     "לקפוץ בפיצוץ עם הרגליים קדימה ולהניף את המשקולות בין הרגליים.",
+     "להניף את המשקולות מעל הראש בתנועה רציפה אחת, עד נעילת הידיים.",
+     "להוריד את המשקולות בשליטה, לחזור לתנוחת ההתחלה ולחזור על התנועה."
     ]
    },
    "source": {
@@ -13727,6 +14521,9 @@
    "instructions": {
     "en": [
      "Walk forward and backward with holding dumbbell on one side without leaning to counter the weight."
+    ],
+    "he": [
+     "ללכת קדימה ואחורה כשמחזיקים משקולת בצד אחד, בלי להיטות לצד השני כדי לפצות על המשקל."
     ]
    },
    "source": {

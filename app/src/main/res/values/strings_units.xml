@@ -33,6 +33,7 @@
     <!-- %1$s: km or mi -->
     <string name="log_distance_in">Distance in %1$s (optional)</string>
     <string name="units_kg">kg</string>
+    <string name="units_ml">ml</string>
     <!-- Pounds, short -->
     <string name="units_lb">lb</string>
 </resources>

@@ -107,7 +107,11 @@ data class ExerciseBreakdownLine(
     val name: String,
     val setsCompleted: Int,
     val setsTarget: Int,
-    val topWeight: Float?
+    val topWeight: Float?,
+    /** Left out of the session on purpose. */
+    val skipped: Boolean = false,
+    /** The note on that session's sets. */
+    val note: String? = null
 )
 
 @HiltViewModel
@@ -181,7 +185,12 @@ class SessionDetailViewModel @Inject constructor(
                         if (topWeight == null || set.weightKg > topWeight!!) topWeight = set.weightKg
                     }
                 }
-                lines.add(ExerciseBreakdownLine(entry.exerciseId, name, sets.size, target, topWeight))
+                lines.add(
+                    ExerciseBreakdownLine(
+                        entry.exerciseId, name, sets.size, target, topWeight,
+                        skipped = entry.skipped && sets.isEmpty(), note = entry.note?.ifBlank { null }
+                    )
+                )
             }
 
             val durationSecs = session.durationS?.toLong() ?: ((session.finishedAt - session.startedAt) / 1000)
@@ -203,7 +212,8 @@ class SessionDetailViewModel @Inject constructor(
                 timeRange = "${timeFormat.format(Date(session.startedAt))} – ${timeFormat.format(Date(session.finishedAt))}",
                 durationSecs = durationSecs,
                 exercisesCompleted = exercisesCompleted,
-                exercisesTotal = allExercises.size,
+                // Skipped on purpose: not one left undone
+                exercisesTotal = allExercises.size - lines.count { it.skipped },
                 totalSets = totalSets,
                 totalVolumeKg = totalVolume,
                 distanceKm = session.distanceMeters?.let { it / 1000.0 },
@@ -390,7 +400,9 @@ fun SessionDetailScreen(
                                 line.name,
                                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
                             )
-                            val detail = if (line.topWeight != null && line.topWeight > 0f) {
+                            val detail = if (line.skipped) {
+                                stringResource(R.string.session_skipped)
+                            } else if (line.topWeight != null && line.topWeight > 0f) {
                                 stringResource(R.string.history_line_sets_weight_unit, line.setsCompleted, line.setsTarget, weightText(line.topWeight))
                             } else {
                                 stringResource(R.string.history_line_sets, line.setsCompleted, line.setsTarget)
@@ -400,6 +412,9 @@ fun SessionDetailScreen(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
+                            line.note?.let {
+                                Text(it, style = MaterialTheme.typography.bodySmall, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic)
+                            }
                         }
                         if (line.setsCompleted >= line.setsTarget && line.setsCompleted > 0) {
                             Icon(

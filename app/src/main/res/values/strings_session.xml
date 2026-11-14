@@ -61,4 +61,17 @@
     <!-- Session notification -->
     <string name="session_active_workout">Active workout</string>
     <string name="session_channel_description">Workout and rest timer</string>
+
+    <!-- Skipping an exercise for one session, notes, and how to do it -->
+    <string name="session_skip_today">Skip for today</string>
+    <string name="session_undo_skip">Undo skip</string>
+    <string name="session_skipped">Skipped</string>
+    <string name="session_skipped_banner">Skipped for today. It won\'t count as unfinished.</string>
+    <string name="exercise_note">Note</string>
+    <string name="exercise_note_add">Add a note</string>
+    <string name="exercise_note_edit">Edit note</string>
+    <string name="exercise_note_hint">Seat height, grip, machine number…</string>
+    <string name="exercise_note_today">Note for today</string>
+    <string name="exercise_note_last_time">Last time (%1$s): %2$s</string>
+    <string name="exercise_how_to">How to do it</string>
 </resources>

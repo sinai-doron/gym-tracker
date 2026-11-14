@@ -63,6 +63,11 @@ object SyncMigration {
         "run_details" to "run",
         "run_pauses" to "pause",
         "routes" to "route",
+        "exercise_notes" to "exercise_note",
+        "weight_entries" to "weight",
+        "weight_goal" to "weight_goal",
+        "water_entries" to "water",
+        "water_goal" to "water_goal",
     )
 
     val MIGRATION_10_11 = object : Migration(10, 11) {
@@ -113,6 +118,14 @@ object SyncMigration {
 
     /** The triggers of `programs` (version 16). */
     internal fun programTriggers(): List<String> = itemTriggers("programs", "program")
+
+    /** The triggers of `exercise_notes` (version 21). Its rows are written with their uuid, the exercise's id. */
+    internal fun exerciseNoteTriggers(): List<String> = itemTriggers("exercise_notes", "exercise_note")
+
+    /** The triggers of body weight and water and their goals (version 21). The goals' rows carry fixed uuids. */
+    internal fun bodyTriggers(): List<String> =
+        itemTriggers("weight_entries", "weight") + itemTriggers("weight_goal", "weight_goal") +
+            itemTriggers("water_entries", "water") + itemTriggers("water_goal", "water_goal")
 
     /** The triggers of `activity_types` (version 17). */
     internal fun activityTypeTriggers(): List<String> = itemTriggers("activity_types", "activity_type")

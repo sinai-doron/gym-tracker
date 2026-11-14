@@ -31,7 +31,7 @@ object RunAnnouncements {
         VoiceLanguage.ENGLISH -> English.text(milestone, run, now, unit)
     }
 
-    /** "5 דקות ו-20 שניות", "שעה ו-3 דקות", "45 שניות"; "5 minutes and 20 seconds". */
+    /** "5 דַּקּוֹת וְ-20 שְׁנִיּוֹת", "שָׁעָה וְ-3 דַּקּוֹת", "45 שְׁנִיּוֹת"; "5 minutes and 20 seconds". */
     fun duration(totalSecs: Long, language: VoiceLanguage = VoiceLanguage.HEBREW): String = when (language) {
         VoiceLanguage.HEBREW -> Hebrew.duration(totalSecs)
         VoiceLanguage.ENGLISH -> English.duration(totalSecs)
@@ -49,33 +49,41 @@ object RunAnnouncements {
         return if (rounded == rounded.toInt().toDouble()) "${rounded.toInt()}" else "$rounded"
     }
 
+    /**
+     * Pointed (with niqqud) so the voice reads each word as meant: "הקפה" alone could be read as
+     * "the coffee". Nothing is addressed to the runner, so no word needs a gender.
+     */
     private object Hebrew {
         fun text(milestone: RunMilestone, run: CardioRun, now: Long, unit: DistanceUnit): String {
             val walk = run.type == "WALKING"
             return when (milestone) {
-                RunMilestone.Paused -> if (walk) "ההליכה הושהתה" else "הריצה הושהתה"
-                RunMilestone.Resumed -> "ממשיכים"
+                RunMilestone.Paused -> if (walk) "הַהֲלִיכָה הוּשְׁהֲתָה" else "הָרִיצָה הוּשְׁהֲתָה"
+                RunMilestone.Resumed -> "מַמְשִׁיכִים"
                 is RunMilestone.LapDone -> lap(milestone.lap, run, now, unit)
                 RunMilestone.TargetReached -> target(run, now, unit)
-                RunMilestone.OffRoute -> "יצאת מהמסלול"
-                RunMilestone.BackOnRoute -> "חזרת למסלול"
+                RunMilestone.OffRoute -> "מִחוּץ לַמַּסְלוּל"
+                RunMilestone.BackOnRoute -> "חֲזָרָה לַמַּסְלוּל"
             }
         }
 
-        private fun word(unit: DistanceUnit) = if (unit == DistanceUnit.KM) "קילומטר" else "מייל"
+        private fun word(unit: DistanceUnit) = if (unit == DistanceUnit.KM) "קִילוֹמֶטֶר" else "מַיְל"
 
         private fun lap(lap: Lap, run: CardioRun, now: Long, unit: DistanceUnit): String {
-            val name = unit.wholeUnits(run.lapMeters)?.let { "${word(unit)} ${lap.number * it}" } ?: "הקפה ${lap.number}"
-            val parts = mutableListOf(name, "זמן הקפה ${duration(lap.durationSecs)}")
-            pace(run, now, unit)?.let { parts += "קצב ממוצע ${duration(it)} ל${word(unit)}" }
+            val name = unit.wholeUnits(run.lapMeters)?.let { "${word(unit)} ${lap.number * it}" } ?: "הַקָּפָה ${lap.number}"
+            val parts = mutableListOf(name, "זְמַן הַקָּפָה ${duration(lap.durationSecs)}")
+            pace(run, now, unit)?.let { parts += "קֶצֶב מְמוּצָּע ${duration(it)} לְ${word(unit)}" }
             return parts.joinToString(". ")
         }
 
         private fun target(run: CardioRun, now: Long, unit: DistanceUnit): String {
             val time = duration(movingSecs(run, now))
-            // "ב-16 דקות" before a number, "בשעה" before a word
-            val inTime = if (time.first().isDigit()) "ב-$time" else "ב$time"
-            val done = if (run.routeLengthM > 0) "סיימת את המסלול!" else "הגעת למטרה!"
+            // "בְּ-16 דַּקּוֹת" before a number, "בְּשָׁעָה" before a word, "בִּשְׁעָתַיִים" before a shva
+            val inTime = when {
+                time.first().isDigit() -> "בְּ-$time"
+                time.startsWith("שְׁ") -> "בִּ$time"
+                else -> "בְּ$time"
+            }
+            val done = if (run.routeLengthM > 0) "הַמַּסְלוּל הוּשְׁלַם!" else "הַמַּטָּרָה הוּשְׂגָה!"
             return "$done ${distanceNumber(run.distanceMeters, unit)} ${word(unit)} $inTime"
         }
 
@@ -84,12 +92,20 @@ object RunAnnouncements {
             val m = (totalSecs % 3600) / 60
             val s = totalSecs % 60
             val parts = listOfNotNull(
-                when (h) { 0L -> null; 1L -> "שעה"; 2L -> "שעתיים"; else -> "$h שעות" },
-                when (m) { 0L -> null; 1L -> "דקה"; else -> "$m דקות" },
-                when (s) { 0L -> null; 1L -> "שנייה"; else -> "$s שניות" }
+                when (h) { 0L -> null; 1L -> "שָׁעָה"; 2L -> "שְׁעָתַיִים"; else -> "$h שָׁעוֹת" },
+                when (m) { 0L -> null; 1L -> "דַּקָּה"; else -> "$m דַּקּוֹת" },
+                when (s) { 0L -> null; 1L -> "שְׁנִיָּה"; else -> "$s שְׁנִיּוֹת" }
             )
-            if (parts.isEmpty()) return "0 שניות"
-            return if (parts.size == 1) parts[0] else parts.dropLast(1).joinToString(", ") + " ו-" + parts.last()
+            if (parts.isEmpty()) return "0 שְׁנִיּוֹת"
+            if (parts.size == 1) return parts[0]
+            // "וְ-20" before a number, "וּשְׁנִיָּה" before a shva, "וְדַקָּה" otherwise
+            val last = parts.last()
+            val and = when {
+                last.first().isDigit() -> "וְ-$last"
+                last.startsWith("שְׁ") -> "וּ$last"
+                else -> "וְ$last"
+            }
+            return parts.dropLast(1).joinToString(", ") + " " + and
         }
     }
 

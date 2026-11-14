@@ -15,17 +15,19 @@ class RunAnnouncementsTest {
 
     @Test
     fun `spells durations out`() {
-        assertEquals("5 דקות ו-20 שניות", RunAnnouncements.duration(320))
-        assertEquals("דקה", RunAnnouncements.duration(60))
-        assertEquals("שעה, 3 דקות ו-5 שניות", RunAnnouncements.duration(3_785))
-        assertEquals("45 שניות", RunAnnouncements.duration(45))
+        assertEquals("5 דַּקּוֹת וְ-20 שְׁנִיּוֹת", RunAnnouncements.duration(320))
+        assertEquals("דַּקָּה", RunAnnouncements.duration(60))
+        assertEquals("שְׁעָתַיִים, דַּקָּה וּשְׁנִיָּה", RunAnnouncements.duration(7_261))
+        assertEquals("שָׁעָה וְ" + "דַּקָּה", RunAnnouncements.duration(3_660))
+        assertEquals("שָׁעָה, 3 דַּקּוֹת וְ-5 שְׁנִיּוֹת", RunAnnouncements.duration(3_785))
+        assertEquals("45 שְׁנִיּוֹת", RunAnnouncements.duration(45))
     }
 
     @Test
     fun `announces a kilometer lap`() {
         val lap = Lap(3, 1_000.0, 320, 16 * 60_000L)
         assertEquals(
-            "קילומטר 3. זמן הקפה 5 דקות ו-20 שניות. קצב ממוצע 5 דקות ו-20 שניות לקילומטר",
+            "קִילוֹמֶטֶר 3. זְמַן הַקָּפָה 5 דַּקּוֹת וְ-20 שְׁנִיּוֹת. קֶצֶב מְמוּצָּע 5 דַּקּוֹת וְ-20 שְׁנִיּוֹת לְקִילוֹמֶטֶר",
             RunAnnouncements.text(RunMilestone.LapDone(lap), run, 16 * 60_000L)
         )
     }
@@ -34,19 +36,28 @@ class RunAnnouncementsTest {
     fun `other lap lengths are numbered`() {
         val lap = Lap(2, 400.0, 100, 0)
         val text = RunAnnouncements.text(RunMilestone.LapDone(lap), run.copy(lapMeters = 400), 16 * 60_000L)
-        assertEquals(true, text.startsWith("הקפה 2. זמן הקפה דקה ו-40 שניות"))
+        assertEquals(true, text.startsWith("הַקָּפָה 2. זְמַן הַקָּפָה דַּקָּה וְ-40 שְׁנִיּוֹת"))
     }
 
     @Test
     fun `announces the target`() {
-        assertEquals("הגעת למטרה! 3 קילומטר ב-16 דקות", RunAnnouncements.text(RunMilestone.TargetReached, run, 16 * 60_000L))
+        assertEquals("הַמַּטָּרָה הוּשְׂגָה! 3 קִילוֹמֶטֶר בְּ-16 דַּקּוֹת", RunAnnouncements.text(RunMilestone.TargetReached, run, 16 * 60_000L))
+        val slow = run.copy(moves = (start..2 * 3_600_000L step 60_000).map { DistanceMark(it, it * 3 / 1000.0) })
+        assertEquals("הַמַּטָּרָה הוּשְׂגָה! 3 קִילוֹמֶטֶר בִּשְׁעָתַיִים", RunAnnouncements.text(RunMilestone.TargetReached, slow, 2 * 3_600_000L))
     }
 
     @Test
     fun `pause and resume`() {
-        assertEquals("הריצה הושהתה", RunAnnouncements.text(RunMilestone.Paused, run, 0))
-        assertEquals("ההליכה הושהתה", RunAnnouncements.text(RunMilestone.Paused, run.copy(type = "WALKING"), 0))
-        assertEquals("ממשיכים", RunAnnouncements.text(RunMilestone.Resumed, run, 0))
+        assertEquals("הָרִיצָה הוּשְׁהֲתָה", RunAnnouncements.text(RunMilestone.Paused, run, 0))
+        assertEquals("הַהֲלִיכָה הוּשְׁהֲתָה", RunAnnouncements.text(RunMilestone.Paused, run.copy(type = "WALKING"), 0))
+        assertEquals("מַמְשִׁיכִים", RunAnnouncements.text(RunMilestone.Resumed, run, 0))
+    }
+
+    @Test
+    fun `leaving and rejoining the route`() {
+        assertEquals("מִחוּץ לַמַּסְלוּל", RunAnnouncements.text(RunMilestone.OffRoute, run, 0))
+        assertEquals("חֲזָרָה לַמַּסְלוּל", RunAnnouncements.text(RunMilestone.BackOnRoute, run, 0))
+        assertEquals("הַמַּסְלוּל הוּשְׁלַם! 3 קִילוֹמֶטֶר בְּ-16 דַּקּוֹת", RunAnnouncements.text(RunMilestone.TargetReached, run.copy(routeLengthM = 3_000.0), 16 * 60_000L))
     }
 
     @Test
@@ -89,7 +100,7 @@ class RunAnnouncementsTest {
             RunAnnouncements.text(RunMilestone.LapDone(lap), miles, 16 * 60_000L, VoiceLanguage.ENGLISH, DistanceUnit.MI)
         )
         assertEquals(
-            "מייל 1. זמן הקפה 8 דקות ו-35 שניות. קצב ממוצע 8 דקות ו-35 שניות למייל",
+            "מַיְל 1. זְמַן הַקָּפָה 8 דַּקּוֹת וְ-35 שְׁנִיּוֹת. קֶצֶב מְמוּצָּע 8 דַּקּוֹת וְ-35 שְׁנִיּוֹת לְמַיְל",
             RunAnnouncements.text(RunMilestone.LapDone(lap), miles, 16 * 60_000L, VoiceLanguage.HEBREW, DistanceUnit.MI)
         )
         assertEquals(

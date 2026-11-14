@@ -8,6 +8,8 @@ import com.doron.gymtracker.domain.model.PersonalRecord
 import com.doron.gymtracker.domain.usecase.GetAchievementsUseCase
 import com.doron.gymtracker.domain.usecase.GetPersonalRecordsUseCase
 import com.doron.gymtracker.domain.usecase.GetRunBadgesUseCase
+import com.doron.gymtracker.domain.usecase.GetPlaceBadgesUseCase
+import com.doron.gymtracker.domain.usecase.PlaceBadgeStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,8 +21,12 @@ import kotlinx.coroutines.launch
 class BadgesViewModel @Inject constructor(
     private val getRunBadges: GetRunBadgesUseCase,
     private val getPersonalRecords: GetPersonalRecordsUseCase,
-    private val getAchievements: GetAchievementsUseCase
+    private val getAchievements: GetAchievementsUseCase,
+    private val getPlaceBadges: GetPlaceBadgesUseCase
 ) : ViewModel() {
+
+    private val _places = MutableStateFlow<List<PlaceBadgeStatus>>(emptyList())
+    val places: StateFlow<List<PlaceBadgeStatus>> = _places.asStateFlow()
 
     private val _badges = MutableStateFlow<List<BadgeStatus>>(emptyList())
     val badges: StateFlow<List<BadgeStatus>> = _badges.asStateFlow()
@@ -35,5 +41,6 @@ class BadgesViewModel @Inject constructor(
         viewModelScope.launch { _achievements.value = getAchievements() }
         viewModelScope.launch { _badges.value = getRunBadges() }
         viewModelScope.launch { _records.value = getPersonalRecords() }
+        viewModelScope.launch { _places.value = getPlaceBadges() }
     }
 }

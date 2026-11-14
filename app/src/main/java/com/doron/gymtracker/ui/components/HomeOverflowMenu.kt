@@ -62,6 +62,8 @@ fun HomeOverflowMenu(
     onPrograms: () -> Unit,
     onRoutes: () -> Unit,
     onAchievements: () -> Unit,
+    onWeight: () -> Unit = {},
+    onWater: () -> Unit = {},
     onSettings: () -> Unit
 ) {
     var open by remember { mutableStateOf(false) }
@@ -88,6 +90,8 @@ fun HomeOverflowMenu(
                 MenuRow(R.drawable.ic_home_clipboard, R.string.programs_title, pick(onPrograms))
                 MenuRow(R.drawable.ic_home_map, R.string.routes_title, pick(onRoutes))
                 MenuRow(R.drawable.ic_home_award, R.string.achievements_all, pick(onAchievements))
+                MenuRow(R.drawable.ic_scale, R.string.menu_weight, pick(onWeight))
+                MenuRow(R.drawable.ic_water_drop, R.string.menu_water, pick(onWater))
                 MenuDivider()
                 MenuRow(R.drawable.ic_home_settings, R.string.settings, pick(onSettings))
             }

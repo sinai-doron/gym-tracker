@@ -38,6 +38,8 @@
         <item quantity="other">%1$d new achievements!</item>
     </plurals>
     <string name="cardio_first_badge">Your first %1$s run</string>
+    <string name="cardio_new_place">New place!</string>
+    <string name="cardio_first_run_in">Your first run in %1$s</string>
     <string name="cardio_records_ok">Yes!</string>
     <plurals name="cardio_new_records">
         <item quantity="one">New personal record!</item>

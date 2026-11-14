@@ -33,6 +33,7 @@
     <!-- %1$s: km or mi -->
     <string name="log_distance_in">מרחק ב%1$s (לא חובה)</string>
     <string name="units_kg">ק״ג</string>
+    <string name="units_ml">מ״ל</string>
     <!-- Pounds, short -->
     <string name="units_lb">ליב׳</string>
 </resources>

@@ -59,6 +59,10 @@ import com.doron.gymtracker.service.SessionTimerService
 import com.doron.gymtracker.ui.components.ExerciseCard
 import com.doron.gymtracker.ui.components.MusicControls
 import com.doron.gymtracker.ui.components.localizedName
+import com.doron.gymtracker.ui.components.DesignButton
+import com.doron.gymtracker.ui.components.DesignDialog
+import com.doron.gymtracker.ui.components.KeepScreenOn
+import com.doron.gymtracker.ui.theme.AppColors
 import com.doron.gymtracker.ui.theme.RestTimerColor
 import com.doron.gymtracker.ui.theme.WarningAmber
 
@@ -143,37 +147,51 @@ fun SessionScreen(
         return
     }
 
+    // A timed set (plank) runs with the phone out of reach: the screen stays on until it stops,
+    // sheet open or not
+    if (detailStates.values.any { it.timerRunning }) KeepScreenOn()
+
     // Leaving with BACK used to leave the session open forever; make the user choose
     var showExitDialog by rememberSaveable { mutableStateOf(false) }
     BackHandler(enabled = onTop) { showExitDialog = true }
     if (showExitDialog) {
-        AlertDialog(
-            onDismissRequest = { showExitDialog = false },
-            title = { Text(stringResource(R.string.session_finish_title)) },
-            text = { Text(stringResource(R.string.session_finish_text)) },
-            confirmButton = {
-                TextButton(onClick = {
+        DesignDialog(
+            title = stringResource(R.string.session_finish_title),
+            text = stringResource(R.string.session_finish_text),
+            onDismiss = { showExitDialog = false }
+        ) {
+            DesignButton(
+                text = stringResource(R.string.session_finish),
+                icon = R.drawable.ic_check,
+                background = AppColors.accentStrength,
+                color = AppColors.surface,
+                onClick = {
                     showExitDialog = false
                     viewModel.finishSession(workoutName)
-                }) {
-                    Text(stringResource(R.string.session_finish))
-                }
-            },
-            dismissButton = {
-                Row {
-                    TextButton(onClick = {
-                        showExitDialog = false
-                        SessionTimerService.stop(context)
-                        viewModel.discardSession(onDiscarded = onFinished)
-                    }) {
-                        Text(stringResource(R.string.session_discard), color = MaterialTheme.colorScheme.error)
-                    }
-                    TextButton(onClick = { showExitDialog = false }) {
-                        Text(stringResource(R.string.session_continue))
-                    }
-                }
-            }
-        )
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+            DesignButton(
+                text = stringResource(R.string.session_continue),
+                icon = R.drawable.ic_home_play,
+                background = AppColors.tintStrength,
+                color = AppColors.accentStrength,
+                onClick = { showExitDialog = false },
+                modifier = Modifier.fillMaxWidth()
+            )
+            DesignButton(
+                text = stringResource(R.string.session_discard),
+                icon = R.drawable.ic_close,
+                background = AppColors.dangerTint,
+                color = AppColors.danger,
+                onClick = {
+                    showExitDialog = false
+                    SessionTimerService.stop(context)
+                    viewModel.discardSession(onDiscarded = onFinished)
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 
     Column(
@@ -268,7 +286,9 @@ fun SessionScreen(
                 ExerciseCard(
                     exercise = detailState?.exercise ?: exercise,
                     completedSets = detailState?.completedSets ?: emptyList(),
-                    onClick = { viewModel.selectExercise(exercise.id) }
+                    onClick = { viewModel.selectExercise(exercise.id) },
+                    skipped = detailState?.skipped ?: (exercise.id in state.skipped),
+                    onSkip = { skip -> viewModel.detailFor(exercise).setSkipped(skip) }
                 )
             }
             item { Spacer(Modifier.height(16.dp)) }

@@ -30,6 +30,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.window.Dialog
 import com.doron.gymtracker.ui.theme.AppColors
 import com.doron.gymtracker.ui.theme.AppShapes
 import com.doron.gymtracker.ui.theme.AppType
@@ -130,6 +132,59 @@ fun DesignButton(
     ) {
         Icon(painterResource(icon), contentDescription = null, tint = color, modifier = Modifier.size(AppShapes.buttonIcon))
         Text(text, style = AppType.button, color = color)
+    }
+}
+
+/**
+ * A question in the app's own look: a white card with the title and the [text], then [buttons]
+ * full width, one under another, the main action first. Instead of AlertDialog's row of text links.
+ */
+@Composable
+fun DesignDialog(
+    title: String,
+    text: String,
+    onDismiss: () -> Unit,
+    buttons: @Composable ColumnScope.() -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(AppShapes.buttonRowGap),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(AppShapes.dialogRadius))
+                .background(AppColors.surface)
+                .padding(AppShapes.dialogPadding)
+        ) {
+            Text(title, style = AppType.headerTitle, color = AppColors.textPrimary)
+            Text(text, style = AppType.menuItem.copy(color = AppColors.textSecondary, fontWeight = FontWeight.Normal))
+            Spacer(Modifier.height(AppShapes.dialogGap))
+            buttons()
+        }
+    }
+}
+
+/** A smaller button, as wide as its label: an icon, then the label, on a tinted pill. */
+@Composable
+fun DesignSmallButton(
+    text: String,
+    @DrawableRes icon: Int,
+    background: Color,
+    color: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(AppShapes.smallButtonIconGap),
+        modifier = modifier
+            .height(AppShapes.smallButtonHeight)
+            .clip(RoundedCornerShape(AppShapes.smallButtonRadius))
+            .background(background)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = AppShapes.smallButtonPadding)
+    ) {
+        Icon(painterResource(icon), contentDescription = null, tint = color, modifier = Modifier.size(AppShapes.smallButtonIcon))
+        Text(text, style = AppType.smallButton, color = color)
     }
 }
 

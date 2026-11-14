@@ -1,6 +1,8 @@
 package com.doron.gymtracker.ui.screens.cardio
 
 import android.app.Application
+import com.doron.gymtracker.data.places.Place
+import com.doron.gymtracker.domain.usecase.GetPlaceBadgesUseCase
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.doron.gymtracker.data.ActiveClock
@@ -61,6 +63,8 @@ data class CardioUiState(
     val isFinished: Boolean = false,
     /** Badges this run earned for the first time, to celebrate on the finish screen. */
     val newBadges: List<RunBadge> = emptyList(),
+    /** Places this run is the first one in: a country, a US state. */
+    val newPlaces: List<Place> = emptyList(),
     val newAchievements: List<AchievementStatus> = emptyList(),
     /** Personal records this run broke, celebrated after the badges. */
     val newRecords: List<PersonalRecord> = emptyList(),
@@ -131,6 +135,7 @@ class CardioSessionViewModel @AssistedInject constructor(
     private val app: Application,
     private val healthConnect: HealthConnectManager,
     private val getRunBadges: GetRunBadgesUseCase,
+    private val getPlaceBadges: GetPlaceBadgesUseCase,
     private val getAchievements: GetAchievementsUseCase,
     private val getPersonalRecords: GetPersonalRecordsUseCase,
     private val routeRepo: RouteRepository,
@@ -228,6 +233,7 @@ class CardioSessionViewModel @AssistedInject constructor(
             val final = _uiState.value
             sessionRepo.finishCardioSession(sessionId, final.distanceMeters)
             _uiState.update { it.copy(newBadges = getRunBadges.earnedBy(sessionId)) }
+            if (sessionType == "RUNNING") _uiState.update { it.copy(newPlaces = getPlaceBadges.earnedBy(sessionId)) }
             _uiState.update { it.copy(newAchievements = getAchievements.earnedBy(sessionId)) }
             if (sessionType == "RUNNING") {
                 _uiState.update { it.copy(newRecords = getPersonalRecords.newBy(sessionId)) }
@@ -270,6 +276,10 @@ class CardioSessionViewModel @AssistedInject constructor(
 
     fun achievementsSeen() {
         _uiState.update { it.copy(newAchievements = emptyList()) }
+    }
+
+    fun placesSeen() {
+        _uiState.update { it.copy(newPlaces = emptyList()) }
     }
 
     fun badgesSeen() {

@@ -211,8 +211,35 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
                             "SELECT libraryExerciseId FROM exercise_definitions WHERE id = ?", arrayOf<Any?>(exerciseId)
                         ).use { if (it.moveToFirst()) it.getString(0) else null },
                     )
+                    // Version 21. An entry from an app before it says nothing of them: leave them be
+                    if ("skipped" in data) put("skipped", data.bool("skipped"))
+                    if ("note" in data) put("note", data.strOrNull("note"))
                 })
             }
+            "weight" -> upsert("weight_entries", change.id, ContentValues().apply {
+                put("measuredAt", data.long("measuredAt"))
+                put("kg", data.double("kg"))
+            })
+            // One goal per user: whatever id the server knows it by, it is this phone's row 1
+            "weight_goal" -> upsertSingle("weight_goal", change.id, ContentValues().apply {
+                put("startKg", data.double("startKg"))
+                put("startAt", data.long("startAt"))
+                put("targetKg", data.double("targetKg"))
+                put("paceKgPerWeek", data.double("paceKgPerWeek"))
+            })
+            "water" -> upsert("water_entries", change.id, ContentValues().apply {
+                put("drankAt", data.long("drankAt"))
+                put("ml", data.int("ml"))
+            })
+            "water_goal" -> upsertSingle("water_goal", change.id, ContentValues().apply {
+                put("dailyMl", data.int("dailyMl"))
+                put("glassMl", data.int("glassMl"))
+                put("bottleMl", data.int("bottleMl"))
+            })
+            "exercise_note" -> upsert("exercise_notes", change.id, ContentValues().apply {
+                put("exerciseId", change.id)
+                put("text", data.str("text"))
+            })
             "set" -> {
                 val entryId = numericIdOf("exercise_entries", data.str("entryId")) ?: return false
                 val parts = data["parts"]?.jsonArray
@@ -484,6 +511,14 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
         }
     }
 
+    /** A table of one row (id 1): the server's copy replaces it. */
+    private fun upsertSingle(table: String, uuid: String, values: ContentValues): Boolean {
+        values.put("id", 1)
+        values.put("uuid", uuid)
+        db.insert(table, SQLiteDatabase.CONFLICT_REPLACE, values)
+        return true
+    }
+
     private fun upsert(table: String, uuid: String, values: ContentValues): Boolean {
         values.put("uuid", uuid)
         if (db.update(table, SQLiteDatabase.CONFLICT_ABORT, values, "uuid = ?", arrayOf<Any?>(uuid)) == 0) {
@@ -501,13 +536,14 @@ class SyncPull(private val db: SupportSQLiteDatabase) {
     companion object {
         /** Parents before children, so most items go in on the first try. */
         private val ORDER = listOf(
-            "activity_type", SyncMigration.LIBRARY_EXERCISE, "program", "workout", "exercise", "route", "session", "entry", "set", "run", "pause", "song", "route_points", SyncPayloads.TRACK,
+            "activity_type", SyncMigration.LIBRARY_EXERCISE, "exercise_note", "weight", "weight_goal", "water", "water_goal", "program", "workout", "exercise", "route", "session", "entry", "set", "run", "pause", "song", "route_points", SyncPayloads.TRACK,
         )
         private val DERIVED = setOf("route_points", SyncPayloads.TRACK)
         private val TABLE_OF = mapOf(
             "activity_type" to "activity_types", "program" to "programs", "workout" to "workouts", "exercise" to "exercise_definitions", "session" to "sessions",
             "entry" to "exercise_entries", "set" to "sets", "run" to "run_details",
-            "pause" to "run_pauses", "route" to "routes", "song" to "track_log",
+            "pause" to "run_pauses", "route" to "routes", "song" to "track_log", "exercise_note" to "exercise_notes",
+            "weight" to "weight_entries", "weight_goal" to "weight_goal", "water" to "water_entries", "water_goal" to "water_goal",
         )
 
         fun localSessionType(server: String): String = when (server) {

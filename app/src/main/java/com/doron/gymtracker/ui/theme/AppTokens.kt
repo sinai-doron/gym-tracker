@@ -48,6 +48,20 @@ object AppColors {
     val warnDot = Color(0xFFF0A33A)
     val warnTint = Color(0xFFFFF4E3)
     val warnText = Color(0xFF8A5A0E)
+    /** What deletes: its text and the tint behind it (5.9:1). */
+    val danger = Color(0xFFB42318)
+    val dangerTint = Color(0xFFFDECEA)
+    // Weight and water (their designs): a weigh-in's dot, the water, its paler wave and missed days
+    val weighInDot = Color(0xFFB9B2E8)
+    val goodText = Color(0xFF0B7A57)
+    val goodTint = Color(0xFFE1F4EC)
+    val water = Color(0xFF3A86E8)
+    val waterBack = Color(0xFF9CC6F5)
+    val waterMissed = Color(0xFFC9DEF8)
+    val waterTint = Color(0xFFEEF5FE)
+    val waterText = Color(0xFF1E5FB8)
+    val dashed = Color(0xFFD6D1F3)
+    val rulerTick = Color(0xFFB9B4D3)
 }
 
 private val fontProvider = GoogleFont.Provider(
@@ -72,6 +86,7 @@ object AppType {
     val cardTitle = base.copy(fontSize = 24.sp, fontWeight = FontWeight.Bold, lineHeight = 1.1.em, color = AppColors.textPrimary)
     val headerTitle = base.copy(fontSize = 20.sp, fontWeight = FontWeight.Bold)
     val button = base.copy(fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+    val smallButton = base.copy(fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
     val menuItem = base.copy(fontSize = 15.sp, fontWeight = FontWeight.Medium, color = AppColors.textPrimary)
     val menuItemHighlighted = menuItem.copy(fontWeight = FontWeight.SemiBold)
     val chip = base.copy(fontSize = 12.sp, fontWeight = FontWeight.Medium)
@@ -117,6 +132,23 @@ object AppShapes {
     val buttonIconGap = 8.dp
     val buttonRowGap = 10.dp
     val buttonBorder = 1.dp
+
+    // The small pill button (DesignSmallButton)
+    val smallButtonHeight = 40.dp
+    val smallButtonRadius = 12.dp
+    val smallButtonPadding = 14.dp
+    val smallButtonIcon = 16.dp
+    val smallButtonIconGap = 6.dp
+
+    // Dialogs (DesignDialog)
+    val dialogRadius = 24.dp
+    val dialogPadding = 22.dp
+    /** Between the text and the first button, on top of the buttons' own gap. */
+    val dialogGap = 8.dp
+    /** The small icon button on a list row (skip an exercise), and its icon. */
+    val rowIconButton = 40.dp
+    val rowIconButtonRadius = 12.dp
+    val rowIconButtonIcon = 18.dp
     /** The 50×50 icon button beside a primary button, and its icon. */
     val sideIconButton = 50.dp
     val sideIconButtonIcon = 20.dp

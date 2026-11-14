@@ -9,6 +9,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import android.content.Intent
 import androidx.compose.runtime.remember
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
@@ -34,6 +35,19 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var exerciseLibrary: ExerciseLibrary
     @Inject lateinit var cardioRecorder: CardioRecorder
     @Inject lateinit var settingsPrefs: SettingsPrefs
+    @Inject lateinit var bodyPrefs: com.doron.gymtracker.data.prefs.BodyPrefs
+
+    // A screen a reminder's notification asks for ("weight/log", "water"); taken once opened
+    private val openRoute = mutableStateOf<String?>(null)
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        intent.getStringExtra(EXTRA_ROUTE)?.let { openRoute.value = it }
+    }
+
+    companion object {
+        const val EXTRA_ROUTE = "open_route"
+    }
 
     // A run still going (or cut off by the system) to reopen, found at launch
     private val runToResume = mutableStateOf<CardioRun?>(null)
@@ -65,7 +79,10 @@ class MainActivity : ComponentActivity() {
         }
         if (savedInstanceState == null) {
             lifecycleScope.launch { runToResume.value = cardioRecorder.recoverOpenRun() }
+            openRoute.value = intent?.getStringExtra(EXTRA_ROUTE)
         }
+        // Weight and water reminders, as set; again after a reboot or an update cleared them
+        lifecycleScope.launch { com.doron.gymtracker.service.BodyReminderWorker.scheduleAll(this@MainActivity, bodyPrefs) }
         setContent {
             val units by remember { settingsPrefs.profile.map { it.distanceUnit to it.weightUnit } }
                 .collectAsState(initial = null)
@@ -77,7 +94,9 @@ class MainActivity : ComponentActivity() {
                         NavGraph(
                             runToResume = runToResume.value,
                             showOnboarding = onboarding,
-                            onFirstScreenReady = { firstScreenReady = true }
+                            onFirstScreenReady = { firstScreenReady = true },
+                            openRoute = openRoute.value,
+                            onRouteOpened = { openRoute.value = null }
                         )
                     }
                 }

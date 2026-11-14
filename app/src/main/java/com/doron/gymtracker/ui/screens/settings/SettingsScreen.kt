@@ -297,6 +297,11 @@ fun SettingsScreen(
                 }
 
                 Spacer(Modifier.height(24.dp))
+                Text(stringResource(R.string.body_settings), style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(12.dp))
+                com.doron.gymtracker.ui.screens.body.BodySettingsSection()
+
+                Spacer(Modifier.height(24.dp))
                 Text(stringResource(R.string.running_settings), style = MaterialTheme.typography.titleLarge)
                 Spacer(Modifier.height(12.dp))
                 Card(

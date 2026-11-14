@@ -202,4 +202,64 @@ class ExerciseDetailViewModelTest {
         assertTrue(state.deloadPrefill)
         assertEquals(ProgressionHint.OnTrack, state.progressionHint)
     }
+
+    private fun notesFor(libraryId: String?): com.doron.gymtracker.data.repository.ExerciseNotes = mockk(relaxed = true) {
+        coEvery { libraryIdOf(any()) } returns libraryId
+        io.mockk.every { kept(libraryId) } returns kotlinx.coroutines.flow.flowOf("Seat on 4")
+        coEvery { lastTime(libraryId, 1L) } returns com.doron.gymtracker.data.db.dao.EntryNote("Left shoulder tight", 1_000L)
+    }
+
+    private val howTo: com.doron.gymtracker.data.catalogue.ExerciseInstructions = mockk {
+        coEvery { byLanguage(any()) } returns mapOf("en" to listOf("Lie on the bench", "Press up"), "he" to listOf("לשכב", "לדחוף"))
+    }
+
+    @Test
+    fun `the sheet shows the exercise's note, last time's note and how to do it`() = runTest(testDispatcher) {
+        val vm = ExerciseDetailViewModel(1L, repExercise, logSet, notes = notesFor("lib"), instructions = howTo)
+        advanceTimeBy(50)
+        val state = vm.uiState.value
+        assertTrue(state.canKeepNote)
+        assertEquals("Seat on 4", state.keptNote)
+        assertEquals("Left shoulder tight", state.lastNote?.note)
+        assertEquals(listOf("Lie on the bench", "Press up"), state.instructions["en"])
+        assertEquals(listOf("לשכב", "לדחוף"), state.instructions["he"])
+    }
+
+    @Test
+    fun `an exercise from before the library keeps no note and has no steps`() = runTest(testDispatcher) {
+        val vm = ExerciseDetailViewModel(1L, repExercise, logSet, notes = notesFor(null), instructions = howTo)
+        advanceTimeBy(50)
+        assertEquals(false, vm.uiState.value.canKeepNote)
+        assertEquals(emptyMap<String, List<String>>(), vm.uiState.value.instructions)
+        vm.keepNote("ignored")
+        advanceTimeBy(50)
+    }
+
+    @Test
+    fun `skipping saves it, tells the session, and can be undone`() = runTest(testDispatcher) {
+        val notes = notesFor("lib")
+        val told = mutableListOf<Pair<String, Boolean>>()
+        val vm = ExerciseDetailViewModel(1L, repExercise, logSet, notes = notes, onSkippedChanged = { id, s -> told += id to s })
+        vm.setSkipped(true)
+        advanceTimeBy(50)
+        assertTrue(vm.uiState.value.skipped)
+        io.mockk.coVerify { notes.skip(1L, repExercise.id, true) }
+        vm.setSkipped(false)
+        advanceTimeBy(50)
+        assertEquals(false, vm.uiState.value.skipped)
+        assertEquals(listOf(repExercise.id to true, repExercise.id to false), told)
+    }
+
+    @Test
+    fun `notes are saved, the exercise's under its library id`() = runTest(testDispatcher) {
+        val notes = notesFor("lib")
+        val vm = ExerciseDetailViewModel(1L, repExercise, logSet, notes = notes)
+        advanceTimeBy(50)
+        vm.keepNote("Seat on 5")
+        vm.saveNoteToday(" Felt strong ")
+        advanceTimeBy(50)
+        io.mockk.coVerify { notes.keep("lib", "Seat on 5") }
+        io.mockk.coVerify { notes.noteToday(1L, repExercise.id, " Felt strong ") }
+        assertEquals("Felt strong", vm.uiState.value.noteToday)
+    }
 }

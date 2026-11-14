@@ -49,6 +49,10 @@ interface SessionRepository {
     suspend fun getRouteForSession(sessionId: Long): List<LocationPoint>
     /** How many GPS points each session has, without reading them; sessions with none are missing. */
     suspend fun countRoutePoints(): Map<Long, Int>
+    /** Where each session's GPS points fall, by session; sessions with none are missing. */
+    suspend fun trackExtents(): Map<Long, com.doron.gymtracker.data.db.dao.TrackExtent>
+    /** The session's middle GPS point in time, as (latitude, longitude). */
+    suspend fun middlePoint(sessionId: Long, points: Int): Pair<Double, Double>?
     /** Swaps a session's GPS points for [points]; queued for upload like any other change. */
     suspend fun replaceRoute(sessionId: Long, points: List<LocationPoint>)
     suspend fun getRunDetails(sessionId: Long): RunDetails?

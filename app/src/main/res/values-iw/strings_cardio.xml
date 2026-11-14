@@ -38,6 +38,8 @@
         <item quantity="other">%1$d הישגים חדשים!</item>
     </plurals>
     <string name="cardio_first_badge">רצת לראשונה %1$s</string>
+    <string name="cardio_new_place">מקום חדש!</string>
+    <string name="cardio_first_run_in">הריצה הראשונה שלך ב%1$s</string>
     <string name="cardio_records_ok">יש!</string>
     <plurals name="cardio_new_records">
         <item quantity="one">שיא אישי חדש!</item>

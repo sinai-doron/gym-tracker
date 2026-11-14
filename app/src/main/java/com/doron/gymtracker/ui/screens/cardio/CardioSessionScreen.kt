@@ -54,6 +54,9 @@ import com.doron.gymtracker.domain.model.PersonalRecord
 import com.doron.gymtracker.domain.model.RunBadge
 import com.doron.gymtracker.domain.model.RunTargetType
 import com.doron.gymtracker.ui.components.BadgeImage
+import com.doron.gymtracker.ui.components.PlaceBadgeImage
+import com.doron.gymtracker.ui.components.appLanguage
+import com.doron.gymtracker.data.places.Place
 import com.doron.gymtracker.ui.components.IconLabel
 import com.doron.gymtracker.ui.components.MusicControls
 import com.doron.gymtracker.ui.components.NewAchievementsDialog
@@ -89,6 +92,8 @@ fun CardioSessionScreen(
         )
         if (state.newBadges.isNotEmpty()) {
             NewBadgesDialog(state.newBadges, onDismiss = viewModel::badgesSeen)
+        } else if (state.newPlaces.isNotEmpty()) {
+            NewPlacesDialog(state.newPlaces, onDismiss = viewModel::placesSeen)
         } else if (state.newAchievements.isNotEmpty()) {
             NewAchievementsDialog(state.newAchievements, onDismiss = viewModel::achievementsSeen)
         } else if (state.newRecords.isNotEmpty()) {
@@ -312,6 +317,41 @@ private fun NewBadgesDialog(badges: List<RunBadge>, onDismiss: () -> Unit) {
                 Spacer(Modifier.height(16.dp))
                 Text(
                     stringResource(R.string.cardio_first_badge, top.label),
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+    )
+}
+
+/** A first run in a country or a US state: the most specific place leads, a state over its country. */
+@Composable
+private fun NewPlacesDialog(places: List<Place>, onDismiss: () -> Unit) {
+    val top = places.firstOrNull { it.kind == Place.Kind.STATE } ?: places.first()
+    var shown by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { shown = true }
+    val scale by animateFloatAsState(
+        targetValue = if (shown) 1f else 0.3f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        label = "place"
+    )
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cardio_badges_ok), color = Purple) } },
+        title = {
+            Text(stringResource(R.string.cardio_new_place), modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+        },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    places.forEach {
+                        PlaceBadgeImage(it, earned = true, size = if (it == top) 160.dp else 72.dp, modifier = Modifier.scale(scale))
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    stringResource(R.string.cardio_first_run_in, top.nameIn(appLanguage())),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                     textAlign = TextAlign.Center
                 )

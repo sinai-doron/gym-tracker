@@ -7,6 +7,14 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.doron.gymtracker.data.db.dao.ActivityTypeDao
 import com.doron.gymtracker.data.db.dao.ExerciseEntryDao
 import com.doron.gymtracker.data.db.dao.ExerciseLibraryDao
+import com.doron.gymtracker.data.db.dao.ExerciseNoteDao
+import com.doron.gymtracker.data.db.entities.ExerciseNoteEntity
+import com.doron.gymtracker.data.db.entities.WaterEntryEntity
+import com.doron.gymtracker.data.db.entities.WaterGoalEntity
+import com.doron.gymtracker.data.db.entities.WeightEntryEntity
+import com.doron.gymtracker.data.db.entities.WeightGoalEntity
+import com.doron.gymtracker.data.db.dao.WaterDao
+import com.doron.gymtracker.data.db.dao.WeightDao
 import com.doron.gymtracker.data.db.dao.LocationLogDao
 import com.doron.gymtracker.data.db.dao.ProgramDao
 import com.doron.gymtracker.data.db.dao.RouteDao
@@ -53,9 +61,14 @@ import com.doron.gymtracker.data.db.entities.WorkoutEntity
         ExerciseMuscleEntity::class,
         ProgramEntity::class,
         ActivityTypeEntity::class,
-        RunStepEntity::class
+        RunStepEntity::class,
+        ExerciseNoteEntity::class,
+        WeightEntryEntity::class,
+        WeightGoalEntity::class,
+        WaterEntryEntity::class,
+        WaterGoalEntity::class
     ],
-    version = 20,
+    version = 21,
     // Each version's schema is written to app/schemas/ (see app/build.gradle.kts) for the migration tests
     exportSchema = true
 )
@@ -71,6 +84,9 @@ abstract class GymDatabase : RoomDatabase() {
     abstract fun exerciseLibraryDao(): ExerciseLibraryDao
     abstract fun programDao(): ProgramDao
     abstract fun activityTypeDao(): ActivityTypeDao
+    abstract fun exerciseNoteDao(): ExerciseNoteDao
+    abstract fun weightDao(): WeightDao
+    abstract fun waterDao(): WaterDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -230,13 +246,53 @@ abstract class GymDatabase : RoomDatabase() {
             }
         }
 
+        // An exercise can be skipped for a session and carry a note on that day's sets, and an
+        // exercise keeps a note of the user's own across sessions (doron-backend Task 55 takes them)
+        val MIGRATION_20_21 = object : Migration(20, 21) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `exercise_entries` ADD COLUMN `skipped` INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE `exercise_entries` ADD COLUMN `note` TEXT")
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `exercise_notes` (`exerciseId` TEXT NOT NULL, `text` TEXT NOT NULL, " +
+                        "`uuid` TEXT, PRIMARY KEY(`exerciseId`))"
+                )
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_exercise_notes_uuid` ON `exercise_notes` (`uuid`)")
+                SyncMigration.exerciseNoteTriggers().forEach(db::execSQL)
+
+                // Body weight and water, with their goals (doron-backend Task 56)
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `weight_entries` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`measuredAt` INTEGER NOT NULL, `kg` REAL NOT NULL, `uuid` TEXT)"
+                )
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_weight_entries_uuid` ON `weight_entries` (`uuid`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_weight_entries_measuredAt` ON `weight_entries` (`measuredAt`)")
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `weight_goal` (`id` INTEGER NOT NULL, `startKg` REAL NOT NULL, " +
+                        "`startAt` INTEGER NOT NULL, `targetKg` REAL NOT NULL, `paceKgPerWeek` REAL NOT NULL, `uuid` TEXT, PRIMARY KEY(`id`))"
+                )
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_weight_goal_uuid` ON `weight_goal` (`uuid`)")
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `water_entries` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`drankAt` INTEGER NOT NULL, `ml` INTEGER NOT NULL, `uuid` TEXT)"
+                )
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_water_entries_uuid` ON `water_entries` (`uuid`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_water_entries_drankAt` ON `water_entries` (`drankAt`)")
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `water_goal` (`id` INTEGER NOT NULL, `dailyMl` INTEGER NOT NULL, " +
+                        "`glassMl` INTEGER NOT NULL, `bottleMl` INTEGER NOT NULL, `uuid` TEXT, PRIMARY KEY(`id`))"
+                )
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_water_goal_uuid` ON `water_goal` (`uuid`)")
+                SyncMigration.bodyTriggers().forEach(db::execSQL)
+            }
+        }
+
         /** Every migration, oldest first. The app and the migration tests open the database with this one list. */
         val MIGRATIONS: Array<Migration> = arrayOf(
             MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8,
             MIGRATION_8_9, MIGRATION_9_10, SyncMigration.MIGRATION_10_11, SyncMigration.MIGRATION_11_12,
             SyncMigration.MIGRATION_12_13, LibraryMigration.MIGRATION_13_14,
             SetsMigration.MIGRATION_14_15, ProgramMigration.MIGRATION_15_16, ActivityTypeMigration.MIGRATION_16_17,
-            MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20
+            MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21
         )
 
         /**

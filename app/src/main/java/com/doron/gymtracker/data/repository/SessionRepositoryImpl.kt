@@ -117,7 +117,7 @@ class SessionRepositoryImpl @Inject constructor(
         val entries = entryDao.getForSession(sessionId)
         return entries.map { entry ->
             val sets = setDao.getForEntry(entry.id).map { it.toDomain() }
-            ExerciseEntry(entry.id, entry.sessionId, entry.exerciseId, sets)
+            ExerciseEntry(entry.id, entry.sessionId, entry.exerciseId, sets, skipped = entry.skipped, note = entry.note)
         }
     }
 
@@ -168,6 +168,12 @@ class SessionRepositoryImpl @Inject constructor(
             LocationLogEntity(0, sessionId, it.timestamp, it.latitude, it.longitude, it.speed, it.altitude, it.accuracy, it.bearing)
         })
     }
+
+    override suspend fun trackExtents(): Map<Long, com.doron.gymtracker.data.db.dao.TrackExtent> =
+        locationLogDao.extents().associateBy { it.sessionId }
+
+    override suspend fun middlePoint(sessionId: Long, points: Int): Pair<Double, Double>? =
+        locationLogDao.pointAt(sessionId, points / 2)?.let { it.latitude to it.longitude }
 
     override suspend fun countRoutePoints(): Map<Long, Int> =
         locationLogDao.countBySession().associate { it.sessionId to it.points }

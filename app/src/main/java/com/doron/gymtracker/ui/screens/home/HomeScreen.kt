@@ -112,6 +112,8 @@ fun HomeScreen(
     onTimer: (typeId: String) -> Unit,
     onTrainingTypes: () -> Unit,
     onLogSession: () -> Unit,
+    onWeight: () -> Unit = {},
+    onWater: () -> Unit = {},
     onLoaded: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
     badgesViewModel: BadgesViewModel = hiltViewModel()
@@ -236,6 +238,8 @@ fun HomeScreen(
                         onPrograms = onProgramsClick,
                         onRoutes = onRoutesClick,
                         onAchievements = onAchievementsClick,
+                        onWeight = onWeight,
+                        onWater = onWater,
                         onSettings = onSettingsClick
                     )
                 }
@@ -291,6 +295,9 @@ fun HomeScreen(
                 Spacer(Modifier.height(12.dp))
                 StepsWeekCard(week, Modifier.bringIntoViewRequester(stepsCard))
             }
+
+            // Weight and water, as switched on in Settings
+            com.doron.gymtracker.ui.screens.body.HomeBodyCards(onWeight, onWater, Modifier.padding(top = 12.dp))
 
             Spacer(Modifier.height(12.dp))
 

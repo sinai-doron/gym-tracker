@@ -24,6 +24,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import com.doron.gymtracker.domain.model.withTargetSets
+import com.doron.gymtracker.data.catalogue.ExerciseInstructions
+import com.doron.gymtracker.data.db.dao.EntryNote
+import com.doron.gymtracker.data.repository.ExerciseNotes
 
 data class ExerciseDetailUiState(
     val exercise: ExerciseDefinition,
@@ -36,7 +39,19 @@ data class ExerciseDetailUiState(
     val lastWeight: Float? = null,
     /** [lastWeight] is a deload week's share of the usual weight, still to be rounded to a plate. */
     val deloadPrefill: Boolean = false,
-    val editingSetIndex: Int? = null
+    val editingSetIndex: Int? = null,
+    /** Left out of this session on purpose. */
+    val skipped: Boolean = false,
+    /** The note kept on the exercise across sessions; null when there is none. */
+    val keptNote: String? = null,
+    /** The note on this session's sets. */
+    val noteToday: String = "",
+    /** The newest note on this exercise's sets from an earlier session. */
+    val lastNote: EntryNote? = null,
+    /** How to do it, step by step, in each language there's text in; empty when there's none. */
+    val instructions: Map<String, List<String>> = emptyMap(),
+    /** Whether notes can be kept on it: a plan exercise from before the library has no library id. */
+    val canKeepNote: Boolean = false
 )
 
 class ExerciseDetailViewModel(
@@ -56,7 +71,13 @@ class ExerciseDetailViewModel(
      * The session's scope, when the session owns this sheet. Then the sheet lives as long as
      * the session does (across progress round trips and rotation) and stops with it.
      */
-    parentScope: CoroutineScope? = null
+    parentScope: CoroutineScope? = null,
+    private val notes: ExerciseNotes? = null,
+    private val instructions: ExerciseInstructions? = null,
+    /** Skipped and note-for-today as saved, when resuming a session. */
+    skipped: Boolean = false,
+    noteToday: String? = null,
+    private val onSkippedChanged: (exerciseId: String, skipped: Boolean) -> Unit = { _, _ -> }
 ) : ViewModel() {
 
     private val scope: CoroutineScope = parentScope ?: viewModelScope
@@ -66,9 +87,13 @@ class ExerciseDetailViewModel(
         ExerciseDetailUiState(
             exercise,
             completedSets = loggedSets,
-            lastWeight = loggedSets.filterIsInstance<RepSetRecord>().lastOrNull()?.weightKg
+            lastWeight = loggedSets.filterIsInstance<RepSetRecord>().lastOrNull()?.weightKg,
+            skipped = skipped,
+            noteToday = noteToday.orEmpty()
         )
     )
+
+    private var libraryId: String? = null
     val uiState: StateFlow<ExerciseDetailUiState> = _uiState.asStateFlow()
 
     private val restTimer = restTimer ?: RestTimer(scope)
@@ -81,6 +106,15 @@ class ExerciseDetailViewModel(
                 _uiState.update {
                     it.copy(restCountdownSecs = rest?.remainingSecs, restTotalSecs = rest?.totalSecs ?: 0)
                 }
+            }
+        }
+        if (notes != null) {
+            scope.launch {
+                val id = notes.libraryIdOf(exercise.id) ?: return@launch
+                libraryId = id
+                val steps = instructions?.byLanguage(id).orEmpty()
+                _uiState.update { it.copy(canKeepNote = true, lastNote = notes.lastTime(id, sessionId), instructions = steps) }
+                notes.kept(id).collect { kept -> _uiState.update { it.copy(keptNote = kept) } }
             }
         }
         val ex = _uiState.value.exercise
@@ -208,6 +242,27 @@ class ExerciseDetailViewModel(
     fun adjustRestTimer(deltaSecs: Int) = restTimer.adjust(deltaSecs)
 
     private fun startRestTimer(durationSecs: Int) = restTimer.start(durationSecs)
+
+    /** Leaves the exercise out of this session, or takes it back in. */
+    fun setSkipped(skipped: Boolean) {
+        val exercise = _uiState.value.exercise
+        _uiState.update { it.copy(skipped = skipped) }
+        onSkippedChanged(exercise.id, skipped)
+        scope.launch { notes?.skip(sessionId, exercise.id, skipped) }
+    }
+
+    /** Saves the note kept on the exercise; blank removes it. */
+    fun keepNote(text: String) {
+        val id = libraryId ?: return
+        scope.launch { notes?.keep(id, text) }
+    }
+
+    /** Saves the note on this session's sets; blank clears it. */
+    fun saveNoteToday(text: String) {
+        val exercise = _uiState.value.exercise
+        _uiState.update { it.copy(noteToday = text.trim()) }
+        scope.launch { notes?.noteToday(sessionId, exercise.id, text) }
+    }
 
     fun changeTargetSets(delta: Int) {
         val exercise = _uiState.value.exercise

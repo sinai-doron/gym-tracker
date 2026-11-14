@@ -34,6 +34,16 @@ import com.doron.gymtracker.domain.model.AchievementFamily
 import com.doron.gymtracker.ui.components.AchievementItem
 import com.doron.gymtracker.ui.components.BadgesRow
 import com.doron.gymtracker.ui.screens.home.BadgesViewModel
+import com.doron.gymtracker.data.places.Place
+import com.doron.gymtracker.domain.usecase.PlaceBadgeStatus
+import com.doron.gymtracker.ui.components.PlaceBadgeImage
+import com.doron.gymtracker.ui.components.appLanguage
+import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /** Every achievement, by family: the distance badges first, then the rest, each with its progress. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,6 +51,7 @@ import com.doron.gymtracker.ui.screens.home.BadgesViewModel
 fun AchievementsScreen(onBack: () -> Unit, viewModel: BadgesViewModel = hiltViewModel()) {
     val badges by viewModel.badges.collectAsState()
     val achievements by viewModel.achievements.collectAsState()
+    val places by viewModel.places.collectAsState()
     LaunchedEffect(Unit) { viewModel.refresh() }
 
     Scaffold(
@@ -64,6 +75,9 @@ fun AchievementsScreen(onBack: () -> Unit, viewModel: BadgesViewModel = hiltView
             if (badges.isNotEmpty()) {
                 Section(title = stringResource(R.string.home_badges_title), explain = stringResource(R.string.home_badges_explain)) { BadgesRow(badges) }
             }
+            if (places.isNotEmpty()) {
+                Section(title = stringResource(R.string.places_title), explain = stringResource(R.string.places_explain)) { Places(places) }
+            }
             AchievementFamily.entries.forEach { family ->
                 val inFamily = achievements.filter { it.kind.family == family }
                 if (inFamily.isEmpty()) return@forEach
@@ -72,6 +86,43 @@ fun AchievementsScreen(onBack: () -> Unit, viewModel: BadgesViewModel = hiltView
                         inFamily.forEach { AchievementItem(it, size = 88.dp) }
                     }
                 }
+            }
+        }
+    }
+}
+
+/** The countries, each with when it was earned; then the US states, the ones run in first. */
+@Composable
+private fun Places(places: List<PlaceBadgeStatus>) {
+    val language = appLanguage()
+    val dateFormat = remember { SimpleDateFormat("d.M.yy", Locale.getDefault()) }
+    val countries = places.filter { it.place.kind == Place.Kind.COUNTRY }
+    val states = places.filter { it.place.kind == Place.Kind.STATE }
+        .sortedWith(compareBy({ !it.isEarned }, { it.earnedAt ?: 0L }, { it.place.nameIn(language) }))
+    Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth()) {
+        countries.forEach { status ->
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                PlaceBadgeImage(status.place, status.isEarned, size = 100.dp)
+                Text(
+                    status.earnedAt?.let { dateFormat.format(Date(it)) } ?: stringResource(R.string.achievement_not_yet),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+    if (states.isNotEmpty()) {
+        Spacer(Modifier.height(16.dp))
+        Text(
+            stringResource(R.string.places_us_states, states.count { it.isEarned }, states.size),
+            style = MaterialTheme.typography.titleSmall
+        )
+        Spacer(Modifier.height(8.dp))
+        states.chunked(3).forEach { row ->
+            Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth()) {
+                row.forEach { PlaceBadgeImage(it.place, it.isEarned, size = 100.dp) }
+                // A short last row keeps the grid's columns
+                repeat(3 - row.size) { Spacer(Modifier.size(100.dp)) }
             }
         }
     }

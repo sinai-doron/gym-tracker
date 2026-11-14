@@ -6,6 +6,9 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.doron.gymtracker.data.db.entities.ExerciseEntryEntity
 
+/** A note on an exercise's sets, and when that session began. */
+data class EntryNote(val note: String, val startedAt: Long)
+
 @Dao
 interface ExerciseEntryDao {
     @Insert
@@ -27,6 +30,26 @@ interface ExerciseEntryDao {
 
     @Query("DELETE FROM exercise_entries WHERE sessionId = :sessionId AND exerciseId = :exerciseId")
     suspend fun deleteForSessionAndExercise(sessionId: Long, exerciseId: String)
+
+    /** The session's entry for a plan exercise, made (with no sets) when there isn't one yet. */
+    @Transaction
+    suspend fun getOrCreate(sessionId: Long, exerciseId: String): ExerciseEntryEntity =
+        getForSessionAndExercise(sessionId, exerciseId)
+            ?: insert(ExerciseEntryEntity(0, sessionId, exerciseId)).let { getForSessionAndExercise(sessionId, exerciseId)!! }
+
+    @Query("UPDATE exercise_entries SET skipped = :skipped WHERE id = :entryId")
+    suspend fun setSkipped(entryId: Long, skipped: Boolean)
+
+    @Query("UPDATE exercise_entries SET note = :note WHERE id = :entryId")
+    suspend fun setNote(entryId: Long, note: String?)
+
+    /** The newest note on a library exercise's sets from another session than [sessionId]. */
+    @Query(
+        """SELECT e.note AS note, s.startedAt AS startedAt FROM exercise_entries e JOIN sessions s ON s.id = e.sessionId
+           WHERE e.libraryExerciseId = :libraryExerciseId AND e.sessionId != :sessionId AND trim(coalesce(e.note, '')) != ''
+           ORDER BY s.startedAt DESC LIMIT 1"""
+    )
+    suspend fun lastNote(libraryExerciseId: String, sessionId: Long): EntryNote?
 
     @Query("DELETE FROM exercise_entries WHERE sessionId = :sessionId")
     suspend fun deleteForSession(sessionId: Long)

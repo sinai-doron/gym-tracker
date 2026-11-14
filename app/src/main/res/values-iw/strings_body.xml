@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Weight -->
+    <string name="weight_title">משקל</string>
+    <string name="weight_log">שקילה חדשה</string>
+    <string name="weight_edit">עריכת שקילה</string>
+    <string name="weight_save">שמור %1$s</string>
+    <string name="weight_delete">מחק שקילה</string>
+    <string name="weight_goal_and_more">יעד</string>
+    <string name="weight_current">נוכחי · %1$s</string>
+    <string name="weight_none_yet">עוד אין שקילות</string>
+    <string name="weight_none_yet_text">רשום שקילה ראשונה כדי לראות את המגמה.</string>
+    <string name="weight_since_start">%1$s מההתחלה</string>
+    <string name="weight_start">התחלה %1$s</string>
+    <string name="weight_goal_at">יעד %1$s</string>
+    <string name="weight_to_go">%1$d%% · עוד %2$s</string>
+    <string name="weight_at_goal">הגעת ליעד</string>
+    <string name="weight_set_goal">הגדר יעד</string>
+    <string name="weight_trend">מגמה</string>
+    <string name="weight_range_week">שבוע</string>
+    <string name="weight_range_month">חודש</string>
+    <string name="weight_range_quarter">3 חודשים</string>
+    <string name="weight_trend_legend">מגמת 7 ימים</string>
+    <string name="weight_points_legend">שקילה</string>
+    <string name="weight_week_avg">ממוצע 7 ימים</string>
+    <string name="weight_week_change">מגמה מול שבוע שעבר</string>
+    <string name="weight_history">היסטוריה</string>
+    <string name="weight_today">היום</string>
+    <string name="weight_yesterday">אתמול</string>
+    <string name="weight_since_last">%1$s מהשקילה הקודמת</string>
+    <string name="weight_same_as_last">כמו בשקילה הקודמת</string>
+    <string name="weight_scale_hint">גרור את הסרגל, או הקש לכוונון עדין</string>
+    <string name="weight_less">פחות</string>
+    <string name="weight_more">יותר</string>
+    <string name="weight_goal_title">יעד משקל</string>
+    <string name="weight_target">משקל יעד</string>
+    <string name="weight_target_lower">הורד את היעד</string>
+    <string name="weight_target_higher">העלה את היעד</string>
+    <string name="weight_below_today">%1$s מתחת להיום</string>
+    <string name="weight_above_today">%1$s מעל להיום</string>
+    <string name="weight_same_as_today">כמו היום</string>
+    <string name="weight_pace">קצב שבועי</string>
+    <string name="weight_pace_relaxed">רגוע</string>
+    <string name="weight_pace_steady">יציב</string>
+    <string name="weight_pace_faster">מהיר</string>
+    <string name="weight_pace_amount">%1$s לשבוע</string>
+    <plurals name="weight_eta">
+        <item quantity="one">בקצב הזה תגיע ל־%1$s בעוד כשבוע.</item>
+        <item quantity="two">בקצב הזה תגיע ל־%1$s בעוד כשבועיים.</item>
+        <item quantity="other">בקצב הזה תגיע ל־%1$s בעוד כ־%2$d שבועות.</item>
+    </plurals>
+    <string name="weight_at_target">הגעת ליעד. המשך להישקל כדי לשמור עליו.</string>
+    <string name="weight_save_goal">שמור יעד</string>
+    <string name="weight_card_change_week">%1$s השבוע</string>
+
+    <!-- Water -->
+    <string name="water_title">מים</string>
+    <string name="water_of_goal">מתוך %1$s מ״ל · %2$d%%</string>
+    <string name="water_goal_reached">הגעת ליעד היומי</string>
+    <string name="water_left">עוד %1$s מ״ל</string>
+    <string name="water_next_reminder">תזכורת הבאה %1$s</string>
+    <string name="water_add">הוסף שתייה</string>
+    <string name="water_glass">כוס</string>
+    <string name="water_bottle">בקבוק</string>
+    <string name="water_other">אחר</string>
+    <string name="water_any_amount">כל כמות</string>
+    <string name="water_ml">%1$s מ״ל</string>
+    <string name="water_add_ml">הוסף %1$s מ״ל</string>
+    <string name="water_today_log">היום</string>
+    <plurals name="water_drinks">
+        <item quantity="one">שתייה אחת</item>
+        <item quantity="other">%1$d שתיות</item>
+    </plurals>
+    <string name="water_remove">הסר %1$s מ״ל משעה %2$s</string>
+    <string name="water_nothing_yet">עוד לא שתית היום</string>
+    <string name="water_last_7_days">7 הימים האחרונים</string>
+    <string name="water_goal_hit">היעד הושג ב־%1$d מתוך 7 ימים</string>
+    <string name="water_goal_line">יעד %1$s</string>
+    <string name="water_other_title">כמה?</string>
+    <string name="water_goal_title">יעד מים</string>
+    <string name="water_daily_goal">יעד יומי</string>
+    <string name="water_goal_lower">הורד את היעד ב־250 מ״ל</string>
+    <string name="water_goal_higher">העלה את היעד ב־250 מ״ל</string>
+    <string name="water_glasses">בערך %1$s כוסות</string>
+    <string name="water_suggested">מומלץ: %1$s מ״ל</string>
+    <string name="water_suggested_why">לפי המשקל שלך (%1$s), כ־35 מ״ל לכל ק״ג</string>
+    <string name="water_use">השתמש</string>
+    <string name="water_sizes">גדלים להוספה מהירה</string>
+    <string name="water_sizes_hint">התאם אותם לכוס ולבקבוק שלך</string>
+    <string name="water_save">שמור</string>
+    <string name="water_card_today">%1$s מתוך %2$s מ״ל היום</string>
+
+    <!-- Settings: weight and water -->
+    <string name="body_settings">משקל ומים</string>
+    <string name="body_show_weight">הצג משקל במסך הבית</string>
+    <string name="body_show_water">הצג מים במסך הבית</string>
+    <string name="body_weight_reminder">תזכורת לשקילה</string>
+    <string name="body_reminder_off">כבוי</string>
+    <string name="body_reminder_daily">יומי</string>
+    <string name="body_reminder_weekly">שבועי</string>
+    <string name="body_reminder_time">שעה</string>
+    <string name="body_water_reminder">תזכורות לשתייה</string>
+    <string name="body_water_every">כל</string>
+    <plurals name="body_hours">
+        <item quantity="one">שעה</item>
+        <item quantity="two">שעתיים</item>
+        <item quantity="other">%1$d שעות</item>
+    </plurals>
+    <string name="body_from">מ־</string>
+    <string name="body_until">עד</string>
+    <string name="body_skip_on_track">דלג כשאני בקצב</string>
+    <string name="body_skip_on_track_hint">בלי תזכורת אם שתית יותר מהקצב של היום</string>
+    <string name="body_reminder_notifications">תזכורות צריכות הרשאת התראות לאפליקציה.</string>
+
+    <!-- Reminder notifications -->
+    <string name="reminder_channel">תזכורות משקל ומים</string>
+    <string name="reminder_weight_title">הגיע הזמן להישקל</string>
+    <string name="reminder_weight_text">אותה שעה, אותם תנאים: המגמה הכי נקייה.</string>
+    <string name="reminder_water_title">הגיע הזמן לשתות</string>
+    <string name="reminder_water_text">כוס עכשיו שומרת אותך בקצב של היום.</string>
+
+    <!-- Menu -->
+    <string name="menu_weight">משקל</string>
+    <string name="menu_water">מים</string>
+    <!-- Navigation -->
+    <string name="body_nav_back">חזרה</string>
+    <string name="body_nav_close">סגירה</string>
+    <string name="body_nav_goal">יעד ותזכורות</string>
+    <string name="water_today_date">היום · %1$s</string>
+    <string name="weight_when">מתי</string>
+    <string name="weight_delete_text">היא תוסר מההיסטוריה ומהמגמה.</string>
+    <string name="body_cancel">ביטול</string>
+</resources>

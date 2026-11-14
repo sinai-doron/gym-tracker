@@ -31,6 +31,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.doron.gymtracker.domain.model.Program
 import com.doron.gymtracker.domain.model.withTargetSets
+import com.doron.gymtracker.data.catalogue.ExerciseInstructions
+import com.doron.gymtracker.data.repository.ExerciseNotes
 
 data class SessionUiState(
     val workout: Workout? = null,
@@ -46,7 +48,11 @@ data class SessionUiState(
     /** Sets already logged in this session (non-empty when resuming), by exercise id. */
     val loggedSets: Map<String, List<SetRecord>> = emptyMap(),
     /** The exercise whose sheet is open; kept here so it reopens after a trip to progress. */
-    val selectedExerciseId: String? = null
+    val selectedExerciseId: String? = null,
+    /** Exercises left out of this session, by id. */
+    val skipped: Set<String> = emptySet(),
+    /** Notes on this session's sets as saved (resuming), by exercise id. */
+    val notesToday: Map<String, String> = emptyMap()
 ) {
     val isDeloadWeek: Boolean get() = deload != null
 }
@@ -56,7 +62,9 @@ class ExerciseDetailDeps @Inject constructor(
     val logSet: LogSetUseCase,
     val updateSet: UpdateSetUseCase,
     val progressionHint: ProgressionHintUseCase,
-    val getLastWeight: GetLastWeightUseCase
+    val getLastWeight: GetLastWeightUseCase,
+    val notes: ExerciseNotes,
+    val instructions: ExerciseInstructions
 )
 
 class SessionViewModel @AssistedInject constructor(
@@ -96,9 +104,18 @@ class SessionViewModel @AssistedInject constructor(
                 onSetDeleted = ::deleteSet,
                 loggedSets = _uiState.value.loggedSets[exercise.id].orEmpty(),
                 deloadLoadPercent = _uiState.value.deload?.deloadLoadPercent,
-                parentScope = viewModelScope
+                parentScope = viewModelScope,
+                notes = detailDeps.notes,
+                instructions = detailDeps.instructions,
+                skipped = exercise.id in _uiState.value.skipped,
+                noteToday = _uiState.value.notesToday[exercise.id],
+                onSkippedChanged = ::skippedChanged
             )
         }
+
+    private fun skippedChanged(exerciseId: String, skipped: Boolean) {
+        _uiState.update { it.copy(skipped = if (skipped) it.skipped + exerciseId else it.skipped - exerciseId) }
+    }
 
     fun selectExercise(exerciseId: String?) {
         _uiState.update { it.copy(selectedExerciseId = exerciseId) }
@@ -114,7 +131,10 @@ class SessionViewModel @AssistedInject constructor(
             val startedAt = session?.startedAt ?: System.currentTimeMillis()
             // A session logged by hand has its own end: its clock shows how long it was
             val endedAt = session?.finishedAt?.takeIf { session.loggedManually }
-            val loggedSets = sessionRepo.getEntriesForSession(sessionId).associate { it.exerciseId to it.sets }
+            val entries = sessionRepo.getEntriesForSession(sessionId)
+            val loggedSets = entries.associate { it.exerciseId to it.sets }
+            val skipped = entries.filter { it.skipped }.map { it.exerciseId }.toSet()
+            val notesToday = entries.mapNotNull { e -> e.note?.let { e.exerciseId to it } }.toMap()
             val raw = workoutRepo.getById(workoutId)
             // The variant and any deload follow the week the session started in; a deload caps
             // each exercise's sets for this session only, the plan keeps its own
@@ -125,7 +145,9 @@ class SessionViewModel @AssistedInject constructor(
                 })
             }
             // Loaded together so exercise sheets are created with their logged sets and the deload
-            _uiState.update { it.copy(workout = resolved, startedAt = startedAt, loggedSets = loggedSets, deload = deload) }
+            _uiState.update {
+                it.copy(workout = resolved, startedAt = startedAt, loggedSets = loggedSets, deload = deload, skipped = skipped, notesToday = notesToday)
+            }
             while (!_uiState.value.isFinished) {
                 _uiState.update { it.copy(elapsedSecs = ((endedAt ?: System.currentTimeMillis()) - startedAt) / 1000) }
                 delay(1_000)

@@ -35,24 +35,36 @@ import com.doron.gymtracker.domain.model.RepSetRecord
 import com.doron.gymtracker.domain.model.SetRecord
 import com.doron.gymtracker.domain.model.TimedSetRecord
 import com.doron.gymtracker.ui.theme.SuccessGreen
+import com.doron.gymtracker.ui.theme.AppColors
+import com.doron.gymtracker.ui.theme.AppShapes
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 
 @Composable
 fun ExerciseCard(
     exercise: ExerciseDefinition,
     completedSets: List<SetRecord>,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    /** Left out of today's session: faded, and not counted as unfinished. */
+    skipped: Boolean = false,
+    /** Skips it for today (true) or takes it back (false); no button without it. */
+    onSkip: ((Boolean) -> Unit)? = null
 ) {
     val isDone = completedSets.size >= exercise.targetSets
+    // Skipped: the card greys out, all but its button, which brings it back
+    val greyed = skipped && !isDone
+    val content = Modifier.alpha(if (greyed) 0.45f else 1f)
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .alpha(if (exercise.isOptional && !isDone) 0.7f else 1f)
+            .alpha(if (exercise.isOptional && !isDone && !skipped) 0.7f else 1f)
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = if (greyed) AppColors.ground else MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isDone) 0.dp else 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isDone || greyed) 0.dp else 2.dp)
     ) {
         Row(modifier = Modifier.height(IntrinsicSize.Min)) {
             if (isDone) {
@@ -65,11 +77,12 @@ fun ExerciseCard(
                 )
             }
             Column(modifier = Modifier.padding(16.dp).weight(1f)) {
+                val skippedLabel = stringResource(R.string.session_skipped)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         exercise.localizedName(),
                         style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.weight(1f)
+                        modifier = content.weight(1f)
                     )
                     if (isDone) {
                         Icon(
@@ -78,20 +91,44 @@ fun ExerciseCard(
                             tint = SuccessGreen,
                             modifier = Modifier.size(22.dp)
                         )
-                    } else if (exercise.isOptional) {
+                    } else if (exercise.isOptional && !skipped) {
                         Text(
                             stringResource(R.string.session_optional),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+                    // Skip it for today from the list without opening it; the same button takes it back
+                    if (onSkip != null && !isDone) {
+                        Spacer(Modifier.width(8.dp))
+                        SquareIconButton(
+                            // Skip; once skipped, undo (it mirrors itself right to left)
+                            icon = if (skipped) R.drawable.ic_undo else R.drawable.ic_skip,
+                            description = stringResource(if (skipped) R.string.session_undo_skip else R.string.session_skip_today),
+                            size = AppShapes.rowIconButton,
+                            radius = AppShapes.rowIconButtonRadius,
+                            iconSize = AppShapes.rowIconButtonIcon,
+                            background = if (skipped) AppColors.surface else AppColors.ground,
+                            tint = if (skipped) AppColors.accentStrength else AppColors.textMuted,
+                            border = if (skipped) AppColors.borderStrong else null,
+                            onClick = { onSkip(!skipped) },
+                            modifier = Modifier.semantics { stateDescription = if (skipped) skippedLabel else "" }
+                        )
+                    }
                 }
-                Row {
+                Row(modifier = content) {
                     if (isDone) {
                         Text(
                             pluralStringResource(R.plurals.session_done_sets, completedSets.size, completedSets.size),
                             style = MaterialTheme.typography.bodyMedium,
                             color = SuccessGreen,
+                            modifier = Modifier.weight(1f)
+                        )
+                    } else if (greyed) {
+                        Text(
+                            stringResource(R.string.session_skipped),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.weight(1f)
                         )
                     } else {
@@ -113,8 +150,10 @@ fun ExerciseCard(
 
                 if (completedSets.isNotEmpty() && !isDone) {
                     Spacer(Modifier.height(10.dp))
-                    completedSets.forEachIndexed { i, set ->
-                        InlineSetRow(setNumber = i + 1, record = set)
+                    Column(modifier = content) {
+                        completedSets.forEachIndexed { i, set ->
+                            InlineSetRow(setNumber = i + 1, record = set)
+                        }
                     }
                 }
             }

@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -65,7 +66,11 @@ data class ExerciseSummaryLine(
     val name: String,
     val setsCompleted: Int,
     val setsTarget: Int,
-    val topWeight: Float?
+    val topWeight: Float?,
+    /** Left out of the session on purpose. */
+    val skipped: Boolean = false,
+    /** The note on that session's sets. */
+    val note: String? = null
 )
 
 fun buildSummaryData(
@@ -101,7 +106,9 @@ fun buildSummaryData(
                 name = detail.exercise.nameIn(AppLocale.language()),
                 setsCompleted = sets.size,
                 setsTarget = target,
-                topWeight = topWeight
+                topWeight = topWeight,
+                skipped = detail.skipped && sets.isEmpty(),
+                note = detail.noteToday.ifBlank { null }
             )
         )
     }
@@ -110,7 +117,8 @@ fun buildSummaryData(
         workoutName = workoutName,
         durationSecs = durationSecs,
         exercisesCompleted = exercisesCompleted,
-        exercisesTotal = detailStates.size,
+        // Skipped on purpose: not one still to do
+        exercisesTotal = detailStates.values.count { !(it.skipped && it.completedSets.isEmpty()) },
         totalSets = totalSets,
         totalVolumeKg = totalVolume,
         maxWeightKg = maxWeight,
@@ -226,7 +234,9 @@ fun SessionSummaryScreen(
                         line.name,
                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
                     )
-                    val detail = if (line.topWeight != null && line.topWeight > 0f) {
+                    val detail = if (line.skipped) {
+                        stringResource(R.string.session_skipped)
+                    } else if (line.topWeight != null && line.topWeight > 0f) {
                         stringResource(
                             R.string.session_breakdown_sets_weight_unit,
                             line.setsCompleted, line.setsTarget, weightText(line.topWeight)
@@ -239,6 +249,9 @@ fun SessionSummaryScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    line.note?.let {
+                        Text(it, style = MaterialTheme.typography.bodySmall, fontStyle = FontStyle.Italic)
+                    }
                 }
                 if (line.setsCompleted >= line.setsTarget && line.setsCompleted > 0) {
                     Icon(

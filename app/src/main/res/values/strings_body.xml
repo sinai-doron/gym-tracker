@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Weight -->
+    <string name="weight_title">Weight</string>
+    <string name="weight_log">Log weight</string>
+    <string name="weight_edit">Edit weigh-in</string>
+    <string name="weight_save">Save %1$s</string>
+    <string name="weight_delete">Delete weigh-in</string>
+    <string name="weight_goal_and_more">Goal</string>
+    <string name="weight_current">Current · %1$s</string>
+    <string name="weight_none_yet">No weigh-ins yet</string>
+    <string name="weight_none_yet_text">Log your first weigh-in to see your trend.</string>
+    <string name="weight_since_start">%1$s since start</string>
+    <string name="weight_start">Start %1$s</string>
+    <string name="weight_goal_at">Goal %1$s</string>
+    <string name="weight_to_go">%1$d%% · %2$s to go</string>
+    <string name="weight_at_goal">Goal reached</string>
+    <string name="weight_set_goal">Set a goal</string>
+    <string name="weight_trend">Trend</string>
+    <string name="weight_range_week">Week</string>
+    <string name="weight_range_month">Month</string>
+    <string name="weight_range_quarter">3 months</string>
+    <string name="weight_trend_legend">7-day trend</string>
+    <string name="weight_points_legend">Weigh-in</string>
+    <string name="weight_week_avg">7-day average</string>
+    <string name="weight_week_change">Trend vs last week</string>
+    <string name="weight_history">History</string>
+    <string name="weight_today">Today</string>
+    <string name="weight_yesterday">Yesterday</string>
+    <string name="weight_since_last">%1$s since last entry</string>
+    <string name="weight_same_as_last">Same as last entry</string>
+    <string name="weight_scale_hint">Drag the scale, or tap to fine-tune</string>
+    <string name="weight_less">Less</string>
+    <string name="weight_more">More</string>
+    <string name="weight_goal_title">Weight goal</string>
+    <string name="weight_target">Target weight</string>
+    <string name="weight_target_lower">Lower the target</string>
+    <string name="weight_target_higher">Raise the target</string>
+    <string name="weight_below_today">%1$s below today</string>
+    <string name="weight_above_today">%1$s above today</string>
+    <string name="weight_same_as_today">Same as today</string>
+    <string name="weight_pace">Weekly pace</string>
+    <string name="weight_pace_relaxed">Relaxed</string>
+    <string name="weight_pace_steady">Steady</string>
+    <string name="weight_pace_faster">Faster</string>
+    <string name="weight_pace_amount">%1$s/week</string>
+    <plurals name="weight_eta">
+        <item quantity="one">At this pace you reach %1$s in about %2$d week.</item>
+        <item quantity="other">At this pace you reach %1$s in about %2$d weeks.</item>
+    </plurals>
+    <string name="weight_at_target">You\'re at your target. Keep weighing in to hold it.</string>
+    <string name="weight_save_goal">Save goal</string>
+    <string name="weight_card_change_week">%1$s this week</string>
+
+    <!-- Water -->
+    <string name="water_title">Water</string>
+    <string name="water_of_goal">of %1$s ml · %2$d%%</string>
+    <string name="water_goal_reached">Daily goal reached</string>
+    <string name="water_left">%1$s ml to go</string>
+    <string name="water_next_reminder">Next reminder %1$s</string>
+    <string name="water_add">Add a drink</string>
+    <string name="water_glass">Glass</string>
+    <string name="water_bottle">Bottle</string>
+    <string name="water_other">Other</string>
+    <string name="water_any_amount">Any amount</string>
+    <string name="water_ml">%1$s ml</string>
+    <string name="water_add_ml">Add %1$s ml</string>
+    <string name="water_today_log">Today\'s log</string>
+    <plurals name="water_drinks">
+        <item quantity="one">%1$d drink</item>
+        <item quantity="other">%1$d drinks</item>
+    </plurals>
+    <string name="water_remove">Remove %1$s ml at %2$s</string>
+    <string name="water_nothing_yet">Nothing yet today</string>
+    <string name="water_last_7_days">Last 7 days</string>
+    <string name="water_goal_hit">Goal hit %1$d of 7 days</string>
+    <string name="water_goal_line">Goal %1$s</string>
+    <string name="water_other_title">How much?</string>
+    <string name="water_goal_title">Water goal</string>
+    <string name="water_daily_goal">Daily goal</string>
+    <string name="water_goal_lower">Lower the goal by 250 ml</string>
+    <string name="water_goal_higher">Raise the goal by 250 ml</string>
+    <string name="water_glasses">About %1$s glasses</string>
+    <string name="water_suggested">Suggested: %1$s ml</string>
+    <string name="water_suggested_why">From your weight (%1$s), about 35 ml per kg</string>
+    <string name="water_use">Use</string>
+    <string name="water_sizes">Quick-add sizes</string>
+    <string name="water_sizes_hint">Match them to the glass and bottle you use</string>
+    <string name="water_save">Save</string>
+    <string name="water_card_today">%1$s of %2$s ml today</string>
+
+    <!-- Settings: weight and water -->
+    <string name="body_settings">Weight and water</string>
+    <string name="body_show_weight">Show weight on Home</string>
+    <string name="body_show_water">Show water on Home</string>
+    <string name="body_weight_reminder">Weigh-in reminder</string>
+    <string name="body_reminder_off">Off</string>
+    <string name="body_reminder_daily">Daily</string>
+    <string name="body_reminder_weekly">Weekly</string>
+    <string name="body_reminder_time">Time</string>
+    <string name="body_water_reminder">Water reminders</string>
+    <string name="body_water_every">Every</string>
+    <plurals name="body_hours">
+        <item quantity="one">%1$d hour</item>
+        <item quantity="other">%1$d hours</item>
+    </plurals>
+    <string name="body_from">From</string>
+    <string name="body_until">Until</string>
+    <string name="body_skip_on_track">Skip when I\'m on track</string>
+    <string name="body_skip_on_track_hint">No nudge if you\'re ahead of the day\'s pace</string>
+    <string name="body_reminder_notifications">Reminders need notifications allowed for the app.</string>
+
+    <!-- Reminder notifications -->
+    <string name="reminder_channel">Weight and water reminders</string>
+    <string name="reminder_weight_title">Time to weigh in</string>
+    <string name="reminder_weight_text">Same time, same conditions: the cleanest trend.</string>
+    <string name="reminder_water_title">Time for some water</string>
+    <string name="reminder_water_text">A glass now keeps you on pace for today.</string>
+
+    <!-- Menu -->
+    <string name="menu_weight">Weight</string>
+    <string name="menu_water">Water</string>
+    <!-- Navigation -->
+    <string name="body_nav_back">Back</string>
+    <string name="body_nav_close">Close</string>
+    <string name="body_nav_goal">Goal and reminders</string>
+    <string name="water_today_date">Today · %1$s</string>
+    <string name="weight_when">When</string>
+    <string name="weight_delete_text">It leaves your history and the trend.</string>
+    <string name="body_cancel">Cancel</string>
+</resources>

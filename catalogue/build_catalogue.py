@@ -34,6 +34,10 @@ SHIPPABLE_LICENCES = {1, 2, 3, 4}
 MIN_INSTRUCTIONS = 40
 # Flags in wger-flags.json that rule out copying an exercise's English text
 TEXT_BLOCKERS = ("bodybuilding.com", "website as its author", "has no author", "no English text")
+# Our Hebrew translation of the English steps: slug -> steps, step i translating English step i
+HEBREW = HERE / "instructions.he.json"
+# A step that isn't instructions: a bare link to a video, or a translation tool's credit
+NOT_A_STEP = re.compile(r"https?://|\bDeepL\b")
 
 
 class _Steps(HTMLParser):
@@ -81,6 +85,7 @@ def build() -> tuple:
     wger_meta = json.loads((WGER / "wger-exercises.json").read_text())["meta"]
     licences = {l["id"]: l for l in json.loads((WGER / "wger-reference.json").read_text())["licenses"]}
     flags = json.loads((WGER / "wger-flags.json").read_text())["flagged"]
+    hebrew = json.loads(HEBREW.read_text())
 
     errors, out, slugs, legacy = [], [], set(), {}
 
@@ -158,6 +163,20 @@ def build() -> tuple:
                 err(s, f"text must be wger or none, not {x['text']}")
         elif x["text"] != "none":
             err(s, "text can only come from wger when the exercise follows a wger entry")
+
+        # The Hebrew steps translate the English ones one for one; steps that aren't instructions
+        # go from both together
+        english_steps = instructions.get("en", [])
+        if s in hebrew:
+            if not english_steps:
+                err(s, "has a Hebrew translation but no English instructions")
+            elif len(hebrew[s]) != len(english_steps):
+                err(s, f"{len(hebrew[s])} Hebrew steps for {len(english_steps)} English ones")
+            else:
+                instructions["he"] = hebrew[s]
+        if english_steps:
+            keep = [i for i, step in enumerate(english_steps) if not NOT_A_STEP.search(step)]
+            instructions = {lang: [steps_[i] for i in keep] for lang, steps_ in instructions.items()}
 
         if x["preset"] == "time":
             defaults = vocab["defaults"]["time"]

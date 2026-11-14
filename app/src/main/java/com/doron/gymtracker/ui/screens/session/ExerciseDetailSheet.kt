@@ -64,6 +64,26 @@ import com.doron.gymtracker.data.format
 import com.doron.gymtracker.data.toKg
 import com.doron.gymtracker.data.floorToPlate
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.delay
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.ui.focus.onFocusChanged
+import com.doron.gymtracker.AppLocale
+import com.doron.gymtracker.data.db.dao.EntryNote
+import com.doron.gymtracker.data.catalogue.ExerciseInstructions
+import com.doron.gymtracker.ui.components.appLanguage
+import com.doron.gymtracker.ui.components.DesignButton
+import com.doron.gymtracker.ui.components.DesignSmallButton
+import com.doron.gymtracker.ui.theme.AppColors
+import java.text.DateFormat
+import java.util.Date
 
 @Composable
 fun ExerciseDetailSheet(
@@ -74,13 +94,15 @@ fun ExerciseDetailSheet(
     val state by viewModel.uiState.collectAsState()
 
     val inputs = remember { BringIntoViewRequester() }
+    var inputsFocused by remember { mutableStateOf(false) }
     val ime = WindowInsets.ime
     val density = LocalDensity.current
     // A focused field alone would scroll up just far enough to show itself, leaving the other
     // field and the buttons under the keyboard. The keys are what moves the block with it open.
-    LaunchedEffect(state.editingSetIndex, state.completedSets.size, state.restCountdownSecs != null) {
+    // Only for the set's own fields: the note below them scrolls itself into view.
+    LaunchedEffect(state.editingSetIndex, state.completedSets.size, state.restCountdownSecs != null, inputsFocused) {
         snapshotFlow { ime.getBottom(density) }.collectLatest { keyboardHeight ->
-            if (keyboardHeight > 0) {
+            if (keyboardHeight > 0 && inputsFocused) {
                 withFrameNanos { } // let the new height reach layout first
                 inputs.bringIntoView()
             }
@@ -94,6 +116,8 @@ fun ExerciseDetailSheet(
         .padding(horizontal = 16.dp)
     ) {
         ExerciseIllustration(exerciseId = state.exercise.id)
+        val steps = ExerciseInstructions.pick(state.instructions, appLanguage())
+        if (steps.isNotEmpty()) HowToDoIt(steps)
         Spacer(Modifier.height(12.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -112,6 +136,7 @@ fun ExerciseDetailSheet(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
+        if (state.canKeepNote) KeptNote(state.keptNote, onSave = viewModel::keepNote)
         Row(
             modifier = Modifier.padding(top = 8.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -168,8 +193,11 @@ fun ExerciseDetailSheet(
 
         val editIdx = state.editingSetIndex
         val restSecs = state.restCountdownSecs
+        if (state.skipped) {
+            SkippedBanner(onUndo = { viewModel.setSkipped(false); onEntryChanged() })
+        }
         // Resting, the next set's inputs stay in view under a one-row countdown
-        if (restSecs != null) {
+        if (restSecs != null && !state.skipped) {
             RestTimerOverlay(
                 countdownSecs = restSecs,
                 totalSecs = state.restTotalSecs,
@@ -178,7 +206,12 @@ fun ExerciseDetailSheet(
             )
             Spacer(Modifier.height(12.dp))
         }
-        Column(modifier = Modifier.fillMaxWidth().bringIntoViewRequester(inputs)) {
+        if (!state.skipped) Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .bringIntoViewRequester(inputs)
+                .onFocusChanged { inputsFocused = it.hasFocus }
+        ) {
             val editingSet = if (editIdx != null) state.completedSets.getOrNull(editIdx) else null
 
             when (state.exercise) {
@@ -241,7 +274,165 @@ fun ExerciseDetailSheet(
 
             Spacer(Modifier.height(32.dp))
         }
+
+        if (state.canKeepNote || state.noteToday.isNotEmpty()) {
+            NoteToday(state.noteToday, state.lastNote, onSave = viewModel::saveNoteToday)
+        }
+        if (!state.skipped && editIdx == null) {
+            Spacer(Modifier.height(12.dp))
+            DesignButton(
+                text = stringResource(R.string.session_skip_today),
+                icon = R.drawable.ic_skip,
+                background = AppColors.ground,
+                color = AppColors.textSecondary,
+                onClick = { viewModel.setSkipped(true); onEntryChanged() },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+        Spacer(Modifier.height(32.dp))
     }
+}
+
+/** wger's steps for the exercise, in the app's language when translated; folded away until asked for. */
+@Composable
+private fun HowToDoIt(steps: List<String>) {
+    var open by rememberSaveable { mutableStateOf(false) }
+    TextButton(onClick = { open = !open }, contentPadding = PaddingValues(horizontal = 0.dp)) {
+        Text(stringResource(R.string.exercise_how_to), style = MaterialTheme.typography.titleSmall)
+        Icon(
+            if (open) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+            contentDescription = null
+        )
+    }
+    if (open) {
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            var number = 0
+            steps.forEach { step ->
+                // "Starting position:" heads the steps under it rather than being one
+                if (step.trimEnd().endsWith(":") && step.length < 60) {
+                    Text(step.trimEnd().removeSuffix(":"), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 4.dp))
+                } else {
+                    number++
+                    Row {
+                        Text("$number.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.width(24.dp))
+                        Text(step, style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** The note kept on the exercise, pinned under its name; written and changed in a dialog. */
+@Composable
+private fun KeptNote(note: String?, onSave: (String) -> Unit) {
+    var editing by remember { mutableStateOf(false) }
+    if (note == null) {
+        DesignSmallButton(
+            text = stringResource(R.string.exercise_note_add),
+            icon = R.drawable.ic_home_plus,
+            background = AppColors.tintStrength,
+            color = AppColors.accentStrength,
+            onClick = { editing = true },
+            modifier = Modifier.padding(top = 8.dp)
+        )
+    } else {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(top = 8.dp)
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.shapes.medium)
+                .padding(start = 12.dp)
+        ) {
+            Text(
+                note,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.weight(1f).padding(vertical = 10.dp)
+            )
+            IconButton(onClick = { editing = true }) {
+                Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.exercise_note_edit))
+            }
+        }
+    }
+    if (editing) {
+        var text by rememberSaveable { mutableStateOf(note.orEmpty()) }
+        AlertDialog(
+            onDismissRequest = { editing = false },
+            title = { Text(stringResource(R.string.exercise_note)) },
+            text = {
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    placeholder = { Text(stringResource(R.string.exercise_note_hint)) },
+                    minLines = 2
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { onSave(text); editing = false }) { Text(stringResource(R.string.save)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { editing = false }) { Text(stringResource(R.string.cancel)) }
+            }
+        )
+    }
+}
+
+/** The day's note on the sets, saved as it's typed, with the last session's note above it. */
+@Composable
+private fun NoteToday(saved: String, last: EntryNote?, onSave: (String) -> Unit) {
+    var text by rememberSaveable { mutableStateOf(saved) }
+    LaunchedEffect(text) {
+        if (text.trim() == saved) return@LaunchedEffect
+        delay(600) // typing: save once it pauses
+        onSave(text)
+    }
+    if (last != null) {
+        val date = remember(last.startedAt) {
+            DateFormat.getDateInstance(DateFormat.MEDIUM, AppLocale.current()).format(Date(last.startedAt))
+        }
+        Text(
+            stringResource(R.string.exercise_note_last_time, date, last.note),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 6.dp)
+        )
+    }
+    OutlinedTextField(
+        value = text,
+        onValueChange = { text = it },
+        label = { Text(stringResource(R.string.exercise_note_today)) },
+        modifier = Modifier.fillMaxWidth()
+    )
+}
+
+/** Shown instead of the set's inputs while the exercise is left out of today's session. */
+@Composable
+private fun SkippedBanner(onUndo: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(AppColors.ground, MaterialTheme.shapes.medium)
+            .padding(12.dp)
+    ) {
+        Text(
+            stringResource(R.string.session_skipped_banner),
+            style = MaterialTheme.typography.bodyMedium,
+            color = AppColors.textSecondary,
+            modifier = Modifier.weight(1f)
+        )
+        DesignSmallButton(
+            text = stringResource(R.string.session_undo_skip),
+            icon = R.drawable.ic_undo,
+            background = AppColors.surface,
+            color = AppColors.accentStrength,
+            onClick = onUndo
+        )
+    }
+    Spacer(Modifier.height(16.dp))
 }
 
 // New sets start at the reps usually done, regardless of the plan's target

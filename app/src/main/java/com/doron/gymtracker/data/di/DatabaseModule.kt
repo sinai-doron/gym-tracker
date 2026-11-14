@@ -8,6 +8,7 @@ import com.doron.gymtracker.data.db.GymDatabase
 import com.doron.gymtracker.data.db.dao.ActivityTypeDao
 import com.doron.gymtracker.data.db.dao.ExerciseEntryDao
 import com.doron.gymtracker.data.db.dao.ExerciseLibraryDao
+import com.doron.gymtracker.data.db.dao.ExerciseNoteDao
 import com.doron.gymtracker.data.db.dao.LocationLogDao
 import com.doron.gymtracker.data.db.dao.ProgramDao
 import com.doron.gymtracker.data.db.dao.RouteDao
@@ -50,4 +51,7 @@ object DatabaseModule {
     @Provides fun provideExerciseLibraryDao(db: GymDatabase): ExerciseLibraryDao = db.exerciseLibraryDao()
     @Provides fun provideProgramDao(db: GymDatabase): ProgramDao = db.programDao()
     @Provides fun provideActivityTypeDao(db: GymDatabase): ActivityTypeDao = db.activityTypeDao()
+    @Provides fun provideExerciseNoteDao(db: GymDatabase): ExerciseNoteDao = db.exerciseNoteDao()
+    @Provides fun provideWeightDao(db: GymDatabase): com.doron.gymtracker.data.db.dao.WeightDao = db.weightDao()
+    @Provides fun provideWaterDao(db: GymDatabase): com.doron.gymtracker.data.db.dao.WaterDao = db.waterDao()
 }

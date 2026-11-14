@@ -46,9 +46,18 @@ import javax.inject.Inject
 fun NavGraph(
     runToResume: CardioRun? = null,
     showOnboarding: Boolean = false,
-    onFirstScreenReady: () -> Unit = {}
+    onFirstScreenReady: () -> Unit = {},
+    /** A screen a notification asks for: "weight/log", "water". */
+    openRoute: String? = null,
+    onRouteOpened: () -> Unit = {}
 ) {
     val navController = rememberNavController()
+    LaunchedEffect(openRoute, showOnboarding) {
+        if (openRoute != null && !showOnboarding) {
+            navController.navigate(openRoute) { launchSingleTop = true }
+            onRouteOpened()
+        }
+    }
     // The wizard has nothing to load; home says when it has
     if (showOnboarding) LaunchedEffect(Unit) { onFirstScreenReady() }
     LaunchedEffect(runToResume) {
@@ -112,11 +121,44 @@ fun NavGraph(
                 onSetUpTraining = { navController.navigate("training/new") },
                 onTimer = { typeId -> navController.navigate("timer/$typeId") },
                 onTrainingTypes = { navController.navigate("training-types") },
-                onLogSession = { navController.navigate("log") }
+                onLogSession = { navController.navigate("log") },
+                onWeight = { navController.navigate("weight") },
+                onWater = { navController.navigate("water") }
             )
         }
         composable("achievements") {
             AchievementsScreen(onBack = { navController.popBackStack() })
+        }
+        composable("weight") {
+            com.doron.gymtracker.ui.screens.body.WeightScreen(
+                onBack = { navController.popBackStack() },
+                onLog = { navController.navigate("weight/log") },
+                onEdit = { id -> navController.navigate("weight/log?id=$id") },
+                onGoal = { navController.navigate("weight/goal") }
+            )
+        }
+        composable(
+            "weight/log?id={id}",
+            arguments = listOf(androidx.navigation.navArgument("id") { type = androidx.navigation.NavType.LongType; defaultValue = -1L })
+        ) {
+            com.doron.gymtracker.ui.screens.body.WeightLogScreen(onDone = {
+                // Opened from a reminder: the weight page follows, not wherever the app was
+                if (!navController.popBackStack("weight", inclusive = false)) {
+                    navController.navigate("weight") { popUpTo("weight/log?id={id}") { inclusive = true } }
+                }
+            })
+        }
+        composable("weight/goal") {
+            com.doron.gymtracker.ui.screens.body.WeightGoalScreen(onDone = { navController.popBackStack() })
+        }
+        composable("water") {
+            com.doron.gymtracker.ui.screens.body.WaterScreen(
+                onBack = { navController.popBackStack() },
+                onGoal = { navController.navigate("water/goal") }
+            )
+        }
+        composable("water/goal") {
+            com.doron.gymtracker.ui.screens.body.WaterGoalScreen(onDone = { navController.popBackStack() })
         }
         composable("workouts") {
             WorkoutsScreen(

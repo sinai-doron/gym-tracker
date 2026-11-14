@@ -61,4 +61,17 @@
     <!-- Session notification -->
     <string name="session_active_workout">אימון פעיל</string>
     <string name="session_channel_description">טיימר אימון ומנוחה</string>
+
+    <!-- Skipping an exercise for one session, notes, and how to do it -->
+    <string name="session_skip_today">דלג על התרגיל היום</string>
+    <string name="session_undo_skip">ביטול הדילוג</string>
+    <string name="session_skipped">דילגת</string>
+    <string name="session_skipped_banner">דילגת על התרגיל היום. הוא לא ייחשב כלא גמור.</string>
+    <string name="exercise_note">הערה</string>
+    <string name="exercise_note_add">הוספת הערה</string>
+    <string name="exercise_note_edit">עריכת הערה</string>
+    <string name="exercise_note_hint">גובה מושב, אחיזה, מספר מכונה…</string>
+    <string name="exercise_note_today">הערה להיום</string>
+    <string name="exercise_note_last_time">בפעם הקודמת (%1$s): %2$s</string>
+    <string name="exercise_how_to">איך מבצעים</string>
 </resources>
